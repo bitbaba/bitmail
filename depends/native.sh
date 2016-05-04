@@ -1,6 +1,6 @@
 #!/bin/bash
 DepSrcRoot=$(dirname $(readlink -f $0) )
-OutDir=/root/workspace/bitbucket/bitmail/out
+OutDir=$DepSrcRoot/../out
 
 OPENSSLTARBALL=openssl-1.0.2h.tar.gz
 CURLTARBALL=curl-7.48.0.tar.gz
