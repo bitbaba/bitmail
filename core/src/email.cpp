@@ -1,8 +1,8 @@
 #include <bitmailcore/bitmail.h>
 #include <bitmailcore/email.h>
+
 #define CURL_STATICLIB
 #include <curl/curl.h>
-#include <json/json.h>
 
 #include <string.h>
 #include <stdlib.h>

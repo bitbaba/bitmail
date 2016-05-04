@@ -8,4 +8,4 @@ libbitmailcore_la_SOURCES= \
     email.cpp 
 
 libbitmailcore_la_LDFLAGS = -no-undefined
-libbitmailcore_la_LIBADD = -ljsoncpp -lcurl -lssl -lcrypto #-lwsock32 -lws2_32 -lgdi32
+libbitmailcore_la_LIBADD = -lcurl -lssl -lcrypto #-lwsock32 -lws2_32 -lgdi32

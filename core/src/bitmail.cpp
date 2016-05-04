@@ -5,8 +5,6 @@
 #define CURL_STATICLIB
 #include <curl/curl.h>
 
-#include <json/json.h>
-
 # include <openssl/cms.h>
 # include <openssl/bio.h>
 # include <openssl/err.h>

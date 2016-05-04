@@ -8,4 +8,4 @@ all:
 	../src/email.cpp \
 	../src/x509cert.cpp \
 	-L/root/workspace/github/bitmail/out/lib \
-        -ljsoncpp -lcurl -lssl -lcrypto -lpthread
+        -lcurl -lssl -lcrypto -lpthread
