@@ -420,7 +420,12 @@ int BitmailHandler(BMEventHead * h, void * userp)
 				     <<"Msg: \n" <<((BMEventMessage*)h)->msg << std::endl
 				     <<"MsgLength:\n" <<CX509Cert::b64dec(((BMEventMessage*)h)->msg).length()<< std::endl					 
 					 <<"MsgText:\n" <<CX509Cert::b64dec(((BMEventMessage*)h)->msg)<< std::endl
-				     <<"Cert:\n" <<((BMEventMessage*)h)->cert << std::endl;
+				     <<"Cert:\n" <<CX509Cert::b64dec(((BMEventMessage*)h)->cert) << std::endl;
+		{
+			std::string sCertPem = CX509Cert::b64dec(((BMEventMessage*)h)->cert);
+			std::cout<<"Add Buddy: [" << ((BMEventMessage*)h)->from << "]" <<std::endl;
+			self->AddBuddy(sCertPem);
+		}
 		break;
 	case bmefSystem:
 		std::cout<<"System: " << std::endl;
@@ -480,9 +485,11 @@ int main(int argc, char * argv [])
     pthread_create(&tid, &tattr, RxThread, alice);
     
     while(true){
-    	char szmsg[256] = "";
-    	std::string smsg = fgets(szmsg, sizeof(szmsg), stdin);
-    	alice->SendMsg(alice->GetEmail(), smsg);
+    	printf("MsgTo:>");
+    	std::string sto; std::cin>>sto;
+    	printf("Msg:>");
+    	std::string smsg;std::cin>>smsg;
+    	alice->SendMsg(sto, smsg);
     }
 
     delete alice;
