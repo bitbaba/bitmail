@@ -91,7 +91,7 @@ int CMailClient::SendMsg(const std::string & from, const std::string & to, const
 {
     std::vector<std::string> vecTo;
     vecTo.push_back(to);
-    return SendMessage(from, vecTo, encSignedMail);
+    return SendMsg(from, vecTo, encSignedMail);
 }
 
 int CMailClient::SendMsg( const std::string & from, const std::vector<std::string> & to, const std::string & encSignedMail)
