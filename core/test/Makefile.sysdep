@@ -1,0 +1,11 @@
+all:
+	g++ \
+        -DTEST \
+	-I/root/workspace/github/bitmail/3rd/include \
+	-I/root/workspace/github/bitmail/core/include \
+	-o bmc \
+	-g -O0 \
+	../src/bitmail.cpp \
+	../src/email.cpp \
+	../src/x509cert.cpp \
+        -lcurl -lssl -lcrypto -lpthread

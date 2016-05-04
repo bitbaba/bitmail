@@ -1,0 +1,14 @@
+{
+   "pop3" : {
+      "account" : "123123123@qq.com",
+      "password" : "xxxx",
+      "url" : "pop3s://pop.qq.com/", 
+      "interval": 3,
+      "allow_strangers" : false
+   },
+   "smtp" : {
+      "account" : "123123123@qq.com",
+      "password" : "xxxx",
+      "url" : "smtps://smtp.qq.com/"
+   }
+}
