@@ -20,13 +20,13 @@ public:
               , const std::string & user
               , const std::string & pass);
 
-    int SendMessage( const std::string & from
-                   , const std::string & to
-                   , const std::string & msg);
+    int SendMsg( const std::string & from
+               , const std::string & to
+               , const std::string & msg);
 
-    int SendMessage( const std::string & from
-                   , const std::vector<std::string> & to
-                   , const std::string & encSignedMail);
+    int SendMsg( const std::string & from
+               , const std::vector<std::string> & to
+               , const std::string & encSignedMail);
 
 public:
     int CheckInbox();

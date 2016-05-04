@@ -93,7 +93,7 @@ int BitMail::SendMsg(const std::string &email_to, const std::string &msg)
         }
     }
 
-    if (m_mc->SendMessage( m_profile->GetEmail()
+    if (m_mc->SendMsg( m_profile->GetEmail()
                             , email_to
                             , sEncryptedMsg.empty()
                             ? sSignedMsg
@@ -144,7 +144,7 @@ int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::strin
         }
     }
 
-    if (m_mc->SendMessage( m_profile->GetEmail()
+    if (m_mc->SendMsg( m_profile->GetEmail()
                             , email_to
                             , sEncryptedMsg)){
         return bmTxFail;

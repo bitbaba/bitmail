@@ -87,16 +87,14 @@ int CMailClient::InitRx(const std::string & url
     return 0;
 }
 
-int CMailClient::SendMessage(const std::string & from, const std::string & to, const std::string & encSignedMail)
+int CMailClient::SendMsg(const std::string & from, const std::string & to, const std::string & encSignedMail)
 {
     std::vector<std::string> vecTo;
     vecTo.push_back(to);
     return SendMessage(from, vecTo, encSignedMail);
 }
 
-int CMailClient::SendMessage( const std::string & from
-                            , const std::vector<std::string> & to
-                            , const std::string & encSignedMail)
+int CMailClient::SendMsg( const std::string & from, const std::vector<std::string> & to, const std::string & encSignedMail)
 {
     std::stringstream sstrmMail;
     /**
