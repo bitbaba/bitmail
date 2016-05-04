@@ -441,7 +441,7 @@ void * RxThread(void * args)
 {
 	BitMail * alice = (BitMail *)args;
 	while(true){
-	    alice->StartIdle(120000);
+	    alice->StartIdle(60000);
 	    std::cout<<"Idle timeout, re-idle"<<std::endl;
 	    alice->CheckInbox();
 	}

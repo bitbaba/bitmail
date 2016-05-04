@@ -211,6 +211,8 @@ int CMailClient::CheckInbox()
         
         this->StoreFlag(msgno, "\\Seen");
     }
+    
+    return msgnolist.size();
 }
 
 int CMailClient::GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist)
