@@ -8,5 +8,5 @@ libbitmailcore_la_SOURCES= \
     email.cpp 
 
 libbitmailcore_la_CFLAGS  = -DCURL_STATICLIB
-libbitmailcore_la_LDFLAGS = -no-undefined
+libbitmailcore_la_LDFLAGS = -no-undefined -export-all-symbols -compat-implib -out-implib libbitmailcore.dll.a
 libbitmailcore_la_LIBADD  = -lcurl -lssl -lcrypto
