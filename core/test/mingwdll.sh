@@ -1,0 +1,1 @@
+g++ -o bmc.dll -Wl,-shared -DTEST -DCURL_STATICLIB src/bitmail.cpp src/email.cpp src/x509cert.cpp -L../out/lib -I./include -I../out/include ../out/lib/libcurl.a ../out/lib/libssl.a ../out/lib/libcrypto.a -lgdi32 -lws2_32
