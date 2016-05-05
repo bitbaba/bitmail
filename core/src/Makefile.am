@@ -7,5 +7,6 @@ libbitmailcore_la_SOURCES= \
     x509cert.cpp \
     email.cpp 
 
+libbitmailcore_la_CFLAGS  = -DCURL_STATICLIB
 libbitmailcore_la_LDFLAGS = -no-undefined
-libbitmailcore_la_LIBADD = -lcurl -lssl -lcrypto #-lwsock32 -lws2_32 -lgdi32
+libbitmailcore_la_LIBADD  = -lcurl -lssl -lcrypto
