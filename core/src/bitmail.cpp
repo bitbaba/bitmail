@@ -1,10 +1,12 @@
+#if defined(WIN32)
+#include <winsock2.h>
+#endif
+
 #include <bitmailcore/bitmail.h>
 #include <bitmailcore/email.h>
 #include <bitmailcore/x509cert.h>
 
-#define CURL_STATICLIB
-#include <curl/curl.h>
-
+# include <curl/curl.h>
 # include <openssl/cms.h>
 # include <openssl/bio.h>
 # include <openssl/err.h>
