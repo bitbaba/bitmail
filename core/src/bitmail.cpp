@@ -1,10 +1,10 @@
 #if defined(WIN32)
-#include <winsock2.h>
+# include <winsock2.h>
 #endif
 
-#include <bitmailcore/bitmail.h>
-#include <bitmailcore/email.h>
-#include <bitmailcore/x509cert.h>
+# include <bitmailcore/bitmail.h>
+# include <bitmailcore/email.h>
+# include <bitmailcore/x509cert.h>
 
 # include <curl/curl.h>
 # include <openssl/cms.h>
@@ -18,10 +18,10 @@
 # include <openssl/rand.h>
 # include <openssl/pkcs7.h>
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
+# include <string>
+# include <fstream>
+# include <sstream>
+# include <iostream>
 
 #include <string.h>
 
