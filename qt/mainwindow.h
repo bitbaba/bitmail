@@ -47,6 +47,8 @@ QT_BEGIN_NAMESPACE
 class QAction;
 class QMenu;
 class QPlainTextEdit;
+class QListWidget;
+class QPushButton;
 QT_END_NAMESPACE
 
 //! [0]
@@ -73,22 +75,27 @@ private:
     void createMenus();
     void createToolBars();
     void createStatusBar();
-    void readSettings();
-    void writeSettings();
-    bool maybeSave();
-    void loadFile(const QString &fileName);
-    bool saveFile(const QString &fileName);
-    void setCurrentFile(const QString &fileName);
+    //void readSettings();
+    //void writeSettings();
+    //bool maybeSave();
+    void loadProfile(const QString &fileName);
+    bool saveProfile(const QString &fileName);
+    //void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
 
     QPlainTextEdit *textEdit;
-    QString curFile;
+    QListWidget * blist;
+    QListWidget * mlist;
+
+    //QString curFile;
 
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *helpMenu;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
+    QToolBar *chatToolbar;
+    QPushButton * btnSend;
     QAction *newAct;
     QAction *openAct;
     QAction *saveAct;

@@ -48,21 +48,44 @@
 MainWindow::MainWindow()
 //! [1] //! [2]
 {
+    QHBoxLayout *mainLayout = new QHBoxLayout;
+    blist = new QListWidget;
+    mainLayout->addWidget(blist);
+
+    QVBoxLayout * rightLayout = new QVBoxLayout;
+
+    mlist = new QListWidget;
     textEdit = new QPlainTextEdit;
-    setCentralWidget(textEdit);
+
+    QHBoxLayout * btnLayout = new QHBoxLayout;
+    btnSend = new QPushButton(tr("Send"));
+    btnLayout->addWidget(btnSend);
+
+    mainLayout->addLayout(rightLayout);
+
+    QWidget * wrap = new QWidget(this);
+    wrap->setLayout(mainLayout);
+    setCentralWidget(wrap);
 
     createActions();
-    createMenus();
+    //createMenus();
     createToolBars();
     createStatusBar();
 
-    readSettings();
+    rightLayout->addWidget(mlist);
+    rightLayout->addWidget(chatToolbar);
+    rightLayout->addWidget(textEdit);
+    rightLayout->addLayout(btnLayout);
+
 
     connect(textEdit->document(), SIGNAL(contentsChanged()),
             this, SLOT(documentWasModified()));
 
-    setCurrentFile("");
+    //setCurrentFile("");
+
+#if defined(MACOSX)
     setUnifiedTitleAndToolBarOnMac(true);
+#endif
 }
 //! [2]
 
@@ -70,11 +93,8 @@ MainWindow::MainWindow()
 void MainWindow::closeEvent(QCloseEvent *event)
 //! [3] //! [4]
 {
-    if (maybeSave()) {
-        writeSettings();
+    if (true) {
         event->accept();
-    } else {
-        event->ignore();
     }
 }
 //! [4]
@@ -83,10 +103,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::newFile()
 //! [5] //! [6]
 {
-    if (maybeSave()) {
-        textEdit->clear();
-        setCurrentFile("");
-    }
+
 }
 //! [6]
 
@@ -94,11 +111,7 @@ void MainWindow::newFile()
 void MainWindow::open()
 //! [7] //! [8]
 {
-    if (maybeSave()) {
-        QString fileName = QFileDialog::getOpenFileName(this);
-        if (!fileName.isEmpty())
-            loadFile(fileName);
-    }
+
 }
 //! [8]
 
@@ -106,11 +119,7 @@ void MainWindow::open()
 bool MainWindow::save()
 //! [9] //! [10]
 {
-    if (curFile.isEmpty()) {
-        return saveAs();
-    } else {
-        return saveFile(curFile);
-    }
+    return true;
 }
 //! [10]
 
@@ -118,16 +127,7 @@ bool MainWindow::save()
 bool MainWindow::saveAs()
 //! [11] //! [12]
 {
-    QFileDialog dialog(this);
-    dialog.setWindowModality(Qt::WindowModal);
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    QStringList files;
-    if (dialog.exec())
-        files = dialog.selectedFiles();
-    else
-        return false;
-
-    return saveFile(files.at(0));
+    return false;
 }
 //! [12]
 
@@ -266,6 +266,11 @@ void MainWindow::createToolBars()
     editToolBar->addAction(cutAct);
     editToolBar->addAction(copyAct);
     editToolBar->addAction(pasteAct);
+
+    chatToolbar = addToolBar(tr("Chat"));
+    chatToolbar->addAction(newAct);
+    chatToolbar->addAction(openAct);
+    chatToolbar->setIconSize(QSize(16,16));
 }
 //! [30]
 
@@ -277,6 +282,7 @@ void MainWindow::createStatusBar()
 }
 //! [33]
 
+/*
 //! [34] //! [35]
 void MainWindow::readSettings()
 //! [34] //! [36]
@@ -288,7 +294,9 @@ void MainWindow::readSettings()
     move(pos);
 }
 //! [35] //! [36]
+**/
 
+/*
 //! [37] //! [38]
 void MainWindow::writeSettings()
 //! [37] //! [39]
@@ -298,28 +306,20 @@ void MainWindow::writeSettings()
     settings.setValue("size", size());
 }
 //! [38] //! [39]
+**/
 
+/*
 //! [40]
 bool MainWindow::maybeSave()
 //! [40] //! [41]
 {
-    if (textEdit->document()->isModified()) {
-        QMessageBox::StandardButton ret;
-        ret = QMessageBox::warning(this, tr("Application"),
-                     tr("The document has been modified.\n"
-                        "Do you want to save your changes?"),
-                     QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        if (ret == QMessageBox::Save)
-            return save();
-        else if (ret == QMessageBox::Cancel)
-            return false;
-    }
     return true;
 }
 //! [41]
+**/
 
 //! [42]
-void MainWindow::loadFile(const QString &fileName)
+void MainWindow::loadProfile(const QString &fileName)
 //! [42] //! [43]
 {
     QFile file(fileName);
@@ -335,18 +335,20 @@ void MainWindow::loadFile(const QString &fileName)
 #ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
+
     textEdit->setPlainText(in.readAll());
+
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
 #endif
 
-    setCurrentFile(fileName);
+    //setCurrentFile(fileName);
     statusBar()->showMessage(tr("File loaded"), 2000);
 }
 //! [43]
 
 //! [44]
-bool MainWindow::saveFile(const QString &fileName)
+bool MainWindow::saveProfile(const QString &fileName)
 //! [44] //! [45]
 {
     QFile file(fileName);
@@ -362,17 +364,20 @@ bool MainWindow::saveFile(const QString &fileName)
 #ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
+
     out << textEdit->toPlainText();
+
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
 #endif
 
-    setCurrentFile(fileName);
+    //setCurrentFile(fileName);
     statusBar()->showMessage(tr("File saved"), 2000);
     return true;
 }
 //! [45]
 
+/*
 //! [46]
 void MainWindow::setCurrentFile(const QString &fileName)
 //! [46] //! [47]
@@ -387,6 +392,7 @@ void MainWindow::setCurrentFile(const QString &fileName)
     setWindowFilePath(shownName);
 }
 //! [47]
+*/
 
 //! [48]
 QString MainWindow::strippedName(const QString &fullFileName)
