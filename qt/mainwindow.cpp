@@ -68,7 +68,6 @@ MainWindow::MainWindow()
     setCentralWidget(wrap);
 
     createActions();
-    //createMenus();
     createToolBars();
     createStatusBar();
 
@@ -81,11 +80,12 @@ MainWindow::MainWindow()
     connect(textEdit->document(), SIGNAL(contentsChanged()),
             this, SLOT(documentWasModified()));
 
-    //setCurrentFile("");
-
 #if defined(MACOSX)
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
+
+    setWindowIcon(QIcon(":/images/bitmail.png"));
+    setWindowTitle(tr("BitMail"));
 }
 //! [2]
 
@@ -135,10 +135,8 @@ bool MainWindow::saveAs()
 void MainWindow::about()
 //! [13] //! [14]
 {
-   QMessageBox::about(this, tr("About Application"),
-            tr("The <b>Application</b> example demonstrates how to "
-               "write modern GUI applications using Qt, with a menu bar, "
-               "toolbars, and a status bar."));
+   QMessageBox::about(this, tr("About BitMail"),
+            tr("The <b>BitMail</b> client support <b>P2P</b>, <b>Secure</b>, <b>Private</b> talk with your friends!"));
 }
 //! [14]
 
@@ -146,7 +144,7 @@ void MainWindow::about()
 void MainWindow::documentWasModified()
 //! [15] //! [16]
 {
-    setWindowModified(textEdit->document()->isModified());
+
 }
 //! [16]
 
@@ -282,42 +280,6 @@ void MainWindow::createStatusBar()
 }
 //! [33]
 
-/*
-//! [34] //! [35]
-void MainWindow::readSettings()
-//! [34] //! [36]
-{
-    QSettings settings("QtProject", "Application Example");
-    QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
-    QSize size = settings.value("size", QSize(400, 400)).toSize();
-    resize(size);
-    move(pos);
-}
-//! [35] //! [36]
-**/
-
-/*
-//! [37] //! [38]
-void MainWindow::writeSettings()
-//! [37] //! [39]
-{
-    QSettings settings("QtProject", "Application Example");
-    settings.setValue("pos", pos());
-    settings.setValue("size", size());
-}
-//! [38] //! [39]
-**/
-
-/*
-//! [40]
-bool MainWindow::maybeSave()
-//! [40] //! [41]
-{
-    return true;
-}
-//! [41]
-**/
-
 //! [42]
 void MainWindow::loadProfile(const QString &fileName)
 //! [42] //! [43]
@@ -376,23 +338,6 @@ bool MainWindow::saveProfile(const QString &fileName)
     return true;
 }
 //! [45]
-
-/*
-//! [46]
-void MainWindow::setCurrentFile(const QString &fileName)
-//! [46] //! [47]
-{
-    curFile = fileName;
-    textEdit->document()->setModified(false);
-    setWindowModified(false);
-
-    QString shownName = curFile;
-    if (curFile.isEmpty())
-        shownName = "untitled.txt";
-    setWindowFilePath(shownName);
-}
-//! [47]
-*/
 
 //! [48]
 QString MainWindow::strippedName(const QString &fullFileName)
