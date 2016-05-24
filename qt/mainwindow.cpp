@@ -123,23 +123,6 @@ bool MainWindow::save()
 }
 //! [10]
 
-//! [11]
-bool MainWindow::saveAs()
-//! [11] //! [12]
-{
-    return false;
-}
-//! [12]
-
-//! [13]
-void MainWindow::about()
-//! [13] //! [14]
-{
-   QMessageBox::about(this, tr("About BitMail"),
-            tr("The <b>BitMail</b> client support <b>P2P</b>, <b>Secure</b>, <b>Private</b> talk with your friends!"));
-}
-//! [14]
-
 //! [15]
 void MainWindow::documentWasModified()
 //! [15] //! [16]
@@ -152,122 +135,94 @@ void MainWindow::documentWasModified()
 void MainWindow::createActions()
 //! [17] //! [18]
 {
-    newAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
+    newAct = new QAction(QIcon(":/images/profile.png"), tr("&NewAccount"), this);
     newAct->setShortcuts(QKeySequence::New);
-    newAct->setStatusTip(tr("Create a new file"));
+    newAct->setStatusTip(tr("Create a new bitmail account profile"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 
+    do {
+        configAct = new QAction(QIcon(":/images/config.png"), tr("&Configure"), this);
+        configAct->setStatusTip(tr("Configure current account"));
+    }while(0);
+
 //! [19]
-    openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
+    openAct = new QAction(QIcon(":/images/open.png"), tr("&Load..."), this);
     openAct->setShortcuts(QKeySequence::Open);
-    openAct->setStatusTip(tr("Open an existing file"));
+    openAct->setStatusTip(tr("Loading an existing account profile"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 //! [18] //! [19]
 
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
-    saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the document to disk"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-    saveAsAct = new QAction(tr("Save &As..."), this);
-    saveAsAct->setShortcuts(QKeySequence::SaveAs);
-    saveAsAct->setStatusTip(tr("Save the document under a new name"));
-    connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
+    do {
+        addAct = new QAction(QIcon(":/images/buddy.png"), tr("&NewBuddy"), this);
+        addAct->setStatusTip(tr("Add a new buddy"));
+    }while(0);
 
-//! [20]
-    exitAct = new QAction(tr("E&xit"), this);
-    exitAct->setShortcuts(QKeySequence::Quit);
-//! [20]
-    exitAct->setStatusTip(tr("Exit the application"));
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+    do {
+        strangerAct = new QAction(QIcon(":/images/stranger.png"), tr("&Stranger"), this);
+        strangerAct->setStatusTip(tr("Notify me for messages from strangers"));
+    }while(0);
 
-//! [21]
-    cutAct = new QAction(QIcon(":/images/cut.png"), tr("Cu&t"), this);
-//! [21]
-    cutAct->setShortcuts(QKeySequence::Cut);
-    cutAct->setStatusTip(tr("Cut the current selection's contents to the "
-                            "clipboard"));
-    connect(cutAct, SIGNAL(triggered()), textEdit, SLOT(cut()));
+    do{
+        snapAct = new QAction(QIcon(":/images/snap.png"), tr("&Snapshot"), this);
+        snapAct->setStatusTip(tr("snapshot"));
+    }while(0);
 
-    copyAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy"), this);
-    copyAct->setShortcuts(QKeySequence::Copy);
-    copyAct->setStatusTip(tr("Copy the current selection's contents to the "
-                             "clipboard"));
-    connect(copyAct, SIGNAL(triggered()), textEdit, SLOT(copy()));
+    do{
+        fileAct = new QAction(QIcon(":/images/file.png"), tr("&SendFile"), this);
+        fileAct->setStatusTip(tr("SendFile"));
+    }while(0);
 
-    pasteAct = new QAction(QIcon(":/images/paste.png"), tr("&Paste"), this);
-    pasteAct->setShortcuts(QKeySequence::Paste);
-    pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
-                              "selection"));
-    connect(pasteAct, SIGNAL(triggered()), textEdit, SLOT(paste()));
+    do{
+        emojAct = new QAction(QIcon(":/images/emoj.png"), tr("&Emoj"), this);
+        emojAct->setStatusTip(tr("SendEmoj"));
+    }while(0);
 
-    aboutAct = new QAction(tr("&About"), this);
-    aboutAct->setStatusTip(tr("Show the application's About box"));
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+    do{
+        soundAct = new QAction(QIcon(":/images/sound.png"), tr("&Sound"), this);
+        soundAct->setStatusTip(tr("Sound"));
+    }while(0);
 
-//! [22]
-    aboutQtAct = new QAction(tr("About &Qt"), this);
-    aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
-    connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-//! [22]
+    do{
+        videoAct = new QAction(QIcon(":/images/video.png"), tr("&Video"), this);
+        videoAct->setStatusTip(tr("Video"));
+    }while(0);
+
+    do{
+        styleAct = new QAction(QIcon(":/images/style.png"), tr("&Style"), this);
+        styleAct->setStatusTip(tr("Style"));
+    }while(0);
 
 //! [23]
-    cutAct->setEnabled(false);
+    addAct->setEnabled(true);
 //! [23] //! [24]
-    copyAct->setEnabled(false);
-    connect(textEdit, SIGNAL(copyAvailable(bool)),
-            cutAct, SLOT(setEnabled(bool)));
-    connect(textEdit, SIGNAL(copyAvailable(bool)),
-            copyAct, SLOT(setEnabled(bool)));
+    strangerAct->setEnabled(true);
 }
 //! [24]
-
-//! [25] //! [26]
-void MainWindow::createMenus()
-//! [25] //! [27]
-{
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(newAct);
-//! [28]
-    fileMenu->addAction(openAct);
-//! [28]
-    fileMenu->addAction(saveAct);
-//! [26]
-    fileMenu->addAction(saveAsAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(exitAct);
-
-    editMenu = menuBar()->addMenu(tr("&Edit"));
-    editMenu->addAction(cutAct);
-    editMenu->addAction(copyAct);
-    editMenu->addAction(pasteAct);
-
-    menuBar()->addSeparator();
-
-    helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(aboutAct);
-    helpMenu->addAction(aboutQtAct);
-}
-//! [27]
 
 //! [29] //! [30]
 void MainWindow::createToolBars()
 {
-    fileToolBar = addToolBar(tr("File"));
+    fileToolBar = addToolBar(tr("Profile"));
     fileToolBar->addAction(newAct);
-//! [29] //! [31]
     fileToolBar->addAction(openAct);
-//! [31]
+    fileToolBar->addAction(configAct);
     fileToolBar->addAction(saveAct);
 
-    editToolBar = addToolBar(tr("Edit"));
-    editToolBar->addAction(cutAct);
-    editToolBar->addAction(copyAct);
-    editToolBar->addAction(pasteAct);
+    editToolBar = addToolBar(tr("Buddies"));
+    editToolBar->addAction(addAct);
+    editToolBar->addAction(strangerAct);
 
     chatToolbar = addToolBar(tr("Chat"));
-    chatToolbar->addAction(newAct);
-    chatToolbar->addAction(openAct);
+    chatToolbar->addAction(styleAct);
+    chatToolbar->addAction(emojAct);
+    chatToolbar->addAction(snapAct);
+    chatToolbar->addAction(fileAct);
+    chatToolbar->addAction(soundAct);
+    chatToolbar->addAction(videoAct);
     chatToolbar->setIconSize(QSize(16,16));
 }
 //! [30]
