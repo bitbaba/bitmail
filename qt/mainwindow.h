@@ -49,6 +49,9 @@ class QMenu;
 class QPlainTextEdit;
 class QListWidget;
 class QPushButton;
+class QTextEdit;
+class QLabel;
+class QLineEdit;
 QT_END_NAMESPACE
 
 //! [0]
@@ -67,7 +70,8 @@ private slots:
     void open();
     bool save();
     void documentWasModified();
-
+    void onStyleBtnClicked();
+    void onColorBtnClicked();
 private:
     void createActions();
     void createToolBars();
@@ -76,9 +80,13 @@ private:
     bool saveProfile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
 
-    QPlainTextEdit *textEdit;
+    // QPlainTextEdit *textEdit;
+    QTextEdit *textEdit;
     QListWidget * blist;
     QListWidget * mlist;
+    QLabel *minfo;
+    QLineEdit * searchBox;
+    QPushButton * btnSearch;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
@@ -99,6 +107,9 @@ private:
     QAction *emojAct;
     QAction *soundAct;
     QAction *videoAct;
+    QAction *colorAct;
+    QAction *liveAct;
+    QAction *textAct;
 };
 //! [0]
 

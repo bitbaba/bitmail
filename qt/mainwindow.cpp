@@ -48,18 +48,32 @@
 MainWindow::MainWindow()
 //! [1] //! [2]
 {
+    QVBoxLayout *leftLayout = new QVBoxLayout;
+    btnSearch = new QPushButton(tr("Search"));
+    searchBox = new QLineEdit(tr("Search buddy list..."));
+    QHBoxLayout *searchLayout = new QHBoxLayout;
+    searchLayout->addWidget(searchBox);
+    //searchLayout->addWidget(btnSearch);
+    //leftLayout->addLayout(searchLayout);
     QHBoxLayout *mainLayout = new QHBoxLayout;
     blist = new QListWidget;
-    mainLayout->addWidget(blist);
+    leftLayout->addWidget(blist);
+    mainLayout->addLayout(leftLayout);
 
     QVBoxLayout * rightLayout = new QVBoxLayout;
 
     mlist = new QListWidget;
-    textEdit = new QPlainTextEdit;
+    //textEdit = new QPlainTextEdit;
+    textEdit = new QTextEdit;
+    minfo = new QLabel(tr("Talking with <b>AAAA</b>"));
+    minfo->setAlignment(Qt::AlignCenter);
 
     QHBoxLayout * btnLayout = new QHBoxLayout;
     btnSend = new QPushButton(tr("Send"));
+    btnSend->setFixedWidth(64);
+    btnSend->setFixedHeight(32);
     btnLayout->addWidget(btnSend);
+    btnLayout->setAlignment(btnSend, Qt::AlignLeft);
 
     mainLayout->addLayout(rightLayout);
 
@@ -71,6 +85,7 @@ MainWindow::MainWindow()
     createToolBars();
     createStatusBar();
 
+    //rightLayout->addWidget(minfo);
     rightLayout->addWidget(mlist);
     rightLayout->addWidget(chatToolbar);
     rightLayout->addWidget(textEdit);
@@ -164,21 +179,22 @@ void MainWindow::createActions()
     do {
         strangerAct = new QAction(QIcon(":/images/stranger.png"), tr("&Stranger"), this);
         strangerAct->setStatusTip(tr("Notify me for messages from strangers"));
+        strangerAct->setCheckable(true);
     }while(0);
 
     do{
         snapAct = new QAction(QIcon(":/images/snap.png"), tr("&Snapshot"), this);
-        snapAct->setStatusTip(tr("snapshot"));
+        snapAct->setStatusTip(tr("Snapshot"));
     }while(0);
 
     do{
-        fileAct = new QAction(QIcon(":/images/file.png"), tr("&SendFile"), this);
-        fileAct->setStatusTip(tr("SendFile"));
+        fileAct = new QAction(QIcon(":/images/file.png"), tr("&File"), this);
+        fileAct->setStatusTip(tr("File"));
     }while(0);
 
     do{
-        emojAct = new QAction(QIcon(":/images/emoj.png"), tr("&Emoj"), this);
-        emojAct->setStatusTip(tr("SendEmoj"));
+        emojAct = new QAction(QIcon(":/images/emoj.png"), tr("&Emoji"), this);
+        emojAct->setStatusTip(tr("Emoji"));
     }while(0);
 
     do{
@@ -192,8 +208,26 @@ void MainWindow::createActions()
     }while(0);
 
     do{
-        styleAct = new QAction(QIcon(":/images/style.png"), tr("&Style"), this);
-        styleAct->setStatusTip(tr("Style"));
+        styleAct = new QAction(QIcon(":/images/style.png"), tr("&Font"), this);
+        connect(styleAct, SIGNAL(triggered()), this, SLOT(onStyleBtnClicked()));
+        styleAct->setStatusTip(tr("Font"));
+    }while(0);
+
+    do{
+        colorAct = new QAction(QIcon(":/images/color.png"), tr("&Color"), this);
+        connect(colorAct, SIGNAL(triggered()), this, SLOT(onColorBtnClicked()));
+        colorAct->setStatusTip(tr("Color"));
+    }while(0);
+
+    do{
+        liveAct = new QAction(QIcon(":/images/live.png"), tr("&Live"), this);
+        liveAct->setStatusTip(tr("Live"));
+    }while(0);
+
+    do{
+        textAct = new QAction(QIcon(":/images/text.png"), tr("&Text"), this);
+        textAct->setStatusTip(tr("Text"));
+        textAct->setCheckable(true);
     }while(0);
 
 //! [23]
@@ -217,13 +251,16 @@ void MainWindow::createToolBars()
     editToolBar->addAction(strangerAct);
 
     chatToolbar = addToolBar(tr("Chat"));
+    chatToolbar->addAction(textAct);
     chatToolbar->addAction(styleAct);
+    chatToolbar->addAction(colorAct);
     chatToolbar->addAction(emojAct);
     chatToolbar->addAction(snapAct);
     chatToolbar->addAction(fileAct);
     chatToolbar->addAction(soundAct);
     chatToolbar->addAction(videoAct);
-    chatToolbar->setIconSize(QSize(16,16));
+    chatToolbar->addAction(liveAct);
+    chatToolbar->setIconSize(QSize(24,24));
 }
 //! [30]
 
@@ -301,3 +338,21 @@ QString MainWindow::strippedName(const QString &fullFileName)
     return QFileInfo(fullFileName).fileName();
 }
 //! [49]
+
+void MainWindow::onStyleBtnClicked()
+{
+    bool ok = false;
+    QFont font = QFontDialog::getFont(&ok, textEdit->font());
+    if (ok){
+        textEdit->setFont(font);
+    }
+    return ;
+}
+
+void MainWindow::onColorBtnClicked()
+{
+    QColor color = QColorDialog::getColor(Qt::green, this, tr("Select Color"), QColorDialog::DontUseNativeDialog);
+    textEdit->setTextColor(color);
+    textEdit->setAutoFillBackground(true);
+    return ;
+}

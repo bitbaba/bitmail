@@ -17,5 +17,8 @@
     <file>images/buddy.png</file>
     <file>images/stranger.png</file>
     <file>images/config.png</file>
+    <file>images/color.png</file>
+    <file>images/live.png</file>
+    <file>images/text.png</file>
 </qresource>
 </RCC>
