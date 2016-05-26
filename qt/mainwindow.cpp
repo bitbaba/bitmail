@@ -44,6 +44,8 @@
 #include "mainwindow.h"
 //! [0]
 
+#include "optiondialog.h"
+
 //! [1]
 MainWindow::MainWindow()
 //! [1] //! [2]
@@ -117,7 +119,8 @@ void MainWindow::newFile()
 void MainWindow::open()
 //! [7] //! [8]
 {
-
+    OptionDialog optDialog(this);
+    optDialog.exec();
 }
 //! [8]
 
