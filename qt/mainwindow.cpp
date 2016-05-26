@@ -49,12 +49,6 @@ MainWindow::MainWindow()
 //! [1] //! [2]
 {
     QVBoxLayout *leftLayout = new QVBoxLayout;
-    btnSearch = new QPushButton(tr("Search"));
-    searchBox = new QLineEdit(tr("Search buddy list..."));
-    QHBoxLayout *searchLayout = new QHBoxLayout;
-    searchLayout->addWidget(searchBox);
-    //searchLayout->addWidget(btnSearch);
-    //leftLayout->addLayout(searchLayout);
     QHBoxLayout *mainLayout = new QHBoxLayout;
     blist = new QListWidget;
     leftLayout->addWidget(blist);
@@ -63,15 +57,14 @@ MainWindow::MainWindow()
     QVBoxLayout * rightLayout = new QVBoxLayout;
 
     mlist = new QListWidget;
-    //textEdit = new QPlainTextEdit;
     textEdit = new QTextEdit;
-    minfo = new QLabel(tr("Talking with <b>AAAA</b>"));
-    minfo->setAlignment(Qt::AlignCenter);
 
     QHBoxLayout * btnLayout = new QHBoxLayout;
     btnSend = new QPushButton(tr("Send"));
     btnSend->setFixedWidth(64);
     btnSend->setFixedHeight(32);
+    connect(btnSend, SIGNAL(clicked()), this, SLOT(onSendBtnClicked()));
+
     btnLayout->addWidget(btnSend);
     btnLayout->setAlignment(btnSend, Qt::AlignLeft);
 
@@ -85,12 +78,10 @@ MainWindow::MainWindow()
     createToolBars();
     createStatusBar();
 
-    //rightLayout->addWidget(minfo);
     rightLayout->addWidget(mlist);
     rightLayout->addWidget(chatToolbar);
     rightLayout->addWidget(textEdit);
     rightLayout->addLayout(btnLayout);
-
 
     connect(textEdit->document(), SIGNAL(contentsChanged()),
             this, SLOT(documentWasModified()));
@@ -228,6 +219,7 @@ void MainWindow::createActions()
         textAct = new QAction(QIcon(":/images/text.png"), tr("&Text"), this);
         textAct->setStatusTip(tr("Text"));
         textAct->setCheckable(true);
+        connect(textAct, SIGNAL(triggered(bool)), this, SLOT(onTextBtnClicked(bool)));
     }while(0);
 
 //! [23]
@@ -278,10 +270,11 @@ void MainWindow::loadProfile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("Application"),
-                             tr("Cannot read file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file.errorString()));
+        QMessageBox::warning(this, tr("BitMail"),
+                             tr("Cannot read file: ")
+                             + (fileName)
+                             + "\n"
+                             + (file.errorString()));
         return;
     }
 
@@ -307,10 +300,11 @@ bool MainWindow::saveProfile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("Application"),
-                             tr("Cannot write file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file.errorString()));
+        QMessageBox::warning(this, tr("BitMail"),
+                             tr("Cannot write file:")
+                             + (fileName)
+                             + "\n"
+                             + (file.errorString()));
         return false;
     }
 
@@ -354,5 +348,29 @@ void MainWindow::onColorBtnClicked()
     QColor color = QColorDialog::getColor(Qt::green, this, tr("Select Color"), QColorDialog::DontUseNativeDialog);
     textEdit->setTextColor(color);
     textEdit->setAutoFillBackground(true);
+    return ;
+}
+
+void MainWindow::onTextBtnClicked(bool fchecked)
+{
+    styleAct->setEnabled(!fchecked);
+    colorAct->setEnabled(!fchecked);
+    emojAct->setEnabled(!fchecked);
+    snapAct->setEnabled(!fchecked);
+    soundAct->setEnabled(!fchecked);
+    videoAct->setEnabled(!fchecked);
+    return ;
+}
+
+void MainWindow::onStrangerBtnClicked(bool fchecked)
+{
+    if (fchecked){
+
+    }
+    return ;
+}
+
+void MainWindow::onSendBtnClicked()
+{
     return ;
 }

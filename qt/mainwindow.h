@@ -72,6 +72,9 @@ private slots:
     void documentWasModified();
     void onStyleBtnClicked();
     void onColorBtnClicked();
+    void onTextBtnClicked(bool);
+    void onStrangerBtnClicked(bool);
+    void onSendBtnClicked();
 private:
     void createActions();
     void createToolBars();
@@ -80,13 +83,9 @@ private:
     bool saveProfile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
 
-    // QPlainTextEdit *textEdit;
     QTextEdit *textEdit;
     QListWidget * blist;
     QListWidget * mlist;
-    QLabel *minfo;
-    QLineEdit * searchBox;
-    QPushButton * btnSearch;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;

@@ -10,7 +10,7 @@ cd $DepSrcRoot
 if [ -f openssl-1.0.2h.tar.gz ]; then
 	echo "Use local cache of openssl "
 else
-	wget https://www.openssl.org/source/openssl-1.0.2h.tar.gz
+	wget --no-check-certificate https://www.openssl.org/source/openssl-1.0.2h.tar.gz
 fi
 
 tar zxvf openssl-1.0.2h.tar.gz -C /tmp
@@ -27,7 +27,7 @@ cd $DepSrcRoot
 if [ -f curl-7.48.0.tar.gz ]; then
 	echo "Use local cache of curl "
 else
-	wget https://curl.haxx.se/download/curl-7.48.0.tar.gz
+	wget --no-check-certificates https://curl.haxx.se/download/curl-7.48.0.tar.gz
 fi
 
 tar zxvf curl-7.48.0.tar.gz -C /tmp
