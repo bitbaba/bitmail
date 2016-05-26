@@ -6,6 +6,38 @@
 
 typedef unsigned int MessageNo;
 
+#define BMMAGIC (0xbeefbeef)
+
+enum BMEventFlag{
+	bmefSystem       =     0,
+	bmefMsgCount     =     1,
+	bmefMessage      =     2,
+};
+
+struct BMEventHead{
+	unsigned int magic;
+	BMEventFlag bmef;
+};
+
+struct BMEventSystem{
+	BMEventHead h;
+	unsigned int reserved;
+};
+
+struct BMEventMsgCount{
+	BMEventHead h;
+	unsigned int msgcount;
+};
+
+struct BMEventMessage{
+	BMEventHead h;
+	std::string from;
+	std::string msg;
+	std::string cert;
+};
+
+typedef int (* BMEventCB)(BMEventHead * h, void * userp);
+
 class CMailClient
 {
 public:

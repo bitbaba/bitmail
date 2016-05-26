@@ -26,7 +26,8 @@
 #include <string.h>
 
 BitMail::BitMail()
-: m_cb(NULL), m_cbp(NULL)
+: m_onPollEvent(NULL), m_onPollEventParam(NULL)
+, m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
 {
     OpenSSL_add_all_ciphers();
     OPENSSL_load_builtin_modules();
@@ -45,10 +46,17 @@ BitMail::~BitMail()
 /**
 * Callback & params
 */
-int BitMail::OnBitMailEvent( BMEventCB cb, void * cbparam)
+int BitMail::OnPollEvent( PollEventCB cb, void * userp)
 {
-    m_cb = cb;
-    m_cbp = cbparam;
+    m_onPollEvent = cb;
+    m_onPollEventParam = userp;
+    return 0;
+}
+
+int BitMail::OnMessageEvent( MessageEventCB cb, void * userp)
+{
+    m_onMessageEvent = cb;
+    m_onMessageEventParam = userp;
     return 0;
 }
 
@@ -260,12 +268,20 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     	return bmInvalidParam;
     }
 
-    if (h->bmef != bmefMessage){
-    	if (self && self->m_cb){
-    		return self->m_cb(h, self->m_cbp);
+    if (h->bmef == bmefMsgCount){
+    	if (self && self->m_onPollEvent){
+    		return self->m_onPollEvent(((BMEventMsgCount*)h)->msgcount
+    									, self->m_onPollEventParam);
     	}else{
     		return bmInvalidParam;
     	}    	
+    }else if (h->bmef == bmefSystem){
+    	// TODO: not implemented.
+    	return 0;
+    }else if (h->bmef == bmefMessage){
+    	// process it as following.
+    }else{
+    	return bmInvalidParam;
     }
 
     BMEventMessage * bmeMsg = (BMEventMessage *)h;
@@ -367,7 +383,7 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
         }
     }
 
-    if (self && self->m_cb){
+    if (self && self->m_onMessageEvent){
     	BMEventMessage bmeMessage;
     	bmeMessage.h = *h;
     	
@@ -383,7 +399,10 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
         	bmeMessage.cert = CX509Cert::b64enc(buddyCert.GetCertByPem());
         }
         
-        self->m_cb((BMEventHead *)&bmeMessage, self->m_cbp);
+        self->m_onMessageEvent(bmeMessage.from.c_str()
+        						, bmeMessage.msg.c_str()
+								, bmeMessage.cert.c_str()
+								, self->m_onMessageEventParam);
     }
 
     return bmOk;
@@ -439,6 +458,16 @@ int BitmailHandler(BMEventHead * h, void * userp)
     return 0;
 }
 
+int PollEventHandler(unsigned int count, void * userp)
+{
+	return 0;
+}
+
+int MessageEventHandler(const char * from, const char * msg, const char * cert, void * userp)
+{
+	return 0;
+}
+
 void * RxThread(void * args)
 {
 	BitMail * alice = (BitMail *)args;
@@ -464,7 +493,9 @@ int main(int argc, char * argv [])
      */
     BitMail * alice = new BitMail();
 
-    alice->OnBitMailEvent( BitmailHandler, alice);
+    alice->OnPollEvent( PollEventHandler, alice);
+    
+    alice->OnMessageEvent( MessageEventHandler, alice);
 
     alice->InitNetwork(  argv[1]// tx url
                     , argv[2]// tx user

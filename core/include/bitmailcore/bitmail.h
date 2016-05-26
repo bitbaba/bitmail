@@ -7,6 +7,7 @@
 /* Forward decleration */
 class CMailClient;
 class CX509Cert;
+struct BMEventHead;
 
 enum BMError{
     bmOk             =     0,
@@ -35,37 +36,9 @@ enum BMError{
 	bmIdleFail       =     24,
 };
 
-#define BMMAGIC (0xbeefbeef)
+typedef int (* PollEventCB)(unsigned int count, void * p);
 
-enum BMEventFlag{
-	bmefSystem       =     0,
-	bmefMsgCount     =     1,
-	bmefMessage      =     2,
-};
-
-struct BMEventHead{
-	unsigned int magic;
-	BMEventFlag bmef;
-};
-
-struct BMEventSystem{
-	BMEventHead h;
-	unsigned int reserved;
-};
-
-struct BMEventMsgCount{
-	BMEventHead h;
-	unsigned int msgcount;
-};
-
-struct BMEventMessage{
-	BMEventHead h;
-	std::string from;
-	std::string msg;
-	std::string cert;
-};
-
-typedef int (* BMEventCB)(BMEventHead * h, void * p);
+typedef int (* MessageEventCB)(const char * from, const char * msg, const char * cert, void * p);
 
 class BitMail
 {
@@ -74,7 +47,9 @@ public:
     ~BitMail();
 public:
     // Event Callback
-    int OnBitMailEvent( BMEventCB cb, void * cbparam);
+    int OnPollEvent( PollEventCB cb, void * userp);
+    
+    int OnMessageEvent( MessageEventCB cb, void * userp);
 
     // Network
     int InitNetwork(const std::string & txurl
@@ -101,6 +76,10 @@ public:
     int LoadProfile(const std::string & passphrase
                     , const std::string & keyPem
                     , const std::string & certPem);
+    
+    int SaveProfile(const std::string & passphrase
+    				, std::string & keypem
+					, std::string & certpem);
 
     std::string GetEmail() const;
 
@@ -117,9 +96,13 @@ public:
 
 protected:
 
-    BMEventCB            m_cb;
+    PollEventCB          m_onPollEvent;
+    
+    void               * m_onPollEventParam;
+    
+    MessageEventCB       m_onMessageEvent;
 
-    void               * m_cbp;
+    void               * m_onMessageEventParam;
     
     CMailClient        * m_mc;
 
