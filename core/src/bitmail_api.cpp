@@ -1,6 +1,6 @@
-#include <bitmail_api.h>
+#include <bitmailcore/bitmail_api.h>
 
-#include <bitmial.h>
+#include <bitmailcore/bitmail.h>
 
 void * BM_Init()
 {
@@ -32,7 +32,7 @@ int BM_StartIdle(void * ctx);
 void BM_Close(void * ctx)
 {
 	if (ctx != NULL){
-		delete ctx;
+		delete (BitMail*)ctx;
 		ctx = NULL;
 	}
 }
