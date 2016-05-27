@@ -27,7 +27,7 @@ cd $DepSrcRoot
 if [ -f curl-7.48.0.tar.gz ]; then
 	echo "Use local cache of curl "
 else
-	wget --no-check-certificates https://curl.haxx.se/download/curl-7.48.0.tar.gz
+	wget --no-check-certificate https://curl.haxx.se/download/curl-7.48.0.tar.gz
 fi
 
 tar zxvf curl-7.48.0.tar.gz -C /tmp
