@@ -40,6 +40,11 @@
 
 //! [0]
 #include <QtWidgets>
+#include <QJsonArray>
+#include <QJsonValue>
+#include <QJsonValue>
+#include <QJsonDocument>
+#include <QByteArray>
 
 #include "mainwindow.h"
 //! [0]
@@ -94,6 +99,8 @@ MainWindow::MainWindow()
 
     setWindowIcon(QIcon(":/images/bitmail.png"));
     setWindowTitle(tr("BitMail"));
+
+
 }
 //! [2]
 

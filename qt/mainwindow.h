@@ -52,6 +52,10 @@ class QPushButton;
 class QTextEdit;
 class QLabel;
 class QLineEdit;
+class QJsonDocument;
+class QJsonArray;
+class QJsonObject;
+class QJsonValue;
 QT_END_NAMESPACE
 
 //! [0]
