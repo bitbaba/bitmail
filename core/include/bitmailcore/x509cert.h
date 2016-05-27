@@ -48,7 +48,7 @@ public:
     std::string GetID() const;
 
     EVP_PKEY * GetPrivateKey();
-    std::string GetPrivateKeyByEncryptedPem();
+    std::string GetPrivateKeyAsEncryptedPem();
 
     std::string Sign(const std::string & msg);
     std::string Verify(const std::string & msg);

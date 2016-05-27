@@ -213,6 +213,13 @@ int BitMail::LoadProfile(const std::string & passphrase
     return bmOk;
 }
 
+int BitMail::SaveProfile(const std::string & passphrase
+    				, std::string & keypem
+					, std::string & certpem)
+{
+	return 0;
+}
+
 std::string BitMail::GetEmail() const
 {
     return m_profile->GetEmail();
