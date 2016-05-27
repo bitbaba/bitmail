@@ -160,10 +160,11 @@ void MainWindow::documentWasModified()
 void MainWindow::createActions()
 //! [17] //! [18]
 {
-    newAct = new QAction(QIcon(":/images/profile.png"), tr("&NewAccount"), this);
-    newAct->setShortcuts(QKeySequence::New);
-    newAct->setStatusTip(tr("Create a new bitmail account profile"));
-    connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
+    do {
+        newAct = new QAction(QIcon(":/images/profile.png"), tr("&NewAccount"), this);
+        newAct->setStatusTip(tr("Create a new bitmail account profile"));
+        connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
+    }while(0);
 
     do {
         configAct = new QAction(QIcon(":/images/config.png"), tr("&Configure"), this);
@@ -172,15 +173,18 @@ void MainWindow::createActions()
     }while(0);
 
 //! [19]
-    openAct = new QAction(QIcon(":/images/open.png"), tr("&Load..."), this);
-    openAct->setShortcuts(QKeySequence::Open);
-    openAct->setStatusTip(tr("Loading an existing account profile"));
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+    do {
+        openAct = new QAction(QIcon(":/images/open.png"), tr("&Load..."), this);
+        openAct->setStatusTip(tr("Loading an existing account profile"));
+        connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+    }while(0);
 //! [18] //! [19]
 
-    saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
-    saveAct->setStatusTip(tr("Save the document to disk"));
-    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+    do {
+        saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
+        saveAct->setStatusTip(tr("Save the document to disk"));
+        connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+    }while(0);
 
     do {
         addAct = new QAction(QIcon(":/images/add.png"), tr("&Add"), this);
@@ -195,26 +199,31 @@ void MainWindow::createActions()
     do{
         snapAct = new QAction(QIcon(":/images/snap.png"), tr("&Snapshot"), this);
         snapAct->setStatusTip(tr("Snapshot"));
+        snapAct->setEnabled(false);
     }while(0);
 
     do{
         fileAct = new QAction(QIcon(":/images/file.png"), tr("&File"), this);
         fileAct->setStatusTip(tr("File"));
+        fileAct->setEnabled(false);
     }while(0);
 
     do{
         emojAct = new QAction(QIcon(":/images/emoj.png"), tr("&Emoji"), this);
         emojAct->setStatusTip(tr("Emoji"));
+        emojAct->setEnabled(false);
     }while(0);
 
     do{
         soundAct = new QAction(QIcon(":/images/sound.png"), tr("&Sound"), this);
         soundAct->setStatusTip(tr("Sound"));
+        soundAct->setEnabled(false);
     }while(0);
 
     do{
         videoAct = new QAction(QIcon(":/images/video.png"), tr("&Video"), this);
         videoAct->setStatusTip(tr("Video"));
+        videoAct->setEnabled(false);
     }while(0);
 
     do{
@@ -232,6 +241,7 @@ void MainWindow::createActions()
     do{
         liveAct = new QAction(QIcon(":/images/live.png"), tr("&Live"), this);
         liveAct->setStatusTip(tr("Live"));
+        liveAct->setEnabled(false);
     }while(0);
 
     do{
@@ -250,7 +260,6 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(newAct);
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(configAct);
-    fileToolBar->addAction(saveAct);
 
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(addAct);
@@ -368,10 +377,11 @@ void MainWindow::onTextBtnClicked(bool fchecked)
 {
     styleAct->setEnabled(!fchecked);
     colorAct->setEnabled(!fchecked);
-    emojAct->setEnabled(!fchecked);
-    snapAct->setEnabled(!fchecked);
-    soundAct->setEnabled(!fchecked);
-    videoAct->setEnabled(!fchecked);
+    //emojAct->setEnabled(!fchecked);
+    //snapAct->setEnabled(!fchecked);
+    //soundAct->setEnabled(!fchecked);
+    //videoAct->setEnabled(!fchecked);
+    //fileAct->setEnabled(!fchecked);
     return ;
 }
 
