@@ -455,7 +455,7 @@ EVP_PKEY *  CX509Cert::GetPrivateKey()
 
 std::string CX509Cert::GetPrivateKeyAsEncryptedPem()
 {
-    return PKeyToPem(m_key, m_passphrase);
+    return m_key;
 }
 
 
