@@ -103,7 +103,7 @@ private:
     QAction *saveAct;
 
     QAction *addAct;
-    QAction *strangerAct;
+    QAction *inviteAct;
 
     QAction *snapAct;
     QAction *fileAct;

@@ -183,14 +183,13 @@ void MainWindow::createActions()
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
     do {
-        addAct = new QAction(QIcon(":/images/buddy.png"), tr("&NewBuddy"), this);
-        addAct->setStatusTip(tr("Add a new buddy"));
+        addAct = new QAction(QIcon(":/images/add.png"), tr("&Add"), this);
+        addAct->setStatusTip(tr("Add a new buddy by certificate or certificate ID."));
     }while(0);
 
     do {
-        strangerAct = new QAction(QIcon(":/images/stranger.png"), tr("&Stranger"), this);
-        strangerAct->setStatusTip(tr("Notify me for messages from strangers"));
-        strangerAct->setCheckable(true);
+        inviteAct = new QAction(QIcon(":/images/invite.png"), tr("&Invite"), this);
+        inviteAct->setStatusTip(tr("Invite a new friend by send a request message."));
     }while(0);
 
     do{
@@ -241,11 +240,6 @@ void MainWindow::createActions()
         textAct->setCheckable(true);
         connect(textAct, SIGNAL(triggered(bool)), this, SLOT(onTextBtnClicked(bool)));
     }while(0);
-
-//! [23]
-    addAct->setEnabled(true);
-//! [23] //! [24]
-    strangerAct->setEnabled(true);
 }
 //! [24]
 
@@ -260,7 +254,7 @@ void MainWindow::createToolBars()
 
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(addAct);
-    editToolBar->addAction(strangerAct);
+    editToolBar->addAction(inviteAct);
 
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->addAction(textAct);

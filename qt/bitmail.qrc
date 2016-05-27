@@ -20,5 +20,7 @@
     <file>images/color.png</file>
     <file>images/live.png</file>
     <file>images/text.png</file>
+    <file>images/invite.png</file>
+    <file>images/add.png</file>
 </qresource>
 </RCC>
