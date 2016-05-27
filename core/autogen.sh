@@ -16,19 +16,4 @@ aclocal -I m4 \
     LDFLAGS=" -L$BitmailOutHome/lib" \
 && make && make install && make clean
 
-echo g++ -I$BitmailOutHome/include \
-	 -I$BitmailCoreHome/include \
-	 -o $BitmailOutHome/lib/libbitmailapi.so \
-	 -shared -fPIC -fpic -g -O2 \
-	 src/bitmail_api.cpp \
-	 -L$BitmailOutHome/lib \
-	 -lbitmailcore
-
-g++ -I$BitmailOutHome/include \
-	 -I$BitmailCoreHome/include \
-	 -o $BitmailOutHome/lib/libbitmailapi.so \
-	 -shared -fPIC -fpic -g -O2 \
-	 src/bitmail_api.cpp \
-	 -L$BitmailOutHome/lib \
-	 -lbitmailcore
 
