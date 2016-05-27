@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Option</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -52,34 +52,38 @@
     </property>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEdit"/>
+      <widget class="QLineEdit" name="leEmail">
+       <property name="toolTip">
+        <string>someone@example.net</string>
+       </property>
+      </widget>
      </item>
      <item row="0" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="lbEmail">
        <property name="text">
         <string>Email:</string>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="lbNick">
        <property name="text">
         <string>Nick:</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_3"/>
+      <widget class="QLineEdit" name="leNick"/>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="lbPassphrase">
        <property name="text">
         <string>Passphrase:</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_4">
+      <widget class="QLineEdit" name="lePassphrase">
        <property name="echoMode">
         <enum>QLineEdit::Password</enum>
        </property>
@@ -111,30 +115,34 @@
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
      <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEdit_5"/>
+      <widget class="QLineEdit" name="leSmtpUrl">
+       <property name="toolTip">
+        <string>smtps://example.net/</string>
+       </property>
+      </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_7"/>
+      <widget class="QLineEdit" name="leSmtpPassword"/>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_6"/>
+      <widget class="QLineEdit" name="leSmtpLogin"/>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_7">
+      <widget class="QLabel" name="lbSmtpPassword">
        <property name="text">
         <string>Password:  </string>
        </property>
       </widget>
      </item>
      <item row="0" column="0">
-      <widget class="QLabel" name="label_5">
+      <widget class="QLabel" name="lbSmtpUrl">
        <property name="text">
         <string>URLs:</string>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label_6">
+      <widget class="QLabel" name="lbSmtpLogin">
        <property name="text">
         <string>Login:</string>
        </property>
@@ -166,44 +174,48 @@
     </property>
     <layout class="QGridLayout" name="gridLayout_5">
      <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_12"/>
+      <widget class="QLineEdit" name="leImapLogin"/>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label_12">
+      <widget class="QLabel" name="lbImapLogin">
        <property name="text">
         <string>Login:</string>
        </property>
       </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_13">
+      <widget class="QLabel" name="lbImapPassword">
        <property name="text">
         <string>Password:  </string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_13"/>
+      <widget class="QLineEdit" name="leImapPassword"/>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEdit_11"/>
+      <widget class="QLineEdit" name="leImapUrl">
+       <property name="toolTip">
+        <string>imaps://example.net/</string>
+       </property>
+      </widget>
      </item>
      <item row="0" column="0">
-      <widget class="QLabel" name="label_11">
+      <widget class="QLabel" name="lbImapUrl">
        <property name="text">
         <string>URLs:</string>
        </property>
       </widget>
      </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="label_17">
+      <widget class="QLabel" name="lbImapStranger">
        <property name="text">
         <string>Stranger:</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QCheckBox" name="checkBox">
+      <widget class="QCheckBox" name="cbAllowStranger">
        <property name="text">
         <string>Allow</string>
        </property>

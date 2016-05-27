@@ -111,7 +111,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::newFile()
 //! [5] //! [6]
 {
-
+    OptionDialog optDialog(this);
+    optDialog.exec();
 }
 //! [6]
 
@@ -119,8 +120,11 @@ void MainWindow::newFile()
 void MainWindow::open()
 //! [7] //! [8]
 {
-    OptionDialog optDialog(this);
-    optDialog.exec();
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Profile"));
+    if (fileName.isEmpty()){
+        return ;
+    }
+    loadProfile(fileName);
 }
 //! [8]
 
@@ -128,6 +132,11 @@ void MainWindow::open()
 bool MainWindow::save()
 //! [9] //! [10]
 {
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Profile"));
+    if (fileName.isEmpty()){
+        return false;
+    }
+    saveProfile(fileName);
     return true;
 }
 //! [10]
@@ -152,6 +161,7 @@ void MainWindow::createActions()
     do {
         configAct = new QAction(QIcon(":/images/config.png"), tr("&Configure"), this);
         configAct->setStatusTip(tr("Configure current account"));
+        connect(configAct, SIGNAL(triggered()), this, SLOT(onConfigBtnClicked()));
     }while(0);
 
 //! [19]
@@ -322,7 +332,6 @@ bool MainWindow::saveProfile(const QString &fileName)
     QApplication::restoreOverrideCursor();
 #endif
 
-    //setCurrentFile(fileName);
     statusBar()->showMessage(tr("File saved"), 2000);
     return true;
 }
@@ -375,5 +384,14 @@ void MainWindow::onStrangerBtnClicked(bool fchecked)
 
 void MainWindow::onSendBtnClicked()
 {
+    return ;
+}
+
+void MainWindow::onConfigBtnClicked()
+{
+    OptionDialog optDialog;
+    optDialog.SetEmail("me@mine.net");
+    optDialog.exec();
+    statusBar()->showMessage(optDialog.GetEmail());
     return ;
 }

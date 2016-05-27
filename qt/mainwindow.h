@@ -75,6 +75,7 @@ private slots:
     void onTextBtnClicked(bool);
     void onStrangerBtnClicked(bool);
     void onSendBtnClicked();
+    void onConfigBtnClicked();
 private:
     void createActions();
     void createToolBars();
