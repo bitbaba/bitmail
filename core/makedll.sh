@@ -11,5 +11,5 @@ g++ -I$BitmailOutHome/include \
 	 -shared -fPIC -fpic -g -O2 \
 	 src/bitmail_api.cpp \
 	 -L$BitmailOutHome/lib \
-	 -lbitmailcore -lcurl -lssl -lcrypto #-lgdi32 -lws2_32
+	 -lbitmailcore -lcurl -lssl -lcrypto -lgdi32 -lws2_32
 
