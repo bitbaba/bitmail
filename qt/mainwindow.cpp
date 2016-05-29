@@ -46,15 +46,22 @@
 #include <QJsonDocument>
 #include <QByteArray>
 
+#include <bitmailcore/bitmail.h>
+
 #include "mainwindow.h"
 //! [0]
 
 #include "optiondialog.h"
 
+
 //! [1]
 MainWindow::MainWindow()
 //! [1] //! [2]
 {
+    bm  = new BitMail();
+
+    bm->CreateProfile("", "", "", 1024);
+
     QVBoxLayout *leftLayout = new QVBoxLayout;
     QHBoxLayout *mainLayout = new QHBoxLayout;
     blist = new QListWidget;

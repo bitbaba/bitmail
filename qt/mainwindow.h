@@ -58,6 +58,8 @@ class QJsonObject;
 class QJsonValue;
 QT_END_NAMESPACE
 
+class BitMail;
+
 //! [0]
 class MainWindow : public QMainWindow
 {
@@ -114,6 +116,8 @@ private:
     QAction *colorAct;
     QAction *liveAct;
     QAction *textAct;
+private:
+    BitMail * bm;
 };
 //! [0]
 
