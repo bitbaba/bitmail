@@ -28,6 +28,7 @@
 BitMail::BitMail()
 : m_onPollEvent(NULL), m_onPollEventParam(NULL)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
+, m_fAllowStranger(false)
 {
     OpenSSL_add_all_ciphers();
     OPENSSL_load_builtin_modules();

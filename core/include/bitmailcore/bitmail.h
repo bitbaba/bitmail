@@ -109,6 +109,8 @@ protected:
     CMailClient        * m_mc;
 
     std::map<std::string, std::string> m_buddies;
+	
+	bool                 m_fAllowStranger;
     
 public:
     CX509Cert          * m_profile;
