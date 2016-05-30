@@ -52,13 +52,16 @@
 //! [0]
 
 #include "optiondialog.h"
-
+#include "logindialog.h"
 
 //! [1]
 MainWindow::MainWindow()
 //! [1] //! [2]
 {
     bm  = new BitMail();
+
+    LoginDialog loginDialog;
+    loginDialog.exec();
 
     QVBoxLayout *leftLayout = new QVBoxLayout;
     QHBoxLayout *mainLayout = new QHBoxLayout;

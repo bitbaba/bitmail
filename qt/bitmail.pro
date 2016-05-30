@@ -1,10 +1,12 @@
 QT += widgets
 
 HEADERS       = mainwindow.h \
-    optiondialog.h
+    optiondialog.h \
+    logindialog.h
 SOURCES       = main.cpp \
                 mainwindow.cpp \
-                optiondialog.cpp
+                optiondialog.cpp \
+    logindialog.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
@@ -12,7 +14,8 @@ RESOURCES     = bitmail.qrc
 win32:RC_FILE = bitmail.rc
 
 FORMS += \
-    optiondialog.ui
+    optiondialog.ui \
+    logindialog.ui
 
 win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore
 
