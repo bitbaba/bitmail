@@ -264,7 +264,7 @@ void MainWindow::createStatusBar()
 //! [33]
 
 //! [42]
-void MainWindow::loadProfile(const QString &fileName)
+void MainWindow::loadProfile(const QString &fileName, const QString & passphrase)
 //! [42] //! [43]
 {
     QFile file(fileName);
@@ -282,13 +282,90 @@ void MainWindow::loadProfile(const QString &fileName)
     QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
 
-    textEdit->setPlainText(in.readAll());
+    QJsonDocument jdoc;
+    jdoc = QJsonDocument::fromJson(in.readAll().toLatin1());
 
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
 #endif
 
-    //setCurrentFile(fileName);
+    QJsonObject joRoot = jdoc.object();
+    QJsonObject joProfile;
+    QJsonObject joTx;
+    QJsonObject joRx;
+    QJsonArray  jaBuddies;
+
+    if (joRoot.contains("Profile")){
+        joProfile = joRoot["Profile"].toObject();
+
+        QString qsEmail;
+        if (joProfile.contains("email")){
+            qsEmail = joProfile["email"].toString();
+        }
+        QString qsNick;
+        if (joProfile.contains("nick")){
+            qsNick = joProfile["nick"].toString();
+        }
+        QString qsCert;
+        if (joProfile.contains("cert")){
+            qsCert = joProfile["cert"].toString();
+        }
+        QString qsKey;
+        if (joProfile.contains("key")){
+            qsKey = joProfile["key"].toString();
+        }
+
+        (void)passphrase;
+        bm->LoadProfile(passphrase.toStdString()
+                        , qsKey.toStdString()
+                        , qsCert.toStdString());
+
+    }
+
+    QString qsTxUrl, qsTxLogin, qsTxPassword;
+    if (joRoot.contains("tx")){
+        joTx = joRoot["tx"].toObject();
+        if (joTx.contains("url")){
+            qsTxUrl = joTx["url"].toString();
+        }
+        if (joTx.contains("login")){
+            qsTxLogin = joTx["login"].toString();
+        }
+        if (joTx.contains("password")){
+            qsTxPassword = QString::fromStdString( bm->Decrypt(joTx["password"].toString().toStdString()));
+        }
+    }
+
+    QString qsRxUrl, qsRxLogin, qsRxPassword;
+    if (joRoot.contains("rx")){
+        joRx = joRoot["rx"].toObject();
+        if (joRx.contains("url")){
+            qsRxUrl = joRx["url"].toString();
+        }
+        if (joRx.contains("login")){
+            qsRxLogin = joRx["login"].toString();
+        }
+        if (joRx.contains("password")){
+            qsRxPassword = QString::fromStdString( bm->Decrypt(joRx["password"].toString().toStdString()));
+        }
+    }
+
+    bm->InitNetwork(qsTxUrl.toStdString(), qsTxLogin.toStdString(), qsTxPassword.toStdString()
+                    , qsRxUrl.toStdString(), qsRxLogin.toStdString(), qsRxPassword.toStdString());
+
+    if (joRoot.contains("buddies")){
+        jaBuddies = joRoot["buddies"].toArray();
+        for(QJsonArray::const_iterator it = jaBuddies.constBegin()
+            ; it != jaBuddies.constEnd()
+            ; it++){
+            const QJsonObject & joBuddy = (*it).toObject();
+            QString qsEmail = joBuddy["email"].toString();
+            QString qsCert =  joBuddy["cert"].toString();
+            (void )qsEmail;
+            bm->AddBuddy(qsCert.toStdString());
+        }
+    }
+
     statusBar()->showMessage(tr("File loaded"), 2000);
 }
 //! [43]
@@ -306,10 +383,30 @@ bool MainWindow::saveProfile(const QString &fileName)
 
     joProfile["email"] = QString::fromStdString(bm->GetEmail());
     joProfile["nick"] = QString::fromStdString(bm->GetCommonName());
-    joProfile["key"] = QString::fromStdString("");
+    joProfile["key"] = QString::fromStdString(bm->GetKey());
     joProfile["cert"] = QString::fromStdString(bm->GetCert());
 
-    joRoot["profile"] = joProfile;
+    joTx["url"] = QString::fromStdString(bm->GetTxUrl());
+    joTx["login"] = QString::fromStdString(bm->GetTxLogin());
+    joTx["password"] = QString::fromStdString(bm->Encrypt(bm->GetTxPassword()));
+
+    joRx["url"] = QString::fromStdString(bm->GetRxUrl());
+    joRx["login"] = QString::fromStdString(bm->GetRxLogin());
+    joRx["password"] = QString::fromStdString(bm->Encrypt(bm->GetRxPassword()));
+    joRx["stranger"] = bm->AllowStranger();
+
+    std::vector<std::string > vecBuddies;
+    bm->GetBuddies(vecBuddies);
+    for (std::vector<std::string>::const_iterator it = vecBuddies.begin(); it != vecBuddies.end(); ++it){
+        std::string sBuddyCertPem = bm->GetBuddyCert(*it);
+        QJsonObject joBuddy;
+        joBuddy["email"] = QString::fromStdString(*it);
+        joBuddy["cert"]  = QString::fromStdString(sBuddyCertPem);
+        jaBuddies.append(joBuddy);
+    }
+
+    // for more readable, instead of `profile'
+    joRoot["Profile"] = joProfile;
     joRoot["tx"] = joTx;
     joRoot["rx"] = joRx;
     joRoot["buddies"] = jaBuddies;
@@ -349,6 +446,26 @@ QString MainWindow::strippedName(const QString &fullFileName)
     return QFileInfo(fullFileName).fileName();
 }
 //! [49]
+
+QString MainWindow::GetProfileHome()
+{
+    QString qsProfileHome = QDir::homePath();
+    qsProfileHome += "/";
+    qsProfileHome += "bitmail";
+    qsProfileHome += "/";
+    qsProfileHome += "profile";
+    return qsProfileHome;
+}
+
+QString MainWindow::GetDataHome()
+{
+    QString qsProfileHome = QDir::homePath();
+    qsProfileHome += "/";
+    qsProfileHome += "bitmail";
+    qsProfileHome += "/";
+    qsProfileHome += "data";
+    return "";
+}
 
 void MainWindow::onStyleBtnClicked()
 {
@@ -468,7 +585,7 @@ void MainWindow::open()
     if (fileName.isEmpty()){
         return ;
     }
-    loadProfile(fileName);
+    loadProfile(fileName, "");
 }
 //! [8]
 

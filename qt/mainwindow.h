@@ -87,10 +87,12 @@ private:
     void createActions();
     void createToolBars();
     void createStatusBar();
-    void loadProfile(const QString &fileName);
+    void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
-
+    QString GetProfileHome();
+    QString GetDataHome();
+private:
     QTextEdit *textEdit;
     QListWidget * blist;
     QListWidget * mlist;
