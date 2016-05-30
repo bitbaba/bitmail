@@ -63,7 +63,7 @@ public:
 	
 	std::string GetTxLogin() const;
 	
-	std::string GetTxPassword const;
+	std::string GetTxPassword() const;
 	
 	std::string GetRxUrl() const;
 	
