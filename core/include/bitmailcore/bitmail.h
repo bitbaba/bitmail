@@ -59,6 +59,18 @@ public:
                     , const std::string & rxuser
                     , const std::string & rxpass);
 					
+	std::string GetTxUrl() const;
+	
+	std::string GetTxLogin() const;
+	
+	std::string GetTxPassword const;
+	
+	std::string GetRxUrl() const;
+	
+	std::string GetRxLogin() const;
+	
+	std::string GetRxPassword() const;
+					
 	int AllowStranger(bool fYes);
 
     int SendMsg(const std::string & to, const std::string & msg);
@@ -88,13 +100,19 @@ public:
     std::string GetCommonName() const;
 
     std::string GetCert() const;
+	
+	int GetBits() const;
 
     // Buddy
     int AddBuddy(const std::string & certpem);
 
     int RemoveBuddy(const std::string & email);
-
-    std::string GetBuddyCert(const std::string & buddy);
+	
+	int GetBuddies(std::vector<std::string> & vecEmails) const;
+	
+	std::string GetBuddyCert(const std::string & e);
+	
+	std::string GetBuddyCommonName(const std::string & e) const;
 
 protected:
 

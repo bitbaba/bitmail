@@ -67,6 +67,21 @@ int CMailClient::InitTx(const std::string & url
     return 0;
 }
 
+std::string CMailClient::GetTxUrl() const
+{
+	return m_txurl;
+}
+
+std::string CMailClient::GetTxLogin() const
+{
+	return m_txuser;
+}
+
+std::string CMailClient::GetTxPassword() const
+{
+	return m_txpass;
+}
+
 int CMailClient::InitRx(const std::string & url
           , const std::string & user
           , const std::string & pass)
@@ -84,6 +99,21 @@ int CMailClient::InitRx(const std::string & url
      */
     m_rxIdle = curl_easy_init();
     return 0;
+}
+
+std::string CMailClient::GetRxUrl() const
+{
+	return m_rxurl;
+}
+
+std::string CMailClient::GetRxLogin() const
+{
+	return m_rxuser;
+}
+
+std::string CMailClient::GetRxPassword() const
+{
+	return m_rxpass;
 }
 
 int CMailClient::SendMsg(const std::string & from, const std::string & to, const std::string & encSignedMail)

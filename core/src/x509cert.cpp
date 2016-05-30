@@ -442,6 +442,11 @@ X509 *  CX509Cert::GetCert() const
     return PemToCert(m_cert);
 }
 
+int CX509Cert::GetBits() const 
+{
+	return EVP_PKEY_bits(X509_get_pubkey(GetCert()));
+}
+
 std::string CX509Cert::GetCertByPem() const
 {
     return m_cert;

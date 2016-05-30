@@ -85,6 +85,36 @@ int BitMail::InitNetwork( const std::string & txurl
     return bmOk;
 }
 
+std::string BitMail::GetTxUrl() const
+{
+	return m_mc->GetTxUrl();
+}
+
+std::string BitMail::GetTxLogin() const
+{
+	return m_mc->GetTxLogin();
+}
+
+std::string BitMail::GetTxPassword() const
+{
+	return m_mc->GetTxPassword();
+}
+
+std::string BitMail::GetRxUrl() const
+{
+	return m_mc->GetRxUrl();
+}
+
+std::string BitMail::GetRxLogin() const
+{
+	return m_mc->GetRxLogin();
+}
+
+std::string BitMail::GetRxPassword() const
+{
+	return m_mc->GetRxPassword();
+}
+
 int BitMail::AllowStranger(bool fYes)
 {
 	m_fAllowStranger = fYes;
@@ -242,6 +272,10 @@ std::string BitMail::GetCert() const
     return m_profile->GetCertByPem();
 }
 
+int BitMail::GetBits() const{
+	return m_profile->GetBits();
+}
+
 /**
 * Buddy
 */
@@ -272,6 +306,31 @@ int BitMail::RemoveBuddy(const std::string & email)
         return bmOk;
     }
     return bmNoBuddy;
+}
+
+int BitMail::GetBuddies(std::vector<std::string> & vecEmails) const
+{
+	for (std::map<std::string, std::string>::const_iterator it = m_buddies.begin();
+		 it != m_buddies.end();
+		 ++it){
+		 vecEmails.push_back(it->first);
+	}
+	return bmOk;
+}
+
+	
+std::string BitMail::GetBuddyCommonName(const std::string & e) const
+{
+	for (std::map<std::string, std::string>::const_iterator it = m_buddies.begin();
+		 it != m_buddies.end();
+		 ++it){
+		if (it->first == e){
+			CX509Cert x;
+			x.LoadCertFromPem(it->second);
+			return x.GetCommonName();
+		}
+	}
+	return "";
 }
 
 int BitMail::EmailHandler(BMEventHead * h, void * userp)

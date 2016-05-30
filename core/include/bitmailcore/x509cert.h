@@ -46,6 +46,7 @@ public:
     std::string GetEmail() const ;
     std::string GetCommonName() const;
     std::string GetID() const;
+	int GetBits() const;
 
     EVP_PKEY * GetPrivateKey();
     std::string GetPrivateKeyAsEncryptedPem();
