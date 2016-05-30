@@ -33,6 +33,7 @@ CMailClient::CMailClient(BMEventCB cb, void * cbp)
 , m_cbp( cbp )
 , m_tx(NULL)
 , m_rx(NULL)
+, m_rxIdle(NULL)
 {
 
 }

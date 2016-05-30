@@ -301,6 +301,16 @@ std::string BitMail::GetPassphrase() const
 	return m_profile->GetPassphrase();
 }
 
+std::string BitMail::Encrypt(const std::string & text) const
+{
+	return m_profile->Encrypt(text);
+}
+
+std::string BitMail::Decrypt(const std::string & code) const
+{
+	return m_profile->Decrypt(code);
+}
+
 /**
 * Buddy
 */

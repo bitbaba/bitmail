@@ -108,6 +108,10 @@ public:
 	int GetBits() const;
 	
 	std::string GetPassphrase() const;
+	
+	std::string Encrypt(const std::string & text) const;
+	
+	std::string Decrypt(const std::string & code) const;
 
     // Buddy
     int AddBuddy(const std::string & certpem);
