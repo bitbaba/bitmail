@@ -5,6 +5,7 @@
 
 class QLineEdit;
 class QCheckBox;
+class QSpinBox;
 
 namespace Ui {
 class OptionDialog;
@@ -15,7 +16,7 @@ class OptionDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit OptionDialog(QWidget *parent = 0);
+    explicit OptionDialog(bool fNew = false, QWidget *parent = 0);
     ~OptionDialog();
 
 private slots:
@@ -34,6 +35,9 @@ public:
 
     void SetPassphrase(const QString & p);
     QString GetPassphrase() const;
+
+    void SetBits(const int & n);
+    int GetBits() const;
 
     void SetSmtpUrl(const QString & u);
     QString GetSmtpUrl() const;
@@ -60,6 +64,7 @@ private:
     QLineEdit *m_leEmail;
     QLineEdit *m_leNick;
     QLineEdit *m_lePassphrase;
+    QSpinBox  *m_sbBits;
 
     QLineEdit *m_leSmtpUrl;
     QLineEdit *m_leSmtpLogin;
@@ -70,6 +75,8 @@ private:
     QLineEdit *m_leImapPassword;
 
     QCheckBox *m_cbAllowStranger;
+private:
+    bool       m_fNew;
 };
 
 #endif // OPTIONDIALOG_H

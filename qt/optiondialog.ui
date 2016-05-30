@@ -51,10 +51,13 @@
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="leEmail">
-       <property name="toolTip">
-        <string>someone@example.net</string>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="leNick"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lbNick">
+       <property name="text">
+        <string>Nick:</string>
        </property>
       </widget>
      </item>
@@ -65,15 +68,12 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="lbNick">
-       <property name="text">
-        <string>Nick:</string>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="leEmail">
+       <property name="toolTip">
+        <string>someone@example.net</string>
        </property>
       </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="leNick"/>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="lbPassphrase">
@@ -86,6 +86,32 @@
       <widget class="QLineEdit" name="lePassphrase">
        <property name="echoMode">
         <enum>QLineEdit::Password</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="lbBits">
+       <property name="text">
+        <string>Bits</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="sbBits">
+       <property name="suffix">
+        <string>(bits)</string>
+       </property>
+       <property name="prefix">
+        <string>RSA: </string>
+       </property>
+       <property name="minimum">
+        <number>1024</number>
+       </property>
+       <property name="maximum">
+        <number>8192</number>
+       </property>
+       <property name="singleStep">
+        <number>1024</number>
        </property>
       </widget>
      </item>
@@ -122,7 +148,11 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="leSmtpPassword"/>
+      <widget class="QLineEdit" name="leSmtpPassword">
+       <property name="echoMode">
+        <enum>QLineEdit::Password</enum>
+       </property>
+      </widget>
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="leSmtpLogin"/>
@@ -191,7 +221,11 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="leImapPassword"/>
+      <widget class="QLineEdit" name="leImapPassword">
+       <property name="echoMode">
+        <enum>QLineEdit::Password</enum>
+       </property>
+      </widget>
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="leImapUrl">
@@ -225,6 +259,19 @@
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>leEmail</tabstop>
+  <tabstop>leNick</tabstop>
+  <tabstop>lePassphrase</tabstop>
+  <tabstop>sbBits</tabstop>
+  <tabstop>leSmtpUrl</tabstop>
+  <tabstop>leSmtpLogin</tabstop>
+  <tabstop>leSmtpPassword</tabstop>
+  <tabstop>leImapUrl</tabstop>
+  <tabstop>leImapLogin</tabstop>
+  <tabstop>leImapPassword</tabstop>
+  <tabstop>cbAllowStranger</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

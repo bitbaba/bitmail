@@ -60,8 +60,6 @@ MainWindow::MainWindow()
 {
     bm  = new BitMail();
 
-    bm->CreateProfile("", "", "", 1024);
-
     QVBoxLayout *leftLayout = new QVBoxLayout;
     QHBoxLayout *mainLayout = new QHBoxLayout;
     blist = new QListWidget;
@@ -109,57 +107,23 @@ MainWindow::MainWindow()
 }
 //! [2]
 
+MainWindow::~MainWindow()
+{
+    if (bm != NULL){
+        delete bm;
+        bm = NULL;
+    }
+}
+
 //! [3]
 void MainWindow::closeEvent(QCloseEvent *event)
 //! [3] //! [4]
 {
-    if (true) {
-        event->accept();
-    }
+    event->accept();
+
+    save();
 }
 //! [4]
-
-//! [5]
-void MainWindow::newFile()
-//! [5] //! [6]
-{
-    OptionDialog optDialog(this);
-    optDialog.exec();
-}
-//! [6]
-
-//! [7]
-void MainWindow::open()
-//! [7] //! [8]
-{
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Profile"));
-    if (fileName.isEmpty()){
-        return ;
-    }
-    loadProfile(fileName);
-}
-//! [8]
-
-//! [9]
-bool MainWindow::save()
-//! [9] //! [10]
-{
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Profile"));
-    if (fileName.isEmpty()){
-        return false;
-    }
-    saveProfile(fileName);
-    return true;
-}
-//! [10]
-
-//! [15]
-void MainWindow::documentWasModified()
-//! [15] //! [16]
-{
-
-}
-//! [16]
 
 //! [17]
 void MainWindow::createActions()
@@ -333,6 +297,25 @@ void MainWindow::loadProfile(const QString &fileName)
 bool MainWindow::saveProfile(const QString &fileName)
 //! [44] //! [45]
 {
+    // Format Profile to QJson
+    QJsonObject joRoot;
+    QJsonObject joProfile;
+    QJsonObject joTx;
+    QJsonObject joRx;
+    QJsonArray  jaBuddies;
+
+    joProfile["email"] = QString::fromStdString(bm->GetEmail());
+    joProfile["nick"] = QString::fromStdString(bm->GetCommonName());
+    joProfile["key"] = QString::fromStdString("");
+    joProfile["cert"] = QString::fromStdString(bm->GetCert());
+
+    joRoot["profile"] = joProfile;
+    joRoot["tx"] = joTx;
+    joRoot["rx"] = joRx;
+    joRoot["buddies"] = jaBuddies;
+
+    QJsonDocument jdoc(joRoot);
+
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("BitMail"),
@@ -348,13 +331,13 @@ bool MainWindow::saveProfile(const QString &fileName)
     QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
 
-    out << textEdit->toPlainText();
+    out << jdoc.toJson();
 
 #ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
 #endif
 
-    statusBar()->showMessage(tr("File saved"), 2000);
+    statusBar()->showMessage(tr("Profile saved"), 2000);
     return true;
 }
 //! [45]
@@ -410,16 +393,102 @@ void MainWindow::onSendBtnClicked()
     return ;
 }
 
-void MainWindow::onConfigBtnClicked()
-{
-    OptionDialog optDialog;
-    optDialog.SetEmail("me@mine.net");
-    optDialog.exec();
-    statusBar()->showMessage(optDialog.GetEmail());
-    return ;
-}
-
 void MainWindow::onPayBtnClicked()
 {
     return ;
 }
+
+//! [5]
+void MainWindow::newFile()
+//! [5] //! [6]
+{
+    OptionDialog optDialog(true, this);
+    if (QDialog::Accepted != optDialog.exec()){
+        return ;
+    }
+
+    QString qsEmail = optDialog.GetEmail();
+    QString qsNick = optDialog.GetNick();
+    QString qsPassphrase = optDialog.GetPassphrase();
+    int nBits = optDialog.GetBits();
+
+    QString qsSmtpUrl = optDialog.GetSmtpUrl();
+    QString qsSmtpLogin = optDialog.GetSmtpLogin();
+    QString qsSmtpPassword = optDialog.GetSmtpPassword();
+
+    QString qsImapUrl = optDialog.GetImapUrl();
+    QString qsImapLogin = optDialog.GetImapLogin();
+    QString qsImapPassword = optDialog.GetImapPassword();
+    bool fImapAllowStranger = optDialog.GetImapAllowStranger();
+
+    bm->CreateProfile(qsNick.toStdString()
+                      , qsEmail.toStdString()
+                      , qsPassphrase.toStdString()
+                      , nBits);
+
+    bm->InitNetwork(qsSmtpUrl.toStdString()
+                    , qsSmtpLogin.toStdString()
+                    , qsSmtpPassword.toStdString()
+                    , qsImapUrl.toStdString()
+                    , qsImapLogin.toStdString()
+                    , qsImapPassword.toStdString());
+
+    bm->AllowStranger(fImapAllowStranger);
+}
+//! [6]
+
+void MainWindow::onConfigBtnClicked()
+{
+    OptionDialog optDialog(false, this);
+    optDialog.SetEmail(QString::fromStdString(bm->GetEmail()));
+    optDialog.SetNick(QString::fromStdString(bm->GetCommonName()));
+    optDialog.SetPassphrase(QString::fromStdString(bm->GetPassphrase()));
+    optDialog.SetBits(bm->GetBits());
+
+    optDialog.SetSmtpUrl(QString::fromStdString(bm->GetTxUrl()));
+    optDialog.SetSmtpLogin(QString::fromStdString(bm->GetTxLogin()));
+    optDialog.SetSmtpPassword(QString::fromStdString(bm->GetTxPassword()));
+
+    optDialog.SetImapUrl(QString::fromStdString(bm->GetRxUrl()));
+    optDialog.SetImapLogin(QString::fromStdString(bm->GetRxLogin()));
+    optDialog.SetImapPassword(QString::fromStdString(bm->GetRxPassword()));
+    optDialog.SetImapAllowStranger(bm->AllowStranger());
+
+    if (QDialog::Accepted != optDialog.exec()){
+        return ;
+    }
+    return ;
+}
+
+//! [7]
+void MainWindow::open()
+//! [7] //! [8]
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Profile"));
+    if (fileName.isEmpty()){
+        return ;
+    }
+    loadProfile(fileName);
+}
+//! [8]
+
+//! [9]
+bool MainWindow::save()
+//! [9] //! [10]
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Profile"));
+    if (fileName.isEmpty()){
+        return false;
+    }
+    saveProfile(fileName);
+    return true;
+}
+//! [10]
+
+//! [15]
+void MainWindow::documentWasModified()
+//! [15] //! [16]
+{
+
+}
+//! [16]

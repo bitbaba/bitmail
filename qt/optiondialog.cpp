@@ -1,15 +1,20 @@
 #include "optiondialog.h"
 #include "ui_optiondialog.h"
 
-OptionDialog::OptionDialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::OptionDialog)
+OptionDialog::OptionDialog(bool fNew, QWidget *parent) :
+    QDialog(parent)
+    , ui(new Ui::OptionDialog)
+    , m_fNew(fNew)
 {
     ui->setupUi(this);
 
     m_leEmail        = findChild<QLineEdit*>("leEmail");
+    if (!m_fNew) m_leEmail->setEnabled(false);
     m_leNick         = findChild<QLineEdit*>("leNick");
+    if (!m_fNew) m_leNick->setEnabled(false);
     m_lePassphrase   = findChild<QLineEdit*>("lePassphrase");
+    m_sbBits         = findChild<QSpinBox*>("sbBits");
+    if (!m_fNew) m_sbBits->setEnabled(false);
 
     m_leSmtpUrl      = findChild<QLineEdit*>("leSmtpUrl");
     m_leSmtpLogin    = findChild<QLineEdit*>("leSmtpLogin");
@@ -68,6 +73,20 @@ void OptionDialog::SetPassphrase(const QString & p)
 QString OptionDialog::GetPassphrase() const
 {
     return m_lePassphrase->text();
+}
+
+void OptionDialog::SetBits(const int &n)
+{
+    /**
+    * there is no alignment limit on `openssl genrsa [bits]'
+    * e.g. openssl genrsa 1234
+    */
+    m_sbBits->setValue((n + m_sbBits->singleStep() - 1)/m_sbBits->singleStep() * m_sbBits->singleStep());
+}
+
+int OptionDialog::GetBits() const
+{
+    return m_sbBits->value();
 }
 
 void OptionDialog::SetSmtpUrl(const QString & u)

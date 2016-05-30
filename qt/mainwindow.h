@@ -67,7 +67,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow();
-
+    ~MainWindow();
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
