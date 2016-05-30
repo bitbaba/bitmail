@@ -22,5 +22,6 @@
     <file>images/text.png</file>
     <file>images/invite.png</file>
     <file>images/add.png</file>
+    <file>images/bitcoin.png</file>
 </qresource>
 </RCC>

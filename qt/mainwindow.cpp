@@ -106,8 +106,6 @@ MainWindow::MainWindow()
 
     setWindowIcon(QIcon(":/images/bitmail.png"));
     setWindowTitle(tr("BitMail"));
-
-
 }
 //! [2]
 
@@ -257,6 +255,12 @@ void MainWindow::createActions()
         textAct->setCheckable(true);
         connect(textAct, SIGNAL(triggered(bool)), this, SLOT(onTextBtnClicked(bool)));
     }while(0);
+
+    do{
+        payAct = new QAction(QIcon(":/images/bitcoin.png"), tr("&Pay"), this);
+        payAct->setStatusTip(tr("Pay by Bitcoin"));
+        connect(payAct, SIGNAL(triggered(bool)), this, SLOT(onPayBtnClicked(bool)));
+    }while(0);
 }
 //! [24]
 
@@ -264,9 +268,9 @@ void MainWindow::createActions()
 void MainWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("Profile"));
-    fileToolBar->addAction(newAct);
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(configAct);
+    fileToolBar->addAction(newAct);
 
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(addAct);
@@ -282,6 +286,7 @@ void MainWindow::createToolBars()
     chatToolbar->addAction(soundAct);
     chatToolbar->addAction(videoAct);
     chatToolbar->addAction(liveAct);
+    chatToolbar->addAction(payAct);
     chatToolbar->setIconSize(QSize(24,24));
 }
 //! [30]
@@ -411,5 +416,10 @@ void MainWindow::onConfigBtnClicked()
     optDialog.SetEmail("me@mine.net");
     optDialog.exec();
     statusBar()->showMessage(optDialog.GetEmail());
+    return ;
+}
+
+void MainWindow::onPayBtnClicked()
+{
     return ;
 }

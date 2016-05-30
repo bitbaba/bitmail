@@ -47,3 +47,6 @@ win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/crypto.lib
 else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libcrypto.a
 
 win32: LIBS += -lws2_32 -lgdi32
+
+DISTFILES += \
+    bitmail.rc

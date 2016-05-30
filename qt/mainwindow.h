@@ -82,6 +82,7 @@ private slots:
     void onStrangerBtnClicked(bool);
     void onSendBtnClicked();
     void onConfigBtnClicked();
+    void onPayBtnClicked();
 private:
     void createActions();
     void createToolBars();
@@ -116,6 +117,7 @@ private:
     QAction *colorAct;
     QAction *liveAct;
     QAction *textAct;
+    QAction *payAct;
 private:
     BitMail * bm;
 };
