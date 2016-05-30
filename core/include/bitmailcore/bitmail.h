@@ -72,6 +72,8 @@ public:
 	std::string GetRxPassword() const;
 					
 	int AllowStranger(bool fYes);
+	
+	bool AllowStranger() const;
 
     int SendMsg(const std::string & to, const std::string & msg);
 
@@ -99,9 +101,13 @@ public:
 
     std::string GetCommonName() const;
 
+	std::string GetKey() const;
+	
     std::string GetCert() const;
 	
 	int GetBits() const;
+	
+	std::string GetPassphrase() const;
 
     // Buddy
     int AddBuddy(const std::string & certpem);

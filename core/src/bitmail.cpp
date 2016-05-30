@@ -34,6 +34,12 @@ BitMail::BitMail()
     OPENSSL_load_builtin_modules();
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
+	
+	// Create a email object
+	m_mc = new CMailClient(EmailHandler, this);
+	
+	// Create a profile object
+	m_profile = new CX509Cert();
 }
 
 BitMail::~BitMail()
@@ -71,7 +77,6 @@ int BitMail::InitNetwork( const std::string & txurl
                     , const std::string & rxuser
                     , const std::string & rxpass)
 {
-    m_mc = new CMailClient(EmailHandler, this);
     if (m_mc == NULL){
         return bmOutMem;
     }
@@ -119,6 +124,11 @@ int BitMail::AllowStranger(bool fYes)
 {
 	m_fAllowStranger = fYes;
 	return bmOk;
+}
+
+bool BitMail::AllowStranger() const
+{
+	return m_fAllowStranger;
 }
 
 int BitMail::SendMsg(const std::string &email_to, const std::string &msg)
@@ -223,6 +233,11 @@ int BitMail::CreateProfile(const std::string & commonName
         , const std::string & passphrase
         , unsigned int bits)
 {
+	if (NULL != m_profile)
+	{
+		delete m_profile;
+		m_profile = NULL;
+	}
     m_profile = new CX509Cert();
     if (m_profile == NULL){
         return bmOutMem;
@@ -267,6 +282,11 @@ std::string BitMail::GetCommonName() const
     return m_profile->GetCommonName();
 }
 
+std::string BitMail::GetKey() const
+{
+	return m_profile->GetPrivateKeyAsEncryptedPem();
+}
+
 std::string BitMail::GetCert() const
 {
     return m_profile->GetCertByPem();
@@ -274,6 +294,11 @@ std::string BitMail::GetCert() const
 
 int BitMail::GetBits() const{
 	return m_profile->GetBits();
+}
+
+std::string BitMail::GetPassphrase() const
+{
+	return m_profile->GetPassphrase();
 }
 
 /**

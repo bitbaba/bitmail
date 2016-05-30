@@ -447,6 +447,11 @@ int CX509Cert::GetBits() const
 	return EVP_PKEY_bits(X509_get_pubkey(GetCert()));
 }
 
+std::string CX509Cert::GetPassphrase() const
+{
+	return m_passphrase;
+}
+
 std::string CX509Cert::GetCertByPem() const
 {
     return m_cert;
@@ -463,6 +468,23 @@ std::string CX509Cert::GetPrivateKeyAsEncryptedPem()
     return m_key;
 }
 
+/**
+* Update passphrase
+*/
+int CX509Cert::SetPassphrase(const std::string & passphrase)
+{
+	EVP_PKEY *pkey = GetPrivateKey();
+	if (pkey == NULL){
+		return 1;
+	}
+	std::string sKeyPem = PKeyToPem(pkey, passphrase);
+	if (sKeyPem.empty()){
+		return 2;
+	}
+	m_key = sKeyPem;
+	m_passphrase = passphrase;
+	return 0;
+}
 
 /* Simple S/MIME signing example */
 

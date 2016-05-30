@@ -47,6 +47,8 @@ public:
     std::string GetCommonName() const;
     std::string GetID() const;
 	int GetBits() const;
+	std::string GetPassphrase() const;
+	int SetPassphrase(const std::string & passphrase);
 
     EVP_PKEY * GetPrivateKey();
     std::string GetPrivateKeyAsEncryptedPem();
