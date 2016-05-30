@@ -123,8 +123,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 //! [3] //! [4]
 {
     event->accept();
-
-    save();
 }
 //! [4]
 

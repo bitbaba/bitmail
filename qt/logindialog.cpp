@@ -6,6 +6,8 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui(new Ui::LoginDialog)
 {
     ui->setupUi(this);
+    QLabel * lbLogo = findChild<QLabel *>("lbLogo");
+    lbLogo->setPixmap(QPixmap(":/images/bkgrd.png"));
 }
 
 LoginDialog::~LoginDialog()

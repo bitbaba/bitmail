@@ -25,5 +25,6 @@
         <file>images/bitcoin.png</file>
         <file>images/logo.png</file>
         <file>images/chat.png</file>
+        <file>images/bkgrd.png</file>
     </qresource>
 </RCC>
