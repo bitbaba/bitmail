@@ -58,6 +58,8 @@ public:
                     , const std::string & rxurl
                     , const std::string & rxuser
                     , const std::string & rxpass);
+					
+	int AllowStranger(bool fYes);
 
     int SendMsg(const std::string & to, const std::string & msg);
 

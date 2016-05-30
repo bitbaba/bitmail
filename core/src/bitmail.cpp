@@ -84,6 +84,12 @@ int BitMail::InitNetwork( const std::string & txurl
     return bmOk;
 }
 
+int BitMail::AllowStranger(bool fYes)
+{
+	m_fAllowStranger = fYes;
+	return bmOk;
+}
+
 int BitMail::SendMsg(const std::string &email_to, const std::string &msg)
 {
     std::string sSignedMsg = m_profile->Sign(msg);
