@@ -40,18 +40,264 @@
 
 //! [0]
 #include <QApplication>
+#include <QDir>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QTextStream>
 
+#include "optiondialog.h"
+#include "logindialog.h"
 #include "mainwindow.h"
+#include <bitmailcore/bitmail.h>
+
+#include "main.h"
 
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(bitmail);
-
     QApplication app(argc, argv);
     app.setOrganizationName("QtProject");
     app.setApplicationName("Application Example");
-    MainWindow mainWin;
+
+    QString qsEmail, qsPassphrase;
+
+    LoginDialog loginDialog;
+    int dlgret = (loginDialog.exec());
+
+    if (dlgret == QDialog::Rejected){
+        return 1;
+    }
+
+    if (dlgret == QDialog::Accepted){
+        qsEmail = loginDialog.GetEmail();
+        qsPassphrase = loginDialog.GetPassphrase();
+    }
+
+    if (dlgret == LoginDialog::CreateNew){
+        OptionDialog optDialog;
+        if (optDialog.exec() != QDialog::Accepted){
+            return 2;
+        }
+        qsEmail = optDialog.GetEmail();
+        qsPassphrase = optDialog.GetPassphrase();
+    }
+
+    MainWindow mainWin(qsEmail, qsPassphrase);
     mainWin.show();
     return app.exec();
 }
 //! [0]
+
+namespace BMQTApplication {
+
+    QString GetAppHome()
+    {
+        return QApplication::applicationDirPath();
+    }
+
+    QString GetProfileHome()
+    {
+        QString qsProfileHome = QDir::homePath();
+        qsProfileHome += "/";
+        qsProfileHome += "bitmail";
+        qsProfileHome += "/";
+        qsProfileHome += "profile";
+        return qsProfileHome;
+    }
+    QString GetDataHome()
+    {
+        QString qsProfileHome = QDir::homePath();
+        qsProfileHome += "/";
+        qsProfileHome += "bitmail";
+        qsProfileHome += "/";
+        qsProfileHome += "data";
+        return qsProfileHome;
+    }
+
+    QStringList GetProfiles()
+    {
+        QString qsProfileHome = GetProfileHome();
+        QDir profileDir(qsProfileHome);
+        if (!profileDir.exists()){
+             profileDir.mkpath(qsProfileHome);
+        }
+        QStringList slist;
+        foreach(QFileInfo fi, profileDir.entryInfoList()){
+            if (fi.isFile() && IsValidPofile(fi.absoluteFilePath())){
+                slist.append(fi.absoluteFilePath());
+            }
+        }
+        return slist;
+    }
+
+    bool IsValidPofile(const QString & qsProfile)
+    {
+        QFile profile(qsProfile);
+
+        if (!profile.exists()){
+            return false;
+        }
+        if (!profile.open(QFile::ReadOnly | QFile::Text)){
+            return false;
+        }
+
+        QJsonDocument jdoc;
+        jdoc = QJsonDocument::fromJson(profile.readAll());
+        if (!jdoc.isObject()){
+            return false;
+        }
+        QJsonObject joRoot = jdoc.object();
+        if (!joRoot.contains("Profile")){
+            return false;
+        }
+        return true;
+    }
+
+    void LoadProfile(BitMail * bm, const QString &fileName, const QString & passphrase)
+    {
+        QFile file(fileName);
+        if (!file.open(QFile::ReadOnly | QFile::Text)) {
+            return;
+        }
+
+        QTextStream in(&file);
+
+        QJsonDocument jdoc;
+        jdoc = QJsonDocument::fromJson(in.readAll().toLatin1());
+
+        QJsonObject joRoot = jdoc.object();
+        QJsonObject joProfile;
+        QJsonObject joTx;
+        QJsonObject joRx;
+        QJsonArray  jaBuddies;
+
+        if (joRoot.contains("Profile")){
+            joProfile = joRoot["Profile"].toObject();
+
+            QString qsEmail;
+            if (joProfile.contains("email")){
+                qsEmail = joProfile["email"].toString();
+            }
+            QString qsNick;
+            if (joProfile.contains("nick")){
+                qsNick = joProfile["nick"].toString();
+            }
+            QString qsCert;
+            if (joProfile.contains("cert")){
+                qsCert = joProfile["cert"].toString();
+            }
+            QString qsKey;
+            if (joProfile.contains("key")){
+                qsKey = joProfile["key"].toString();
+            }
+
+            (void)passphrase;
+            bm->LoadProfile(passphrase.toStdString()
+                            , qsKey.toStdString()
+                            , qsCert.toStdString());
+
+        }
+
+        QString qsTxUrl, qsTxLogin, qsTxPassword;
+        if (joRoot.contains("tx")){
+            joTx = joRoot["tx"].toObject();
+            if (joTx.contains("url")){
+                qsTxUrl = joTx["url"].toString();
+            }
+            if (joTx.contains("login")){
+                qsTxLogin = joTx["login"].toString();
+            }
+            if (joTx.contains("password")){
+                qsTxPassword = QString::fromStdString( bm->Decrypt(joTx["password"].toString().toStdString()));
+            }
+        }
+
+        QString qsRxUrl, qsRxLogin, qsRxPassword;
+        if (joRoot.contains("rx")){
+            joRx = joRoot["rx"].toObject();
+            if (joRx.contains("url")){
+                qsRxUrl = joRx["url"].toString();
+            }
+            if (joRx.contains("login")){
+                qsRxLogin = joRx["login"].toString();
+            }
+            if (joRx.contains("password")){
+                qsRxPassword = QString::fromStdString( bm->Decrypt(joRx["password"].toString().toStdString()));
+            }
+        }
+
+        bm->InitNetwork(qsTxUrl.toStdString(), qsTxLogin.toStdString(), qsTxPassword.toStdString()
+                        , qsRxUrl.toStdString(), qsRxLogin.toStdString(), qsRxPassword.toStdString());
+
+        if (joRoot.contains("buddies")){
+            jaBuddies = joRoot["buddies"].toArray();
+            for(QJsonArray::const_iterator it = jaBuddies.constBegin()
+                ; it != jaBuddies.constEnd()
+                ; it++){
+                const QJsonObject & joBuddy = (*it).toObject();
+                QString qsEmail = joBuddy["email"].toString();
+                QString qsCert =  joBuddy["cert"].toString();
+                (void )qsEmail;
+                bm->AddBuddy(qsCert.toStdString());
+            }
+        }
+    }
+
+    bool SaveProfile(BitMail * bm, const QString &fileName)
+    {
+        // Format Profile to QJson
+        QJsonObject joRoot;
+        QJsonObject joProfile;
+        QJsonObject joTx;
+        QJsonObject joRx;
+        QJsonArray  jaBuddies;
+
+        joProfile["email"] = QString::fromStdString(bm->GetEmail());
+        joProfile["nick"] = QString::fromStdString(bm->GetCommonName());
+        joProfile["key"] = QString::fromStdString(bm->GetKey());
+        joProfile["cert"] = QString::fromStdString(bm->GetCert());
+
+        joTx["url"] = QString::fromStdString(bm->GetTxUrl());
+        joTx["login"] = QString::fromStdString(bm->GetTxLogin());
+        joTx["password"] = QString::fromStdString(bm->Encrypt(bm->GetTxPassword()));
+
+        joRx["url"] = QString::fromStdString(bm->GetRxUrl());
+        joRx["login"] = QString::fromStdString(bm->GetRxLogin());
+        joRx["password"] = QString::fromStdString(bm->Encrypt(bm->GetRxPassword()));
+        joRx["stranger"] = bm->AllowStranger();
+
+        std::vector<std::string > vecBuddies;
+        bm->GetBuddies(vecBuddies);
+        for (std::vector<std::string>::const_iterator it = vecBuddies.begin(); it != vecBuddies.end(); ++it){
+            std::string sBuddyCertPem = bm->GetBuddyCert(*it);
+            QJsonObject joBuddy;
+            joBuddy["email"] = QString::fromStdString(*it);
+            joBuddy["cert"]  = QString::fromStdString(sBuddyCertPem);
+            jaBuddies.append(joBuddy);
+        }
+
+        // for more readable, instead of `profile'
+        joRoot["Profile"] = joProfile;
+        joRoot["tx"] = joTx;
+        joRoot["rx"] = joRx;
+        joRoot["buddies"] = jaBuddies;
+
+        QJsonDocument jdoc(joRoot);
+
+        QFile file(fileName);
+        if (!file.open(QFile::WriteOnly | QFile::Text)) {
+            return false;
+        }
+
+        QTextStream out(&file);
+
+        out << jdoc.toJson();
+
+        return true;
+    }
+}
+
+

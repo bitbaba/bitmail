@@ -66,7 +66,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(const QString & email, const QString & passphrase);
     ~MainWindow();
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
@@ -90,8 +90,6 @@ private:
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
-    QString GetProfileHome();
-    QString GetDataHome();
 private:
     QTextEdit *textEdit;
     QListWidget * blist;
@@ -121,7 +119,7 @@ private:
     QAction *textAct;
     QAction *payAct;
 private:
-    BitMail * bm;
+    BitMail *m_bitmail;
 };
 //! [0]
 

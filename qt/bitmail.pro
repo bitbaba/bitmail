@@ -2,7 +2,8 @@ QT += widgets
 
 HEADERS       = mainwindow.h \
     optiondialog.h \
-    logindialog.h
+    logindialog.h \
+    main.h
 SOURCES       = main.cpp \
                 mainwindow.cpp \
                 optiondialog.cpp \

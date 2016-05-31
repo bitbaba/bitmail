@@ -53,16 +53,14 @@
 
 #include "optiondialog.h"
 #include "logindialog.h"
+#include "main.h"
 
 //! [1]
-MainWindow::MainWindow()
+MainWindow::MainWindow(const QString & email, const QString & passphrase)
+    : m_bitmail(new BitMail())
 //! [1] //! [2]
 {
-    bm  = new BitMail();
-
-    LoginDialog loginDialog;
-    loginDialog.exec();
-
+    (void)email; (void)passphrase;
     QVBoxLayout *leftLayout = new QVBoxLayout;
     QHBoxLayout *mainLayout = new QHBoxLayout;
     blist = new QListWidget;
@@ -112,9 +110,9 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-    if (bm != NULL){
-        delete bm;
-        bm = NULL;
+    if (m_bitmail != NULL){
+        delete m_bitmail;
+        m_bitmail = NULL;
     }
 }
 
@@ -264,181 +262,6 @@ void MainWindow::createStatusBar()
 }
 //! [33]
 
-//! [42]
-void MainWindow::loadProfile(const QString &fileName, const QString & passphrase)
-//! [42] //! [43]
-{
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("BitMail"),
-                             tr("Cannot read file: ")
-                             + (fileName)
-                             + "\n"
-                             + (file.errorString()));
-        return;
-    }
-
-    QTextStream in(&file);
-#ifndef QT_NO_CURSOR
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-#endif
-
-    QJsonDocument jdoc;
-    jdoc = QJsonDocument::fromJson(in.readAll().toLatin1());
-
-#ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
-#endif
-
-    QJsonObject joRoot = jdoc.object();
-    QJsonObject joProfile;
-    QJsonObject joTx;
-    QJsonObject joRx;
-    QJsonArray  jaBuddies;
-
-    if (joRoot.contains("Profile")){
-        joProfile = joRoot["Profile"].toObject();
-
-        QString qsEmail;
-        if (joProfile.contains("email")){
-            qsEmail = joProfile["email"].toString();
-        }
-        QString qsNick;
-        if (joProfile.contains("nick")){
-            qsNick = joProfile["nick"].toString();
-        }
-        QString qsCert;
-        if (joProfile.contains("cert")){
-            qsCert = joProfile["cert"].toString();
-        }
-        QString qsKey;
-        if (joProfile.contains("key")){
-            qsKey = joProfile["key"].toString();
-        }
-
-        (void)passphrase;
-        bm->LoadProfile(passphrase.toStdString()
-                        , qsKey.toStdString()
-                        , qsCert.toStdString());
-
-    }
-
-    QString qsTxUrl, qsTxLogin, qsTxPassword;
-    if (joRoot.contains("tx")){
-        joTx = joRoot["tx"].toObject();
-        if (joTx.contains("url")){
-            qsTxUrl = joTx["url"].toString();
-        }
-        if (joTx.contains("login")){
-            qsTxLogin = joTx["login"].toString();
-        }
-        if (joTx.contains("password")){
-            qsTxPassword = QString::fromStdString( bm->Decrypt(joTx["password"].toString().toStdString()));
-        }
-    }
-
-    QString qsRxUrl, qsRxLogin, qsRxPassword;
-    if (joRoot.contains("rx")){
-        joRx = joRoot["rx"].toObject();
-        if (joRx.contains("url")){
-            qsRxUrl = joRx["url"].toString();
-        }
-        if (joRx.contains("login")){
-            qsRxLogin = joRx["login"].toString();
-        }
-        if (joRx.contains("password")){
-            qsRxPassword = QString::fromStdString( bm->Decrypt(joRx["password"].toString().toStdString()));
-        }
-    }
-
-    bm->InitNetwork(qsTxUrl.toStdString(), qsTxLogin.toStdString(), qsTxPassword.toStdString()
-                    , qsRxUrl.toStdString(), qsRxLogin.toStdString(), qsRxPassword.toStdString());
-
-    if (joRoot.contains("buddies")){
-        jaBuddies = joRoot["buddies"].toArray();
-        for(QJsonArray::const_iterator it = jaBuddies.constBegin()
-            ; it != jaBuddies.constEnd()
-            ; it++){
-            const QJsonObject & joBuddy = (*it).toObject();
-            QString qsEmail = joBuddy["email"].toString();
-            QString qsCert =  joBuddy["cert"].toString();
-            (void )qsEmail;
-            bm->AddBuddy(qsCert.toStdString());
-        }
-    }
-
-    statusBar()->showMessage(tr("File loaded"), 2000);
-}
-//! [43]
-
-//! [44]
-bool MainWindow::saveProfile(const QString &fileName)
-//! [44] //! [45]
-{
-    // Format Profile to QJson
-    QJsonObject joRoot;
-    QJsonObject joProfile;
-    QJsonObject joTx;
-    QJsonObject joRx;
-    QJsonArray  jaBuddies;
-
-    joProfile["email"] = QString::fromStdString(bm->GetEmail());
-    joProfile["nick"] = QString::fromStdString(bm->GetCommonName());
-    joProfile["key"] = QString::fromStdString(bm->GetKey());
-    joProfile["cert"] = QString::fromStdString(bm->GetCert());
-
-    joTx["url"] = QString::fromStdString(bm->GetTxUrl());
-    joTx["login"] = QString::fromStdString(bm->GetTxLogin());
-    joTx["password"] = QString::fromStdString(bm->Encrypt(bm->GetTxPassword()));
-
-    joRx["url"] = QString::fromStdString(bm->GetRxUrl());
-    joRx["login"] = QString::fromStdString(bm->GetRxLogin());
-    joRx["password"] = QString::fromStdString(bm->Encrypt(bm->GetRxPassword()));
-    joRx["stranger"] = bm->AllowStranger();
-
-    std::vector<std::string > vecBuddies;
-    bm->GetBuddies(vecBuddies);
-    for (std::vector<std::string>::const_iterator it = vecBuddies.begin(); it != vecBuddies.end(); ++it){
-        std::string sBuddyCertPem = bm->GetBuddyCert(*it);
-        QJsonObject joBuddy;
-        joBuddy["email"] = QString::fromStdString(*it);
-        joBuddy["cert"]  = QString::fromStdString(sBuddyCertPem);
-        jaBuddies.append(joBuddy);
-    }
-
-    // for more readable, instead of `profile'
-    joRoot["Profile"] = joProfile;
-    joRoot["tx"] = joTx;
-    joRoot["rx"] = joRx;
-    joRoot["buddies"] = jaBuddies;
-
-    QJsonDocument jdoc(joRoot);
-
-    QFile file(fileName);
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("BitMail"),
-                             tr("Cannot write file:")
-                             + (fileName)
-                             + "\n"
-                             + (file.errorString()));
-        return false;
-    }
-
-    QTextStream out(&file);
-#ifndef QT_NO_CURSOR
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-#endif
-
-    out << jdoc.toJson();
-
-#ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
-#endif
-
-    statusBar()->showMessage(tr("Profile saved"), 2000);
-    return true;
-}
-//! [45]
 
 //! [48]
 QString MainWindow::strippedName(const QString &fullFileName)
@@ -447,26 +270,6 @@ QString MainWindow::strippedName(const QString &fullFileName)
     return QFileInfo(fullFileName).fileName();
 }
 //! [49]
-
-QString MainWindow::GetProfileHome()
-{
-    QString qsProfileHome = QDir::homePath();
-    qsProfileHome += "/";
-    qsProfileHome += "bitmail";
-    qsProfileHome += "/";
-    qsProfileHome += "profile";
-    return qsProfileHome;
-}
-
-QString MainWindow::GetDataHome()
-{
-    QString qsProfileHome = QDir::homePath();
-    qsProfileHome += "/";
-    qsProfileHome += "bitmail";
-    qsProfileHome += "/";
-    qsProfileHome += "data";
-    return "";
-}
 
 void MainWindow::onStyleBtnClicked()
 {
@@ -539,38 +342,38 @@ void MainWindow::newFile()
     QString qsImapPassword = optDialog.GetImapPassword();
     bool fImapAllowStranger = optDialog.GetImapAllowStranger();
 
-    bm->CreateProfile(qsNick.toStdString()
+    m_bitmail->CreateProfile(qsNick.toStdString()
                       , qsEmail.toStdString()
                       , qsPassphrase.toStdString()
                       , nBits);
 
-    bm->InitNetwork(qsSmtpUrl.toStdString()
+    m_bitmail->InitNetwork(qsSmtpUrl.toStdString()
                     , qsSmtpLogin.toStdString()
                     , qsSmtpPassword.toStdString()
                     , qsImapUrl.toStdString()
                     , qsImapLogin.toStdString()
                     , qsImapPassword.toStdString());
 
-    bm->AllowStranger(fImapAllowStranger);
+    m_bitmail->AllowStranger(fImapAllowStranger);
 }
 //! [6]
 
 void MainWindow::onConfigBtnClicked()
 {
     OptionDialog optDialog(false, this);
-    optDialog.SetEmail(QString::fromStdString(bm->GetEmail()));
-    optDialog.SetNick(QString::fromStdString(bm->GetCommonName()));
-    optDialog.SetPassphrase(QString::fromStdString(bm->GetPassphrase()));
-    optDialog.SetBits(bm->GetBits());
+    optDialog.SetEmail(QString::fromStdString(m_bitmail->GetEmail()));
+    optDialog.SetNick(QString::fromStdString(m_bitmail->GetCommonName()));
+    optDialog.SetPassphrase(QString::fromStdString(m_bitmail->GetPassphrase()));
+    optDialog.SetBits(m_bitmail->GetBits());
 
-    optDialog.SetSmtpUrl(QString::fromStdString(bm->GetTxUrl()));
-    optDialog.SetSmtpLogin(QString::fromStdString(bm->GetTxLogin()));
-    optDialog.SetSmtpPassword(QString::fromStdString(bm->GetTxPassword()));
+    optDialog.SetSmtpUrl(QString::fromStdString(m_bitmail->GetTxUrl()));
+    optDialog.SetSmtpLogin(QString::fromStdString(m_bitmail->GetTxLogin()));
+    optDialog.SetSmtpPassword(QString::fromStdString(m_bitmail->GetTxPassword()));
 
-    optDialog.SetImapUrl(QString::fromStdString(bm->GetRxUrl()));
-    optDialog.SetImapLogin(QString::fromStdString(bm->GetRxLogin()));
-    optDialog.SetImapPassword(QString::fromStdString(bm->GetRxPassword()));
-    optDialog.SetImapAllowStranger(bm->AllowStranger());
+    optDialog.SetImapUrl(QString::fromStdString(m_bitmail->GetRxUrl()));
+    optDialog.SetImapLogin(QString::fromStdString(m_bitmail->GetRxLogin()));
+    optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
+    optDialog.SetImapAllowStranger(m_bitmail->AllowStranger());
 
     if (QDialog::Accepted != optDialog.exec()){
         return ;
@@ -586,7 +389,7 @@ void MainWindow::open()
     if (fileName.isEmpty()){
         return ;
     }
-    loadProfile(fileName, "");
+    BMQTApplication::LoadProfile(m_bitmail, fileName, "");
 }
 //! [8]
 
@@ -598,7 +401,7 @@ bool MainWindow::save()
     if (fileName.isEmpty()){
         return false;
     }
-    saveProfile(fileName);
+    BMQTApplication::SaveProfile(m_bitmail, fileName);
     return true;
 }
 //! [10]
