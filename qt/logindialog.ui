@@ -55,12 +55,12 @@
    </property>
    <property name="font">
     <font>
-     <family>Fixedsys</family>
+     <family>Segoe UI</family>
      <underline>true</underline>
     </font>
    </property>
    <property name="text">
-    <string>Create...</string>
+    <string>Create ...</string>
    </property>
   </widget>
   <widget class="QDialogButtonBox" name="buttonBox">
@@ -116,7 +116,17 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QComboBox" name="cbEmail"/>
+     <widget class="QComboBox" name="cbEmail">
+      <property name="maxCount">
+       <number>32</number>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>24</width>
+        <height>24</height>
+       </size>
+      </property>
+     </widget>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="lbPassphrase">

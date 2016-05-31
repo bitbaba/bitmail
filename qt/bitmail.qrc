@@ -26,5 +26,6 @@
         <file>images/logo.png</file>
         <file>images/chat.png</file>
         <file>images/bkgrd.png</file>
+        <file>images/head.png</file>
     </qresource>
 </RCC>
