@@ -6,21 +6,58 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>320</width>
-    <height>240</height>
+    <width>400</width>
+    <height>360</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>400</width>
+    <height>360</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>400</width>
+    <height>360</height>
+   </size>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>400</width>
+    <height>360</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <family>Fixedsys</family>
+    <weight>50</weight>
+    <bold>false</bold>
+   </font>
+  </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Login</string>
   </property>
   <widget class="QCommandLinkButton" name="cmdCreate">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>190</y>
-     <width>91</width>
-     <height>31</height>
+     <y>290</y>
+     <width>151</width>
+     <height>41</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Fixedsys</family>
+     <underline>true</underline>
+    </font>
    </property>
    <property name="text">
     <string>Create...</string>
@@ -29,9 +66,9 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>160</x>
-     <y>192</y>
-     <width>156</width>
+     <x>190</x>
+     <y>300</y>
+     <width>201</width>
      <height>31</height>
     </rect>
    </property>
@@ -45,28 +82,31 @@
   <widget class="QLabel" name="lbLogo">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>5</y>
-     <width>301</width>
-     <height>61</height>
+     <x>0</x>
+     <y>0</y>
+     <width>400</width>
+     <height>140</height>
     </rect>
    </property>
    <property name="text">
-    <string>BitMail Qt Client</string>
+    <string>  BitMail Qt Client</string>
    </property>
   </widget>
   <widget class="QWidget" name="formLayoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>80</y>
-     <width>301</width>
-     <height>91</height>
+     <y>160</y>
+     <width>381</width>
+     <height>111</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
+    <property name="horizontalSpacing">
+     <number>10</number>
+    </property>
     <property name="verticalSpacing">
-     <number>30</number>
+     <number>40</number>
     </property>
     <item row="0" column="0">
      <widget class="QLabel" name="lbEmail">
