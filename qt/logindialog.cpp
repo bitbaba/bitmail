@@ -2,6 +2,8 @@
 #include "ui_logindialog.h"
 
 #include <QPainter>
+#include <QFileInfo>
+
 #include "main.h"
 
 LoginDialog::LoginDialog(QWidget *parent) :
@@ -22,8 +24,12 @@ LoginDialog::LoginDialog(QWidget *parent) :
     m_lePassphrase = findChild<QLineEdit*>("lePassphrase");
     m_cbEmail = findChild<QComboBox*>("cbEmail");
 
-    m_cbEmail->addItem(QIcon(":/images/head.png"), "alice@example.net");
-    m_cbEmail->addItem(QIcon(":/images/head.png"), "bob@example.net");
+    QStringList sList = BMQTApplication::GetProfiles();
+    for (QStringList::iterator it = sList.begin(); it != sList.end(); it++){
+        QString qsEmail = *it;
+        QFileInfo fi(qsEmail);
+        m_cbEmail->addItem(QIcon(":/images/head.png"),  fi.fileName());
+    }
 }
 
 LoginDialog::~LoginDialog()

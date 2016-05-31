@@ -60,7 +60,9 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     : m_bitmail(new BitMail())
 //! [1] //! [2]
 {
-    (void)email; (void)passphrase;
+    if (m_bitmail != NULL){
+        BMQTApplication::LoadProfile(m_bitmail, email, passphrase);
+    }
     QVBoxLayout *leftLayout = new QVBoxLayout;
     QHBoxLayout *mainLayout = new QHBoxLayout;
     blist = new QListWidget;
@@ -95,6 +97,11 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     rightLayout->addWidget(chatToolbar);
     rightLayout->addWidget(textEdit);
     rightLayout->addLayout(btnLayout);
+
+    // Populate buddy list
+    blist->insertItem(0, QString::fromStdString(m_bitmail->GetEmail()));
+
+    // Load message cache
 
     connect(textEdit->document(), SIGNAL(contentsChanged()),
             this, SLOT(documentWasModified()));

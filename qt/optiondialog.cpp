@@ -1,5 +1,7 @@
 #include "optiondialog.h"
 #include "ui_optiondialog.h"
+#include "main.h"
+#include <bitmailcore/bitmail.h>
 
 OptionDialog::OptionDialog(bool fNew, QWidget *parent) :
     QDialog(parent)
@@ -34,12 +36,50 @@ OptionDialog::~OptionDialog()
 
 void OptionDialog::on_buttonBox_accepted()
 {
+    if (!m_fNew){
+        return ;
+    }
 
+    QString qsEmail = GetEmail();
+    QString qsNick = GetNick();
+    QString qsPassphrase = GetPassphrase();
+    int nBits = GetBits();
+
+    QString qsSmtpUrl = GetSmtpUrl();
+    QString qsSmtpLogin = GetSmtpLogin();
+    QString qsSmtpPassword = GetSmtpPassword();
+
+    QString qsImapUrl = GetImapUrl();
+    QString qsImapLogin = GetImapLogin();
+    QString qsImapPassword = GetImapPassword();
+    bool fImapAllowStranger = GetImapAllowStranger();
+
+    BitMail * bm = new BitMail();
+
+    bm->CreateProfile(qsNick.toStdString()
+                      , qsEmail.toStdString()
+                      , qsPassphrase.toStdString()
+                      , nBits);
+
+    bm->InitNetwork(qsSmtpUrl.toStdString()
+                    , qsSmtpLogin.toStdString()
+                    , qsSmtpPassword.toStdString()
+                    , qsImapUrl.toStdString()
+                    , qsImapLogin.toStdString()
+                    , qsImapPassword.toStdString());
+
+    bm->AllowStranger(fImapAllowStranger);
+
+    BMQTApplication::SaveProfile(bm);
+
+    delete bm; bm = NULL;
+
+    return ;
 }
 
 void OptionDialog::on_buttonBox_rejected()
 {
-
+    return ;
 }
 
 void OptionDialog::SetEmail(const QString & e)

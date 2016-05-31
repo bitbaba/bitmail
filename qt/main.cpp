@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     }
 
     if (dlgret == LoginDialog::CreateNew){
-        OptionDialog optDialog;
+        OptionDialog optDialog(true);
         if (optDialog.exec() != QDialog::Accepted){
             return 2;
         }
@@ -311,45 +311,6 @@ namespace BMQTApplication {
 
         return true;
     }
-
-    void CreateProfile()
-    {
-#if 0
-        OptionDialog optDialog(true, this);
-        if (QDialog::Accepted != optDialog.exec()){
-            return ;
-        }
-
-        QString qsEmail = optDialog.GetEmail();
-        QString qsNick = optDialog.GetNick();
-        QString qsPassphrase = optDialog.GetPassphrase();
-        int nBits = optDialog.GetBits();
-
-        QString qsSmtpUrl = optDialog.GetSmtpUrl();
-        QString qsSmtpLogin = optDialog.GetSmtpLogin();
-        QString qsSmtpPassword = optDialog.GetSmtpPassword();
-
-        QString qsImapUrl = optDialog.GetImapUrl();
-        QString qsImapLogin = optDialog.GetImapLogin();
-        QString qsImapPassword = optDialog.GetImapPassword();
-        bool fImapAllowStranger = optDialog.GetImapAllowStranger();
-
-        m_bitmail->CreateProfile(qsNick.toStdString()
-                          , qsEmail.toStdString()
-                          , qsPassphrase.toStdString()
-                          , nBits);
-
-        m_bitmail->InitNetwork(qsSmtpUrl.toStdString()
-                        , qsSmtpLogin.toStdString()
-                        , qsSmtpPassword.toStdString()
-                        , qsImapUrl.toStdString()
-                        , qsImapLogin.toStdString()
-                        , qsImapPassword.toStdString());
-
-        m_bitmail->AllowStranger(fImapAllowStranger);
-#endif
-    }
-
 }
 
 
