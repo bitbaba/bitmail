@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>360</height>
+    <height>320</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,19 +19,19 @@
   <property name="minimumSize">
    <size>
     <width>400</width>
-    <height>360</height>
+    <height>320</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>400</width>
-    <height>360</height>
+    <height>320</height>
    </size>
   </property>
   <property name="baseSize">
    <size>
     <width>400</width>
-    <height>360</height>
+    <height>320</height>
    </size>
   </property>
   <property name="font">
@@ -48,7 +48,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>290</y>
+     <y>250</y>
      <width>151</width>
      <height>41</height>
     </rect>
@@ -67,7 +67,7 @@
    <property name="geometry">
     <rect>
      <x>190</x>
-     <y>300</y>
+     <y>260</y>
      <width>201</width>
      <height>31</height>
     </rect>
@@ -98,7 +98,7 @@
      <x>10</x>
      <y>160</y>
      <width>381</width>
-     <height>111</height>
+     <height>81</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -106,7 +106,7 @@
      <number>10</number>
     </property>
     <property name="verticalSpacing">
-     <number>40</number>
+     <number>15</number>
     </property>
     <item row="0" column="0">
      <widget class="QLabel" name="lbEmail">

@@ -325,6 +325,16 @@ void MainWindow::onConfigBtnClicked()
     if (QDialog::Accepted != optDialog.exec()){
         return ;
     }
+
+    QString qsPassphrase = optDialog.GetPassphrase();
+    QString qsTxUrl = optDialog.GetSmtpUrl();
+    QString qsTxLogin = optDialog.GetSmtpLogin();
+    QString qsTxPassword = optDialog.GetSmtpPassword();
+
+    QString qsRxUrl = optDialog.GetImapUrl();
+    QString qsRxLogin = optDialog.GetImapLogin();
+
+
     return ;
 }
 
