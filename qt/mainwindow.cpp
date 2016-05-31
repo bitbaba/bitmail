@@ -327,13 +327,25 @@ void MainWindow::onConfigBtnClicked()
     }
 
     QString qsPassphrase = optDialog.GetPassphrase();
+    m_bitmail->SetPassphrase(qsPassphrase.toStdString());
+
     QString qsTxUrl = optDialog.GetSmtpUrl();
     QString qsTxLogin = optDialog.GetSmtpLogin();
     QString qsTxPassword = optDialog.GetSmtpPassword();
 
     QString qsRxUrl = optDialog.GetImapUrl();
     QString qsRxLogin = optDialog.GetImapLogin();
+    QString qsRxPassword = optDialog.GetImapPassword();
 
+    m_bitmail->InitNetwork(qsTxUrl.toStdString()
+                           , qsTxLogin.toStdString()
+                           , qsTxPassword.toStdString()
+                           , qsRxUrl.toStdString()
+                           , qsRxLogin.toStdString()
+                           , qsRxPassword.toStdString());
+
+    bool fAllowStranger = optDialog.GetImapAllowStranger();
+    m_bitmail->AllowStranger(fAllowStranger);
 
     return ;
 }
