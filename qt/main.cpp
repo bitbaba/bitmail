@@ -133,6 +133,14 @@ namespace BMQTApplication {
         return slist;
     }
 
+    QString GetProfilePath(const QString &email)
+    {
+        QString qsProfilePath = GetProfileHome();
+        qsProfilePath += "/";
+        qsProfilePath += email;
+        return qsProfilePath;
+    }
+
     bool IsValidPofile(const QString & qsProfile)
     {
         QFile profile(qsProfile);
@@ -156,9 +164,11 @@ namespace BMQTApplication {
         return true;
     }
 
-    void LoadProfile(BitMail * bm, const QString &fileName, const QString & passphrase)
+    void LoadProfile(BitMail * bm, const QString &email, const QString & passphrase)
     {
-        QFile file(fileName);
+        QString qsProfile = GetProfilePath(email);
+
+        QFile file(qsProfile);
         if (!file.open(QFile::ReadOnly | QFile::Text)) {
             return;
         }
@@ -246,8 +256,11 @@ namespace BMQTApplication {
         }
     }
 
-    bool SaveProfile(BitMail * bm, const QString &fileName)
+    bool SaveProfile(BitMail * bm)
     {
+        QString qsEmail = QString::fromStdString(bm->GetEmail());
+        QString qsProfile = GetProfilePath(qsEmail);
+
         // Format Profile to QJson
         QJsonObject joRoot;
         QJsonObject joProfile;
@@ -287,7 +300,7 @@ namespace BMQTApplication {
 
         QJsonDocument jdoc(joRoot);
 
-        QFile file(fileName);
+        QFile file(qsProfile);
         if (!file.open(QFile::WriteOnly | QFile::Text)) {
             return false;
         }
@@ -298,6 +311,45 @@ namespace BMQTApplication {
 
         return true;
     }
+
+    void CreateProfile()
+    {
+#if 0
+        OptionDialog optDialog(true, this);
+        if (QDialog::Accepted != optDialog.exec()){
+            return ;
+        }
+
+        QString qsEmail = optDialog.GetEmail();
+        QString qsNick = optDialog.GetNick();
+        QString qsPassphrase = optDialog.GetPassphrase();
+        int nBits = optDialog.GetBits();
+
+        QString qsSmtpUrl = optDialog.GetSmtpUrl();
+        QString qsSmtpLogin = optDialog.GetSmtpLogin();
+        QString qsSmtpPassword = optDialog.GetSmtpPassword();
+
+        QString qsImapUrl = optDialog.GetImapUrl();
+        QString qsImapLogin = optDialog.GetImapLogin();
+        QString qsImapPassword = optDialog.GetImapPassword();
+        bool fImapAllowStranger = optDialog.GetImapAllowStranger();
+
+        m_bitmail->CreateProfile(qsNick.toStdString()
+                          , qsEmail.toStdString()
+                          , qsPassphrase.toStdString()
+                          , nBits);
+
+        m_bitmail->InitNetwork(qsSmtpUrl.toStdString()
+                        , qsSmtpLogin.toStdString()
+                        , qsSmtpPassword.toStdString()
+                        , qsImapUrl.toStdString()
+                        , qsImapLogin.toStdString()
+                        , qsImapPassword.toStdString());
+
+        m_bitmail->AllowStranger(fImapAllowStranger);
+#endif
+    }
+
 }
 
 

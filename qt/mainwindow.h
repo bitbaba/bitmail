@@ -72,9 +72,6 @@ protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
-    void newFile();
-    void open();
-    bool save();
     void documentWasModified();
     void onStyleBtnClicked();
     void onColorBtnClicked();
@@ -100,10 +97,7 @@ private:
     QToolBar *chatToolbar;
     QPushButton * btnSend;
 
-    QAction *newAct;
     QAction *configAct;
-    QAction *openAct;
-    QAction *saveAct;
 
     QAction *addAct;
     QAction *inviteAct;

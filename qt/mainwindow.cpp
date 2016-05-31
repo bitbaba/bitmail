@@ -111,6 +111,7 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
 MainWindow::~MainWindow()
 {
     if (m_bitmail != NULL){
+        BMQTApplication::SaveProfile(m_bitmail);
         delete m_bitmail;
         m_bitmail = NULL;
     }
@@ -120,7 +121,7 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent *event)
 //! [3] //! [4]
 {
-    event->accept();
+    event->accept();    
 }
 //! [4]
 
@@ -129,29 +130,9 @@ void MainWindow::createActions()
 //! [17] //! [18]
 {
     do {
-        newAct = new QAction(QIcon(":/images/profile.png"), tr("&NewAccount"), this);
-        newAct->setStatusTip(tr("Create a new bitmail account profile"));
-        connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
-    }while(0);
-
-    do {
         configAct = new QAction(QIcon(":/images/config.png"), tr("&Configure"), this);
         configAct->setStatusTip(tr("Configure current account"));
         connect(configAct, SIGNAL(triggered()), this, SLOT(onConfigBtnClicked()));
-    }while(0);
-
-//! [19]
-    do {
-        openAct = new QAction(QIcon(":/images/open.png"), tr("&Load..."), this);
-        openAct->setStatusTip(tr("Loading an existing account profile"));
-        connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
-    }while(0);
-//! [18] //! [19]
-
-    do {
-        saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
-        saveAct->setStatusTip(tr("Save the document to disk"));
-        connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
     }while(0);
 
     do {
@@ -231,9 +212,7 @@ void MainWindow::createActions()
 void MainWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("Profile"));
-    fileToolBar->addAction(openAct);
     fileToolBar->addAction(configAct);
-    fileToolBar->addAction(newAct);
 
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(addAct);
@@ -319,45 +298,6 @@ void MainWindow::onPayBtnClicked()
     return ;
 }
 
-//! [5]
-void MainWindow::newFile()
-//! [5] //! [6]
-{
-    OptionDialog optDialog(true, this);
-    if (QDialog::Accepted != optDialog.exec()){
-        return ;
-    }
-
-    QString qsEmail = optDialog.GetEmail();
-    QString qsNick = optDialog.GetNick();
-    QString qsPassphrase = optDialog.GetPassphrase();
-    int nBits = optDialog.GetBits();
-
-    QString qsSmtpUrl = optDialog.GetSmtpUrl();
-    QString qsSmtpLogin = optDialog.GetSmtpLogin();
-    QString qsSmtpPassword = optDialog.GetSmtpPassword();
-
-    QString qsImapUrl = optDialog.GetImapUrl();
-    QString qsImapLogin = optDialog.GetImapLogin();
-    QString qsImapPassword = optDialog.GetImapPassword();
-    bool fImapAllowStranger = optDialog.GetImapAllowStranger();
-
-    m_bitmail->CreateProfile(qsNick.toStdString()
-                      , qsEmail.toStdString()
-                      , qsPassphrase.toStdString()
-                      , nBits);
-
-    m_bitmail->InitNetwork(qsSmtpUrl.toStdString()
-                    , qsSmtpLogin.toStdString()
-                    , qsSmtpPassword.toStdString()
-                    , qsImapUrl.toStdString()
-                    , qsImapLogin.toStdString()
-                    , qsImapPassword.toStdString());
-
-    m_bitmail->AllowStranger(fImapAllowStranger);
-}
-//! [6]
-
 void MainWindow::onConfigBtnClicked()
 {
     OptionDialog optDialog(false, this);
@@ -380,31 +320,6 @@ void MainWindow::onConfigBtnClicked()
     }
     return ;
 }
-
-//! [7]
-void MainWindow::open()
-//! [7] //! [8]
-{
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Profile"));
-    if (fileName.isEmpty()){
-        return ;
-    }
-    BMQTApplication::LoadProfile(m_bitmail, fileName, "");
-}
-//! [8]
-
-//! [9]
-bool MainWindow::save()
-//! [9] //! [10]
-{
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Profile"));
-    if (fileName.isEmpty()){
-        return false;
-    }
-    BMQTApplication::SaveProfile(m_bitmail, fileName);
-    return true;
-}
-//! [10]
 
 //! [15]
 void MainWindow::documentWasModified()
