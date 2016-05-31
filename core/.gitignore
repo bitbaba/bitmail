@@ -35,3 +35,5 @@
 /INSTALL
 /install-sh
 /missing
+/config.status
+/Makefile
