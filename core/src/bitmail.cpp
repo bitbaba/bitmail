@@ -272,6 +272,12 @@ int BitMail::SaveProfile(const std::string & passphrase
 	return 0;
 }
 
+int BitMail::SetPassphrase(const std::string & passphrase)
+{
+	m_profile->SetPassphrase(passphrase);
+	return bmOk;
+}
+
 std::string BitMail::GetEmail() const
 {
     return m_profile->GetEmail();

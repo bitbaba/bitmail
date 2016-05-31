@@ -96,6 +96,8 @@ public:
     int SaveProfile(const std::string & passphrase
     				, std::string & keypem
 					, std::string & certpem);
+					
+	int SetPassphrase(const std::string & passphrase);
 
     std::string GetEmail() const;
 
