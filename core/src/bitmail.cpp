@@ -90,9 +90,21 @@ int BitMail::InitNetwork( const std::string & txurl
     return bmOk;
 }
 
+int BitMail::SetTxUrl(const std::string & u)
+{
+	m_mc->SetTxUrl(u);
+	return bmOk;
+}
+
 std::string BitMail::GetTxUrl() const
 {
 	return m_mc->GetTxUrl();
+}
+
+int BitMail::SetTxLogin(const std::string & l)
+{
+	m_mc->SetTxLogin(l);
+	return bmOk;
 }
 
 std::string BitMail::GetTxLogin() const
@@ -100,9 +112,21 @@ std::string BitMail::GetTxLogin() const
 	return m_mc->GetTxLogin();
 }
 
+int BitMail::SetTxPassword(const std::string & p)
+{
+	m_mc->SetTxPassword(p);
+	return bmOk;
+}
+
 std::string BitMail::GetTxPassword() const
 {
 	return m_mc->GetTxPassword();
+}
+
+int BitMail::SetRxUrl(const std::string & u)
+{
+	m_mc->SetRxUrl(u);
+	return bmOk;
 }
 
 std::string BitMail::GetRxUrl() const
@@ -110,9 +134,21 @@ std::string BitMail::GetRxUrl() const
 	return m_mc->GetRxUrl();
 }
 
+int BitMail::SetRxLogin(const std::string & l)
+{
+	m_mc->SetRxLogin(l);
+	return bmOk;
+}
+
 std::string BitMail::GetRxLogin() const
 {
 	return m_mc->GetRxLogin();
+}
+
+int BitMail::SetRxPassword(const std::string & p)
+{
+	m_mc->SetRxPassword(p);
+	return bmOk;
 }
 
 std::string BitMail::GetRxPassword() const

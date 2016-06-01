@@ -68,6 +68,18 @@ int CMailClient::InitTx(const std::string & url
     return 0;
 }
 
+void CMailClient::SetTxUrl(const std::string & u)
+{
+	
+}
+void CMailClient::SetTxLogin(const std::string & l)
+{
+	
+}
+void CMailClient::SetTxPassword(const std::string & p)
+{
+	
+}
 std::string CMailClient::GetTxUrl() const
 {
 	return m_txurl;
@@ -100,6 +112,19 @@ int CMailClient::InitRx(const std::string & url
      */
     m_rxIdle = curl_easy_init();
     return 0;
+}
+
+void CMailClient::SetRxUrl(const std::string & u)
+{
+	
+}
+void CMailClient::SetRxLogin(const std::string & l)
+{
+	
+}
+void CMailClient::SetRxPassword(const std::string & p)
+{
+	
 }
 
 std::string CMailClient::GetRxUrl() const

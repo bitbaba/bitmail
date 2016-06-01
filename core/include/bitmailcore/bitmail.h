@@ -58,16 +58,28 @@ public:
                     , const std::string & rxurl
                     , const std::string & rxuser
                     , const std::string & rxpass);
-					
-	std::string GetTxUrl() const;
+    
+    int SetTxUrl(const std::string & u);
 	
+    std::string GetTxUrl() const;
+	
+    int SetTxLogin(const std::string & l);
+    
 	std::string GetTxLogin() const;
+	
+	int SetTxPassword(const std::string & p);
 	
 	std::string GetTxPassword() const;
 	
+	int SetRxUrl(const std::string & u);
+	
 	std::string GetRxUrl() const;
 	
+	int SetRxLogin(const std::string & l);
+	
 	std::string GetRxLogin() const;
+	
+	int SetRxPassword(const std::string & p);
 	
 	std::string GetRxPassword() const;
 					

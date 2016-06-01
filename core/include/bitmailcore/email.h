@@ -47,17 +47,23 @@ public:
     int InitTx( const std::string & url
               , const std::string & user
               , const std::string & pass);
-			  
+	
+    void SetTxUrl(const std::string & u);
 	std::string GetTxUrl() const;
+	void SetTxLogin(const std::string & l);
 	std::string GetTxLogin() const;
+	void SetTxPassword(const std::string & p);
 	std::string GetTxPassword() const;
 
     int InitRx( const std::string & url
               , const std::string & user
               , const std::string & pass);
-			  
+    
+    void SetRxUrl(const std::string & u);
 	std::string GetRxUrl() const;
+	void SetRxLogin(const std::string & l);
 	std::string GetRxLogin() const;
+	void SetRxPassword(const std::string &p);
 	std::string GetRxPassword() const;
 	
     int SendMsg( const std::string & from
