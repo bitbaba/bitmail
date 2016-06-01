@@ -64,21 +64,20 @@ int CMailClient::InitTx(const std::string & url
     }
     m_txuser= user;
     m_txpass= pass;
-    m_tx = curl_easy_init();
     return 0;
 }
 
 void CMailClient::SetTxUrl(const std::string & u)
 {
-	
+	m_txurl = u;
 }
 void CMailClient::SetTxLogin(const std::string & l)
 {
-	
+	m_txuser = l;
 }
 void CMailClient::SetTxPassword(const std::string & p)
 {
-	
+	m_txpass = p;
 }
 std::string CMailClient::GetTxUrl() const
 {
@@ -105,26 +104,20 @@ int CMailClient::InitRx(const std::string & url
     }
     m_rxuser= user;
     m_rxpass= pass;
-    m_rx = curl_easy_init();
-    
-    /**
-     * Prepare for IDLC connection handle
-     */
-    m_rxIdle = curl_easy_init();
     return 0;
 }
 
 void CMailClient::SetRxUrl(const std::string & u)
 {
-	
+	m_rxurl = u;
 }
 void CMailClient::SetRxLogin(const std::string & l)
 {
-	
+	m_rxuser = l;
 }
 void CMailClient::SetRxPassword(const std::string & p)
 {
-	
+	m_rxpass = p;
 }
 
 std::string CMailClient::GetRxUrl() const
@@ -193,6 +186,10 @@ int CMailClient::SendMsg( const std::string & from, const std::vector<std::strin
      * <MimeBodyTail>
      */
     sstrmMail << "\r\n";
+
+    if (!m_tx){
+    	m_tx = curl_easy_init();
+    }
 
     CURL * curl = (CURL * ) m_tx;
     CURLcode res = CURLE_OK;
@@ -274,6 +271,10 @@ int CMailClient::GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist)
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
+
+    if (!m_rx){
+    	m_rx = curl_easy_init();
+    }
 
     CURL *curl = (CURL * )m_rx;
     CURLcode res = CURLE_OK;
@@ -370,6 +371,10 @@ int CMailClient::GetUnseenMessageByMessageNo(MessageNo msgno, std::string & smim
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
 
+    if (!m_rx){
+    	m_rx = curl_easy_init();
+    }
+
     CURL *curl = (CURL * )m_rx;
     CURLcode res = CURLE_OK;
 
@@ -425,6 +430,10 @@ int CMailClient::StoreFlag(MessageNo msgno, const std::string & flag)
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
+
+    if (!m_rx){
+    	m_rx = curl_easy_init();
+    }
 
     CURL *curl = (CURL * )m_rx;
     CURLcode res = CURLE_OK;
@@ -487,6 +496,10 @@ int CMailClient::Expunge()
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
+
+    if (!m_rx){
+    	m_rx = curl_easy_init();
+    }
 
     CURL *curl = (CURL * )m_rx;
     CURLcode res = CURLE_OK;
@@ -624,6 +637,10 @@ int CMailClient::StartIdle(unsigned int timeout)
      * Prepare for IDLE connection handle
      * http://tools.ietf.org/html/rfc2177
      */
+	if (!m_rxIdle){
+		m_rxIdle = curl_easy_init();
+	}
+
     CURL * curl = (CURL *)m_rxIdle;
     curl_easy_setopt(curl, CURLOPT_USERNAME, m_rxuser.c_str());
     curl_easy_setopt(curl, CURLOPT_PASSWORD, m_rxpass.c_str());
