@@ -473,10 +473,15 @@ std::string CX509Cert::GetPrivateKeyAsEncryptedPem()
 */
 int CX509Cert::SetPassphrase(const std::string & passphrase)
 {
+	if (m_passphrase == passphrase){
+		return 0;
+	}
+
 	EVP_PKEY *pkey = GetPrivateKey();
 	if (pkey == NULL){
 		return 1;
 	}
+
 	std::string sKeyPem = PKeyToPem(pkey, passphrase);
 	if (sKeyPem.empty()){
 		return 2;
