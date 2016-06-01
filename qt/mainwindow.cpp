@@ -63,45 +63,58 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     if (m_bitmail != NULL){
         BMQTApplication::LoadProfile(m_bitmail, email, passphrase);
     }
-    QVBoxLayout *leftLayout = new QVBoxLayout;
-    QHBoxLayout *mainLayout = new QHBoxLayout;
-    blist = new QListWidget;
-    leftLayout->addWidget(blist);
-    mainLayout->addLayout(leftLayout);
-
-    QVBoxLayout * rightLayout = new QVBoxLayout;
-
-    mlist = new QListWidget;
-    textEdit = new QTextEdit;
-
-    QHBoxLayout * btnLayout = new QHBoxLayout;
-    btnSend = new QPushButton(tr("Send"));
-    btnSend->setFixedWidth(64);
-    btnSend->setFixedHeight(32);
-    connect(btnSend, SIGNAL(clicked()), this, SLOT(onSendBtnClicked()));
-
-    btnLayout->addWidget(btnSend);
-    btnLayout->setAlignment(btnSend, Qt::AlignLeft);
-
-    mainLayout->addLayout(rightLayout);
-
-    QWidget * wrap = new QWidget(this);
-    wrap->setLayout(mainLayout);
-    setCentralWidget(wrap);
 
     createActions();
     createToolBars();
     createStatusBar();
 
+    QVBoxLayout *leftLayout = new QVBoxLayout;
+    QHBoxLayout *mainLayout = new QHBoxLayout;
+    QVBoxLayout * rightLayout = new QVBoxLayout;
+    QHBoxLayout * btnLayout = new QHBoxLayout;
+    blist = new QListWidget;
+    blist->setIconSize(QSize(48,48));
+    leftLayout->addWidget(blist);
+    mainLayout->addLayout(leftLayout);
+    mlist = new QListWidget;
+    textEdit = new QTextEdit;
+    btnSend = new QPushButton(tr("Send"));
+    btnSend->setFixedWidth(64);
+    btnSend->setFixedHeight(32);
+    btnLayout->addWidget(btnSend);
+    btnLayout->setAlignment(btnSend, Qt::AlignLeft);
     rightLayout->addWidget(mlist);
     rightLayout->addWidget(chatToolbar);
     rightLayout->addWidget(textEdit);
     rightLayout->addLayout(btnLayout);
+    mainLayout->addLayout(rightLayout);
+    QWidget * wrap = new QWidget(this);
+    wrap->setLayout(mainLayout);
+    setCentralWidget(wrap);
 
-    // Populate buddy list
-    blist->insertItem(0, QString::fromStdString(m_bitmail->GetEmail()));
+    // Add Myself to buddy list
+    QListWidgetItem * me = new QListWidgetItem(QIcon(":/images/i.png")
+                                                  , tr("me"));
+    me->setData(Qt::UserRole, QVariant(QString::fromStdString(m_bitmail->GetEmail())));
+    blist->insertItem(0, me);
 
+    std::vector<std::string> vecEmails;
+    m_bitmail->GetBuddies(vecEmails);
+    for (std::vector<std::string>::const_iterator it = vecEmails.begin()
+         ; it != vecEmails.end()
+         ; ++it){
+        std::string sBuddyNick = m_bitmail->GetBuddyCommonName(*it);
+        QString qsNick = QString::fromStdString(sBuddyNick);
+        QListWidgetItem *buddy = new QListWidgetItem(QIcon(":/images/head.png")
+                                                     , qsNick);
+        buddy->setData(Qt::UserRole, QVariant(QString::fromStdString(*it)));
+        blist->addItem(buddy);
+    }
     // Load message cache
+
+    // Add signals
+    connect(btnSend, SIGNAL(clicked())
+            , this, SLOT(onSendBtnClicked()));
 
     connect(textEdit->document(), SIGNAL(contentsChanged()),
             this, SLOT(documentWasModified()));
@@ -297,6 +310,32 @@ void MainWindow::onStrangerBtnClicked(bool fchecked)
 
 void MainWindow::onSendBtnClicked()
 {
+    QString qsMsg;
+    if (textAct->isChecked()){
+        qsMsg = textEdit->toHtml();
+    }else{
+        qsMsg = textEdit->toPlainText();
+    }
+
+    // If you have not setup a QTextCodec for QString & C-String(ANSI-MB)
+    // toLatin1() ignore any codec;
+    // toLocal8Bit use QTextCodec::codecForLocale(),
+    // toAscii() use QTextCodec::setCodecForCStrings()
+    // toUtf8() use UTF8 codec
+
+    // QTextCodec::codecForLocale() guess the MOST suitable codec for current locale,
+    // if application has not set codec for locale by setCodecForLocale;
+
+    std::string sMsg = qsMsg.toStdString();
+    int nMsgLen = sMsg.length();
+    const void * px = sMsg.c_str();
+    (void)px;
+    (void)nMsgLen;
+
+    // There are bugs in Qt-Creator's memory view utlity;
+    // open <address> in memory window,
+    // select the value of the <address>,
+    // jump to <value>(little-endien) in a NEW memory window, note: NEW
     return ;
 }
 

@@ -22,13 +22,21 @@ LoginDialog::LoginDialog(QWidget *parent) :
     lbLogo->setPixmap(imgLogo);
 
     m_lePassphrase = findChild<QLineEdit*>("lePassphrase");
+    m_lePassphrase->setFixedHeight(32);
+
     m_cbEmail = findChild<QComboBox*>("cbEmail");
+    m_cbEmail->setFixedHeight(48);
+    m_cbEmail->setIconSize(QSize(48,48));
 
     QStringList sList = BMQTApplication::GetProfiles();
     for (QStringList::iterator it = sList.begin(); it != sList.end(); it++){
         QString qsEmail = *it;
         QFileInfo fi(qsEmail);
         m_cbEmail->addItem(QIcon(":/images/head.png"),  fi.fileName());
+    }
+
+    if (m_cbEmail->count()){
+        m_lePassphrase->setFocus();
     }
 }
 

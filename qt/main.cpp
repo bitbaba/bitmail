@@ -47,6 +47,8 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QTextStream>
+#include <QTextCodec>
+#include <QThread>
 
 #include "optiondialog.h"
 #include "logindialog.h"
@@ -58,10 +60,37 @@
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(bitmail);
-    QApplication app(argc, argv);
-    app.setOrganizationName("QtProject");
-    app.setApplicationName("Application Example");
 
+    QApplication app(argc, argv);
+    app.setOrganizationName(("BitMail"));
+    app.setApplicationName(("BitMail Qt Client"));
+
+    // About locale
+    // http://doc.qt.io/qt-4.8/qlocale.html
+    // 1) track system locale, that is, you do NOT call QLocale::setDefault(locale);
+    // 2) or use locale specified by custom in arguments, like this: QLocale::setDefault(QLocale(lang, coutry));
+    // 3) use UTF-8 as default text codec, between unicode and ansi
+
+    // Query current locale by
+    QLocale().name();
+
+    // Query system locale by
+    QLocale::system().name();
+
+    // TODO: Locale from arguments
+    // int lang = QLocale::Chinese;
+    // int cout = QLocale::China;
+    // QLocale::setDefault(QLocale(lang, cout));
+
+    // Codec by UTF-8
+    // http://doc.qt.io/qt-5/qtextcodec.html#setCodecForLocale
+    // http://www.iana.org/assignments/character-sets/character-sets.xml
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+    // Deprecated above Qt-5.0
+    // default use UTF-8 for c-string & translation
+    //QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+    //QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
+    // Get Account Profile
     QString qsEmail, qsPassphrase;
 
     LoginDialog loginDialog;
