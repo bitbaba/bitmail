@@ -90,7 +90,7 @@ private:
 private:
     QTextEdit *textEdit;
     QListWidget * blist;
-    QListWidget * mlist;
+    QTextEdit *msgView;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;

@@ -76,14 +76,15 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     blist->setIconSize(QSize(48,48));
     leftLayout->addWidget(blist);
     mainLayout->addLayout(leftLayout);
-    mlist = new QListWidget;
+    msgView = new QTextEdit;
+    msgView->setReadOnly(true);
     textEdit = new QTextEdit;
     btnSend = new QPushButton(tr("Send"));
     btnSend->setFixedWidth(64);
     btnSend->setFixedHeight(32);
     btnLayout->addWidget(btnSend);
     btnLayout->setAlignment(btnSend, Qt::AlignLeft);
-    rightLayout->addWidget(mlist);
+    rightLayout->addWidget(msgView);
     rightLayout->addWidget(chatToolbar);
     rightLayout->addWidget(textEdit);
     rightLayout->addLayout(btnLayout);
@@ -96,7 +97,11 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     QListWidgetItem * me = new QListWidgetItem(QIcon(":/images/i.png")
                                                   , tr("me"));
     me->setData(Qt::UserRole, QVariant(QString::fromStdString(m_bitmail->GetEmail())));
+
     blist->insertItem(0, me);
+
+    blist->setCurrentRow(0);
+
 
     std::vector<std::string> vecEmails;
     m_bitmail->GetBuddies(vecEmails);
@@ -116,6 +121,8 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     connect(btnSend, SIGNAL(clicked())
             , this, SLOT(onSendBtnClicked()));
 
+    btnSend->setShortcut(QKeySequence("Ctrl+Return"));
+
     connect(textEdit->document(), SIGNAL(contentsChanged()),
             this, SLOT(documentWasModified()));
 
@@ -124,7 +131,10 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
 #endif
 
     setWindowIcon(QIcon(":/images/bitmail.png"));
+
     setWindowTitle(tr("BitMail"));
+
+    textEdit->setFocus();
 }
 //! [2]
 
@@ -312,9 +322,9 @@ void MainWindow::onSendBtnClicked()
 {
     QString qsMsg;
     if (textAct->isChecked()){
-        qsMsg = textEdit->toHtml();
-    }else{
         qsMsg = textEdit->toPlainText();
+    }else{
+        qsMsg = textEdit->toHtml();
     }
 
     // If you have not setup a QTextCodec for QString & C-String(ANSI-MB)
@@ -327,10 +337,11 @@ void MainWindow::onSendBtnClicked()
     // if application has not set codec for locale by setCodecForLocale;
 
     std::string sMsg = qsMsg.toStdString();
-    int nMsgLen = sMsg.length();
-    const void * px = sMsg.c_str();
-    (void)px;
-    (void)nMsgLen;
+    (void)sMsg;
+
+    msgView->append(QString::fromStdString(sMsg));
+
+    textEdit->clear();
 
     // There are bugs in Qt-Creator's memory view utlity;
     // open <address> in memory window,
