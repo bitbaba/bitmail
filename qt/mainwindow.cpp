@@ -51,6 +51,8 @@
 #include "mainwindow.h"
 //! [0]
 
+#include "rxthread.h"
+#include "txthread.h"
 #include "optiondialog.h"
 #include "logindialog.h"
 #include "main.h"
@@ -64,6 +66,14 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
         BMQTApplication::LoadProfile(m_bitmail, email, passphrase);
     }
 
+    m_rxth = (new RxThread(m_bitmail, 1000));
+
+    m_txth = (new TxThread(m_bitmail, 1000));
+
+    connect(this, SIGNAL(readyToSend(QString,QString)), m_txth, SLOT(onSendMessage(QString,QString)));
+
+    m_txth->start();
+
     createActions();
     createToolBars();
     createStatusBar();
@@ -74,11 +84,15 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     QHBoxLayout * btnLayout = new QHBoxLayout;
     blist = new QListWidget;
     blist->setIconSize(QSize(48,48));
+    blist->setFixedWidth(192);
     leftLayout->addWidget(blist);
     mainLayout->addLayout(leftLayout);
-    msgView = new QTextEdit;
-    msgView->setReadOnly(true);
+    msgView = new QListWidget;
+    msgView->setIconSize(QSize(48,48));
+    msgView->setSpacing(2);
     textEdit = new QTextEdit;
+    textEdit->setMinimumWidth(400);
+    textEdit->setFixedHeight(96);
     btnSend = new QPushButton(tr("Send"));
     btnSend->setFixedWidth(64);
     btnSend->setFixedHeight(32);
@@ -101,7 +115,6 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     blist->insertItem(0, me);
 
     blist->setCurrentRow(0);
-
 
     std::vector<std::string> vecEmails;
     m_bitmail->GetBuddies(vecEmails);
@@ -178,31 +191,26 @@ void MainWindow::createActions()
     do{
         snapAct = new QAction(QIcon(":/images/snap.png"), tr("&Snapshot"), this);
         snapAct->setStatusTip(tr("Snapshot"));
-        snapAct->setEnabled(false);
     }while(0);
 
     do{
         fileAct = new QAction(QIcon(":/images/file.png"), tr("&File"), this);
         fileAct->setStatusTip(tr("File"));
-        fileAct->setEnabled(false);
     }while(0);
 
     do{
         emojAct = new QAction(QIcon(":/images/emoj.png"), tr("&Emoji"), this);
         emojAct->setStatusTip(tr("Emoji"));
-        emojAct->setEnabled(false);
     }while(0);
 
     do{
         soundAct = new QAction(QIcon(":/images/sound.png"), tr("&Sound"), this);
         soundAct->setStatusTip(tr("Sound"));
-        soundAct->setEnabled(false);
     }while(0);
 
     do{
         videoAct = new QAction(QIcon(":/images/video.png"), tr("&Video"), this);
         videoAct->setStatusTip(tr("Video"));
-        videoAct->setEnabled(false);
     }while(0);
 
     do{
@@ -220,7 +228,6 @@ void MainWindow::createActions()
     do{
         liveAct = new QAction(QIcon(":/images/live.png"), tr("&Live"), this);
         liveAct->setStatusTip(tr("Live"));
-        liveAct->setEnabled(false);
     }while(0);
 
     do{
@@ -234,6 +241,12 @@ void MainWindow::createActions()
         payAct = new QAction(QIcon(":/images/bitcoin.png"), tr("&Pay"), this);
         payAct->setStatusTip(tr("Pay by Bitcoin"));
         connect(payAct, SIGNAL(triggered(bool)), this, SLOT(onPayBtnClicked(bool)));
+    }while(0);
+
+    do{
+        walletAct = new QAction(QIcon(":/images/wallet.s.png"), tr("&BitCoinWallet"), this);
+        walletAct->setStatusTip(tr("Configure Bitcoin wallet"));
+        connect(walletAct, SIGNAL(triggered(bool)), this, SLOT(onWalletBtnClicked(bool)));
     }while(0);
 }
 //! [24]
@@ -249,9 +262,9 @@ void MainWindow::createToolBars()
     editToolBar->addAction(inviteAct);
 
     chatToolbar = addToolBar(tr("Chat"));
-    chatToolbar->addAction(textAct);
-    chatToolbar->addAction(styleAct);
-    chatToolbar->addAction(colorAct);
+    //chatToolbar->addAction(textAct);
+    //chatToolbar->addAction(styleAct);
+    //chatToolbar->addAction(colorAct);
     chatToolbar->addAction(emojAct);
     chatToolbar->addAction(snapAct);
     chatToolbar->addAction(fileAct);
@@ -260,6 +273,9 @@ void MainWindow::createToolBars()
     chatToolbar->addAction(liveAct);
     chatToolbar->addAction(payAct);
     chatToolbar->setIconSize(QSize(24,24));
+
+    walletToolbar = addToolBar(tr("Wallet"));
+    walletToolbar->addAction(walletAct);
 }
 //! [30]
 
@@ -270,15 +286,6 @@ void MainWindow::createStatusBar()
     statusBar()->showMessage(tr("Ready"));
 }
 //! [33]
-
-
-//! [48]
-QString MainWindow::strippedName(const QString &fullFileName)
-//! [48] //! [49]
-{
-    return QFileInfo(fullFileName).fileName();
-}
-//! [49]
 
 void MainWindow::onStyleBtnClicked()
 {
@@ -300,8 +307,9 @@ void MainWindow::onColorBtnClicked()
 
 void MainWindow::onTextBtnClicked(bool fchecked)
 {
-    styleAct->setEnabled(!fchecked);
-    colorAct->setEnabled(!fchecked);
+    (void)fchecked;
+    //styleAct->setEnabled(!fchecked);
+    //colorAct->setEnabled(!fchecked);
     //emojAct->setEnabled(!fchecked);
     //snapAct->setEnabled(!fchecked);
     //soundAct->setEnabled(!fchecked);
@@ -321,12 +329,7 @@ void MainWindow::onStrangerBtnClicked(bool fchecked)
 void MainWindow::onSendBtnClicked()
 {
     QString qsMsg;
-    if (textAct->isChecked()){
-        qsMsg = textEdit->toPlainText();
-    }else{
-        qsMsg = textEdit->toHtml();
-    }
-
+    qsMsg = textEdit->toPlainText();
     // If you have not setup a QTextCodec for QString & C-String(ANSI-MB)
     // toLatin1() ignore any codec;
     // toLocal8Bit use QTextCodec::codecForLocale(),
@@ -339,7 +342,14 @@ void MainWindow::onSendBtnClicked()
     std::string sMsg = qsMsg.toStdString();
     (void)sMsg;
 
-    msgView->append(QString::fromStdString(sMsg));
+    QString qsTo = blist->currentItem()->data(Qt::UserRole).toString();
+
+    emit readyToSend(qsTo, QString::fromStdString(sMsg));
+
+    populateMessage(true
+                    , QString::fromStdString(m_bitmail->GetEmail())
+                    , QString::fromStdString(sMsg));
+
 
     textEdit->clear();
 
@@ -407,3 +417,29 @@ void MainWindow::documentWasModified()
 
 }
 //! [16]
+
+void MainWindow::onWalletBtnClicked()
+{
+
+}
+
+void MainWindow::populateMessage(bool fTx, const QString &from, const QString &msg)
+{
+    QListWidgetItem * msgElt = new QListWidgetItem(QIcon(":/images/bubble.png")
+                                                   , msg);
+
+    msgElt->setFlags((Qt::ItemIsSelectable
+                      | Qt::ItemIsEditable)
+                      | Qt::ItemIsEnabled);
+
+    msgElt->setBackgroundColor(fTx ? Qt::lightGray
+                                   : QColor(Qt::green).lighter());
+
+    msgElt->setData(Qt::UserRole, QVariant(from));
+
+    msgView->addItem(msgElt);
+
+    msgView->scrollToBottom();
+
+    return;
+}

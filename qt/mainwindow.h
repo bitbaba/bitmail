@@ -43,6 +43,7 @@
 
 #include <QMainWindow>
 
+
 QT_BEGIN_NAMESPACE
 class QAction;
 class QMenu;
@@ -59,6 +60,8 @@ class QJsonValue;
 QT_END_NAMESPACE
 
 class BitMail;
+class RxThread;
+class TxThread;
 
 //! [0]
 class MainWindow : public QMainWindow
@@ -80,21 +83,25 @@ private slots:
     void onSendBtnClicked();
     void onConfigBtnClicked();
     void onPayBtnClicked();
+    void onWalletBtnClicked();
+
 private:
     void createActions();
     void createToolBars();
     void createStatusBar();
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
-    QString strippedName(const QString &fullFileName);
+    void populateMessage(bool fTx, const QString & from, const QString & msg);
+
 private:
     QTextEdit *textEdit;
     QListWidget * blist;
-    QTextEdit *msgView;
+    QListWidget *msgView;
 
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QToolBar *chatToolbar;
+    QToolBar *walletToolbar;
     QPushButton * btnSend;
 
     QAction *configAct;
@@ -112,8 +119,14 @@ private:
     QAction *liveAct;
     QAction *textAct;
     QAction *payAct;
+    QAction *walletAct;
 private:
     BitMail *m_bitmail;
+    RxThread *m_rxth;
+    TxThread *m_txth;
+
+signals:
+    void readyToSend(const QString &, const QString &);
 };
 //! [0]
 

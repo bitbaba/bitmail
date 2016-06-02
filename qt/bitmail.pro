@@ -3,11 +3,17 @@ QT += widgets
 HEADERS       = mainwindow.h \
     optiondialog.h \
     logindialog.h \
-    main.h
+    main.h \
+    txthread.h \
+    rxthread.h \
+    msgqueue.h
 SOURCES       = main.cpp \
                 mainwindow.cpp \
                 optiondialog.cpp \
-    logindialog.cpp
+    logindialog.cpp \
+    txthread.cpp \
+    rxthread.cpp \
+    msgqueue.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
