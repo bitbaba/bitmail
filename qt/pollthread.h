@@ -15,12 +15,14 @@ public:
     ~PollThread();
     void run();
     void NotifyInboxPollEvent(unsigned int count);
+    void stop();
 signals:
     void inboxPollEvent();
 private:
     BitMail * m_bitmail;
     unsigned int m_lastCount;
     unsigned int m_reIdleInterval;
+    bool m_fStopFlag;
 };
 
 #endif // POLLTHREAD_H

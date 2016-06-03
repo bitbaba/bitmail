@@ -6,10 +6,11 @@ BitMailMessage::BitMailMessage()
 
 }
 
-BitMailMessage::BitMailMessage(const QString &f, const QString &t, const QString &m)
-    :m_from(f)
-    ,m_to(t)
-    ,m_msg(m)
+BitMailMessage::BitMailMessage(const QString &f, const QString &t, const QString &m, const QString & c)
+    : m_from(f)
+    , m_to(t)
+    , m_msg(m)
+    , m_cert(c)
 {
 
 }
@@ -34,6 +35,11 @@ QString BitMailMessage::msg() const
     return m_msg;
 }
 
+QString BitMailMessage::cert() const
+{
+    return m_cert;
+}
+
 void BitMailMessage::setFrom(const QString &f)
 {
     m_from = f;
@@ -47,6 +53,11 @@ void BitMailMessage::setTo(const QString &t)
 void BitMailMessage::setMsg(const QString &m)
 {
     m_msg = m;
+}
+
+void BitMailMessage::setCert(const QString &c)
+{
+    m_cert = c;
 }
 
 MsgQueue::MsgQueue(unsigned int capcity)

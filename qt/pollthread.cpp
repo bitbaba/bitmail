@@ -10,7 +10,8 @@ int PollEventHandler(unsigned int count, void * p);
 PollThread::PollThread(BitMail * bm)
     : m_bitmail(bm)
     , m_lastCount(0)
-    , m_reIdleInterval(600*1000) // RFC recommended 30 minutes, here 10 minutes.
+    , m_reIdleInterval(60*1000) // RFC recommended 30 minutes, here less than that.
+    , m_fStopFlag(false)
 {
 
 }
@@ -24,13 +25,19 @@ void PollThread::run()
 {
     m_bitmail->OnPollEvent(PollEventHandler, this);
 
-    while(true){
-        //TODO: exit loop elegant!
+    while(!m_fStopFlag){
 
         m_bitmail->StartIdle(m_reIdleInterval);
 
         qDebug() << "poll timeout";
     }
+
+    qDebug() << "Poll Thread quit";
+}
+
+void PollThread::stop()
+{
+    m_fStopFlag = true;
 }
 
 void PollThread::NotifyInboxPollEvent(unsigned int count)

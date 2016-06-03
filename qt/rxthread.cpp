@@ -9,8 +9,8 @@ int MessageEventHandler(const char * from, const char * msg, const char * cert, 
 RxThread::RxThread(BitMail * bm)
     : m_bitmail(bm)
     , m_checkInterval(6*1000)
-    , m_rxq(1000)
     , m_inboxPoll(0)
+    , m_fStopFlag(false)
 {
 
 }
@@ -24,15 +24,25 @@ void RxThread::run()
 {
     m_bitmail->OnMessageEvent(MessageEventHandler, this);
 
-    while(true){
-        //TODO: exit loop elegant
-
+    while(!m_fStopFlag){
         // signal or timeout
         m_inboxPoll.tryAcquire(1, m_checkInterval);
 
         // check inbox
         m_bitmail->CheckInbox();
     }
+    qDebug() << "Rx Thread quit";
+}
+
+void RxThread::stop()
+{
+    m_fStopFlag = true;
+}
+
+void RxThread::NotifyNewMessage(const QString &from, const QString &msg, const QString &cert)
+{
+    emit gotMessage(from, msg, cert);
+    return ;
 }
 
 void RxThread::onInboxPollEvent()
@@ -44,11 +54,13 @@ int MessageEventHandler(const char * from, const char * msg, const char * cert, 
 {
     (void)from;    (void)msg;    (void)cert;    (void)p;
     RxThread * self = (RxThread *)p;
-    qDebug() << QString::fromStdString(from);
-    qDebug() << QByteArray::fromBase64(QByteArray(msg));
-    qDebug() << QByteArray::fromBase64(QByteArray(cert));
+    (void) self;
 
+    QString qsFrom = QString::fromStdString(from);
+    QString qsMsg  = QByteArray::fromBase64(QByteArray(msg));
+    QString qsCert = QByteArray::fromBase64(QByteArray(cert));
 
+    self->NotifyNewMessage(qsFrom, qsMsg, qsCert);
     return 0;
 }
 

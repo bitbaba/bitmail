@@ -11,17 +11,20 @@ private:
     QString m_from;
     QString m_to;
     QString m_msg;
+    QString m_cert;
 public:
     BitMailMessage();
-    BitMailMessage(const QString & f, const QString & t, const QString & m);
+    BitMailMessage(const QString & f, const QString & t, const QString & m, const QString & c);
     ~BitMailMessage();
 public:
     QString from() const;
     QString to() const;
     QString msg() const;
+    QString cert() const;
     void setFrom(const QString & f);
     void setTo(const QString & t);
     void setMsg(const QString & m);
+    void setCert(const QString & c);
 };
 
 class MsgQueue

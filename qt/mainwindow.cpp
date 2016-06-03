@@ -72,9 +72,14 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
 
     m_txth = (new TxThread(m_bitmail));
 
-    connect(this, SIGNAL(readyToSend(QString,QString)), m_txth, SLOT(onSendMessage(QString,QString)));
+    connect(this, SIGNAL(readyToSend(QString,QString))
+            , m_txth, SLOT(onSendMessage(QString,QString)));
 
-    connect(m_pollth, SIGNAL(inboxPollEvent()), m_rxth, SLOT(onInboxPollEvent()));
+    connect(m_pollth, SIGNAL(inboxPollEvent())
+            , m_rxth, SLOT(onInboxPollEvent()));
+
+    connect(m_rxth, SIGNAL(gotMessage(QString,QString,QString))
+            , this, SLOT(onNewMessage(QString,QString,QString)));
 
     m_pollth->start();
 
@@ -104,6 +109,7 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     btnSend = new QPushButton(tr("Send"));
     btnSend->setFixedWidth(64);
     btnSend->setFixedHeight(32);
+    btnSend->setEnabled(false);
     btnLayout->addWidget(btnSend);
     btnLayout->setAlignment(btnSend, Qt::AlignLeft);
     rightLayout->addWidget(msgView);
@@ -115,37 +121,21 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     wrap->setLayout(mainLayout);
     setCentralWidget(wrap);
 
-    // Add Myself to buddy list
-    QListWidgetItem * me = new QListWidgetItem(QIcon(":/images/i.png")
-                                                  , tr("me"));
-    me->setData(Qt::UserRole, QVariant(QString::fromStdString(m_bitmail->GetEmail())));
-
-    blist->insertItem(0, me);
-
-    blist->setCurrentRow(0);
-
-    std::vector<std::string> vecEmails;
-    m_bitmail->GetBuddies(vecEmails);
-    for (std::vector<std::string>::const_iterator it = vecEmails.begin()
-         ; it != vecEmails.end()
-         ; ++it){
-        std::string sBuddyNick = m_bitmail->GetBuddyCommonName(*it);
-        QString qsNick = QString::fromStdString(sBuddyNick);
-        QListWidgetItem *buddy = new QListWidgetItem(QIcon(":/images/head.png")
-                                                     , qsNick);
-        buddy->setData(Qt::UserRole, QVariant(QString::fromStdString(*it)));
-        blist->addItem(buddy);
-    }
-    // Load message cache
+    // Populate buddies list
+    populateBuddies();
 
     // Add signals
     connect(btnSend, SIGNAL(clicked())
             , this, SLOT(onSendBtnClicked()));
 
+
     btnSend->setShortcut(QKeySequence("Ctrl+Return"));
 
     connect(textEdit->document(), SIGNAL(contentsChanged()),
             this, SLOT(documentWasModified()));
+
+    connect(blist, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*))
+            , this, SLOT(onCurrentBuddy(QListWidgetItem*,QListWidgetItem*)));
 
 #if defined(MACOSX)
     setUnifiedTitleAndToolBarOnMac(true);
@@ -161,17 +151,27 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
 
 MainWindow::~MainWindow()
 {
-    m_txth->exit();
+    m_rxth->stop();
+    m_txth->stop();
+    m_pollth->stop();
+
+    m_rxth->wait();
+    m_txth->wait();
+    m_pollth->wait();
+
+    qDebug() << "RTX threads quit.";
+
     delete m_txth; m_txth = NULL;
-
-    m_rxth->exit();
     delete m_rxth; m_rxth = NULL;
-
-    m_pollth->exit();
     delete m_pollth; m_pollth = NULL;
 
+    qDebug() << "Release thread resources.";
+
     if (m_bitmail != NULL){
+        qDebug() << "Dump profile";
         BMQTApplication::SaveProfile(m_bitmail);
+
+        qDebug() << "Release bitmail, clear deleted messages.";
         delete m_bitmail;
         m_bitmail = NULL;
     }
@@ -231,39 +231,18 @@ void MainWindow::createActions()
     }while(0);
 
     do{
-        styleAct = new QAction(QIcon(":/images/style.png"), tr("&Font"), this);
-        connect(styleAct, SIGNAL(triggered()), this, SLOT(onStyleBtnClicked()));
-        styleAct->setStatusTip(tr("Font"));
-    }while(0);
-
-    do{
-        colorAct = new QAction(QIcon(":/images/color.png"), tr("&Color"), this);
-        connect(colorAct, SIGNAL(triggered()), this, SLOT(onColorBtnClicked()));
-        colorAct->setStatusTip(tr("Color"));
-    }while(0);
-
-    do{
         liveAct = new QAction(QIcon(":/images/live.png"), tr("&Live"), this);
         liveAct->setStatusTip(tr("Live"));
     }while(0);
 
     do{
-        textAct = new QAction(QIcon(":/images/text.png"), tr("&Text"), this);
-        textAct->setStatusTip(tr("Text"));
-        textAct->setCheckable(true);
-        connect(textAct, SIGNAL(triggered(bool)), this, SLOT(onTextBtnClicked(bool)));
-    }while(0);
-
-    do{
         payAct = new QAction(QIcon(":/images/bitcoin.png"), tr("&Pay"), this);
         payAct->setStatusTip(tr("Pay by Bitcoin"));
-        connect(payAct, SIGNAL(triggered(bool)), this, SLOT(onPayBtnClicked(bool)));
     }while(0);
 
     do{
         walletAct = new QAction(QIcon(":/images/wallet.s.png"), tr("&BitCoinWallet"), this);
         walletAct->setStatusTip(tr("Configure Bitcoin wallet"));
-        connect(walletAct, SIGNAL(triggered(bool)), this, SLOT(onWalletBtnClicked(bool)));
     }while(0);
 }
 //! [24]
@@ -279,9 +258,6 @@ void MainWindow::createToolBars()
     editToolBar->addAction(inviteAct);
 
     chatToolbar = addToolBar(tr("Chat"));
-    //chatToolbar->addAction(textAct);
-    //chatToolbar->addAction(styleAct);
-    //chatToolbar->addAction(colorAct);
     chatToolbar->addAction(emojAct);
     chatToolbar->addAction(snapAct);
     chatToolbar->addAction(fileAct);
@@ -304,49 +280,16 @@ void MainWindow::createStatusBar()
 }
 //! [33]
 
-void MainWindow::onStyleBtnClicked()
-{
-    bool ok = false;
-    QFont font = QFontDialog::getFont(&ok, textEdit->font());
-    if (ok){
-        textEdit->setFont(font);
-    }
-    return ;
-}
-
-void MainWindow::onColorBtnClicked()
-{
-    QColor color = QColorDialog::getColor(Qt::green, this, tr("Select Color"), QColorDialog::DontUseNativeDialog);
-    textEdit->setTextColor(color);
-    textEdit->setAutoFillBackground(true);
-    return ;
-}
-
-void MainWindow::onTextBtnClicked(bool fchecked)
-{
-    (void)fchecked;
-    //styleAct->setEnabled(!fchecked);
-    //colorAct->setEnabled(!fchecked);
-    //emojAct->setEnabled(!fchecked);
-    //snapAct->setEnabled(!fchecked);
-    //soundAct->setEnabled(!fchecked);
-    //videoAct->setEnabled(!fchecked);
-    //fileAct->setEnabled(!fchecked);
-    return ;
-}
-
-void MainWindow::onStrangerBtnClicked(bool fchecked)
-{
-    if (fchecked){
-
-    }
-    return ;
-}
-
 void MainWindow::onSendBtnClicked()
 {
     QString qsMsg;
     qsMsg = textEdit->toPlainText();
+    if (qsMsg.isEmpty()){
+        qDebug() << "no message to send";
+        statusBar()->showMessage(tr("no message to send"), 3000);
+        return ;
+    }
+
     // If you have not setup a QTextCodec for QString & C-String(ANSI-MB)
     // toLatin1() ignore any codec;
     // toLocal8Bit use QTextCodec::codecForLocale(),
@@ -358,6 +301,15 @@ void MainWindow::onSendBtnClicked()
 
     std::string sMsg = qsMsg.toStdString();
     (void)sMsg;
+
+    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
+    (void)qsFrom;
+
+    if (blist->currentItem() == NULL){
+        qDebug() << "no current buddy selected";
+        statusBar()->showMessage(tr("no current buddy selected"), 3000);
+        return ;
+    }
 
     QString qsTo = blist->currentItem()->data(Qt::UserRole).toString();
 
@@ -460,3 +412,55 @@ void MainWindow::populateMessage(bool fTx, const QString &from, const QString &m
 
     return;
 }
+
+void MainWindow::onNewMessage(const QString &from, const QString &msg, const QString &cert)
+{
+    //TODO: cert check and buddy management
+    (void) cert;
+
+    //show message
+    populateMessage(false, from, msg);
+}
+
+void MainWindow::populateBuddies()
+{
+    // Add buddies
+    std::vector<std::string> vecEmails;
+    m_bitmail->GetBuddies(vecEmails);
+
+    for (std::vector<std::string>::const_iterator it = vecEmails.begin()
+         ; it != vecEmails.end(); ++it)
+    {
+        std::string sBuddyNick = m_bitmail->GetBuddyCommonName(*it);
+        QString qsNick = QString::fromStdString(sBuddyNick);
+        populateBuddy(QString::fromStdString(*it), qsNick);
+    }
+    return ;
+}
+
+void MainWindow::populateBuddy(const QString &email, const QString &nick)
+{
+    QListWidgetItem *buddy = new QListWidgetItem(QIcon(":/images/head.png"), nick);
+    buddy->setData(Qt::UserRole, QVariant(email));
+    blist->addItem(buddy);
+    return ;
+}
+
+void MainWindow::clearMsgView()
+{
+    return ;
+}
+
+void MainWindow::populateMsgView(const QString &email)
+{
+    (void )email;
+    return ;
+}
+
+void MainWindow::onCurrentBuddy(QListWidgetItem * current, QListWidgetItem * previous)
+{
+    (void)current;
+    (void)previous;
+    btnSend->setEnabled(true);
+}
+

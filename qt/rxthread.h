@@ -15,7 +15,11 @@ public:
     ~RxThread();
 public:
     void run();
-    void NotifyNewMessage();
+    void NotifyNewMessage(const QString & from
+                          , const QString & to
+                          , const QString & cert);
+    void stop();
+
 signals:
     void gotMessage(const QString & from
                         , const QString & msg
@@ -26,8 +30,8 @@ public slots:
 private:
     BitMail * m_bitmail;
     unsigned int m_checkInterval;
-    MsgQueue m_rxq;
     QSemaphore m_inboxPoll;
+    bool m_fStopFlag;
 };
 
 #endif // RXTHREAD_H

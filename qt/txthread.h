@@ -15,6 +15,7 @@ public:
     ~TxThread();
 public:
     void run();
+    void stop();
 signals:
     void messageSent(const QString & to
                      , const QString & msg);
@@ -27,6 +28,7 @@ public slots:
 private:
     BitMail * m_bitmail;
     MsgQueue m_txq;
+    bool m_fStopFlag;
 };
 
 #endif // TXTHREAD_H

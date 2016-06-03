@@ -38,6 +38,8 @@ LoginDialog::LoginDialog(QWidget *parent) :
     if (m_cbEmail->count()){
         m_lePassphrase->setFocus();
     }
+
+    setWindowIcon(QIcon(":/images/bitmail.png"));
 }
 
 LoginDialog::~LoginDialog()

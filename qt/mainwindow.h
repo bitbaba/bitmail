@@ -57,6 +57,7 @@ class QJsonDocument;
 class QJsonArray;
 class QJsonObject;
 class QJsonValue;
+class QListWidgetItem;
 QT_END_NAMESPACE
 
 class BitMail;
@@ -77,14 +78,12 @@ protected:
 
 private slots:
     void documentWasModified();
-    void onStyleBtnClicked();
-    void onColorBtnClicked();
-    void onTextBtnClicked(bool);
-    void onStrangerBtnClicked(bool);
     void onSendBtnClicked();
     void onConfigBtnClicked();
     void onPayBtnClicked();
     void onWalletBtnClicked();
+    void onNewMessage(const QString & from, const QString & msg, const QString & cert);
+    void onCurrentBuddy(QListWidgetItem * current, QListWidgetItem * previous);
 
 private:
     void createActions();
@@ -93,7 +92,10 @@ private:
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
     void populateMessage(bool fTx, const QString & from, const QString & msg);
-
+    void populateBuddy(const QString & email, const QString & nick);
+    void populateBuddies();
+    void clearMsgView();
+    void populateMsgView(const QString & email);
 private:
     QTextEdit *textEdit;
     QListWidget * blist;
@@ -112,13 +114,10 @@ private:
 
     QAction *snapAct;
     QAction *fileAct;
-    QAction *styleAct;
     QAction *emojAct;
     QAction *soundAct;
     QAction *videoAct;
-    QAction *colorAct;
     QAction *liveAct;
-    QAction *textAct;
     QAction *payAct;
     QAction *walletAct;
 private:
@@ -128,7 +127,7 @@ private:
     TxThread *m_txth;
 
 signals:
-    void readyToSend(const QString &, const QString &);
+    void readyToSend(const QString & to, const QString & msg);
 };
 //! [0]
 
