@@ -645,6 +645,9 @@ int CMailClient::StartIdle(unsigned int timeout)
     curl_easy_setopt(curl, CURLOPT_USERNAME, m_rxuser.c_str());
     curl_easy_setopt(curl, CURLOPT_PASSWORD, m_rxpass.c_str());
     curl_easy_setopt(curl, CURLOPT_URL, m_rxurl.c_str());
+
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     
     if (verboseFlag){
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
