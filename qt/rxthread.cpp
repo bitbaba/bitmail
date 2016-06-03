@@ -25,6 +25,8 @@ void RxThread::run()
     m_bitmail->OnMessageEvent(MessageEventHandler, this);
 
     while(true){
+        //TODO: exit loop elegant
+
         // signal or timeout
         m_inboxPoll.tryAcquire(1, m_checkInterval);
 
@@ -41,8 +43,12 @@ void RxThread::onInboxPollEvent()
 int MessageEventHandler(const char * from, const char * msg, const char * cert, void * p)
 {
     (void)from;    (void)msg;    (void)cert;    (void)p;
+    RxThread * self = (RxThread *)p;
     qDebug() << QString::fromStdString(from);
     qDebug() << QByteArray::fromBase64(QByteArray(msg));
+    qDebug() << QByteArray::fromBase64(QByteArray(cert));
+
+
     return 0;
 }
 

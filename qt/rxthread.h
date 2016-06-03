@@ -15,6 +15,7 @@ public:
     ~RxThread();
 public:
     void run();
+    void NotifyNewMessage();
 signals:
     void gotMessage(const QString & from
                         , const QString & msg

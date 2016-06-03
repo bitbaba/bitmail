@@ -161,6 +161,15 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
 
 MainWindow::~MainWindow()
 {
+    m_txth->exit();
+    delete m_txth; m_txth = NULL;
+
+    m_rxth->exit();
+    delete m_rxth; m_rxth = NULL;
+
+    m_pollth->exit();
+    delete m_pollth; m_pollth = NULL;
+
     if (m_bitmail != NULL){
         BMQTApplication::SaveProfile(m_bitmail);
         delete m_bitmail;

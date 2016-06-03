@@ -34,6 +34,8 @@ void TxThread::onGroupMessage(const QStringList &to, const QString &msg)
 void TxThread::run()
 {
     while(true){
+        //TODO: exit loop elegant.
+
         if (m_txq.readable(-1)){
             BitMailMessage msg = m_txq.pop();
             (void)msg;

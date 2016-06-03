@@ -25,7 +25,10 @@ void PollThread::run()
     m_bitmail->OnPollEvent(PollEventHandler, this);
 
     while(true){
+        //TODO: exit loop elegant!
+
         m_bitmail->StartIdle(m_reIdleInterval);
+
         qDebug() << "poll timeout";
     }
 }
