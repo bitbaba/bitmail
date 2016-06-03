@@ -60,6 +60,7 @@ class QJsonValue;
 QT_END_NAMESPACE
 
 class BitMail;
+class PollThread;
 class RxThread;
 class TxThread;
 
@@ -122,6 +123,7 @@ private:
     QAction *walletAct;
 private:
     BitMail *m_bitmail;
+    PollThread *m_pollth;
     RxThread *m_rxth;
     TxThread *m_txth;
 

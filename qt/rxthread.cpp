@@ -6,13 +6,10 @@
 static
 int MessageEventHandler(const char * from, const char * msg, const char * cert, void * p);
 
-static
-int PollEventHandler(unsigned int count, void * p);
-
-RxThread::RxThread(BitMail * bm, unsigned int qsize)
+RxThread::RxThread(BitMail * bm)
     : m_bitmail(bm)
-    , m_checkInterval(5*1000)
-    , m_rxq(qsize)
+    , m_checkInterval(6*1000)
+    , m_rxq(1000)
     , m_inboxPoll(0)
 {
 
@@ -25,19 +22,19 @@ RxThread::~RxThread()
 
 void RxThread::run()
 {
-    m_bitmail->OnPollEvent(PollEventHandler, this);
-
     m_bitmail->OnMessageEvent(MessageEventHandler, this);
 
     while(true){
-        m_inboxPoll.acquire(m_checkInterval);
+        // signal or timeout
+        m_inboxPoll.tryAcquire(1, m_checkInterval);
+
+        // check inbox
         m_bitmail->CheckInbox();
     }
 }
 
-void RxThread::NotifyInboxPollEvent(int count)
+void RxThread::onInboxPollEvent()
 {
-    (void)count;
     m_inboxPoll.release();
 }
 
@@ -45,13 +42,8 @@ int MessageEventHandler(const char * from, const char * msg, const char * cert, 
 {
     (void)from;    (void)msg;    (void)cert;    (void)p;
     qDebug() << QString::fromStdString(from);
+    qDebug() << QByteArray::fromBase64(QByteArray(msg));
     return 0;
 }
 
-int PollEventHandler(unsigned int count, void * p)
-{
-    (void)count;    (void)p;
-    RxThread * self = (RxThread *)p;
-    self->NotifyInboxPollEvent(count);
-    return 0;
-}
+

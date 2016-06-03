@@ -50,7 +50,7 @@
 
 #include "mainwindow.h"
 //! [0]
-
+#include "pollthread.h"
 #include "rxthread.h"
 #include "txthread.h"
 #include "optiondialog.h"
@@ -66,11 +66,19 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
         BMQTApplication::LoadProfile(m_bitmail, email, passphrase);
     }
 
-    m_rxth = (new RxThread(m_bitmail, 1000));
+    m_pollth = new PollThread(m_bitmail);
 
-    m_txth = (new TxThread(m_bitmail, 1000));
+    m_rxth = (new RxThread(m_bitmail));
+
+    m_txth = (new TxThread(m_bitmail));
 
     connect(this, SIGNAL(readyToSend(QString,QString)), m_txth, SLOT(onSendMessage(QString,QString)));
+
+    connect(m_pollth, SIGNAL(inboxPollEvent()), m_rxth, SLOT(onInboxPollEvent()));
+
+    m_pollth->start();
+
+    m_rxth->start();
 
     m_txth->start();
 

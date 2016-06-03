@@ -11,7 +11,7 @@ class TxThread : public QThread
 {
     Q_OBJECT
 public:
-    TxThread(BitMail * bm, unsigned int qsize);
+    TxThread(BitMail * bm);
     ~TxThread();
 public:
     void run();

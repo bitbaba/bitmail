@@ -3,9 +3,9 @@
 #include <bitmailcore/bitmail.h>
 
 
-TxThread::TxThread(BitMail * bm, unsigned int qsize)
+TxThread::TxThread(BitMail * bm)
     : m_bitmail(bm)
-    , m_txq(qsize)
+    , m_txq(1000)
 {
 
 }

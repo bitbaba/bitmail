@@ -6,14 +6,16 @@ HEADERS       = mainwindow.h \
     main.h \
     txthread.h \
     rxthread.h \
-    msgqueue.h
+    msgqueue.h \
+    pollthread.h
 SOURCES       = main.cpp \
                 mainwindow.cpp \
                 optiondialog.cpp \
     logindialog.cpp \
     txthread.cpp \
     rxthread.cpp \
-    msgqueue.cpp
+    msgqueue.cpp \
+    pollthread.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
