@@ -510,6 +510,9 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     std::string sBuddyCertPem = self->GetBuddyCert(sFrom);
     if (sBuddyCertPem.empty()){
         // Ignore bmStranger
+    	if (!self->AllowStranger()){
+    		return bmNoStranger;
+    	}
     }
 
     if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){

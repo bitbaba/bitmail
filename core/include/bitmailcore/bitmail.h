@@ -34,6 +34,7 @@ enum BMError{
     bmInvalidParam   =     22,
     bmPushCert       =     23,
 	bmIdleFail       =     24,
+	bmNoStranger     =     25,
 };
 
 typedef int (* PollEventCB)(unsigned int count, void * p);
