@@ -45,8 +45,10 @@ BitMail::BitMail()
 BitMail::~BitMail()
 {
     if (m_mc != NULL){
-        delete (m_mc);
-        m_mc = NULL;
+    	// Clear all <deleted> messages
+    	m_mc->Expunge();
+
+        delete (m_mc); m_mc = NULL;
     }
 }
 

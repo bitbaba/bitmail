@@ -79,6 +79,8 @@ public:
     
     int StartIdle(unsigned int timeout);
 
+    int Expunge();
+
 public:
     static int GetEmailAddrList(const std::string & addr, std::vector<std::string> & vecAddrs);
     
@@ -91,8 +93,6 @@ protected:
     
     int StoreFlag(MessageNo msgno, const std::string & flag);
     
-    int Expunge();
-
 protected:
     /* Auxiliary function that waits on the socket. */     
     int  CurlWait(void *curl, bool forRead, unsigned int & timeout_ms);

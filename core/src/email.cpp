@@ -48,7 +48,7 @@ CMailClient::~CMailClient()
         curl_easy_cleanup((CURL * )m_rx);
         m_rx = NULL;
     }
-    if (m_rxIdle){
+    if (false && m_rxIdle){
     	curl_easy_cleanup((CURL * )m_rxIdle);
     	m_rxIdle = NULL;
     }
