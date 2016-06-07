@@ -84,10 +84,6 @@ public:
 	
 	std::string GetRxPassword() const;
 					
-	int AllowStranger(bool fYes);
-	
-	bool AllowStranger() const;
-
     int SendMsg(const std::string & to, const std::string & msg);
 
     int GroupMsg(const std::vector<std::string> & to, const std::string & msg);
@@ -128,11 +124,11 @@ public:
 	std::string Decrypt(const std::string & code) const;
 
 	// Certificate attributes
-    std::string GetCommonName(const std::string & e) const;
+    std::string GetCommonName(const std::string & email) const;
 
-    std::string GetCert(const std::string & e) const;
+    std::string GetCert(const std::string & email) const;
 
-    std::string GetCertID(const std::string & e) const;
+    std::string GetCertID(const std::string & email) const;
 
     // Buddy
     int AddBuddy(const std::string & certpem);
@@ -140,6 +136,8 @@ public:
     int RemoveBuddy(const std::string & email);
 	
 	int GetBuddies(std::vector<std::string> & vecEmails) const;
+
+	bool IsBuddy(const std::string & certpem) const;
 
 protected:
 
@@ -153,9 +151,8 @@ protected:
     
     CMailClient        * m_mc;
 
+    // Key: email, Value: Certificate In Pem format
     std::map<std::string, std::string> m_buddies;
-	
-	bool                 m_fAllowStranger;
     
 public:
     CX509Cert          * m_profile;

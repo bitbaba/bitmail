@@ -941,7 +941,8 @@ std::string CX509Cert::GetID() const
     }
 
     const unsigned int SHA1_DIGEST_LENTH = 20;
-    const unsigned char HEXTABLE[17] = "0123456789ABCDEF";
+    const unsigned char BASE32TABLE[33] = "BM01346789ACDEFGHJKLNPQRSTUVWXYZ";
+    const unsigned char HEXTABLE[33] = "0123456789ABCDEF";
 
     unsigned char sha1_hash[SHA1_DIGEST_LENTH];
     unsigned sha1_hash_len = SHA1_DIGEST_LENTH;
@@ -959,7 +960,7 @@ std::string CX509Cert::GetID() const
         return "";
     }
 
-    std::string result = "SHA1:";
+    std::string result = "";
     for (unsigned int i = 0; i < SHA1_DIGEST_LENTH; i++){
         unsigned char c = sha1_hash[i];
         result += HEXTABLE[(c & 0xf0) >> 4];

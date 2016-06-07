@@ -28,7 +28,6 @@
 BitMail::BitMail()
 : m_onPollEvent(NULL), m_onPollEventParam(NULL)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
-, m_fAllowStranger(false)
 {
     OpenSSL_add_all_ciphers();
     OPENSSL_load_builtin_modules();
@@ -153,17 +152,6 @@ int BitMail::SetRxPassword(const std::string & p)
 std::string BitMail::GetRxPassword() const
 {
 	return m_mc->GetRxPassword();
-}
-
-int BitMail::AllowStranger(bool fYes)
-{
-	m_fAllowStranger = fYes;
-	return bmOk;
-}
-
-bool BitMail::AllowStranger() const
-{
-	return m_fAllowStranger;
 }
 
 int BitMail::SendMsg(const std::string &email_to, const std::string &msg)
@@ -414,6 +402,24 @@ int BitMail::GetBuddies(std::vector<std::string> & vecEmails) const
 	return bmOk;
 }
 
+bool BitMail::IsBuddy(const std::string & certpem) const
+{
+	CX509Cert x;
+	x.LoadCertFromPem(certpem);
+	if (!x.IsValid()){
+		return false;
+	}
+	std::string email = x.GetEmail();
+	if (email.empty()){
+		return false;
+	}
+	std::string certid = GetCertID(email);
+	if (!certid.empty() && certid == x.GetID()){
+		return true;
+	}
+	return false;
+}
+
 int BitMail::EmailHandler(BMEventHead * h, void * userp)
 {
     BitMail * self = (BitMail *)userp;
@@ -505,20 +511,6 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     * Crypto filter
     */
 
-    /**
-     * TODO: consider pre-trust stranger's message,
-     * and post decrypted message to callback handler,
-     * and let UI to make decision.
-     */
-
-    std::string sBuddyCertPem = self->GetCert(sFrom);
-    if (sBuddyCertPem.empty()){
-        // Ignore bmStranger
-    	if (!self->AllowStranger()){
-    		return bmNoStranger;
-    	}
-    }
-
     if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){
         // Envelopped data
         sMimeBody = self->m_profile->Decrypt(sMimeBody);
@@ -565,126 +557,3 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     return bmOk;
 }
 
-#ifdef TEST
-/**
- * For sleep system utility
- */
-#include <unistd.h>
-
-int BitmailHandler(BMEventHead * h, void * userp)
-{
-	BitMail * self = (BitMail *)userp;
-	
-	if (h->magic != BMMAGIC){
-		return bmInvalidParam;
-	}
-	
-	switch(h->bmef){
-	case bmefMsgCount:
-		std::cout<<"MsgCount: "<< ((BMEventMsgCount*)h)->msgcount << std::endl;
-		{
-			static unsigned int lastMsgCount = 0;
-			std::cout<<"LastMsgCount: " << lastMsgCount << std::endl;
-			if (((BMEventMsgCount*)h)->msgcount > lastMsgCount){
-				std::cout<<"CheckInbox"<<std::endl;
-				self->CheckInbox();
-			}	
-			lastMsgCount = ((BMEventMsgCount*)h)->msgcount;
-		}
-		break;
-	case bmefMessage:
-		std::cout<<"Message: "<<std::endl
-		             <<"From:\n" << ((BMEventMessage*)h)->from << std::endl
-				     <<"Msg: \n" <<((BMEventMessage*)h)->msg << std::endl
-				     <<"MsgLength:\n" <<CX509Cert::b64dec(((BMEventMessage*)h)->msg).length()<< std::endl					 
-					 <<"MsgText:\n" <<CX509Cert::b64dec(((BMEventMessage*)h)->msg)<< std::endl
-				     <<"Cert:\n" <<CX509Cert::b64dec(((BMEventMessage*)h)->cert) << std::endl;
-		{
-			std::string sCertPem = CX509Cert::b64dec(((BMEventMessage*)h)->cert);
-			std::cout<<"Add Buddy: [" << ((BMEventMessage*)h)->from << "]" <<std::endl;
-			self->AddBuddy(sCertPem);
-		}
-		break;
-	case bmefSystem:
-		std::cout<<"System: " << std::endl;
-		break;
-	default:
-		std::cout<<"N/A"<<std::endl;
-		break;
-	}
-    return 0;
-}
-
-int PollEventHandler(unsigned int count, void * userp)
-{
-	return 0;
-}
-
-int MessageEventHandler(const char * from, const char * msg, const char * cert, void * userp)
-{
-	return 0;
-}
-
-void * RxThread(void * args)
-{
-	BitMail * alice = (BitMail *)args;
-	while(true){
-	    alice->StartIdle(60000);
-	    std::cout<<"Idle timeout, re-idle"<<std::endl;
-	    alice->CheckInbox();
-	}
-	return NULL;
-}
-
-int main(int argc, char * argv [])
-{
-    if (argc != 7){
-    printf("Usage:\n");
-        printf("\t./bmc smtpsurl smtpuser smtppass imapsurl imapuser imappass\n");
-        printf("\tNote: smtpuser or imapuser usually is email\n");
-        return 0;
-    }
-    
-    /**
-     * Ping-Pong Test
-     */
-    BitMail * alice = new BitMail();
-
-    alice->OnPollEvent( PollEventHandler, alice);
-    
-    alice->OnMessageEvent( MessageEventHandler, alice);
-
-    alice->InitNetwork(  argv[1]// tx url
-                    , argv[2]// tx user
-                    , argv[3]// tx pass
-                    , argv[4]// rx url
-                    , argv[5]// rx user
-                    , argv[6]// rx pass
-                    );
-
-    alice->CreateProfile("Alice", argv[2], "alicealice", 1024);
-    
-    /**
-     * Add herself! for PING-PONG test
-     */
-    alice->AddBuddy(alice->GetCert());
-    
-    pthread_t tid;
-    pthread_attr_t tattr;
-    pthread_attr_init(&tattr);
-    pthread_create(&tid, &tattr, RxThread, alice);
-    
-    while(true){
-    	printf("MsgTo:>");
-    	std::string sto; std::cin>>sto;
-    	printf("Msg:>");
-    	std::string smsg;std::cin>>smsg;
-    	alice->SendMsg(sto, smsg);
-    }
-
-    delete alice;
-
-    return 0;
-}
-
-#endif
