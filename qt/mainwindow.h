@@ -89,7 +89,8 @@ private slots:
     void onTxDone();
     void onPollDone();
     void onBuddyDoubleClicked(QListWidgetItem * actItem);
-    void onAddBuddyBtnClicked();
+    void onInviteBtnClicked();
+    void onMessageDoubleClicked(QListWidgetItem * actItem);
 private:
     void createActions();
     void createToolBars();
@@ -114,7 +115,6 @@ private:
 
     QAction *configAct;
 
-    QAction *addAct;
     QAction *inviteAct;
 
     QAction *snapAct;

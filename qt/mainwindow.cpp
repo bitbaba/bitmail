@@ -58,6 +58,8 @@
 #include "paydialog.h"
 #include "shutdowndialog.h"
 #include "certdialog.h"
+#include "invitedialog.h"
+#include "messagedialog.h"
 
 #include "main.h"
 
@@ -149,13 +151,22 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
 
     connect(blist, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onBuddyDoubleClicked(QListWidgetItem*)));
 
+    connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
+
 #if defined(MACOSX)
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
 
     setWindowIcon(QIcon(":/images/bitmail.png"));
 
-    setWindowTitle(tr("BitMail"));
+    QString qsTitle = tr("BitMail");
+    qsTitle += " - ";
+    qsTitle += QString::fromStdString(m_bitmail->GetCommonName(email.toStdString()));
+    qsTitle += "(";
+    qsTitle += email;
+    qsTitle += ")";
+
+    setWindowTitle(qsTitle);
 
     textEdit->setFocus();
 }
@@ -224,8 +235,7 @@ void MainWindow::onBuddyDoubleClicked(QListWidgetItem *actItem)
     QString qsNick = QString::fromStdString(m_bitmail->GetCommonName(qsEmail.toStdString()));
     QString qsCertID = QString::fromStdString(m_bitmail->GetCertID(qsEmail.toStdString()));
 
-    CertDialog certDialog(true, this);
-    certDialog.setModal(false);
+    CertDialog certDialog(this);
     certDialog.SetEmail(qsEmail);
     certDialog.SetNick(qsNick);
     certDialog.SetCertID(qsCertID);
@@ -272,14 +282,9 @@ void MainWindow::createActions()
     }while(0);
 
     do {
-        addAct = new QAction(QIcon(":/images/add.png"), tr("&Add"), this);
-        addAct->setStatusTip(tr("Add a new buddy by certificate or certificate ID."));
-        connect(addAct, SIGNAL(triggered()), this, SLOT(onAddBuddyBtnClicked()));
-    }while(0);
-
-    do {
         inviteAct = new QAction(QIcon(":/images/invite.png"), tr("&Invite"), this);
         inviteAct->setStatusTip(tr("Invite a new friend by send a request message."));
+        connect(inviteAct, SIGNAL(triggered()), this, SLOT(onInviteBtnClicked()));
     }while(0);
 
     do{
@@ -332,7 +337,6 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(configAct);
 
     editToolBar = addToolBar(tr("Buddies"));
-    editToolBar->addAction(addAct);
     editToolBar->addAction(inviteAct);
 
     chatToolbar = addToolBar(tr("Chat"));
@@ -394,7 +398,7 @@ void MainWindow::onSendBtnClicked()
     emit readyToSend(qsTo, QString::fromStdString(sMsg));
 
     populateMessage(true
-                    , QString::fromStdString(m_bitmail->GetEmail())
+                    , qsTo
                     , QString::fromStdString(sMsg));
 
 
@@ -518,7 +522,12 @@ void MainWindow::populateBuddies()
 
 void MainWindow::populateBuddy(const QString &email, const QString &nick)
 {
-    QListWidgetItem *buddy = new QListWidgetItem(QIcon(":/images/head.png"), nick);
+    QString qsItemDisplay = nick;
+    qsItemDisplay += "\n";
+    qsItemDisplay += "(";
+    qsItemDisplay += email;
+    qsItemDisplay += ")";
+    QListWidgetItem *buddy = new QListWidgetItem(QIcon(":/images/head.png"), qsItemDisplay);
     buddy->setData(Qt::UserRole, QVariant(email));
     blist->addItem(buddy);
     return ;
@@ -542,31 +551,37 @@ void MainWindow::onCurrentBuddy(QListWidgetItem * current, QListWidgetItem * pre
     btnSend->setEnabled(true);
 }
 
-void MainWindow::onAddBuddyBtnClicked()
+void MainWindow::onInviteBtnClicked()
 {
-    CertDialog certDialog(false, this);
-    if (QDialog::Rejected == certDialog.exec()){
-        return ;
-    }
-    
-    QString qsEmail = certDialog.GetEmail();
-    QString qsNick = certDialog.GetNick();
-    QString qsCertID = certDialog.GetCertID();
-
-    (void)qsEmail, (void)qsNick, (void)qsCertID;
-
-    if (qsEmail.isEmpty()){
-        statusBar()->showMessage(tr("Invalid email address"), 5000);
+    InviteDialog inviteDialog(this);
+    if (QDialog::Accepted != inviteDialog.exec()){
         return ;
     }
 
-    if (qsCertID.isEmpty()){
-        statusBar()->showMessage(tr("Invalid cert identifier"), 5000);
-        return ;
+    QString qsEmail = inviteDialog.GetEmail();
+    QString qsWhisper = inviteDialog.GetWhisper();
+
+    (void)qsEmail;
+    (void)qsWhisper;
+
+    if (!qsEmail.isEmpty()){
+
+        emit readyToSend(qsEmail, (qsWhisper));
+
+        populateMessage(true
+                        , qsEmail
+                        , (qsWhisper));
     }
 
-    m_bitmail->AddBuddy(qsCertID.toStdString());
-
-    populateBuddy(qsEmail, qsNick);
+    return ;
 }
 
+void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
+{
+    (void)actItem;
+    MessageDialog messageDialog;
+    if (messageDialog.exec() != QDialog::Accepted){
+        return ;
+    }
+    return ;
+}

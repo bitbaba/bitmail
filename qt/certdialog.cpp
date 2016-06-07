@@ -5,21 +5,20 @@
 #include <QLabel>
 #include <QPlainTextEdit>
 
-CertDialog::CertDialog(bool fReadOnly, QWidget *parent) :
+CertDialog::CertDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::CertDialog),
-    m_fReadonly(fReadOnly)
+    ui(new Ui::CertDialog)
 {
     ui->setupUi(this);
 
     m_leEmail = findChild<QLineEdit *>("leEmail");
-    m_leEmail->setReadOnly(m_fReadonly);
+    m_leEmail->setReadOnly(true);
 
     m_leNick = findChild<QLineEdit*>("leNick");
     m_leNick->setReadOnly(true);
 
     m_leCertID = findChild<QLineEdit*>("leCertID");
-    m_leCertID->setReadOnly(m_fReadonly);
+    m_leCertID->setReadOnly(true);
 
     m_lbQrCode = findChild<QLabel*>("lbQrCode");
 }

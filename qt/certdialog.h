@@ -17,7 +17,7 @@ class CertDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CertDialog(bool fReadonly = false, QWidget *parent = 0);
+    explicit CertDialog( QWidget *parent = 0);
     ~CertDialog();
 
     void SetEmail(const QString & e);
@@ -36,8 +36,6 @@ private slots:
 
 private:
     Ui::CertDialog *ui;
-
-    bool m_fReadonly;
 
     QLineEdit *m_leEmail;
     QLineEdit *m_leNick;
