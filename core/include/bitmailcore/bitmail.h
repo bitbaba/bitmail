@@ -96,6 +96,8 @@ public:
 
     int StartIdle(unsigned int timeout/*Interval to re-idle*/);
     
+    int Expunge();
+
     // Profile
     int CreateProfile(const std::string & commonName
                     , const std::string & email
@@ -114,19 +116,23 @@ public:
 
     std::string GetEmail() const;
 
-    std::string GetCommonName() const;
-
 	std::string GetKey() const;
-	
-    std::string GetCert() const;
 	
 	int GetBits() const;
 	
 	std::string GetPassphrase() const;
 	
+	// Security routines
 	std::string Encrypt(const std::string & text) const;
 	
 	std::string Decrypt(const std::string & code) const;
+
+	// Certificate attributes
+    std::string GetCommonName(const std::string & e) const;
+
+    std::string GetCert(const std::string & e) const;
+
+    std::string GetCertID(const std::string & e) const;
 
     // Buddy
     int AddBuddy(const std::string & certpem);
@@ -134,10 +140,6 @@ public:
     int RemoveBuddy(const std::string & email);
 	
 	int GetBuddies(std::vector<std::string> & vecEmails) const;
-	
-	std::string GetBuddyCert(const std::string & e);
-	
-	std::string GetBuddyCommonName(const std::string & e) const;
 
 protected:
 

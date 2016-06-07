@@ -45,9 +45,6 @@ BitMail::BitMail()
 BitMail::~BitMail()
 {
     if (m_mc != NULL){
-    	// Clear all <deleted> messages
-    	m_mc->Expunge();
-
         delete (m_mc); m_mc = NULL;
     }
 }
@@ -263,6 +260,12 @@ int BitMail::StartIdle(unsigned int timeout)
 	return bmOk;
 }
 
+int BitMail::Expunge()
+{
+	// Clear all <deleted> messages
+	m_mc->Expunge();
+}
+
 /**
 * Profile
 */
@@ -321,19 +324,9 @@ std::string BitMail::GetEmail() const
     return m_profile->GetEmail();
 }
 
-std::string BitMail::GetCommonName() const
-{
-    return m_profile->GetCommonName();
-}
-
 std::string BitMail::GetKey() const
 {
 	return m_profile->GetPrivateKeyAsEncryptedPem();
-}
-
-std::string BitMail::GetCert() const
-{
-    return m_profile->GetCertByPem();
 }
 
 int BitMail::GetBits() const{
@@ -355,6 +348,38 @@ std::string BitMail::Decrypt(const std::string & code) const
 	return m_profile->Decrypt(code);
 }
 
+std::string BitMail::GetCommonName(const std::string & e) const
+{
+	if (e == GetEmail()){
+		return m_profile->GetCommonName();
+	}
+	std::string sCert = m_buddies.find(e)->second;
+	CX509Cert x;
+	x.LoadCertFromPem(sCert);
+	return x.GetCommonName();
+}
+
+std::string BitMail::GetCert(const std::string & e) const
+{
+	if (e == GetEmail()){
+		return m_profile->GetCertByPem();
+	}
+	std::string sCert = m_buddies.find(e)->second;
+	return sCert;
+}
+
+std::string BitMail::GetCertID(const std::string & e) const
+{
+	if (e == GetEmail()){
+		return m_profile->GetID();
+	}
+	std::string sCert = m_buddies.find(e)->second;
+	CX509Cert x;
+	x.LoadCertFromPem(sCert);
+	return x.GetCommonName();
+}
+
+
 /**
 * Buddy
 */
@@ -368,14 +393,6 @@ int BitMail::AddBuddy(const std::string &certpem)
     const std::string & email = cert.GetEmail();
     m_buddies[email] = certpem;
     return bmOk;
-}
-
-std::string BitMail::GetBuddyCert(const std::string &buddy)
-{
-    if (m_buddies.find(buddy) != m_buddies.end()){
-        return m_buddies[buddy];
-    }
-    return "";
 }
 
 int BitMail::RemoveBuddy(const std::string & email)
@@ -395,21 +412,6 @@ int BitMail::GetBuddies(std::vector<std::string> & vecEmails) const
 		 vecEmails.push_back(it->first);
 	}
 	return bmOk;
-}
-
-	
-std::string BitMail::GetBuddyCommonName(const std::string & e) const
-{
-	for (std::map<std::string, std::string>::const_iterator it = m_buddies.begin();
-		 it != m_buddies.end();
-		 ++it){
-		if (it->first == e){
-			CX509Cert x;
-			x.LoadCertFromPem(it->second);
-			return x.GetCommonName();
-		}
-	}
-	return "";
 }
 
 int BitMail::EmailHandler(BMEventHead * h, void * userp)
@@ -509,7 +511,7 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
      * and let UI to make decision.
      */
 
-    std::string sBuddyCertPem = self->GetBuddyCert(sFrom);
+    std::string sBuddyCertPem = self->GetCert(sFrom);
     if (sBuddyCertPem.empty()){
         // Ignore bmStranger
     	if (!self->AllowStranger()){
