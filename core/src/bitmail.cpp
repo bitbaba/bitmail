@@ -156,6 +156,10 @@ std::string BitMail::GetRxPassword() const
 
 int BitMail::SendMsg(const std::string &email_to, const std::string &msg)
 {
+	if (msg.empty()){
+		return bmInvalidParam;
+	}
+
     std::string sSignedMsg = m_profile->Sign(msg);
     if (sSignedMsg.empty()){
         return bmSignFail;
@@ -185,6 +189,9 @@ int BitMail::SendMsg(const std::string &email_to, const std::string &msg)
 
 int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::string &msg)
 {
+	if (msg.empty()){
+		return bmInvalidParam;
+	}
     /**
      * Note:
      * GroupMsg(msg, vector<bob>) != SendMsg(msg, bob);
