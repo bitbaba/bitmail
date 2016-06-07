@@ -49,6 +49,9 @@ void TxThread::run()
             qDebug() << "tx queue fetch timeout";
         }
     }
+
+    emit done();
+
     qDebug() << "Tx Thread quit";
 }
 

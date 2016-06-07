@@ -55,6 +55,10 @@
 #include "txthread.h"
 #include "optiondialog.h"
 #include "logindialog.h"
+#include "paydialog.h"
+#include "shutdowndialog.h"
+#include "certdialog.h"
+
 #include "main.h"
 
 //! [1]
@@ -80,6 +84,12 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
 
     connect(m_rxth, SIGNAL(gotMessage(QString,QString,QString))
             , this, SLOT(onNewMessage(QString,QString,QString)));
+
+    connect(m_pollth, SIGNAL(done()), this, SLOT(onPollDone()));
+
+    connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
+
+    connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
 
     m_pollth->start();
 
@@ -137,6 +147,8 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
     connect(blist, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*))
             , this, SLOT(onCurrentBuddy(QListWidgetItem*,QListWidgetItem*)));
 
+    connect(blist, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onBuddyDoubleClicked(QListWidgetItem*)));
+
 #if defined(MACOSX)
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
@@ -151,21 +163,84 @@ MainWindow::MainWindow(const QString & email, const QString & passphrase)
 
 MainWindow::~MainWindow()
 {
-    m_rxth->stop();
-    m_txth->stop();
-    m_pollth->stop();
 
-    m_rxth->wait();
-    m_txth->wait();
-    m_pollth->wait();
+}
 
-    qDebug() << "RTX threads quit.";
+void MainWindow::onRxDone()
+{
+    if (!m_shutdownDialog)
+        return ;
+
+    m_shutdownDialog->SetMessage(tr("Rx thread done."));
+
+    delete m_rxth; m_rxth = NULL;
+
+    if (!m_rxth && !m_txth && !m_pollth){
+        m_shutdownDialog->done(0);
+    }
+}
+
+void MainWindow::onTxDone()
+{
+    if (!m_shutdownDialog)
+        return ;
+
+    m_shutdownDialog->SetMessage(tr("Tx thread done."));
 
     delete m_txth; m_txth = NULL;
-    delete m_rxth; m_rxth = NULL;
+
+    if (!m_rxth && !m_txth && !m_pollth){
+        m_shutdownDialog->done(0);
+    }
+}
+
+void MainWindow::onPollDone()
+{
+    if (!m_shutdownDialog)
+        return ;
+
+    m_shutdownDialog->SetMessage(tr("Poll thread done."));
+
     delete m_pollth; m_pollth = NULL;
 
-    qDebug() << "Release thread resources.";
+    if (!m_rxth && !m_txth && !m_pollth){
+        m_shutdownDialog->done(0);
+    }
+}
+
+void MainWindow::onBuddyDoubleClicked(QListWidgetItem *actItem)
+{
+    if (actItem == NULL){
+        return ;
+    }
+
+    QString qsEmail = actItem->data(Qt::UserRole).toString();
+    QString qsNick = QString::fromStdString(m_bitmail->GetCommonName(qsEmail.toStdString()));
+    QString qsCertID = QString::fromStdString(m_bitmail->GetCertID(qsEmail.toStdString()));
+
+    CertDialog certDialog(true, this);
+    certDialog.setModal(false);
+    certDialog.SetEmail(qsEmail);
+    certDialog.SetNick(qsNick);
+    certDialog.SetCertID(qsCertID);
+
+    if (QDialog::Rejected == certDialog.exec()){
+        return ;
+    }
+
+    (void)qsEmail;
+
+    return ;
+}
+
+//! [3]
+void MainWindow::closeEvent(QCloseEvent *event)
+//! [3] //! [4]
+{
+    m_rxth->stop(); m_txth->stop(); m_pollth->stop();
+
+    m_shutdownDialog = new ShutdownDialog(this);
+    m_shutdownDialog->exec();
 
     if (m_bitmail != NULL){
         qDebug() << "Dump profile";
@@ -175,12 +250,7 @@ MainWindow::~MainWindow()
         delete m_bitmail;
         m_bitmail = NULL;
     }
-}
 
-//! [3]
-void MainWindow::closeEvent(QCloseEvent *event)
-//! [3] //! [4]
-{
     event->accept();    
 }
 //! [4]
@@ -198,6 +268,7 @@ void MainWindow::createActions()
     do {
         addAct = new QAction(QIcon(":/images/add.png"), tr("&Add"), this);
         addAct->setStatusTip(tr("Add a new buddy by certificate or certificate ID."));
+        connect(addAct, SIGNAL(triggered()), this, SLOT(onAddBuddyBtnClicked()));
     }while(0);
 
     do {
@@ -238,6 +309,7 @@ void MainWindow::createActions()
     do{
         payAct = new QAction(QIcon(":/images/bitcoin.png"), tr("&Pay"), this);
         payAct->setStatusTip(tr("Pay by Bitcoin"));
+        connect(payAct, SIGNAL(triggered()), this, SLOT(onPayBtnClicked()));
     }while(0);
 
     do{
@@ -331,6 +403,10 @@ void MainWindow::onSendBtnClicked()
 
 void MainWindow::onPayBtnClicked()
 {
+    PayDialog payDialog;
+    if (payDialog.exec() != QDialog::Accepted){
+        return ;
+    }
     return ;
 }
 
@@ -338,7 +414,7 @@ void MainWindow::onConfigBtnClicked()
 {
     OptionDialog optDialog(false, this);
     optDialog.SetEmail(QString::fromStdString(m_bitmail->GetEmail()));
-    optDialog.SetNick(QString::fromStdString(m_bitmail->GetCommonName()));
+    optDialog.SetNick(QString::fromStdString(m_bitmail->GetCommonName(m_bitmail->GetEmail())));
     optDialog.SetPassphrase(QString::fromStdString(m_bitmail->GetPassphrase()));
     optDialog.SetBits(m_bitmail->GetBits());
 
@@ -431,7 +507,7 @@ void MainWindow::populateBuddies()
     for (std::vector<std::string>::const_iterator it = vecEmails.begin()
          ; it != vecEmails.end(); ++it)
     {
-        std::string sBuddyNick = m_bitmail->GetBuddyCommonName(*it);
+        std::string sBuddyNick = m_bitmail->GetCommonName(*it);
         QString qsNick = QString::fromStdString(sBuddyNick);
         populateBuddy(QString::fromStdString(*it), qsNick);
     }
@@ -462,5 +538,33 @@ void MainWindow::onCurrentBuddy(QListWidgetItem * current, QListWidgetItem * pre
     (void)current;
     (void)previous;
     btnSend->setEnabled(true);
+}
+
+void MainWindow::onAddBuddyBtnClicked()
+{
+    CertDialog certDialog(false, this);
+    if (QDialog::Rejected == certDialog.exec()){
+        return ;
+    }
+    
+    QString qsEmail = certDialog.GetEmail();
+    QString qsNick = certDialog.GetNick();
+    QString qsCertID = certDialog.GetCertID();
+
+    (void)qsEmail, (void)qsNick, (void)qsCertID;
+
+    if (qsEmail.isEmpty()){
+        statusBar()->showMessage(tr("Invalid email address"), 5000);
+        return ;
+    }
+
+    if (qsCertID.isEmpty()){
+        statusBar()->showMessage(tr("Invalid cert identifier"), 5000);
+        return ;
+    }
+
+    m_bitmail->AddBuddy(qsCertID.toStdString());
+
+    populateBuddy(qsEmail, qsNick);
 }
 

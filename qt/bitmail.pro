@@ -7,7 +7,10 @@ HEADERS       = mainwindow.h \
     txthread.h \
     rxthread.h \
     msgqueue.h \
-    pollthread.h
+    pollthread.h \
+    paydialog.h \
+    certdialog.h \
+    shutdowndialog.h
 SOURCES       = main.cpp \
                 mainwindow.cpp \
                 optiondialog.cpp \
@@ -15,7 +18,10 @@ SOURCES       = main.cpp \
     txthread.cpp \
     rxthread.cpp \
     msgqueue.cpp \
-    pollthread.cpp
+    pollthread.cpp \
+    paydialog.cpp \
+    certdialog.cpp \
+    shutdowndialog.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
@@ -24,7 +30,10 @@ win32:RC_FILE = bitmail.rc
 
 FORMS += \
     optiondialog.ui \
-    logindialog.ui
+    logindialog.ui \
+    paydialog.ui \
+    certdialog.ui \
+    shutdowndialog.ui
 
 win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore
 

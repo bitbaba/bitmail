@@ -31,6 +31,11 @@ void RxThread::run()
         // check inbox
         m_bitmail->CheckInbox();
     }
+
+    m_bitmail->Expunge();
+
+    emit done();
+
     qDebug() << "Rx Thread quit";
 }
 

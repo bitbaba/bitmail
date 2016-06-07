@@ -64,6 +64,7 @@ class BitMail;
 class PollThread;
 class RxThread;
 class TxThread;
+class ShutdownDialog;
 
 //! [0]
 class MainWindow : public QMainWindow
@@ -84,7 +85,11 @@ private slots:
     void onWalletBtnClicked();
     void onNewMessage(const QString & from, const QString & msg, const QString & cert);
     void onCurrentBuddy(QListWidgetItem * current, QListWidgetItem * previous);
-
+    void onRxDone();
+    void onTxDone();
+    void onPollDone();
+    void onBuddyDoubleClicked(QListWidgetItem * actItem);
+    void onAddBuddyBtnClicked();
 private:
     void createActions();
     void createToolBars();
@@ -125,7 +130,7 @@ private:
     PollThread *m_pollth;
     RxThread *m_rxth;
     TxThread *m_txth;
-
+    ShutdownDialog *m_shutdownDialog;
 signals:
     void readyToSend(const QString & to, const QString & msg);
 };

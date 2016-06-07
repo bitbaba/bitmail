@@ -97,6 +97,9 @@
        <property name="toolTip">
         <string>someone@example.net</string>
        </property>
+       <property name="inputMethodHints">
+        <set>Qt::ImhEmailCharactersOnly|Qt::ImhLatinOnly</set>
+       </property>
       </widget>
      </item>
      <item row="2" column="0">
@@ -169,6 +172,9 @@
        <property name="toolTip">
         <string>smtps://example.net/</string>
        </property>
+       <property name="inputMethodHints">
+        <set>Qt::ImhUrlCharactersOnly</set>
+       </property>
       </widget>
      </item>
      <item row="2" column="1">
@@ -179,7 +185,11 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="leSmtpLogin"/>
+      <widget class="QLineEdit" name="leSmtpLogin">
+       <property name="inputMethodHints">
+        <set>Qt::ImhLatinOnly</set>
+       </property>
+      </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="lbSmtpPassword">
@@ -228,7 +238,11 @@
     </property>
     <layout class="QGridLayout" name="gridLayout_5">
      <item row="1" column="1">
-      <widget class="QLineEdit" name="leImapLogin"/>
+      <widget class="QLineEdit" name="leImapLogin">
+       <property name="inputMethodHints">
+        <set>Qt::ImhLatinOnly</set>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="lbImapLogin">
@@ -255,6 +269,9 @@
       <widget class="QLineEdit" name="leImapUrl">
        <property name="toolTip">
         <string>imaps://example.net/</string>
+       </property>
+       <property name="inputMethodHints">
+        <set>Qt::ImhUrlCharactersOnly</set>
        </property>
       </widget>
      </item>

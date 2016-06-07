@@ -10,7 +10,7 @@ int PollEventHandler(unsigned int count, void * p);
 PollThread::PollThread(BitMail * bm)
     : m_bitmail(bm)
     , m_lastCount(0)
-    , m_reIdleInterval(60*1000) // RFC recommended 30 minutes, here less than that.
+    , m_reIdleInterval(30*1000) // RFC recommended 30 minutes, here less than that.
     , m_fStopFlag(false)
 {
 
@@ -31,6 +31,8 @@ void PollThread::run()
 
         qDebug() << "poll timeout";
     }
+
+    emit done();
 
     qDebug() << "Poll Thread quit";
 }

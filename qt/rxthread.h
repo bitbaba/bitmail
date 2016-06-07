@@ -24,6 +24,8 @@ signals:
     void gotMessage(const QString & from
                         , const QString & msg
                         , const QString & cert);
+    void done();
+
 public slots:
     void onInboxPollEvent();
 

@@ -19,6 +19,7 @@ public:
 signals:
     void messageSent(const QString & to
                      , const QString & msg);
+    void done();
 public slots:
     void onSendMessage(const QString & to
                        , const QString & msg);

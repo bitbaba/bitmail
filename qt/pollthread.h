@@ -18,6 +18,7 @@ public:
     void stop();
 signals:
     void inboxPollEvent();
+    void done();
 private:
     BitMail * m_bitmail;
     unsigned int m_lastCount;
