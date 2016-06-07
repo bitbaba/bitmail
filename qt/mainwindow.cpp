@@ -173,6 +173,8 @@ void MainWindow::onRxDone()
 
     m_shutdownDialog->SetMessage(tr("Rx thread done."));
 
+    m_rxth->wait(1000);
+
     delete m_rxth; m_rxth = NULL;
 
     if (!m_rxth && !m_txth && !m_pollth){
@@ -187,6 +189,8 @@ void MainWindow::onTxDone()
 
     m_shutdownDialog->SetMessage(tr("Tx thread done."));
 
+    m_txth->wait(1000);
+
     delete m_txth; m_txth = NULL;
 
     if (!m_rxth && !m_txth && !m_pollth){
@@ -200,6 +204,8 @@ void MainWindow::onPollDone()
         return ;
 
     m_shutdownDialog->SetMessage(tr("Poll thread done."));
+
+    m_pollth->wait(1000);
 
     delete m_pollth; m_pollth = NULL;
 
@@ -425,7 +431,6 @@ void MainWindow::onConfigBtnClicked()
     optDialog.SetImapUrl(QString::fromStdString(m_bitmail->GetRxUrl()));
     optDialog.SetImapLogin(QString::fromStdString(m_bitmail->GetRxLogin()));
     optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
-    optDialog.SetImapAllowStranger(m_bitmail->AllowStranger());
 
     if (QDialog::Accepted != optDialog.exec()){
         return ;
@@ -448,9 +453,6 @@ void MainWindow::onConfigBtnClicked()
                            , qsRxUrl.toStdString()
                            , qsRxLogin.toStdString()
                            , qsRxPassword.toStdString());
-
-    bool fAllowStranger = optDialog.GetImapAllowStranger();
-    m_bitmail->AllowStranger(fAllowStranger);
 
     return ;
 }

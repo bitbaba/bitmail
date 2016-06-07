@@ -25,8 +25,6 @@ OptionDialog::OptionDialog(bool fNew, QWidget *parent) :
     m_leImapUrl      = findChild<QLineEdit*>("leImapUrl");
     m_leImapLogin    = findChild<QLineEdit*>("leImapLogin");
     m_leImapPassword = findChild<QLineEdit*>("leImapPassword");
-
-    m_cbAllowStranger= findChild<QCheckBox*>("cbAllowStranger");
 }
 
 OptionDialog::~OptionDialog()
@@ -52,7 +50,6 @@ void OptionDialog::on_buttonBox_accepted()
     QString qsImapUrl = GetImapUrl();
     QString qsImapLogin = GetImapLogin();
     QString qsImapPassword = GetImapPassword();
-    bool fImapAllowStranger = GetImapAllowStranger();
 
     BitMail * bm = new BitMail();
 
@@ -67,8 +64,6 @@ void OptionDialog::on_buttonBox_accepted()
                     , qsImapUrl.toStdString()
                     , qsImapLogin.toStdString()
                     , qsImapPassword.toStdString());
-
-    bm->AllowStranger(fImapAllowStranger);
 
     BMQTApplication::SaveProfile(bm);
 
@@ -193,15 +188,4 @@ void OptionDialog::SetImapPassword(const QString & p)
 QString OptionDialog::GetImapPassword() const
 {
     return m_leImapPassword->text();
-}
-
-void OptionDialog::SetImapAllowStranger(const bool & s)
-{
-    (void)s;
-    m_cbAllowStranger->setChecked(s);
-}
-
-bool OptionDialog::GetImapAllowStranger() const
-{
-    return m_cbAllowStranger->isChecked();
 }

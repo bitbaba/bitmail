@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>460</width>
+    <width>420</width>
     <height>480</height>
    </rect>
   </property>
@@ -16,13 +16,31 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>420</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>420</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>420</width>
+    <height>480</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Certificate</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>240</x>
+     <x>190</x>
      <y>420</y>
      <width>211</width>
      <height>32</height>
@@ -40,7 +58,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>441</width>
+     <width>401</width>
      <height>391</height>
     </rect>
    </property>
@@ -117,6 +135,12 @@
         <width>0</width>
         <height>250</height>
        </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
       </property>
       <property name="text">
        <string>QrCode</string>

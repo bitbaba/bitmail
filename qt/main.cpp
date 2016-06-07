@@ -309,7 +309,6 @@ namespace BMQTApplication {
         joRx["url"] = QString::fromStdString(bm->GetRxUrl());
         joRx["login"] = QString::fromStdString(bm->GetRxLogin());
         joRx["password"] = QString::fromStdString(bm->Encrypt(bm->GetRxPassword()));
-        joRx["stranger"] = bm->AllowStranger();
 
         std::vector<std::string > vecBuddies;
         bm->GetBuddies(vecBuddies);

@@ -57,9 +57,6 @@ public:
     void SetImapPassword(const QString & p);
     QString GetImapPassword() const;
 
-    void SetImapAllowStranger(const bool & s);
-    bool GetImapAllowStranger() const;
-
 private:
     QLineEdit *m_leEmail;
     QLineEdit *m_leNick;
@@ -74,7 +71,6 @@ private:
     QLineEdit *m_leImapLogin;
     QLineEdit *m_leImapPassword;
 
-    QCheckBox *m_cbAllowStranger;
 private:
     bool       m_fNew;
 };
