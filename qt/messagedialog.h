@@ -36,6 +36,11 @@ private slots:
 
     void on_buttonBox_rejected();
 
+    void on_btnMakeFriend_clicked();
+
+signals:
+    void signalMakeFriend(const QString & email, const QString & cert);
+
 private:
     Ui::MessageDialog *ui;
 

@@ -8,6 +8,12 @@ MessageDialog::MessageDialog(QWidget *parent) :
     ui(new Ui::MessageDialog)
 {
     ui->setupUi(this);
+
+    m_leFrom = findChild<QLineEdit*>("leFrom");
+    m_leCertID = findChild<QLineEdit*>("leCertID");
+
+    m_ptxtCert = findChild<QPlainTextEdit*>("ptxtCert");
+    m_ptxtMessage = findChild<QPlainTextEdit*>("ptxtMessage");
 }
 
 MessageDialog::~MessageDialog()
@@ -63,4 +69,14 @@ void MessageDialog::on_buttonBox_accepted()
 void MessageDialog::on_buttonBox_rejected()
 {
 
+}
+
+void MessageDialog::on_btnMakeFriend_clicked()
+{
+    QString qsFrom = GetFrom();
+    QString qsCert = GetCert();
+    (void)qsFrom;
+    (void)qsCert;
+    //emit signalMakeFriend(qsFrom, qsCert);
+    emit signalMakeFriend(m_leFrom->text(), m_ptxtCert->toPlainText());
 }

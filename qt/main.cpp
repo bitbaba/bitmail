@@ -114,7 +114,12 @@ int main(int argc, char *argv[])
         qsPassphrase = optDialog.GetPassphrase();
     }
 
-    MainWindow mainWin(qsEmail, qsPassphrase);
+    BitMail * bitmail = new BitMail();
+    if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
+        return 0;
+    }
+
+    MainWindow mainWin(bitmail);
     mainWin.show();
     return app.exec();
 }
@@ -193,13 +198,13 @@ namespace BMQTApplication {
         return true;
     }
 
-    void LoadProfile(BitMail * bm, const QString &email, const QString & passphrase)
+    bool LoadProfile(BitMail * bm, const QString &email, const QString & passphrase)
     {
         QString qsProfile = GetProfilePath(email);
 
         QFile file(qsProfile);
         if (!file.open(QFile::ReadOnly | QFile::Text)) {
-            return;
+            return false;
         }
 
         QTextStream in(&file);
@@ -234,9 +239,11 @@ namespace BMQTApplication {
             }
 
             (void)passphrase;
-            bm->LoadProfile(passphrase.toStdString()
+            if (bmOk != bm->LoadProfile(passphrase.toStdString()
                             , qsKey.toStdString()
-                            , qsCert.toStdString());
+                            , qsCert.toStdString())){
+                return false;
+            }
 
         }
 

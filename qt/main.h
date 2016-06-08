@@ -14,7 +14,7 @@ namespace BMQTApplication {
     QString GetProfilePath(const QString & email);
     bool IsValidPofile(const QString & profilePath);
     bool SaveProfile(BitMail * bm);
-    void LoadProfile(BitMail * bm, const QString & email, const QString & passphrase);
+    bool LoadProfile(BitMail * bm, const QString & email, const QString & passphrase);
 }
 
 #endif // MAIN_H

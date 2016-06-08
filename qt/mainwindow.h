@@ -72,7 +72,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(const QString & email, const QString & passphrase);
+    MainWindow(BitMail * bitmail);
     ~MainWindow();
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
@@ -91,15 +91,16 @@ private slots:
     void onBuddyDoubleClicked(QListWidgetItem * actItem);
     void onInviteBtnClicked();
     void onMessageDoubleClicked(QListWidgetItem * actItem);
-    void onUPnpBtnClicked();
+    void onUPnPBtnClicked();
     void onProxyBtnClicked();
+    void onMakeFriend(const QString & email, const QString & cert);
 private:
     void createActions();
     void createToolBars();
     void createStatusBar();
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
-    void populateMessage(bool fTx, const QString & from, const QString & msg);
+    void populateMessage(bool fTx, const QString & from, const QString & msg, const QString & cert);
     void populateBuddy(const QString & email, const QString & nick);
     void populateBuddies();
     void clearMsgView();

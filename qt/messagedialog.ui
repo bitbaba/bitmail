@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>480</width>
+    <width>600</width>
     <height>440</height>
    </rect>
   </property>
@@ -18,19 +18,19 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>480</width>
+    <width>600</width>
     <height>440</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>480</width>
+    <width>600</width>
     <height>440</height>
    </size>
   </property>
   <property name="baseSize">
    <size>
-    <width>480</width>
+    <width>600</width>
     <height>440</height>
    </size>
   </property>
@@ -40,9 +40,9 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>390</x>
      <y>390</y>
-     <width>431</width>
+     <width>201</width>
      <height>32</height>
     </rect>
    </property>
@@ -58,7 +58,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>451</width>
+     <width>581</width>
      <height>363</height>
     </rect>
    </property>
@@ -69,29 +69,37 @@
        <number>15</number>
       </property>
       <item row="1" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="lbFrom">
         <property name="text">
          <string>From:</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="lbCertID">
         <property name="text">
          <string>CertID:</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="lineEdit_2"/>
+       <widget class="QLineEdit" name="leCertID">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="1" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLineEdit" name="lineEdit"/>
+         <widget class="QLineEdit" name="leFrom">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="btnMakeFriend">
           <property name="text">
            <string>Make Friend</string>
           </property>
@@ -102,7 +110,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QGroupBox" name="groupBox_2">
+     <widget class="QGroupBox" name="grpMessage">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -124,20 +132,23 @@
       <property name="title">
        <string>Message:</string>
       </property>
-      <widget class="QPlainTextEdit" name="plainTextEdit_2">
+      <widget class="QPlainTextEdit" name="ptxtMessage">
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>30</y>
-         <width>431</width>
+         <width>561</width>
          <height>91</height>
         </rect>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
        </property>
       </widget>
      </widget>
     </item>
     <item>
-     <widget class="QGroupBox" name="groupBox">
+     <widget class="QGroupBox" name="grpCert">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -153,20 +164,29 @@
       <property name="title">
        <string>Certificate:</string>
       </property>
-      <widget class="QPlainTextEdit" name="plainTextEdit_3">
+      <widget class="QPlainTextEdit" name="ptxtCert">
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>431</width>
+         <width>561</width>
          <height>91</height>
         </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
        <property name="font">
         <font>
          <family>Fixedsys</family>
          <pointsize>6</pointsize>
         </font>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
        </property>
       </widget>
      </widget>
@@ -175,11 +195,11 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>lineEdit</tabstop>
-  <tabstop>pushButton</tabstop>
-  <tabstop>plainTextEdit_3</tabstop>
-  <tabstop>plainTextEdit_2</tabstop>
-  <tabstop>lineEdit_2</tabstop>
+  <tabstop>leFrom</tabstop>
+  <tabstop>btnMakeFriend</tabstop>
+  <tabstop>ptxtCert</tabstop>
+  <tabstop>ptxtMessage</tabstop>
+  <tabstop>leCertID</tabstop>
  </tabstops>
  <resources/>
  <connections>

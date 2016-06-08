@@ -3,20 +3,14 @@
 
 #include <QDialog>
 
+#include <bitmailcore/bitmail.h>
+
 class QComboBox;
 class QLineEdit;
-
 
 namespace Ui {
 class ProxyDialog;
 }
-
-enum ProxyType{
-    PT_UNDEF = 0,
-    PT_HTTP,
-    PT_SOCKS4,
-    PT_SOCKS5,
-};
 
 class ProxyDialog : public QDialog
 {

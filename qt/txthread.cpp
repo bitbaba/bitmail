@@ -43,6 +43,8 @@ void TxThread::run()
             QString qsTo = msg.to();
             QString qsMsg = msg.msg();
             if (m_bitmail){
+                qDebug() << "SendTo:" << qsTo;
+                qDebug() << "Msg:" << qsMsg;
                 m_bitmail->SendMsg(qsTo.toStdString(), qsMsg.toStdString());
             }
         }else{
