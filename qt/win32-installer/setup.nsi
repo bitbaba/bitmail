@@ -16,7 +16,7 @@
   Icon "bitmail.256.ico"
 
   ;Default installation folder
-  InstallDir "$PROGRAMFILES\BitMail"
+  InstallDir "$LOCALAPPDATA\BitMail"
   
   ;Get installation folder from registry if available
   InstallDirRegKey HKCU "Software\BitMail" "InstallLocation"
