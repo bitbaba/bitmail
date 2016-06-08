@@ -290,6 +290,7 @@ namespace BMQTApplication {
                 bm->AddBuddy(qsCert.toStdString());
             }
         }
+        return true;
     }
 
     bool SaveProfile(BitMail * bm)
