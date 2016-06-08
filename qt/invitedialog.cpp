@@ -34,3 +34,13 @@ QString InviteDialog::GetWhisper() const
     return m_leWhisper->text();
 }
 
+
+void InviteDialog::on_buttonBox_accepted()
+{
+
+}
+
+void InviteDialog::on_buttonBox_rejected()
+{
+
+}

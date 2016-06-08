@@ -60,6 +60,7 @@
 #include "certdialog.h"
 #include "invitedialog.h"
 #include "messagedialog.h"
+#include "proxydialog.h"
 
 #include "main.h"
 
@@ -287,37 +288,38 @@ void MainWindow::createActions()
         connect(inviteAct, SIGNAL(triggered()), this, SLOT(onInviteBtnClicked()));
     }while(0);
 
+    do {
+        upnpAct = new QAction(QIcon(":/images/upnp.png"), tr("&uPnP"), this);
+        upnpAct->setStatusTip(tr("Start up p2p network via upnp."));
+        upnpAct->setCheckable(true);
+        connect(upnpAct, SIGNAL(triggered()), this, SLOT(onUPnPBtnClicked()));
+    }while(0);
+
+    do {
+        proxyAct = new QAction(QIcon(":/images/proxy.png"), tr("&proxy"), this);
+        proxyAct->setStatusTip(tr("setup network proxy"));
+        connect(proxyAct, SIGNAL(triggered()), this, SLOT(onProxyBtnClicked()));
+    }while(0);
+
     do{
         snapAct = new QAction(QIcon(":/images/snap.png"), tr("&Snapshot"), this);
         snapAct->setStatusTip(tr("Snapshot"));
-    }while(0);
 
-    do{
         fileAct = new QAction(QIcon(":/images/file.png"), tr("&File"), this);
         fileAct->setStatusTip(tr("File"));
-    }while(0);
 
-    do{
         emojAct = new QAction(QIcon(":/images/emoj.png"), tr("&Emoji"), this);
         emojAct->setStatusTip(tr("Emoji"));
-    }while(0);
 
-    do{
         soundAct = new QAction(QIcon(":/images/sound.png"), tr("&Sound"), this);
         soundAct->setStatusTip(tr("Sound"));
-    }while(0);
 
-    do{
         videoAct = new QAction(QIcon(":/images/video.png"), tr("&Video"), this);
         videoAct->setStatusTip(tr("Video"));
-    }while(0);
 
-    do{
         liveAct = new QAction(QIcon(":/images/live.png"), tr("&Live"), this);
         liveAct->setStatusTip(tr("Live"));
-    }while(0);
 
-    do{
         payAct = new QAction(QIcon(":/images/bitcoin.png"), tr("&Pay"), this);
         payAct->setStatusTip(tr("Pay by Bitcoin"));
         connect(payAct, SIGNAL(triggered()), this, SLOT(onPayBtnClicked()));
@@ -338,6 +340,10 @@ void MainWindow::createToolBars()
 
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(inviteAct);
+
+    netToolbar = addToolBar(tr("network"));
+    netToolbar->addAction(upnpAct);
+    netToolbar->addAction(proxyAct);
 
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->addAction(emojAct);
@@ -584,4 +590,17 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
         return ;
     }
     return ;
+}
+
+void MainWindow::onUPnpBtnClicked()
+{
+
+}
+
+void MainWindow::onProxyBtnClicked()
+{
+    ProxyDialog proxyDialog;
+    if (QDialog::Accepted != proxyDialog.exec()){
+        return ;
+    }
 }

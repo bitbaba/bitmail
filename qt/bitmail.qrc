@@ -30,5 +30,7 @@
         <file>images/i.png</file>
         <file>images/wallet.s.png</file>
         <file>images/bubble.png</file>
+        <file>images/upnp.png</file>
+        <file>images/proxy.png</file>
     </qresource>
 </RCC>

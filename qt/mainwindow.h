@@ -91,6 +91,8 @@ private slots:
     void onBuddyDoubleClicked(QListWidgetItem * actItem);
     void onInviteBtnClicked();
     void onMessageDoubleClicked(QListWidgetItem * actItem);
+    void onUPnpBtnClicked();
+    void onProxyBtnClicked();
 private:
     void createActions();
     void createToolBars();
@@ -111,11 +113,17 @@ private:
     QToolBar *editToolBar;
     QToolBar *chatToolbar;
     QToolBar *walletToolbar;
+    QToolBar *netToolbar;
+
     QPushButton * btnSend;
 
     QAction *configAct;
 
     QAction *inviteAct;
+
+    QAction *upnpAct;
+
+    QAction *proxyAct;
 
     QAction *snapAct;
     QAction *fileAct;

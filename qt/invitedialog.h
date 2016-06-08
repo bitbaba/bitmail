@@ -21,6 +21,11 @@ public:
 
     QString GetWhisper() const;
 
+private slots:
+    void on_buttonBox_accepted();
+
+    void on_buttonBox_rejected();
+
 private:
     Ui::InviteDialog *ui;
 
