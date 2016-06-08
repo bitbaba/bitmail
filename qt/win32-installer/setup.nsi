@@ -88,7 +88,7 @@ Section "BitMail" SecBitMail
   CreateShortCut  "$SMPROGRAMS\BitMail\BitMail.lnk" \
 				  "$INSTDIR\bitmail.exe" \
 				  '' \
-				  "$INSTDIR\BitMail.ico" 0 \
+				  "$INSTDIR\bitmail.256.ico" 0 \
 				  SW_SHOWNORMAL \
 				  CONTROL|SHIFT|B \
 				  "Startup BitMail"
