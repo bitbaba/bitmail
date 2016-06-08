@@ -1,33 +1,17 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/copy.png</file>
-        <file>images/cut.png</file>
-        <file>images/new.png</file>
-        <file>images/open.png</file>
-        <file>images/paste.png</file>
-        <file>images/save.png</file>
         <file>images/bitmail.png</file>
         <file>images/emoj.png</file>
         <file>images/file.png</file>
         <file>images/sound.png</file>
         <file>images/video.png</file>
         <file>images/snap.png</file>
-        <file>images/style.png</file>
-        <file>images/profile.png</file>
-        <file>images/buddy.png</file>
-        <file>images/stranger.png</file>
         <file>images/config.png</file>
-        <file>images/color.png</file>
         <file>images/live.png</file>
-        <file>images/text.png</file>
         <file>images/invite.png</file>
-        <file>images/add.png</file>
         <file>images/bitcoin.png</file>
-        <file>images/logo.png</file>
-        <file>images/chat.png</file>
         <file>images/bkgrd.png</file>
         <file>images/head.png</file>
-        <file>images/i.png</file>
         <file>images/wallet.s.png</file>
         <file>images/bubble.png</file>
         <file>images/upnp.png</file>
