@@ -73,6 +73,8 @@ public:
 				, const std::string & user
 				, const std::string & password);
 
+    /*UPNP feature should be external utility, e.g. forked from bittorrent*/
+
     int SetTxUrl(const std::string & u);
 	
     std::string GetTxUrl() const;
@@ -142,6 +144,8 @@ public:
     std::string GetCert(const std::string & email) const;
 
     std::string GetCertID(const std::string & email) const;
+
+    std::string ComputeCertID(const std::string & cert) const;
 
     // Buddy
     int AddBuddy(const std::string & certpem);

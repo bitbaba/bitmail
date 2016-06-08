@@ -221,7 +221,7 @@ int CX509Cert::MakeCert(const std::string & commonName
     }
 
     if (X509_NAME_add_entry_by_txt(name, "commonName",
-                               MBSTRING_ASC
+                               MBSTRING_UTF8
                                , (const unsigned char *)commonName.c_str()
                                , -1 // by strlen(email.c_str())
                                , -1 // loc, location

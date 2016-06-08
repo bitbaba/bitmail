@@ -298,15 +298,19 @@ int BitMail::LoadProfile(const std::string & passphrase
                          , const std::string & certPem)
 {
     m_profile = new CX509Cert();
+
     if (m_profile == NULL){
         return bmOutMem;
     }
-    if (m_profile->LoadKeyFromEncryptedPem(keyPem, passphrase)){
-        return bmInvalidProfile;
-    }
+
     if (m_profile->LoadCertFromPem(certPem)){
         return bmInvalidCert;
     }
+
+    if (m_profile->LoadKeyFromEncryptedPem(keyPem, passphrase)){
+        return bmInvalidProfile;
+    }
+
     return bmOk;
 }
 
@@ -357,6 +361,9 @@ std::string BitMail::GetCommonName(const std::string & e) const
 	if (e == GetEmail()){
 		return m_profile->GetCommonName();
 	}
+	if (m_buddies.find(e) == m_buddies.end()){
+		return "";
+	}
 	std::string sCert = m_buddies.find(e)->second;
 	CX509Cert x;
 	x.LoadCertFromPem(sCert);
@@ -368,6 +375,9 @@ std::string BitMail::GetCert(const std::string & e) const
 	if (e == GetEmail()){
 		return m_profile->GetCertByPem();
 	}
+	if (m_buddies.find(e) == m_buddies.end()){
+		return "";
+	}
 	std::string sCert = m_buddies.find(e)->second;
 	return sCert;
 }
@@ -377,10 +387,26 @@ std::string BitMail::GetCertID(const std::string & e) const
 	if (e == GetEmail()){
 		return m_profile->GetID();
 	}
+	if (m_buddies.find(e) == m_buddies.end()){
+		return "";
+	}
 	std::string sCert = m_buddies.find(e)->second;
 	CX509Cert x;
 	x.LoadCertFromPem(sCert);
-	return x.GetCommonName();
+	return x.GetID();
+}
+
+std::string BitMail::ComputeCertID(const std::string & cert) const
+{
+	if (cert.empty()){
+		return "";
+	}
+	CX509Cert x;
+	x.LoadCertFromPem(cert);
+	if (!x.IsValid()){
+		return "";
+	}
+	return x.GetID();
 }
 
 

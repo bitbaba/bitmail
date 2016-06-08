@@ -221,6 +221,8 @@ int CMailClient::SendMsg( const std::string & from, const std::vector<std::strin
     	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     }
     res = curl_easy_perform(curl);
+    // AOL spam will block to send message, without any curl error,
+    // do anti-bot here: http://challenge.aol.com/spam.html
     if(res != CURLE_OK){
         fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
     }
