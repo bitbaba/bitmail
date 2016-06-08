@@ -37,6 +37,13 @@ enum BMError{
 	bmNoStranger     =     25,
 };
 
+enum ProxyType{
+	PT_undef = 0,
+	PT_http,
+	PT_socks4,
+	PT_socks5,
+};
+
 typedef int (* PollEventCB)(unsigned int count, void * p);
 
 typedef int (* MessageEventCB)(const char * from, const char * msg, const char * cert, void * p);
@@ -60,6 +67,12 @@ public:
                     , const std::string & rxuser
                     , const std::string & rxpass);
     
+    int SetProxy(ProxyType pt
+    			, const std::string & ip
+				, unsigned short port
+				, const std::string & user
+				, const std::string & password);
+
     int SetTxUrl(const std::string & u);
 	
     std::string GetTxUrl() const;

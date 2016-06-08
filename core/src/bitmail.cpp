@@ -88,6 +88,15 @@ int BitMail::InitNetwork( const std::string & txurl
     return bmOk;
 }
 
+int BitMail::SetProxy(ProxyType pt
+		, const std::string & ip
+		, unsigned short port
+		, const std::string & user
+		, const std::string & password)
+{
+	return bmOk;
+}
+
 int BitMail::SetTxUrl(const std::string & u)
 {
 	m_mc->SetTxUrl(u);
