@@ -22,71 +22,17 @@ http://imharrywu.github.io/bitmail-qt/bitmail-intro.html
 - Talking with your friends, is your right. no one can supervise it.
     
 ###Features
-- secure & trust talking
-- sign & verify utilities used to sign images, documents, and vote.
+- secure talking with trusted buddies.
+- PKI utilities used to sign images, documents, and vote.
 - reject any spam message away.
 - invite friend(s) or accept friend(s) by exchange CertID.
 
-###Snapshots
-- Login with existed profile
-
-- ![](./doc/snapshots/login.png) 
-
-- Create new profile
-
-- ![](./doc/snapshots/create.png) 
-
-- Network setup
-
-- ![](./doc/snapshots/network.png) 
-
-- Main window
-
-- ![](./doc/snapshots/main.png) 
-
-- Add a new budy by sending request and wait for your friend's confirmation
-
-- ![](./doc/snapshots/request.png) 
-
-- Add a new budy by pasting your buddy's certificate
-
-- ![](./doc/snapshots/addbudy.png) 
-
-- Confirm a new request.
-
-- ![](./doc/snapshots/confirm.png) 
-
-- send a message to a selected buddy.
-
-- ![](./doc/snapshots/send.png) 
-
-- view all messages
-
-- ![](./doc/snapshots/view.png) 
-
-- Encrypted messages on mail servers. 
-
-- ![](./doc/snapshots/mails.png) 
-
-- Encrypted message body. 
-
-- ![](./doc/snapshots/encrypted.png) 
-
-- Scan qrcode and begin talking with author's bitmail. 
-- BitMail://751302230@qq.com#SHA1:94F2C52CFB1BDCED0CB0C06C7D74767A778FFCD3
-- ![](./doc/snapshots/profile.png) 
-
-- Daemon mode, a little like public account of wechat.
-- BitmailClient --recvmsg -B ... ...
-- ![](./doc/snapshots/daemon.png)
-
-- reply with command line tool.
-- BitmailClient --sendmsg -b ... ...
-- ![](./doc/snapshots/clientsend.png)
-
 ###TODO
-- web frontend GUI,
-- Mobile app.
+- Web frontend GUI;
+- Mobile;
+- UPnP;
+- Proxy;
+- Bitcoin wallet integration;
                            
 
 ### Welcome to contribute
