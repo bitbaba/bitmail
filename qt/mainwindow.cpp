@@ -406,6 +406,7 @@ void MainWindow::onSendBtnClicked()
     emit readyToSend(qsTo, QString::fromStdString(sMsg));
 
     populateMessage(true
+                    , qsFrom
                     , qsTo
                     , QString::fromStdString(sMsg)
                     , QString::fromStdString(m_bitmail->GetCert(m_bitmail->GetEmail())));
@@ -483,36 +484,20 @@ void MainWindow::onWalletBtnClicked()
 
 }
 
-void MainWindow::populateMessage(bool fTx, const QString &from, const QString &msg, const QString & cert)
+void MainWindow::populateMessage(bool fTx, const QString &from, const QString & to, const QString &msg, const QString & cert)
 {
 
     bool fIsBuddy =  (m_bitmail->IsBuddy(cert.toStdString())
                       && m_bitmail->ComputeCertID(cert.toStdString()) == m_bitmail->GetCertID(from.toStdString()));
 
-    QString qsFullName = "";
-    if (fIsBuddy){
-        qsFullName = QString::fromStdString(m_bitmail->GetCommonName(from.toStdString()));
-        qsFullName += "(";
-        qsFullName += from;
-        qsFullName += ")";
-    }else{
-        qsFullName = from;
-    }
+    (void)fIsBuddy;
 
-    QString qsNow = QDateTime::currentDateTime().toString();
-    QString qsMessageDisplay = qsNow;
-    qsMessageDisplay += "\n";
-    qsMessageDisplay += "[";
-    qsMessageDisplay += qsFullName;
-    qsMessageDisplay += "] ";
-    qsMessageDisplay += tr("Say");
-    qsMessageDisplay += "\n\n";
-    qsMessageDisplay += msg;
-    qsMessageDisplay += "\n\n";
-
+    QString qsFromNick = QString::fromStdString(m_bitmail->GetCommonName(from.toStdString()));
+    QString qsToNick = QString::fromStdString(m_bitmail->GetCommonName(to.toStdString()));
+    QString qsDisp = FormatBMMessage(fTx, from, qsFromNick, to, qsToNick, msg);
 
     QListWidgetItem * msgElt = new QListWidgetItem(QIcon(":/images/bubble.png")
-                                                   , qsMessageDisplay);
+                                                   , qsDisp);
 
     msgElt->setFlags((Qt::ItemIsSelectable
                       | Qt::ItemIsEditable)
@@ -543,8 +528,10 @@ void MainWindow::onNewMessage(const QString &from, const QString &msg, const QSt
     //TODO: cert check and buddy management
     (void) cert;
 
+    QString qsTo = QString::fromStdString(m_bitmail->GetEmail());
+
     //show message
-    populateMessage(false, from, msg, cert);
+    populateMessage(false, from, qsTo, msg, cert);
 }
 
 void MainWindow::populateBuddies()
@@ -600,6 +587,7 @@ void MainWindow::onInviteBtnClicked()
     if (QDialog::Accepted != inviteDialog.exec()){
         return ;
     }
+    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
 
     QString qsEmail = inviteDialog.GetEmail();
     QString qsWhisper = inviteDialog.GetWhisper();
@@ -612,6 +600,7 @@ void MainWindow::onInviteBtnClicked()
         emit readyToSend(qsEmail, (qsWhisper));
 
         populateMessage(true
+                        , qsFrom
                         , qsEmail
                         , (qsWhisper)
                         , QString::fromStdString(m_bitmail->GetCert(m_bitmail->GetEmail())));
@@ -677,4 +666,52 @@ void MainWindow::onMakeFriend(const QString &email, const QString &cert)
     m_bitmail->AddBuddy(cert.toStdString());
     QString qsNick = QString::fromStdString(m_bitmail->GetCommonName(email.toStdString()));
     populateBuddy(email, qsNick);
+}
+
+QString MainWindow::FormatBMMessage(bool fTx
+                                    , const QString &from
+                                    , const QString &fromnick
+                                    , const QString &to
+                                    , const QString &tonick
+                                    , const QString &msg)
+{
+
+    QString qsFullFrom = "";
+    QString qsFullTo = "";
+
+    if (fTx){
+        qsFullFrom += "[";
+        qsFullFrom += tr("me");
+        qsFullFrom += "]";
+
+        qsFullTo += "[";
+        qsFullTo += tonick;
+        qsFullTo += "(";
+        qsFullTo += to;
+        qsFullTo += ")";
+        qsFullTo += "]";
+    }else{
+        qsFullFrom += "[";
+        qsFullFrom += fromnick;
+        qsFullFrom += "(";
+        qsFullFrom += from;
+        qsFullFrom += ")";
+        qsFullFrom += "]";
+
+        qsFullTo += "[";
+        qsFullTo += tr("me");
+        qsFullTo += "]";
+    }
+
+    QString qsNow = QDateTime::currentDateTime().toString();
+    QString qsMessageDisplay = qsNow;
+    qsMessageDisplay += "\n";
+    qsMessageDisplay += qsFullFrom;
+    qsMessageDisplay += tr(" Say: ");
+    qsMessageDisplay += qsFullTo;
+    qsMessageDisplay += "\n\n";
+    qsMessageDisplay += msg;
+    qsMessageDisplay += "\n\n";
+
+    return qsMessageDisplay;
 }

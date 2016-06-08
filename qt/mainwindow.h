@@ -100,11 +100,12 @@ private:
     void createStatusBar();
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
-    void populateMessage(bool fTx, const QString & from, const QString & msg, const QString & cert);
+    void populateMessage(bool fTx, const QString & from, const QString & to, const QString & msg, const QString & cert);
     void populateBuddy(const QString & email, const QString & nick);
     void populateBuddies();
     void clearMsgView();
     void populateMsgView(const QString & email);
+    QString FormatBMMessage(bool fTx, const QString & from, const QString & fromnick, const QString & to, const QString & tonick, const QString & msg);
 private:
     QTextEdit *textEdit;
     QListWidget * blist;
