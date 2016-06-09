@@ -1,3 +1,5 @@
 web/* linguist-vendored
 ios/* linguist-vendored
 android/* linguist-vendored
+core/*.sh linguist-vendored
+depends/*.sh linguist-vendored
