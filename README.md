@@ -37,6 +37,7 @@ http://imharrywu.github.io/bitmail-qt/bitmail-intro.html
 - new message GUI notification;
 - bugfix: add friend, no duplicated;
 - local message cache, recall history message while selecting a friend;
+- configuration optimization;
 
                            
 
