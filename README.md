@@ -33,6 +33,12 @@ http://imharrywu.github.io/bitmail-qt/bitmail-intro.html
 - UPnP;
 - Proxy;
 - Bitcoin wallet integration;
+- Log;
+- new message GUI notification;
+- bugfix: add friend, no duplicated;
+- local message cache, recall history message while selecting a friend;
+- configuration optimization;
+
                            
 
 ### Welcome to contribute
