@@ -76,6 +76,25 @@ Section "BitMail" SecBitMail
   File "Qt5Gui.dll"
   File "Qt5Widgets.dll"
   
+  SetOutPath "$INSTDIR\platforms"
+  File "platforms\qminimal.dll"
+  File "platforms\qoffscreen.dll"
+  File "platforms\qwindows.dll"
+  
+  SetOutPath "$INSTDIR\imageformats"
+  File "imageformats\qdds.dll"
+  File "imageformats\qicns.dll"
+  File "imageformats\qjp2.dll"
+  File "imageformats\qmng.dll"
+  File "imageformats\qtga.dll"
+  File "imageformats\qwbmp.dll"
+  File "imageformats\qgif.dll"
+  File "imageformats\qico.dll"
+  File "imageformats\qjpeg.dll"
+  File "imageformats\qsvg.dll"
+  File "imageformats\qtiff.dll"
+  File "imageformats\qwebp.dll"
+    
   ;Store installation folder
   WriteRegStr HKCU "Software\BitMail" "Location" "$INSTDIR"
   
