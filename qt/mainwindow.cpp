@@ -532,6 +532,9 @@ void MainWindow::onNewMessage(const QString &from, const QString &msg, const QSt
 
     //show message
     populateMessage(false, from, qsTo, msg, cert);
+
+    //GUI notification
+    activateWindow();
 }
 
 void MainWindow::populateBuddies()
