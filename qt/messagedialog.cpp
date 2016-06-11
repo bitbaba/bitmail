@@ -14,6 +14,8 @@ MessageDialog::MessageDialog(QWidget *parent) :
 
     m_ptxtCert = findChild<QPlainTextEdit*>("ptxtCert");
     m_ptxtMessage = findChild<QPlainTextEdit*>("ptxtMessage");
+
+    m_btnMakeFriend = findChild<QPushButton*>("btnMakeFriend");
 }
 
 MessageDialog::~MessageDialog()
@@ -69,6 +71,11 @@ void MessageDialog::on_buttonBox_accepted()
 void MessageDialog::on_buttonBox_rejected()
 {
 
+}
+
+void MessageDialog::EnableMakeFriend(bool fEnable)
+{
+    m_btnMakeFriend->setEnabled(fEnable);
 }
 
 void MessageDialog::on_btnMakeFriend_clicked()

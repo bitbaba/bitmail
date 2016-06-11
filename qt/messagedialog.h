@@ -31,6 +31,8 @@ public:
     void SetCert(const QString & qsCert);
     QString GetCert() const;
 
+    void EnableMakeFriend(bool fEnable);
+
 private slots:
     void on_buttonBox_accepted();
 
@@ -48,5 +50,6 @@ private:
     QLineEdit * m_leCertID;
     QPlainTextEdit * m_ptxtMessage;
     QPlainTextEdit * m_ptxtCert;
+    QPushButton * m_btnMakeFriend;
 };
 #endif // MESSAGEDIALOG_H
