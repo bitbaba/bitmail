@@ -636,7 +636,7 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
     messageDialog.SetCertID(QString::fromStdString(m_bitmail->ComputeCertID(qsCert.toStdString())));
     messageDialog.SetCert(qsCert);
 
-    messageDialog.EnableMakeFriend(!m_bitmail->IsBuddy(qsCert.toStdString()));
+    //messageDialog.EnableMakeFriend(!m_bitmail->IsBuddy(qsCert.toStdString()));
 
     connect(&messageDialog, SIGNAL(signalMakeFriend(QString, QString))
             , this, SLOT(onMakeFriend(QString,QString)));

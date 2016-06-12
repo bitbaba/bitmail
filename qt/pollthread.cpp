@@ -27,7 +27,9 @@ void PollThread::run()
 
     while(!m_fStopFlag){
 
-        m_bitmail->StartIdle(m_reIdleInterval);
+        if (bmOk != m_bitmail->StartIdle(m_reIdleInterval)){
+            QThread::sleep(5000);
+        }
 
         qDebug() << "poll timeout";
     }
