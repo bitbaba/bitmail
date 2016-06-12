@@ -669,7 +669,7 @@ void MainWindow::onMakeFriend(const QString &email, const QString &cert)
     (void)qsPrevCert;
     */
     if (m_bitmail->IsBuddy(cert.toStdString())){
-        return ;
+        //return ;
     }
     m_bitmail->AddBuddy(cert.toStdString());
     QString qsNick = QString::fromStdString(m_bitmail->GetCommonName(email.toStdString()));
