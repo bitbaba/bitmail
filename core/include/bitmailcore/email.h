@@ -33,6 +33,7 @@ struct BMEventMessage{
 	BMEventHead h;
 	std::string from;
 	std::string msg;
+	std::string certid;
 	std::string cert;
 };
 

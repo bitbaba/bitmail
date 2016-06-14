@@ -327,9 +327,24 @@ int BitMail::SetPassphrase(const std::string & passphrase)
 	return bmOk;
 }
 
+std::string BitMail::GetNick() const
+{
+    return m_profile->GetCommonName();
+}
+
+std::string BitMail::GetID() const
+{
+	return m_profile->GetID();
+}
+
 std::string BitMail::GetEmail() const
 {
     return m_profile->GetEmail();
+}
+
+std::string BitMail::GetCert() const
+{
+	return m_profile->GetCertByPem();
 }
 
 std::string BitMail::GetKey() const
@@ -356,7 +371,7 @@ std::string BitMail::Decrypt(const std::string & code) const
 	return m_profile->Decrypt(code);
 }
 
-std::string BitMail::GetCommonName(const std::string & e) const
+std::string BitMail::GetFriendNick(const std::string & e) const
 {
 	if (e == GetEmail()){
 		return m_profile->GetCommonName();
@@ -370,7 +385,7 @@ std::string BitMail::GetCommonName(const std::string & e) const
 	return x.GetCommonName();
 }
 
-std::string BitMail::GetCert(const std::string & e) const
+std::string BitMail::GetFriendCert(const std::string & e) const
 {
 	if (e == GetEmail()){
 		return m_profile->GetCertByPem();
@@ -382,7 +397,7 @@ std::string BitMail::GetCert(const std::string & e) const
 	return sCert;
 }
 
-std::string BitMail::GetCertID(const std::string & e) const
+std::string BitMail::GetFriendID(const std::string & e) const
 {
 	if (e == GetEmail()){
 		return m_profile->GetID();
@@ -396,36 +411,58 @@ std::string BitMail::GetCertID(const std::string & e) const
 	return x.GetID();
 }
 
-std::string BitMail::ComputeCertID(const std::string & cert) const
-{
-	if (cert.empty()){
-		return "";
-	}
-	CX509Cert x;
-	x.LoadCertFromPem(cert);
-	if (!x.IsValid()){
-		return "";
-	}
-	return x.GetID();
-}
-
-
 /**
-* Buddy
+* Friend APIs
 */
-int BitMail::AddBuddy(const std::string &certpem)
+int BitMail::AddFriend(const std::string & email, const std::string &certpem)
 {
     CX509Cert cert;
     cert.LoadCertFromPem(certpem);
     if (!cert.IsValid()){
         return bmInvalidCert;
     }
-    const std::string & email = cert.GetEmail();
+    std::string e = cert.GetEmail();
+    if (email != e){
+    	return bmInvalidCert;
+    }
     m_buddies[email] = certpem;
     return bmOk;
 }
 
-int BitMail::RemoveBuddy(const std::string & email)
+bool BitMail::HasFriend(const std::string & email) const
+{
+	if (m_buddies.find(email) != m_buddies.end()){
+		return true;
+	}
+	return false;
+}
+
+bool BitMail::IsFriend(const std::string & email, const std::string & certpem) const
+{
+	CX509Cert testx;
+	testx.LoadCertFromPem(certpem);
+	if (!testx.IsValid()){
+		return false;
+	}
+	std::string e = testx.GetEmail();
+	if (e.empty() || email != e){
+		return false;
+	}
+	if (m_buddies.find(e) == m_buddies.end()){
+		return false;
+	}
+	std::string prevcert = m_buddies.find(e)->second;
+	CX509Cert cert;
+	cert.LoadCertFromPem(prevcert);
+	if (!cert.IsValid()){
+		return false;
+	}
+	return cert.GetEmail() == email
+			&& testx.GetID() == cert.GetID();
+}
+
+
+int BitMail::RemoveFriend(const std::string & email)
 {
     if (m_buddies.find(email)!=m_buddies.end()){
         m_buddies.erase(email);
@@ -434,7 +471,7 @@ int BitMail::RemoveBuddy(const std::string & email)
     return bmNoBuddy;
 }
 
-int BitMail::GetBuddies(std::vector<std::string> & vecEmails) const
+int BitMail::GetFriends(std::vector<std::string> & vecEmails) const
 {
 	for (std::map<std::string, std::string>::const_iterator it = m_buddies.begin();
 		 it != m_buddies.end();
@@ -442,24 +479,6 @@ int BitMail::GetBuddies(std::vector<std::string> & vecEmails) const
 		 vecEmails.push_back(it->first);
 	}
 	return bmOk;
-}
-
-bool BitMail::IsBuddy(const std::string & certpem) const
-{
-	CX509Cert x;
-	x.LoadCertFromPem(certpem);
-	if (!x.IsValid()){
-		return false;
-	}
-	std::string email = x.GetEmail();
-	if (email.empty()){
-		return false;
-	}
-	std::string certid = GetCertID(email);
-	if (!certid.empty() && certid == x.GetID()){
-		return true;
-	}
-	return false;
 }
 
 int BitMail::EmailHandler(BMEventHead * h, void * userp)
@@ -587,11 +606,13 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
         }
         
         if (buddyCert.IsValid()){
+        	bmeMessage.certid = buddyCert.GetID();
         	bmeMessage.cert = CX509Cert::b64enc(buddyCert.GetCertByPem());
         }
         
         self->m_onMessageEvent(bmeMessage.from.c_str()
         						, bmeMessage.msg.c_str()
+								, bmeMessage.certid.c_str()
 								, bmeMessage.cert.c_str()
 								, self->m_onMessageEventParam);
     }

@@ -35,6 +35,7 @@ enum BMError{
     bmPushCert       =     23,
 	bmIdleFail       =     24,
 	bmNoStranger     =     25,
+	bmAlreadyExist   =     26,
 };
 
 enum ProxyType{
@@ -46,7 +47,7 @@ enum ProxyType{
 
 typedef int (* PollEventCB)(unsigned int count, void * p);
 
-typedef int (* MessageEventCB)(const char * from, const char * msg, const char * cert, void * p);
+typedef int (* MessageEventCB)(const char * from, const char * msg, const char * certid, const char * cert, void * p);
 
 class BitMail
 {
@@ -125,7 +126,13 @@ public:
 					
 	int SetPassphrase(const std::string & passphrase);
 
+	std::string GetNick() const;
+
+	std::string GetID() const;
+
     std::string GetEmail() const;
+
+    std::string GetCert() const;
 
 	std::string GetKey() const;
 	
@@ -139,22 +146,22 @@ public:
 	std::string Decrypt(const std::string & code) const;
 
 	// Certificate attributes
-    std::string GetCommonName(const std::string & email) const;
+    std::string GetFriendNick(const std::string & email) const;
 
-    std::string GetCert(const std::string & email) const;
+    std::string GetFriendCert(const std::string & email) const;
 
-    std::string GetCertID(const std::string & email) const;
-
-    std::string ComputeCertID(const std::string & cert) const;
+    std::string GetFriendID(const std::string & email) const;
 
     // Buddy
-    int AddBuddy(const std::string & certpem);
+    int AddFriend(const std::string & email, const std::string & certpem);
 
-    int RemoveBuddy(const std::string & email);
+    int RemoveFriend(const std::string & email);
 	
-	int GetBuddies(std::vector<std::string> & vecEmails) const;
+	int GetFriends(std::vector<std::string> & vecEmails) const;
 
-	bool IsBuddy(const std::string & certpem) const;
+	bool HasFriend(const std::string & email) const;
+
+	bool IsFriend(const std::string & email, const std::string & certpem) const;
 
 protected:
 

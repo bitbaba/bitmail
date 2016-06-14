@@ -257,6 +257,7 @@ int CMailClient::CheckInbox()
         	bmeMsg.h.bmef = bmefMessage;
         	bmeMsg.from = "";
         	bmeMsg.msg  = smime;
+        	bmeMsg.certid = "";
         	bmeMsg.cert = "";
         	m_cb((BMEventHead *)&bmeMsg, m_cbp);
         }
