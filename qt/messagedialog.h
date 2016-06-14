@@ -6,6 +6,7 @@
 class QLineEdit;
 class QPlainTextEdit;
 class QPushButton;
+class BitMail;
 
 namespace Ui {
 class MessageDialog;
@@ -16,7 +17,7 @@ class MessageDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit MessageDialog(QWidget *parent = 0);
+    explicit MessageDialog(BitMail * btimail, QWidget *parent = 0);
     ~MessageDialog();
 
     void SetFrom(const QString & qsFrom);
@@ -41,10 +42,11 @@ private slots:
     void on_btnMakeFriend_clicked();
 
 signals:
-    void signalMakeFriend(const QString & email, const QString & cert);
+    void signalAddFriend(const QString & email);
 
 private:
     Ui::MessageDialog *ui;
+    BitMail * m_bitmail;
 
     QLineEdit * m_leFrom;
     QLineEdit * m_leCertID;

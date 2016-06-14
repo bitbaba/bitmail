@@ -17,12 +17,14 @@ public:
     void run();
     void NotifyNewMessage(const QString & from
                           , const QString & to
+                          , const QString & certid
                           , const QString & cert);
     void stop();
 
 signals:
     void gotMessage(const QString & from
                         , const QString & msg
+                        , const QString & certid
                         , const QString & cert);
     void done();
 

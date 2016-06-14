@@ -83,7 +83,7 @@ private slots:
     void onConfigBtnClicked();
     void onPayBtnClicked();
     void onWalletBtnClicked();
-    void onNewMessage(const QString & from, const QString & msg, const QString & cert);
+    void onNewMessage(const QString & from, const QString & msg, const QString & certid, const QString & cert);
     void onCurrentBuddy(QListWidgetItem * current, QListWidgetItem * previous);
     void onRxDone();
     void onTxDone();
@@ -93,14 +93,14 @@ private slots:
     void onMessageDoubleClicked(QListWidgetItem * actItem);
     void onUPnPBtnClicked();
     void onProxyBtnClicked();
-    void onMakeFriend(const QString & email, const QString & cert);
+    void onAddFriend(const QString & email);
 private:
     void createActions();
     void createToolBars();
     void createStatusBar();
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
-    void populateMessage(bool fTx, const QString & from, const QString & to, const QString & msg, const QString & cert);
+    void populateMessage(bool fTx, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert);
     void populateBuddy(const QString & email, const QString & nick);
     void populateBuddies();
     void clearMsgView();

@@ -81,8 +81,8 @@ MainWindow::MainWindow(BitMail * bitmail)
     connect(m_pollth, SIGNAL(inboxPollEvent())
             , m_rxth, SLOT(onInboxPollEvent()));
 
-    connect(m_rxth, SIGNAL(gotMessage(QString,QString,QString))
-            , this, SLOT(onNewMessage(QString,QString,QString)));
+    connect(m_rxth, SIGNAL(gotMessage(QString,QString, QString,QString))
+            , this, SLOT(onNewMessage(QString,QString, QString,QString)));
 
     connect(m_pollth, SIGNAL(done()), this, SLOT(onPollDone()));
 
@@ -160,7 +160,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     setWindowIcon(QIcon(":/images/bitmail.png"));
 
     QString qsEmail = QString::fromStdString(m_bitmail->GetEmail());
-    QString qsNick = QString::fromStdString(m_bitmail->GetCommonName(qsEmail.toStdString()));
+    QString qsNick = QString::fromStdString(m_bitmail->GetNick());
 
     QString qsTitle = tr("BitMail");
     qsTitle += " - ";
@@ -235,8 +235,8 @@ void MainWindow::onBuddyDoubleClicked(QListWidgetItem *actItem)
     }
 
     QString qsEmail = actItem->data(Qt::UserRole).toString();
-    QString qsNick = QString::fromStdString(m_bitmail->GetCommonName(qsEmail.toStdString()));
-    QString qsCertID = QString::fromStdString(m_bitmail->GetCertID(qsEmail.toStdString()));
+    QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(qsEmail.toStdString()));
+    QString qsCertID = QString::fromStdString(m_bitmail->GetFriendID(qsEmail.toStdString()));
 
     CertDialog certDialog(this);
     certDialog.SetEmail(qsEmail);
@@ -409,7 +409,8 @@ void MainWindow::onSendBtnClicked()
                     , qsFrom
                     , qsTo
                     , QString::fromStdString(sMsg)
-                    , QString::fromStdString(m_bitmail->GetCert(m_bitmail->GetEmail())));
+                    , QString::fromStdString(m_bitmail->GetID())
+                    , QString::fromStdString(m_bitmail->GetCert()));
 
 
     textEdit->clear();
@@ -434,7 +435,7 @@ void MainWindow::onConfigBtnClicked()
 {
     OptionDialog optDialog(false, this);
     optDialog.SetEmail(QString::fromStdString(m_bitmail->GetEmail()));
-    optDialog.SetNick(QString::fromStdString(m_bitmail->GetCommonName(m_bitmail->GetEmail())));
+    optDialog.SetNick(QString::fromStdString(m_bitmail->GetNick()));
     optDialog.SetPassphrase(QString::fromStdString(m_bitmail->GetPassphrase()));
     optDialog.SetBits(m_bitmail->GetBits());
 
@@ -484,16 +485,22 @@ void MainWindow::onWalletBtnClicked()
 
 }
 
-void MainWindow::populateMessage(bool fTx, const QString &from, const QString & to, const QString &msg, const QString & cert)
+void MainWindow::populateMessage(bool fTx
+                                 , const QString &from
+                                 , const QString & to
+                                 , const QString & msg
+                                 , const QString & certid
+                                 , const QString & cert)
 {
 
-    bool fIsBuddy =  (m_bitmail->IsBuddy(cert.toStdString())
-                      && m_bitmail->ComputeCertID(cert.toStdString()) == m_bitmail->GetCertID(from.toStdString()));
+    bool fIsBuddy =  (m_bitmail->IsFriend(from.toStdString(), cert.toStdString()));
 
-    (void)fIsBuddy;
+    QString qsFromNick = fTx ? QString::fromStdString(m_bitmail->GetNick())
+                             : QString::fromStdString(m_bitmail->GetFriendNick(from.toStdString()));
 
-    QString qsFromNick = QString::fromStdString(m_bitmail->GetCommonName(from.toStdString()));
-    QString qsToNick = QString::fromStdString(m_bitmail->GetCommonName(to.toStdString()));
+    QString qsToNick = fTx ? QString::fromStdString(m_bitmail->GetFriendNick(to.toStdString()))
+                           : QString::fromStdString(m_bitmail->GetNick());
+
     QString qsDisp = FormatBMMessage(fTx, from, qsFromNick, to, qsToNick, msg);
 
     QListWidgetItem * msgElt = new QListWidgetItem(QIcon(":/images/bubble.png")
@@ -511,6 +518,7 @@ void MainWindow::populateMessage(bool fTx, const QString &from, const QString & 
     vecMsgData.push_back(fTx ? "tx" : "rx");
     vecMsgData.push_back(from);
     vecMsgData.push_back(msg);
+    vecMsgData.push_back(certid);
     vecMsgData.push_back(cert);
     (void)vecMsgData;
 
@@ -523,7 +531,7 @@ void MainWindow::populateMessage(bool fTx, const QString &from, const QString & 
     return;
 }
 
-void MainWindow::onNewMessage(const QString &from, const QString &msg, const QString &cert)
+void MainWindow::onNewMessage(const QString &from, const QString &msg, const QString & certid, const QString &cert)
 {
     //TODO: cert check and buddy management
     (void) cert;
@@ -531,7 +539,7 @@ void MainWindow::onNewMessage(const QString &from, const QString &msg, const QSt
     QString qsTo = QString::fromStdString(m_bitmail->GetEmail());
 
     //show message
-    populateMessage(false, from, qsTo, msg, cert);
+    populateMessage(false, from, qsTo, msg, certid, cert);
 
     //GUI notification
     activateWindow();
@@ -541,12 +549,12 @@ void MainWindow::populateBuddies()
 {
     // Add buddies
     std::vector<std::string> vecEmails;
-    m_bitmail->GetBuddies(vecEmails);
+    m_bitmail->GetFriends(vecEmails);
 
     for (std::vector<std::string>::const_iterator it = vecEmails.begin()
          ; it != vecEmails.end(); ++it)
     {
-        std::string sBuddyNick = m_bitmail->GetCommonName(*it);
+        std::string sBuddyNick = m_bitmail->GetFriendNick(*it);
         QString qsNick = QString::fromStdString(sBuddyNick);
         populateBuddy(QString::fromStdString(*it), qsNick);
     }
@@ -606,7 +614,8 @@ void MainWindow::onInviteBtnClicked()
                         , qsFrom
                         , qsEmail
                         , (qsWhisper)
-                        , QString::fromStdString(m_bitmail->GetCert(m_bitmail->GetEmail())));
+                        , QString::fromStdString(m_bitmail->GetID())
+                        , QString::fromStdString(m_bitmail->GetCert()));
     }
 
     return ;
@@ -626,20 +635,20 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
     QString qsFrom = vecMsgData.front();
     vecMsgData.pop_front();
     QString qsMessage = vecMsgData.front();
+    vecMsgData.pop_front();    
+    QString qsCertID = vecMsgData.front();
     vecMsgData.pop_front();
     QString qsCert = vecMsgData.front();
     vecMsgData.pop_front();
 
-    MessageDialog messageDialog;
+    MessageDialog messageDialog(m_bitmail);
     messageDialog.SetFrom(qsFrom);
     messageDialog.SetMessage(qsMessage);
-    messageDialog.SetCertID(QString::fromStdString(m_bitmail->ComputeCertID(qsCert.toStdString())));
+    messageDialog.SetCertID(qsCertID);
     messageDialog.SetCert(qsCert);
 
-    //messageDialog.EnableMakeFriend(!m_bitmail->IsBuddy(qsCert.toStdString()));
-
-    connect(&messageDialog, SIGNAL(signalMakeFriend(QString, QString))
-            , this, SLOT(onMakeFriend(QString,QString)));
+    connect(&messageDialog, SIGNAL(signalAddFriend(QString))
+            , this, SLOT(onAddFriend(QString)));
 
     if (messageDialog.exec() != QDialog::Accepted){
         return ;
@@ -660,19 +669,13 @@ void MainWindow::onProxyBtnClicked()
     }
 }
 
-void MainWindow::onMakeFriend(const QString &email, const QString &cert)
+void MainWindow::onAddFriend(const QString &email)
 {
-    (void)email;
-    (void)cert;
-    /** BugFix: if buddy not exist, core will crash!
-    QString qsPrevCert = QString::fromStdString(m_bitmail->GetCert(email.toStdString()));
-    (void)qsPrevCert;
-    */
-    if (m_bitmail->IsBuddy(cert.toStdString())){
-        //return ;
+    if (blist->findItems(email, Qt::MatchContains).size()){
+        // Already exist;
+        return ;
     }
-    m_bitmail->AddBuddy(cert.toStdString());
-    QString qsNick = QString::fromStdString(m_bitmail->GetCommonName(email.toStdString()));
+    QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
     populateBuddy(email, qsNick);
 }
 

@@ -2,10 +2,13 @@
 #include "ui_messagedialog.h"
 #include <QLineEdit>
 #include <QPlainTextEdit>
+#include <bitmailcore/bitmail.h>
+#include <QMessageBox>
 
-MessageDialog::MessageDialog(QWidget *parent) :
+MessageDialog::MessageDialog(BitMail * bitmail, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::MessageDialog)
+    ui(new Ui::MessageDialog),
+    m_bitmail(bitmail)
 {
     ui->setupUi(this);
 
@@ -82,8 +85,23 @@ void MessageDialog::on_btnMakeFriend_clicked()
 {
     QString qsFrom = GetFrom();
     QString qsCert = GetCert();
-    (void)qsFrom;
-    (void)qsCert;
-    //emit signalMakeFriend(qsFrom, qsCert);
-    emit signalMakeFriend(m_leFrom->text(), m_ptxtCert->toPlainText());
+
+    if (m_bitmail->HasFriend(qsFrom.toStdString())){
+        if (m_bitmail->IsFriend(qsFrom.toStdString(), qsCert.toStdString())){
+            int ret = QMessageBox::question(this
+                                            , tr("Add Friend")
+                                            , tr("Are you sure to replace current friend's certificate")
+                                            , QMessageBox::Yes | QMessageBox::No);
+            if (ret != QMessageBox::Yes){
+                return ;
+            }
+        }
+    }
+
+    if (bmOk != m_bitmail->AddFriend(qsFrom.toStdString(), qsCert.toStdString())){
+        QMessageBox::warning(this, tr("Add Friend"), tr("Failed to add friend"), QMessageBox::Ok);
+        return ;
+    }
+
+    emit signalAddFriend(qsFrom);
 }

@@ -286,8 +286,9 @@ namespace BMQTApplication {
                 const QJsonObject & joBuddy = (*it).toObject();
                 QString qsEmail = joBuddy["email"].toString();
                 QString qsCert =  joBuddy["cert"].toString();
-                (void )qsEmail;
-                bm->AddBuddy(qsCert.toStdString());
+                if (!bm->HasFriend(qsEmail.toStdString())){
+                    bm->AddFriend(qsEmail.toStdString(), qsCert.toStdString());
+                }
             }
         }
         return true;
@@ -306,9 +307,9 @@ namespace BMQTApplication {
         QJsonArray  jaBuddies;
 
         joProfile["email"] = QString::fromStdString(bm->GetEmail());
-        joProfile["nick"] = QString::fromStdString(bm->GetCommonName((bm->GetEmail())));
+        joProfile["nick"] = QString::fromStdString(bm->GetNick());
         joProfile["key"] = QString::fromStdString(bm->GetKey());
-        joProfile["cert"] = QString::fromStdString(bm->GetCert((bm->GetEmail())));
+        joProfile["cert"] = QString::fromStdString(bm->GetCert());
 
         joTx["url"] = QString::fromStdString(bm->GetTxUrl());
         joTx["login"] = QString::fromStdString(bm->GetTxLogin());
@@ -319,9 +320,9 @@ namespace BMQTApplication {
         joRx["password"] = QString::fromStdString(bm->Encrypt(bm->GetRxPassword()));
 
         std::vector<std::string > vecBuddies;
-        bm->GetBuddies(vecBuddies);
+        bm->GetFriends(vecBuddies);
         for (std::vector<std::string>::const_iterator it = vecBuddies.begin(); it != vecBuddies.end(); ++it){
-            std::string sBuddyCertPem = bm->GetCert(*it);
+            std::string sBuddyCertPem = bm->GetFriendCert(*it);
             QJsonObject joBuddy;
             joBuddy["email"] = QString::fromStdString(*it);
             joBuddy["cert"]  = QString::fromStdString(sBuddyCertPem);
