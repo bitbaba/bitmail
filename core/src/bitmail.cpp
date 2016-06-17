@@ -196,8 +196,9 @@ int BitMail::SendMsg(const std::string &email_to, const std::string &msg
                             , email_to
                             , sEncryptedMsg.empty()
                             ? sSignedMsg
-                            : sEncryptedMsg)
-    						, cb, userp){
+                            : sEncryptedMsg
+                            , cb
+                            , userp)){
         return bmTxFail;
     }
     return bmOk;
