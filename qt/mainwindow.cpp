@@ -129,8 +129,8 @@ MainWindow::MainWindow(BitMail * bitmail)
     rightLayout->addLayout(btnLayout);
     mainLayout->addLayout(rightLayout);
     QWidget * wrap = new QWidget(this);
-    wrap->setMinimumWidth(640);
-    wrap->setMinimumHeight(480);
+    wrap->setMinimumWidth(720);
+    wrap->setMinimumHeight(640);
     wrap->setLayout(mainLayout);
     setCentralWidget(wrap);
 
@@ -199,12 +199,14 @@ void MainWindow::onRxDone()
 
 void MainWindow::onRxProgress(const QString &info)
 {
+    qDebug() << info;
     statusBar()->showMessage(info, 2000);
     return ;
 }
 
 void MainWindow::onTxProgress(const QString &info)
 {
+    qDebug() << info;
     statusBar()->showMessage(info, 2000);
     return ;
 }

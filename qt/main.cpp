@@ -49,6 +49,8 @@
 #include <QTextStream>
 #include <QTextCodec>
 #include <QThread>
+#include <QDebug>
+#include <QDateTime>
 
 #include "optiondialog.h"
 #include "logindialog.h"
@@ -57,6 +59,9 @@
 
 #include "main.h"
 
+static
+FILE * gLoggerHandle = NULL;
+
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(bitmail);
@@ -64,6 +69,15 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setOrganizationName(("BitMail"));
     app.setApplicationName(("BitMail Qt Client"));
+
+    // About logger
+    if (!BMQTApplication::InitLogger()){
+        return 1;
+    }else{
+        qInstallMessageHandler(BMQTApplication::myMessageOutput);
+    }
+
+    qDebug() << "BitMail logger works.";
 
     // About locale
     // http://doc.qt.io/qt-4.8/qlocale.html
@@ -347,6 +361,68 @@ namespace BMQTApplication {
         out << jdoc.toJson();
 
         return true;
+    }
+
+    bool InitLogger(){
+        QString qsLoggerPath = GetDataHome();
+        QDir qDataDir = QDir(qsLoggerPath);
+        if (!qDataDir.exists()){
+            qDataDir.mkpath(qsLoggerPath);
+        }
+        qsLoggerPath += "/";
+        qsLoggerPath += "bitmail.log";
+        if (gLoggerHandle != NULL){
+            fclose(gLoggerHandle);
+            gLoggerHandle = NULL;
+        }
+        gLoggerHandle = fopen(qsLoggerPath.toStdString().c_str(), "w");
+        return gLoggerHandle != NULL;
+    }
+
+    bool CloseLogger(){
+        fclose(gLoggerHandle);
+        gLoggerHandle = NULL;
+        return true;
+    }
+
+    FILE * GetLogger(){
+        return gLoggerHandle;
+    }
+
+    void FlushLogger(){
+        if (gLoggerHandle){
+            fflush(gLoggerHandle);
+        }
+    }
+
+    void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+    {
+        (void) context;
+
+        FILE * fout = GetLogger();
+
+        QByteArray localMsg = msg.toLocal8Bit();
+        switch (type) {
+        case QtDebugMsg:
+            fprintf(fout, "[%s] - Debug: %s \n", QDateTime::currentDateTime().toString().toStdString().c_str(), localMsg.constData());
+            break;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
+        case QtInfoMsg:
+            fprintf(fout, "[%s] - Info: %s \n", QDateTime::currentDateTime().toString().toStdString().c_str(), localMsg.constData());
+            break;
+#endif
+        case QtWarningMsg:
+            fprintf(fout, "[%s] - Warning: %s \n", QDateTime::currentDateTime().toString().toStdString().c_str(), localMsg.constData());
+            break;
+        case QtCriticalMsg:
+            fprintf(fout, "[%s] - Critical: %s \n", QDateTime::currentDateTime().toString().toStdString().c_str(), localMsg.constData());
+            break;
+        case QtFatalMsg:
+            fprintf(fout, "[%s] - Fatal: %s \n", QDateTime::currentDateTime().toString().toStdString().c_str(), localMsg.constData());
+            abort();
+        }
+
+        FlushLogger();
     }
 }
 

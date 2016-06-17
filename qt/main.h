@@ -15,6 +15,11 @@ namespace BMQTApplication {
     bool IsValidPofile(const QString & profilePath);
     bool SaveProfile(BitMail * bm);
     bool LoadProfile(BitMail * bm, const QString & email, const QString & passphrase);
+    bool InitLogger();
+    FILE * GetLogger();
+    void FlushLogger();
+    bool CloseLogger();
+    void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 }
 
 #endif // MAIN_H
