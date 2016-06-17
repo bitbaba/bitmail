@@ -290,12 +290,14 @@ int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
     std::vector<MessageNo> msgnolist;
     this->GetUnseenMessageNoList(msgnolist);
     std::stringstream proginfo;
+    proginfo << "msgnolist: [";
     for (std::vector<MessageNo>::const_iterator it = msgnolist.begin();
             it != msgnolist.end();
             ++it)
     {
     	proginfo<< *it << ",";
     }
+    proginfo << "]";
 
     if (cb ){
     	cb(RTS_Work, proginfo.str().c_str(), userp);
