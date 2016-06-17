@@ -2,6 +2,9 @@
 #include "ui_optiondialog.h"
 #include "main.h"
 #include <bitmailcore/bitmail.h>
+#include <QRegExpValidator>
+#include <QRegExp>
+#include <QDebug>
 
 OptionDialog::OptionDialog(bool fNew, QWidget *parent) :
     QDialog(parent)
@@ -12,19 +15,41 @@ OptionDialog::OptionDialog(bool fNew, QWidget *parent) :
 
     m_leEmail        = findChild<QLineEdit*>("leEmail");
     if (!m_fNew) m_leEmail->setEnabled(false);
+    else m_leEmail->setPlaceholderText("someone@somesite.net");
+    m_leEmail->setValidator(new QRegExpValidator(QRegExp("[_a-zA-Z0-9.]+@[a-zA-Z0-9.]+"), m_leEmail));
+
     m_leNick         = findChild<QLineEdit*>("leNick");
     if (!m_fNew) m_leNick->setEnabled(false);
-    m_lePassphrase   = findChild<QLineEdit*>("lePassphrase");
+
     m_sbBits         = findChild<QSpinBox*>("sbBits");
     if (!m_fNew) m_sbBits->setEnabled(false);
 
-    m_leSmtpUrl      = findChild<QLineEdit*>("leSmtpUrl");
-    m_leSmtpLogin    = findChild<QLineEdit*>("leSmtpLogin");
-    m_leSmtpPassword = findChild<QLineEdit*>("leSmtpPassword");
+    m_lePassphrase   = findChild<QLineEdit*>("lePassphrase");
 
+    m_leSmtpUrl      = findChild<QLineEdit*>("leSmtpUrl");
+    m_leSmtpUrl->setPlaceholderText("smtps://smtp.somesite.net/");
+    m_leSmtpUrl->setValidator(new QRegExpValidator(QRegExp("smtps://[a-ZA-Z0-9.]+/", Qt::CaseInsensitive), m_leSmtpUrl));
     m_leImapUrl      = findChild<QLineEdit*>("leImapUrl");
-    m_leImapLogin    = findChild<QLineEdit*>("leImapLogin");
-    m_leImapPassword = findChild<QLineEdit*>("leImapPassword");
+    m_leImapUrl->setPlaceholderText("imaps://imap.somesite.net/");
+    m_leImapUrl->setValidator(new QRegExpValidator(QRegExp("imaps://[a-ZA-Z0-9.]+/", Qt::CaseInsensitive), m_leImapUrl));
+    m_leLogin        = findChild<QLineEdit*>("leLogin");
+    m_lePassword     = findChild<QLineEdit*>("lePassword");
+
+    m_cbEnableUPnP   = findChild<QCheckBox*>("cbUPnP");
+
+    m_cbProxyEnable   = findChild<QCheckBox*>("cbProxyEnable");
+
+    m_leProxyIP       = findChild<QLineEdit*>("leProxyIP");
+    m_leProxyIP->setInputMask("000.000.000.000");
+
+    m_leProxyPort     = findChild<QLineEdit*>("leProxyPort");
+    m_leProxyPort->setInputMask("00000");
+
+    m_leProxyLogin    = findChild<QLineEdit*>("leProxyLogin");
+    m_leProxyPassword = findChild<QLineEdit*>("leProxyPassword");
+    m_cbRemoteDNS     = findChild<QCheckBox*>("cbRemoteDNS");
+
+    m_cbProxyEnable->setCheckState(Qt::Checked);
 }
 
 OptionDialog::~OptionDialog()
@@ -137,29 +162,26 @@ QString OptionDialog::GetSmtpUrl() const
 
 void OptionDialog::SetSmtpLogin(const QString & l)
 {
-    (void)l;
-    m_leSmtpLogin->setText(l);
+    m_leLogin->setText(l);
 }
 
 QString OptionDialog::GetSmtpLogin() const
 {
-    return m_leSmtpLogin->text();
+    return m_leLogin->text();
 }
 
 void OptionDialog::SetSmtpPassword(const QString & p)
 {
-    (void)p;
-    m_leSmtpPassword->setText(p);
+    m_lePassword->setText(p);
 }
 
 QString OptionDialog::GetSmtpPassword() const
 {
-    return m_leSmtpPassword->text();
+    return m_lePassword->text();
 }
 
 void OptionDialog::SetImapUrl(const QString & u)
 {
-    (void)u;
     m_leImapUrl->setText(u);
 }
 
@@ -170,22 +192,109 @@ QString OptionDialog::GetImapUrl() const
 
 void OptionDialog::SetImapLogin(const QString & l)
 {
-    (void)l;
-    m_leImapLogin->setText(l);
+    m_leLogin->setText(l);
 }
 
 QString OptionDialog::GetImapLogin() const
 {
-    return m_leImapLogin->text();
+    return m_leLogin->text();
 }
 
 void OptionDialog::SetImapPassword(const QString & p)
 {
-    (void)p;
-    m_leImapPassword->setText(p);
+    m_lePassword->setText(p);
 }
 
 QString OptionDialog::GetImapPassword() const
 {
-    return m_leImapPassword->text();
+    return m_lePassword->text();
+}
+
+void OptionDialog::on_cbProxyEnable_clicked()
+{
+
+}
+
+void OptionDialog::on_cbProxyEnable_stateChanged(int arg1)
+{
+    m_leProxyIP->setEnabled(arg1 == Qt::Checked);
+    m_leProxyPort->setEnabled(arg1 == Qt::Checked);
+    m_leProxyLogin->setEnabled(arg1 == Qt::Checked);
+    m_leProxyPassword->setEnabled(arg1 == Qt::Checked);
+    m_cbRemoteDNS->setEnabled(arg1 == Qt::Checked);
+}
+
+void OptionDialog::on_cbUPnP_stateChanged(int arg1)
+{
+    (void) arg1;
+}
+
+void OptionDialog::SetEnableUPnP(bool enable)
+{
+    m_cbEnableUPnP->setCheckState(enable ? Qt::Checked : Qt::Unchecked);
+}
+
+bool OptionDialog::GetEnableUPnP() const
+{
+    return m_cbEnableUPnP->checkState() == Qt::Checked;
+}
+
+void OptionDialog::SetProxyEnable(bool enable)
+{
+    m_cbProxyEnable->setCheckState(enable ? Qt::Checked : Qt::Unchecked);
+}
+
+bool OptionDialog::GetProxyEnable() const
+{
+    return m_cbProxyEnable->checkState() == Qt::Checked;
+}
+
+void OptionDialog::SetProxyIP(const QString & ip)
+{
+    m_leProxyIP->setText(ip);
+}
+
+QString OptionDialog::GetProxyIP() const
+{
+    return m_leProxyIP->text();
+}
+
+void OptionDialog::SetProxyPort(const QString & port)
+{
+    m_leProxyPort->setText(port);
+}
+
+QString OptionDialog::GetProxyPort() const
+{
+    return m_leProxyPort->text();
+}
+
+void OptionDialog::SetProxyLogin(const QString & login)
+{
+    m_leProxyLogin->setText(login);
+}
+
+QString OptionDialog::GetProxyLogin() const
+{
+    return m_leProxyLogin->text();
+}
+
+void OptionDialog::SetProxyPassword(const QString & pass)
+{
+    m_leProxyPassword->setText(pass);
+}
+
+QString OptionDialog::GetProxyPassword() const
+{
+    return m_leProxyPassword->text();
+}
+
+void OptionDialog::SetRemoteDNS(bool enable)
+{
+    m_cbRemoteDNS->setCheckState(enable ? Qt::Checked : Qt::Unchecked);
+}
+
+bool OptionDialog::GetRemoteDNS() const
+{
+    return m_cbRemoteDNS->checkState() == Qt::Checked;
 }

@@ -1,33 +1,32 @@
 QT += widgets
 
 HEADERS       = mainwindow.h \
-    optiondialog.h \
-    logindialog.h \
-    main.h \
-    txthread.h \
-    rxthread.h \
-    msgqueue.h \
-    pollthread.h \
-    paydialog.h \
-    certdialog.h \
-    shutdowndialog.h \
-    invitedialog.h \
-    messagedialog.h \
-    proxydialog.h
+                optiondialog.h \
+                logindialog.h \
+                main.h \
+                txthread.h \
+                rxthread.h \
+                msgqueue.h \
+                pollthread.h \
+                paydialog.h \
+                certdialog.h \
+                shutdowndialog.h \
+                invitedialog.h \
+                messagedialog.h
+
 SOURCES       = main.cpp \
                 mainwindow.cpp \
                 optiondialog.cpp \
-    logindialog.cpp \
-    txthread.cpp \
-    rxthread.cpp \
-    msgqueue.cpp \
-    pollthread.cpp \
-    paydialog.cpp \
-    certdialog.cpp \
-    shutdowndialog.cpp \
-    invitedialog.cpp \
-    messagedialog.cpp \
-    proxydialog.cpp
+                logindialog.cpp \
+                txthread.cpp \
+                rxthread.cpp \
+                msgqueue.cpp \
+                pollthread.cpp \
+                paydialog.cpp \
+                certdialog.cpp \
+                shutdowndialog.cpp \
+                invitedialog.cpp \
+                messagedialog.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
@@ -41,8 +40,7 @@ FORMS += \
     certdialog.ui \
     shutdowndialog.ui \
     invitedialog.ui \
-    messagedialog.ui \
-    proxydialog.ui
+    messagedialog.ui
 
 win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore
 

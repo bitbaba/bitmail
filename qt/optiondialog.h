@@ -24,6 +24,12 @@ private slots:
 
     void on_buttonBox_rejected();
 
+    void on_cbProxyEnable_clicked();
+
+    void on_cbProxyEnable_stateChanged(int arg1);
+
+    void on_cbUPnP_stateChanged(int arg1);
+
 private:
     Ui::OptionDialog *ui;
 public:
@@ -57,19 +63,45 @@ public:
     void SetImapPassword(const QString & p);
     QString GetImapPassword() const;
 
+    void SetEnableUPnP(bool enable);
+    bool GetEnableUPnP() const;
+
+    void SetProxyEnable(bool enable);
+    bool GetProxyEnable() const;
+
+    void SetProxyIP(const QString & ip);
+    QString GetProxyIP() const;
+
+    void SetProxyPort(const QString & port);
+    QString GetProxyPort() const;
+
+    void SetProxyLogin(const QString & login);
+    QString GetProxyLogin() const;
+
+    void SetProxyPassword(const QString & pass);
+    QString GetProxyPassword() const;
+
+    void SetRemoteDNS(bool enable);
+    bool GetRemoteDNS() const;
+
 private:
     QLineEdit *m_leEmail;
     QLineEdit *m_leNick;
     QLineEdit *m_lePassphrase;
     QSpinBox  *m_sbBits;
 
-    QLineEdit *m_leSmtpUrl;
-    QLineEdit *m_leSmtpLogin;
-    QLineEdit *m_leSmtpPassword;
-
+    QLineEdit *m_leSmtpUrl;    
     QLineEdit *m_leImapUrl;
-    QLineEdit *m_leImapLogin;
-    QLineEdit *m_leImapPassword;
+    QLineEdit *m_leLogin;
+    QLineEdit *m_lePassword;
+    QCheckBox *m_cbEnableUPnP;
+
+    QCheckBox *m_cbProxyEnable;
+    QLineEdit *m_leProxyIP;
+    QLineEdit *m_leProxyPort;
+    QLineEdit *m_leProxyLogin;
+    QLineEdit *m_leProxyPassword;
+    QCheckBox *m_cbRemoteDNS;
 
 private:
     bool       m_fNew;

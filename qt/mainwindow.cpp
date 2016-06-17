@@ -60,7 +60,6 @@
 #include "certdialog.h"
 #include "invitedialog.h"
 #include "messagedialog.h"
-#include "proxydialog.h"
 
 #include "main.h"
 
@@ -290,19 +289,6 @@ void MainWindow::createActions()
         connect(inviteAct, SIGNAL(triggered()), this, SLOT(onInviteBtnClicked()));
     }while(0);
 
-    do {
-        upnpAct = new QAction(QIcon(":/images/upnp.png"), tr("&uPnP"), this);
-        upnpAct->setStatusTip(tr("Start up p2p network via upnp."));
-        upnpAct->setCheckable(true);
-        connect(upnpAct, SIGNAL(triggered()), this, SLOT(onUPnPBtnClicked()));
-    }while(0);
-
-    do {
-        proxyAct = new QAction(QIcon(":/images/proxy.png"), tr("&proxy"), this);
-        proxyAct->setStatusTip(tr("setup network proxy"));
-        connect(proxyAct, SIGNAL(triggered()), this, SLOT(onProxyBtnClicked()));
-    }while(0);
-
     do{
         snapAct = new QAction(QIcon(":/images/snap.png"), tr("&Snapshot"), this);
         snapAct->setStatusTip(tr("Snapshot"));
@@ -343,9 +329,8 @@ void MainWindow::createToolBars()
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(inviteAct);
 
-    netToolbar = addToolBar(tr("network"));
-    netToolbar->addAction(upnpAct);
-    netToolbar->addAction(proxyAct);
+    walletToolbar = addToolBar(tr("Wallet"));
+    walletToolbar->addAction(walletAct);
 
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->addAction(emojAct);
@@ -356,9 +341,6 @@ void MainWindow::createToolBars()
     chatToolbar->addAction(liveAct);
     chatToolbar->addAction(payAct);
     chatToolbar->setIconSize(QSize(24,24));
-
-    walletToolbar = addToolBar(tr("Wallet"));
-    walletToolbar->addAction(walletAct);
 }
 //! [30]
 
@@ -654,19 +636,6 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
         return ;
     }
     return ;
-}
-
-void MainWindow::onUPnPBtnClicked()
-{
-
-}
-
-void MainWindow::onProxyBtnClicked()
-{
-    ProxyDialog proxyDialog;
-    if (QDialog::Accepted != proxyDialog.exec()){
-        return ;
-    }
 }
 
 void MainWindow::onAddFriend(const QString &email)

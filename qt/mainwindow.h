@@ -91,8 +91,6 @@ private slots:
     void onBuddyDoubleClicked(QListWidgetItem * actItem);
     void onInviteBtnClicked();
     void onMessageDoubleClicked(QListWidgetItem * actItem);
-    void onUPnPBtnClicked();
-    void onProxyBtnClicked();
     void onAddFriend(const QString & email);
 private:
     void createActions();
@@ -122,10 +120,6 @@ private:
     QAction *configAct;
 
     QAction *inviteAct;
-
-    QAction *upnpAct;
-
-    QAction *proxyAct;
 
     QAction *snapAct;
     QAction *fileAct;
