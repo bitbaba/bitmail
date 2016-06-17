@@ -86,7 +86,9 @@ private slots:
     void onNewMessage(const QString & from, const QString & msg, const QString & certid, const QString & cert);
     void onCurrentBuddy(QListWidgetItem * current, QListWidgetItem * previous);
     void onRxDone();
+    void onRxProgress(const QString & info);
     void onTxDone();
+    void onTxProgress(const QString & info);
     void onPollDone();
     void onBuddyDoubleClicked(QListWidgetItem * actItem);
     void onInviteBtnClicked();

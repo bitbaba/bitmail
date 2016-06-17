@@ -19,6 +19,9 @@ public:
                           , const QString & to
                           , const QString & certid
                           , const QString & cert);
+
+    void NotifyProgress(const QString & info);
+
     void stop();
 
 signals:
@@ -27,6 +30,8 @@ signals:
                         , const QString & certid
                         , const QString & cert);
     void done();
+
+    void rxProgress(const QString & info);
 
 public slots:
     void onInboxPollEvent();

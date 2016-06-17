@@ -86,8 +86,10 @@ MainWindow::MainWindow(BitMail * bitmail)
     connect(m_pollth, SIGNAL(done()), this, SLOT(onPollDone()));
 
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
+    connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
 
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
+    connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
 
     m_pollth->start();
 
@@ -195,6 +197,18 @@ void MainWindow::onRxDone()
     }
 }
 
+void MainWindow::onRxProgress(const QString &info)
+{
+    statusBar()->showMessage(info, 2000);
+    return ;
+}
+
+void MainWindow::onTxProgress(const QString &info)
+{
+    statusBar()->showMessage(info, 2000);
+    return ;
+}
+
 void MainWindow::onTxDone()
 {
     if (!m_shutdownDialog)
@@ -261,10 +275,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     m_shutdownDialog->exec();
 
     if (m_bitmail != NULL){
-        qDebug() << "Dump profile";
         BMQTApplication::SaveProfile(m_bitmail);
-
-        qDebug() << "Release bitmail, clear deleted messages.";
         delete m_bitmail;
         m_bitmail = NULL;
     }
@@ -357,7 +368,6 @@ void MainWindow::onSendBtnClicked()
     QString qsMsg;
     qsMsg = textEdit->toPlainText();
     if (qsMsg.isEmpty()){
-        qDebug() << "no message to send";
         statusBar()->showMessage(tr("no message to send"), 3000);
         return ;
     }
@@ -378,7 +388,6 @@ void MainWindow::onSendBtnClicked()
     (void)qsFrom;
 
     if (blist->currentItem() == NULL){
-        qDebug() << "no current buddy selected";
         statusBar()->showMessage(tr("no current buddy selected"), 3000);
         return ;
     }

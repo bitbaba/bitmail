@@ -30,13 +30,9 @@ void PollThread::run()
         if (bmOk != m_bitmail->StartIdle(m_reIdleInterval)){
             QThread::sleep(5000);
         }
-
-        qDebug() << "poll timeout";
     }
 
     emit done();
-
-    qDebug() << "Poll Thread quit";
 }
 
 void PollThread::stop()
