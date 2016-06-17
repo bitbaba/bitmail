@@ -34,6 +34,9 @@ CMailClient::CMailClient(BMEventCB cb, void * cbp)
 , m_tx(NULL)
 , m_rx(NULL)
 , m_rxIdle(NULL)
+, m_fEnableProxy(false)
+, m_proxyPort(1080)
+, m_fRemoteDNS(false)
 {
 
 }
@@ -49,8 +52,8 @@ CMailClient::~CMailClient()
         m_rx = NULL;
     }
     if (false && m_rxIdle){
-    	curl_easy_cleanup((CURL * )m_rxIdle);
-    	m_rxIdle = NULL;
+        curl_easy_cleanup((CURL * )m_rxIdle);
+        m_rxIdle = NULL;
     }
 }
 
@@ -64,34 +67,34 @@ int CMailClient::InitTx(const std::string & url
     }
     m_txuser= user;
     m_txpass= pass;
-    return 0;
+    return bmOk;
 }
 
 void CMailClient::SetTxUrl(const std::string & u)
 {
-	m_txurl = u;
+    m_txurl = u;
 }
 void CMailClient::SetTxLogin(const std::string & l)
 {
-	m_txuser = l;
+    m_txuser = l;
 }
 void CMailClient::SetTxPassword(const std::string & p)
 {
-	m_txpass = p;
+    m_txpass = p;
 }
 std::string CMailClient::GetTxUrl() const
 {
-	return m_txurl;
+    return m_txurl;
 }
 
 std::string CMailClient::GetTxLogin() const
 {
-	return m_txuser;
+    return m_txuser;
 }
 
 std::string CMailClient::GetTxPassword() const
 {
-	return m_txpass;
+    return m_txpass;
 }
 
 int CMailClient::InitRx(const std::string & url
@@ -104,46 +107,73 @@ int CMailClient::InitRx(const std::string & url
     }
     m_rxuser= user;
     m_rxpass= pass;
-    return 0;
+    return bmOk;
 }
 
 void CMailClient::SetRxUrl(const std::string & u)
 {
-	m_rxurl = u;
+    m_rxurl = u;
 }
 void CMailClient::SetRxLogin(const std::string & l)
 {
-	m_rxuser = l;
+    m_rxuser = l;
 }
 void CMailClient::SetRxPassword(const std::string & p)
 {
-	m_rxpass = p;
+    m_rxpass = p;
 }
 
 std::string CMailClient::GetRxUrl() const
 {
-	return m_rxurl;
+    return m_rxurl;
 }
 
 std::string CMailClient::GetRxLogin() const
 {
-	return m_rxuser;
+    return m_rxuser;
 }
 
 std::string CMailClient::GetRxPassword() const
 {
-	return m_rxpass;
+    return m_rxpass;
 }
 
-int CMailClient::SendMsg(const std::string & from, const std::string & to, const std::string & encSignedMail)
+int CMailClient::SetProxy(const std::string & ip
+								, unsigned short port
+								, const std::string & user
+								, const std::string & pass
+								, bool fRemoteDNS)
+{
+	m_proxyIp = ip;
+	m_proxyPort = port;
+	m_proxyUser = user;
+	m_proxyPassword = pass;
+	m_fRemoteDNS = fRemoteDNS;
+	return bmOk;
+}
+
+int CMailClient::EnableProxy(bool fEnable)
+{
+	m_fEnableProxy = fEnable;
+	return bmOk;
+}
+
+int CMailClient::SendMsg(const std::string & from, const std::string & to, const std::string & encSignedMail
+						, RTxProgressCB cb, void * userp)
 {
     std::vector<std::string> vecTo;
     vecTo.push_back(to);
-    return SendMsg(from, vecTo, encSignedMail);
+    return SendMsg(from, vecTo, encSignedMail, cb, userp);
 }
 
-int CMailClient::SendMsg( const std::string & from, const std::vector<std::string> & to, const std::string & encSignedMail)
+int CMailClient::SendMsg( const std::string & from, const std::vector<std::string> & to, const std::string & encSignedMail
+						, RTxProgressCB cb, void * userp)
 {
+    if (cb ){
+    	std::stringstream txinfo;
+    	txinfo<< "Try to Send Message";
+    	cb(RTS_Start, txinfo.str().c_str(), userp);
+    }
     std::stringstream sstrmMail;
     /**
      * <To> Field
@@ -188,7 +218,7 @@ int CMailClient::SendMsg( const std::string & from, const std::vector<std::strin
     sstrmMail << "\r\n";
 
     if (!m_tx){
-    	m_tx = curl_easy_init();
+        m_tx = curl_easy_init();
     }
 
     CURL * curl = (CURL * ) m_tx;
@@ -218,53 +248,107 @@ int CMailClient::SendMsg( const std::string & from, const std::vector<std::strin
     curl_easy_setopt(curl, CURLOPT_READDATA, &txcb);
     curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
     if (verboseFlag){
-    	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    }
+
+    if (cb ){
+    	std::stringstream txinfo;
+    	txinfo<< "Sending Message";
+    	cb(RTS_Work, txinfo.str().c_str(), userp);
     }
     res = curl_easy_perform(curl);
+
+    curl_slist_free_all(recipients);
+
     // AOL spam will block to send message, without any curl error,
     // do anti-bot here: http://challenge.aol.com/spam.html
     if(res != CURLE_OK){
         fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
+        if (cb ){
+        	std::stringstream txinfo;
+        	txinfo<< "Message sent Failed";
+        	cb(RTS_Error, txinfo.str().c_str(), userp);
+        }
+        return bmTxFail;
     }
-    curl_slist_free_all(recipients);
+
+    if (cb ){
+    	std::stringstream txinfo;
+    	txinfo<< "Message sent Ok";
+    	cb(RTS_Done, txinfo.str().c_str(), userp);
+    }
+
+    return bmOk;
 }
 
-int CMailClient::CheckInbox()
+int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
 {
+	if (cb ){
+		cb(RTS_Start, "CheckInbox", userp);
+	}
+
     std::vector<MessageNo> msgnolist;
     this->GetUnseenMessageNoList(msgnolist);
-    std::cout<<"MsgNoList: [";
+    std::stringstream proginfo;
     for (std::vector<MessageNo>::const_iterator it = msgnolist.begin();
-    		it != msgnolist.end();
-    		++it){
-    		std::cout << *it << " "; 
+            it != msgnolist.end();
+            ++it)
+    {
+    	proginfo<< *it << ",";
     }
-    std::cout<< "]" <<std::endl; 
+
+    if (cb ){
+    	cb(RTS_Work, proginfo.str().c_str(), userp);
+    }
 
     for (std::vector<MessageNo>::iterator it = msgnolist.begin();
             it != msgnolist.end();
             it ++)
     {
         MessageNo msgno = *it;
-        std::cout<< "Receiving msg by  msgno: [" << *it << "]" <<std::endl;
+
+        if (cb ){
+        	std::stringstream rxinfo;
+        	rxinfo<< "Try to Receive Message: [" << *it << "]";
+        	cb(RTS_Work, rxinfo.str().c_str(), userp);
+        }
 
         std::string smime;
         this->GetUnseenMessageByMessageNo(msgno, smime);
 
+
+        if (cb ){
+        	std::stringstream rxinfo;
+        	rxinfo<< "Rx Message size: [" <<  smime.length() << "]";
+        	cb(RTS_Work, rxinfo.str().c_str(), userp);
+        }
+
         if (m_cb){
-        	BMEventMessage bmeMsg;
-        	bmeMsg.h.magic = BMMAGIC;
-        	bmeMsg.h.bmef = bmefMessage;
-        	bmeMsg.from = "";
-        	bmeMsg.msg  = smime;
-        	bmeMsg.certid = "";
-        	bmeMsg.cert = "";
-        	m_cb((BMEventHead *)&bmeMsg, m_cbp);
+            BMEventMessage bmeMsg;
+            bmeMsg.h.magic = BMMAGIC;
+            bmeMsg.h.bmef = bmefMessage;
+            bmeMsg.from = "";
+            bmeMsg.msg  = smime;
+            bmeMsg.certid = "";
+            bmeMsg.cert = "";
+            m_cb((BMEventHead *)&bmeMsg, m_cbp);
         }
         
         this->StoreFlag(msgno, "\\Seen");
+
+        if (cb ){
+        	std::stringstream rxinfo;
+        	rxinfo<<"Rx Store \\Seen Flag to MsgNo: [" <<  msgno << "]";
+        	cb(RTS_Work, rxinfo.str().c_str(), userp);
+        }
     }
     
+    if (cb ){
+    	std::stringstream rxinfo;
+    	rxinfo<<"Rx Done";
+    	cb(RTS_Done, rxinfo.str().c_str(), userp);
+    }
+
     return msgnolist.size();
 }
 
@@ -276,7 +360,7 @@ int CMailClient::GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist)
     chunk.self = this;
 
     if (!m_rx){
-    	m_rx = curl_easy_init();
+        m_rx = curl_easy_init();
     }
 
     CURL *curl = (CURL * )m_rx;
@@ -292,7 +376,7 @@ int CMailClient::GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist)
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, OnRxfer);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
     if (verboseFlag){
-    	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     }
     /**
     * RFC3051: SEARCH UNSEEN
@@ -310,12 +394,12 @@ int CMailClient::GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist)
      */
     res = curl_easy_perform(curl);
     if(res != CURLE_OK){
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        return bmRxFail;
     }
 
     std::string rawResult;
     rawResult.append(chunk.memory, chunk.size);
-    //std::cout<< "GetUnseenMessageNoList: " << rawResult << std::endl;
 
     do {
         free(chunk.memory);
@@ -325,25 +409,25 @@ int CMailClient::GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist)
     }while(0);
     
     if (rawResult.empty()){
-    	return 0;
+        return bmRxFail;
     }
     
     std::vector<std::string> lines;
     CMailClient::GetLines(rawResult, lines);
     if (lines.empty()){
-    	return 0;
+        return bmRxFail;
     }
     
     rawResult = "";
     for (std::vector<std::string>::const_iterator it = lines.begin();it!=lines.end();++it){
-    	if (it->find("* SEARCH") != std::string::npos){
-    		rawResult = *it;
-    		break;
-    	}
+        if (it->find("* SEARCH") != std::string::npos){
+            rawResult = *it;
+            break;
+        }
     }
     
     if (rawResult.empty()){
-    	return 0;
+        return bmRxFail;
     }
 
     /**
@@ -364,7 +448,7 @@ int CMailClient::GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist)
         }
     }while(0);
 
-    return 0;
+    return bmOk;
 }
 
 int CMailClient::GetUnseenMessageByMessageNo(MessageNo msgno, std::string & smime)
@@ -375,7 +459,7 @@ int CMailClient::GetUnseenMessageByMessageNo(MessageNo msgno, std::string & smim
     chunk.self = this;
 
     if (!m_rx){
-    	m_rx = curl_easy_init();
+        m_rx = curl_easy_init();
     }
 
     CURL *curl = (CURL * )m_rx;
@@ -393,7 +477,7 @@ int CMailClient::GetUnseenMessageByMessageNo(MessageNo msgno, std::string & smim
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, OnRxfer);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
     if (verboseFlag){
-    	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     }    
 
     /**
@@ -412,7 +496,8 @@ int CMailClient::GetUnseenMessageByMessageNo(MessageNo msgno, std::string & smim
      */
     res = curl_easy_perform(curl);
     if(res != CURLE_OK){
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        return bmRxFail;
     }
 
     smime.append(chunk.memory, chunk.size);
@@ -424,7 +509,7 @@ int CMailClient::GetUnseenMessageByMessageNo(MessageNo msgno, std::string & smim
         chunk.self = NULL;
     }while(0);
 
-    return 0;
+    return bmOk;
 }
 
 int CMailClient::StoreFlag(MessageNo msgno, const std::string & flag)
@@ -435,7 +520,7 @@ int CMailClient::StoreFlag(MessageNo msgno, const std::string & flag)
     chunk.self = this;
 
     if (!m_rx){
-    	m_rx = curl_easy_init();
+        m_rx = curl_easy_init();
     }
 
     CURL *curl = (CURL * )m_rx;
@@ -458,7 +543,7 @@ int CMailClient::StoreFlag(MessageNo msgno, const std::string & flag)
     
  
     if (verboseFlag){
-    	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     }    
 
     /* Set the STORE command with the Deleted flag for message 1. Note that
@@ -480,7 +565,8 @@ int CMailClient::StoreFlag(MessageNo msgno, const std::string & flag)
      */
     res = curl_easy_perform(curl);
     if(res != CURLE_OK){
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        return bmFlagFail;
     }
 
     do {
@@ -490,10 +576,10 @@ int CMailClient::StoreFlag(MessageNo msgno, const std::string & flag)
         chunk.self = NULL;
     }while(0);
 
-    return 0;
+    return bmOk;
 }
 
-int CMailClient::Expunge()
+int CMailClient::Expunge(RTxProgressCB cb, void * userp)
 {
     struct RxCallback_t chunk;
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
@@ -501,7 +587,7 @@ int CMailClient::Expunge()
     chunk.self = this;
 
     if (!m_rx){
-    	m_rx = curl_easy_init();
+        m_rx = curl_easy_init();
     }
 
     CURL *curl = (CURL * )m_rx;
@@ -524,7 +610,7 @@ int CMailClient::Expunge()
     
  
     if (verboseFlag){
-    	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     }    
 
     /* Set the EXPUNGE command, although you can use the CLOSE command if you
@@ -542,7 +628,8 @@ int CMailClient::Expunge()
      */
     res = curl_easy_perform(curl);
     if(res != CURLE_OK){
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        return bmExpungeFail;
     }
 
     do {
@@ -552,64 +639,64 @@ int CMailClient::Expunge()
         chunk.self = NULL;
     }while(0);
 
-    return 0;
+    return bmOk;
 }
 
 /* Auxiliary function that waits on the socket. */
 int CMailClient::CurlWait(void * handle, bool forRead, unsigned int & timeout_ms)
 {
-	CURL * curl = (CURL*)handle;
-	/**
-	 * Get raw socket for system wait utility: select;
-	 */
-	long sockextr = 0;
-	CURLcode res = curl_easy_getinfo(curl, CURLINFO_LASTSOCKET, &sockextr);
+    CURL * curl = (CURL*)handle;
+    /**
+     * Get raw socket for system wait utility: select;
+     */
+    long sockextr = 0;
+    CURLcode res = curl_easy_getinfo(curl, CURLINFO_LASTSOCKET, &sockextr);
     if(CURLE_OK != res)
     {
-    	fprintf(stderr, "Error: %s\n", curl_easy_strerror(res));
-    	return 1;
+        fprintf(stderr, "Error: %s\n", curl_easy_strerror(res));
+        return 1;
     }
     curl_socket_t sockfd = (curl_socket_t)sockextr;
     
-	struct timeval tv;
-	fd_set infd, outfd, errfd;
-	
-	tv.tv_sec = timeout_ms / 1000;
-	tv.tv_usec= (timeout_ms % 1000) * 1000;
-	
-	FD_ZERO(&infd);
-	FD_ZERO(&outfd);
-	FD_ZERO(&errfd);
-	
-	FD_SET(sockfd, &errfd); /* always check for error */
-	
-	if(forRead)
-	{
-		FD_SET(sockfd, &infd);
-	}
-	else
-	{
-		FD_SET(sockfd, &outfd);
-	}
-	
-	/* select() returns the number of signalled sockets or -1 */
-	int ret = select(sockfd + 1, &infd, &outfd, &errfd, &tv);
-	if (ret > 0){
-		timeout_ms = tv.tv_sec * 1000 + tv.tv_usec/1000;
-		return ret;
-	}else if (ret < 0){
-		//TODO: Error Handler, maybe-reconnect
-		timeout_ms = 0;
-		return ret;
-	}else{
-		//TODO: Timeout handler
-		timeout_ms = 0;
-		return ret;
-	}
+    struct timeval tv;
+    fd_set infd, outfd, errfd;
+
+    tv.tv_sec = timeout_ms / 1000;
+    tv.tv_usec= (timeout_ms % 1000) * 1000;
+
+    FD_ZERO(&infd);
+    FD_ZERO(&outfd);
+    FD_ZERO(&errfd);
+
+    FD_SET(sockfd, &errfd); /* always check for error */
+
+    if(forRead)
+    {
+        FD_SET(sockfd, &infd);
+    }
+    else
+    {
+        FD_SET(sockfd, &outfd);
+    }
+
+    /* select() returns the number of signalled sockets or -1 */
+    int ret = select(sockfd + 1, &infd, &outfd, &errfd, &tv);
+    if (ret > 0){
+        timeout_ms = tv.tv_sec * 1000 + tv.tv_usec/1000;
+        return ret;
+    }else if (ret < 0){
+        //TODO: Error Handler, maybe-reconnect
+        timeout_ms = 0;
+        return ret;
+    }else{
+        //TODO: Timeout handler
+        timeout_ms = 0;
+        return ret;
+    }
 }
 
 void CMailClient::CurlRecv(void *handle, std::string & resp) {
-	CURL * curl = (CURL * )handle;
+    CURL * curl = (CURL * )handle;
     /* read the response */
     for(;;)
     {
@@ -617,8 +704,8 @@ void CMailClient::CurlRecv(void *handle, std::string & resp) {
       char buf[1024];
       CURLcode res = curl_easy_recv(curl, buf, 1024, &iolen);
       if(CURLE_OK != res){
-    	  break;
-      }    	  
+          break;
+      }
       curl_off_t nread = (curl_off_t)iolen;
       resp.append(buf, nread);
     }
@@ -626,23 +713,23 @@ void CMailClient::CurlRecv(void *handle, std::string & resp) {
 
 void CMailClient::CurlSend(void *handle, const std::string & req) 
 {
-	CURL * curl = (CURL*)handle;
-	std::cout<<"C: "<< req << std::endl;
-	//TODO: Check writable
-	size_t outl = 0;
-	CURLcode ret = curl_easy_send(curl, req.c_str(), req.length(), &outl);
-	return ;
+    CURL * curl = (CURL*)handle;
+    std::cout<<"C: "<< req << std::endl;
+    //TODO: Check writable
+    size_t outl = 0;
+    CURLcode ret = curl_easy_send(curl, req.c_str(), req.length(), &outl);
+    return ;
 }
 
-int CMailClient::StartIdle(unsigned int timeout)
+int CMailClient::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
 {
     /**
      * Prepare for IDLE connection handle
      * http://tools.ietf.org/html/rfc2177
      */
-	if (!m_rxIdle){
-		m_rxIdle = curl_easy_init();
-	}
+    if (!m_rxIdle){
+        m_rxIdle = curl_easy_init();
+    }
 
     CURL * curl = (CURL *)m_rxIdle;
     curl_easy_setopt(curl, CURLOPT_USERNAME, m_rxuser.c_str());
@@ -662,57 +749,57 @@ int CMailClient::StartIdle(unsigned int timeout)
      * Do the connnect only
      */ 
     curl_easy_setopt(curl, CURLOPT_CONNECT_ONLY, 1L); 
-	CURLcode res = curl_easy_perform(curl);
-	if( res != CURLE_OK ) {
-		fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-		return 1;
-	}
-	    
-	/**
-	 * Start Idle Mode
-	 * http://tools.ietf.org/html/rfc3501
-	 * Section 2.2.1 & 2.2.2
-	 */
-	CurlSend(curl, "A001 SELECT \"INBOX\"\r\n");
-	
-	CurlSend(curl, "A002 IDLE\r\n");
-	
-	std::string idleresp = "";
-	while(timeout != 0){
-		std::cout<<"Timeout: "<<timeout<<std::endl;
-		if (0 == CurlWait(curl, true, timeout)){
-			break; // Timeout
-		}
-		CurlRecv(curl, idleresp);
-		std::vector<std::string> idlecmd;
-		CMailClient::GetLines(idleresp, idlecmd);
-		for (std::vector<std::string>::const_iterator it = idlecmd.begin();
-				it != idlecmd.end();
-				++it){
-			if (verboseFlag){
-				std::cout<<"S: "<< *it << std::endl;
-			}
-			const std::string line = *it;
-			if (line.find("EXISTS") != std::string::npos){
-				unsigned int msgcount = 0;
-				sscanf(line.c_str(), "* %u EXISTS", &msgcount);
-				//std::cout<<"MsgCount: " << msgcount << std::endl;
-				if (m_cb){
-					BMEventMsgCount bmeMsgCount;
-					bmeMsgCount.h.magic = BMMAGIC;
-					bmeMsgCount.h.bmef = bmefMsgCount;
-					bmeMsgCount.msgcount = msgcount;
-					m_cb((BMEventHead *)&bmeMsgCount, m_cbp);
-				}
-			}
-		}
-	}	
-	
-	/**
-	 * Stop Idle Mode
-	 */
-	CurlSend(curl, "DONE\r\n");
-	return 0;
+    CURLcode res = curl_easy_perform(curl);
+    if( res != CURLE_OK ) {
+        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        return bmIdleFail;
+    }
+
+    /**
+     * Start Idle Mode
+     * http://tools.ietf.org/html/rfc3501
+     * Section 2.2.1 & 2.2.2
+     */
+    CurlSend(curl, "A001 SELECT \"INBOX\"\r\n");
+
+    CurlSend(curl, "A002 IDLE\r\n");
+
+    std::string idleresp = "";
+    while(timeout != 0){
+        std::cout<<"Timeout: "<<timeout<<std::endl;
+        if (0 == CurlWait(curl, true, timeout)){
+            break; // Timeout
+        }
+        CurlRecv(curl, idleresp);
+        std::vector<std::string> idlecmd;
+        CMailClient::GetLines(idleresp, idlecmd);
+        for (std::vector<std::string>::const_iterator it = idlecmd.begin();
+                it != idlecmd.end();
+                ++it){
+            if (verboseFlag){
+                std::cout<<"S: "<< *it << std::endl;
+            }
+            const std::string line = *it;
+            if (line.find("EXISTS") != std::string::npos){
+                unsigned int msgcount = 0;
+                sscanf(line.c_str(), "* %u EXISTS", &msgcount);
+                //std::cout<<"MsgCount: " << msgcount << std::endl;
+                if (m_cb){
+                    BMEventMsgCount bmeMsgCount;
+                    bmeMsgCount.h.magic = BMMAGIC;
+                    bmeMsgCount.h.bmef = bmefMsgCount;
+                    bmeMsgCount.msgcount = msgcount;
+                    m_cb((BMEventHead *)&bmeMsgCount, m_cbp);
+                }
+            }
+        }
+    }
+
+    /**
+     * Stop Idle Mode
+     */
+    CurlSend(curl, "DONE\r\n");
+    return bmOk;
 }
 
 int CMailClient::GetEmailAddrList(const std::string & addr, std::vector<std::string> & vecAddrs)
@@ -735,24 +822,24 @@ int CMailClient::GetEmailAddrList(const std::string & addr, std::vector<std::str
 
 int CMailClient::GetLines(std::string & str, std::vector<std::string> & lines)
 {
-	if (str.empty()) return 0;
-	
-	const char endc = str.at(str.length() - 1);
+    if (str.empty()) return 0;
+
+    const char endc = str.at(str.length() - 1);
     
-	char * buf = strdup(str.c_str());
+    char * buf = strdup(str.c_str());
     const char * delims = "\r\n";
     char * tok = strtok(buf, delims);
     while(tok != NULL){
-    	lines.push_back(tok);
+        lines.push_back(tok);
         tok = strtok(NULL, delims);
     };
     free(buf);
     
     // Get the tail back;
     if (endc != '\r' && endc != '\n' && !lines.empty()){
-    	str = lines.at(lines.size() - 1);
-    	lines.pop_back();
-    	return 0;
+        str = lines.at(lines.size() - 1);
+        lines.pop_back();
+        return 0;
     }
     
     str = "";

@@ -55,14 +55,14 @@ int BitMail::OnPollEvent( PollEventCB cb, void * userp)
 {
     m_onPollEvent = cb;
     m_onPollEventParam = userp;
-    return 0;
+    return bmOk;
 }
 
 int BitMail::OnMessageEvent( MessageEventCB cb, void * userp)
 {
     m_onMessageEvent = cb;
     m_onMessageEventParam = userp;
-    return 0;
+    return bmOk;
 }
 
 /**
@@ -88,13 +88,18 @@ int BitMail::InitNetwork( const std::string & txurl
     return bmOk;
 }
 
-int BitMail::SetProxy(ProxyType pt
-		, const std::string & ip
+int BitMail::SetProxy(const std::string & ip
 		, unsigned short port
 		, const std::string & user
-		, const std::string & password)
+		, const std::string & password
+		, bool fRemoteDNS)
 {
-	return bmOk;
+	return m_mc->SetProxy(ip, port, user, password, fRemoteDNS);
+}
+
+int BitMail::EnableProxy(bool fEnable)
+{
+	return m_mc->EnableProxy(fEnable);
 }
 
 int BitMail::SetTxUrl(const std::string & u)
@@ -163,7 +168,8 @@ std::string BitMail::GetRxPassword() const
 	return m_mc->GetRxPassword();
 }
 
-int BitMail::SendMsg(const std::string &email_to, const std::string &msg)
+int BitMail::SendMsg(const std::string &email_to, const std::string &msg
+		            , RTxProgressCB cb, void * userp)
 {
 	if (msg.empty()){
 		return bmInvalidParam;
@@ -190,13 +196,15 @@ int BitMail::SendMsg(const std::string &email_to, const std::string &msg)
                             , email_to
                             , sEncryptedMsg.empty()
                             ? sSignedMsg
-                            : sEncryptedMsg)){
+                            : sEncryptedMsg)
+    						, cb, userp){
         return bmTxFail;
     }
     return bmOk;
 }
 
-int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::string &msg)
+int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::string &msg
+		             , RTxProgressCB cb, void * userp)
 {
 	if (msg.empty()){
 		return bmInvalidParam;
@@ -242,32 +250,34 @@ int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::strin
 
     if (m_mc->SendMsg( m_profile->GetEmail()
                             , email_to
-                            , sEncryptedMsg)){
+                            , sEncryptedMsg
+							, cb
+							, userp)){
         return bmTxFail;
     }
     return bmOk;
 }
 
-int BitMail::CheckInbox()
+int BitMail::CheckInbox(RTxProgressCB cb, void * userp)
 {
-    if (m_mc->CheckInbox()){
+    if (m_mc->CheckInbox(cb, userp)){
         return bmRxFail;
     }
     return bmOk;
 }
 
-int BitMail::StartIdle(unsigned int timeout)
+int BitMail::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
 {
-	if (m_mc->StartIdle(timeout)){
+        if (m_mc->StartIdle(timeout, cb, userp)){
 		return bmIdleFail;
 	}
 	return bmOk;
 }
 
-int BitMail::Expunge()
+int BitMail::Expunge(RTxProgressCB cb, void * userp)
 {
 	// Clear all <deleted> messages
-	m_mc->Expunge();
+	m_mc->Expunge(cb, userp);
 }
 
 /**

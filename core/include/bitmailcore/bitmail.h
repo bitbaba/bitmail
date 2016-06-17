@@ -36,18 +36,22 @@ enum BMError{
 	bmIdleFail       =     24,
 	bmNoStranger     =     25,
 	bmAlreadyExist   =     26,
+	bmExpungeFail    =     27,
+	bmFlagFail       =     28,
 };
 
-enum ProxyType{
-	PT_undef = 0,
-	PT_http,
-	PT_socks4,
-	PT_socks5,
+enum RTxState{
+	RTS_Start = 0,
+	RTS_Work  = 1,
+	RTS_Done  = 2,
+	RTS_Error = 3,
 };
 
 typedef int (* PollEventCB)(unsigned int count, void * p);
 
 typedef int (* MessageEventCB)(const char * from, const char * msg, const char * certid, const char * cert, void * p);
+
+typedef int (* RTxProgressCB)(RTxState, const char * info, void * userptr);
 
 class BitMail
 {
@@ -68,11 +72,13 @@ public:
                     , const std::string & rxuser
                     , const std::string & rxpass);
     
-    int SetProxy(ProxyType pt
-    			, const std::string & ip
+    int SetProxy(const std::string & ip
 				, unsigned short port
 				, const std::string & user
-				, const std::string & password);
+				, const std::string & password
+				, bool fRemoteDNS);
+
+    int EnableProxy(bool fEnable);
 
     /*UPNP feature should be external utility, e.g. forked from bittorrent*/
 
@@ -99,16 +105,17 @@ public:
 	int SetRxPassword(const std::string & p);
 	
 	std::string GetRxPassword() const;
-					
-    int SendMsg(const std::string & to, const std::string & msg);
 
-    int GroupMsg(const std::vector<std::string> & to, const std::string & msg);
+	// RTx Routines;
+    int SendMsg(const std::string & to, const std::string & msg, RTxProgressCB cb = NULL, void * userp = NULL);
 
-    int CheckInbox();
+    int GroupMsg(const std::vector<std::string> & to, const std::string & msg, RTxProgressCB cb = NULL, void * userp = NULL);
 
-    int StartIdle(unsigned int timeout/*Interval to re-idle*/);
+    int CheckInbox(RTxProgressCB cb = NULL, void * userp = NULL);
+
+    int StartIdle(unsigned int timeout/*Interval to re-idle*/, RTxProgressCB cb = NULL, void * userp = NULL);
     
-    int Expunge();
+    int Expunge(RTxProgressCB cb = NULL, void * userp = NULL);
 
     // Profile
     int CreateProfile(const std::string & commonName

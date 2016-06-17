@@ -67,20 +67,31 @@ public:
 	void SetRxPassword(const std::string &p);
 	std::string GetRxPassword() const;
 	
+	int SetProxy(const std::string & ip, unsigned short port
+						, const std::string & user, const std::string & pass
+						, bool fRemoteDNS);
+
+	int EnableProxy(bool fEnable);
+
+	/**
+	 * RTx Routines
+	 */
+public:
     int SendMsg( const std::string & from
                , const std::string & to
-               , const std::string & msg);
+               , const std::string & msg
+			   , RTxProgressCB cb = NULL, void * userp = NULL);
 
     int SendMsg( const std::string & from
                , const std::vector<std::string> & to
-               , const std::string & encSignedMail);
+               , const std::string & encSignedMail
+			   , RTxProgressCB cb = NULL, void * userp = NULL);
 
-public:
-    int CheckInbox();
+    int CheckInbox(RTxProgressCB cb = NULL, void * userp = NULL);
     
-    int StartIdle(unsigned int timeout);
+    int StartIdle(unsigned int timeout, RTxProgressCB cb = NULL, void * userp = NULL);
 
-    int Expunge();
+    int Expunge(RTxProgressCB cb = NULL, void * userp = NULL);
 
 public:
     static int GetEmailAddrList(const std::string & addr, std::vector<std::string> & vecAddrs);
@@ -135,6 +146,16 @@ private:
      * Rx Handle for <IDLE> check
      */
     void *      m_rxIdle;
+
+    /**
+     * Socks5 proxy
+     */
+    bool m_fEnableProxy;
+    std::string m_proxyIp;
+    unsigned short m_proxyPort;
+    std::string m_proxyUser;
+    std::string m_proxyPassword;
+    bool m_fRemoteDNS;
 };
 
 
