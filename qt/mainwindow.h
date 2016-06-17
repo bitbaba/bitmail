@@ -106,6 +106,8 @@ private:
     void clearMsgView();
     void populateMsgView(const QString & email);
     QString FormatBMMessage(bool fTx, const QString & from, const QString & fromnick, const QString & to, const QString & tonick, const QString & msg);
+    void startupNetwork();
+    void shutdownNetwork();
 private:
     QTextEdit *textEdit;
     QListWidget * blist;

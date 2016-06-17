@@ -66,41 +66,39 @@
 //! [1]
 MainWindow::MainWindow(BitMail * bitmail)
     : m_bitmail(bitmail)
+    , m_pollth(NULL)
+    , m_rxth(NULL)
+    , m_txth(NULL)
+    , m_shutdownDialog(NULL)
 //! [1] //! [2]
 {
-    m_pollth = new PollThread(m_bitmail);
+    /**
+      * Icon
+      */
+#if defined(MACOSX)
+    setUnifiedTitleAndToolBarOnMac(true);
+#endif
+    setWindowIcon(QIcon(":/images/bitmail.png"));
 
-    m_rxth = (new RxThread(m_bitmail));
+    /** Title */
+    do {
+        QString qsEmail = QString::fromStdString(m_bitmail->GetEmail());
+        QString qsNick = QString::fromStdString(m_bitmail->GetNick());
+        QString qsTitle = tr("BitMail");
+        qsTitle += " - ";
+        qsTitle += qsNick;
+        qsTitle += "(";
+        qsTitle += qsEmail;
+        qsTitle += ")";
+        setWindowTitle(qsTitle);
+    }while(0);
 
-    m_txth = (new TxThread(m_bitmail));
-
-    connect(this, SIGNAL(readyToSend(QString,QString))
-            , m_txth, SLOT(onSendMessage(QString,QString)));
-
-    connect(m_pollth, SIGNAL(inboxPollEvent())
-            , m_rxth, SLOT(onInboxPollEvent()));
-
-    connect(m_rxth, SIGNAL(gotMessage(QString,QString, QString,QString))
-            , this, SLOT(onNewMessage(QString,QString, QString,QString)));
-
-    connect(m_pollth, SIGNAL(done()), this, SLOT(onPollDone()));
-
-    connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
-    connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
-
-    connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
-    connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
-
-    m_pollth->start();
-
-    m_rxth->start();
-
-    m_txth->start();
-
+    /** Toolbars */
     createActions();
     createToolBars();
     createStatusBar();
 
+    /** Form */
     QVBoxLayout *leftLayout = new QVBoxLayout;
     QHBoxLayout *mainLayout = new QHBoxLayout;
     QVBoxLayout * rightLayout = new QVBoxLayout;
@@ -116,11 +114,13 @@ MainWindow::MainWindow(BitMail * bitmail)
     textEdit = new QTextEdit;
     textEdit->setMinimumWidth(400);
     textEdit->setFixedHeight(96);
+    textEdit->setFocus();
     btnSend = new QPushButton(tr("Send"));
     btnSend->setToolTip(tr("Ctrl+Enter"));
     btnSend->setFixedWidth(64);
     btnSend->setFixedHeight(32);
     btnSend->setEnabled(false);
+    btnSend->setShortcut(QKeySequence("Ctrl+Return"));
     btnLayout->addWidget(btnSend);
     btnLayout->setAlignment(btnSend, Qt::AlignLeft);
     rightLayout->addWidget(msgView);
@@ -134,45 +134,18 @@ MainWindow::MainWindow(BitMail * bitmail)
     wrap->setLayout(mainLayout);
     setCentralWidget(wrap);
 
+    // Add signals
+    connect(btnSend, SIGNAL(clicked()) , this, SLOT(onSendBtnClicked()));
+    connect(textEdit->document(), SIGNAL(contentsChanged()), this, SLOT(documentWasModified()));
+    connect(blist, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onCurrentBuddy(QListWidgetItem*,QListWidgetItem*)));
+    connect(blist, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onBuddyDoubleClicked(QListWidgetItem*)));
+    connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
+
     // Populate buddies list
     populateBuddies();
 
-    // Add signals
-    connect(btnSend, SIGNAL(clicked())
-            , this, SLOT(onSendBtnClicked()));
-
-
-    btnSend->setShortcut(QKeySequence("Ctrl+Return"));
-
-    connect(textEdit->document(), SIGNAL(contentsChanged()),
-            this, SLOT(documentWasModified()));
-
-    connect(blist, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*))
-            , this, SLOT(onCurrentBuddy(QListWidgetItem*,QListWidgetItem*)));
-
-    connect(blist, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onBuddyDoubleClicked(QListWidgetItem*)));
-
-    connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
-
-#if defined(MACOSX)
-    setUnifiedTitleAndToolBarOnMac(true);
-#endif
-
-    setWindowIcon(QIcon(":/images/bitmail.png"));
-
-    QString qsEmail = QString::fromStdString(m_bitmail->GetEmail());
-    QString qsNick = QString::fromStdString(m_bitmail->GetNick());
-
-    QString qsTitle = tr("BitMail");
-    qsTitle += " - ";
-    qsTitle += qsNick;
-    qsTitle += "(";
-    qsTitle += qsEmail;
-    qsTitle += ")";
-
-    setWindowTitle(qsTitle);
-
-    textEdit->setFocus();
+    // startup network
+    startupNetwork();
 }
 //! [2]
 
@@ -181,16 +154,46 @@ MainWindow::~MainWindow()
 
 }
 
+void MainWindow::startupNetwork()
+{
+    m_pollth = new PollThread(m_bitmail);
+    m_rxth = (new RxThread(m_bitmail));
+    m_txth = (new TxThread(m_bitmail));
+
+    connect(this, SIGNAL(readyToSend(QString,QString)), m_txth, SLOT(onSendMessage(QString,QString)));
+    connect(m_pollth, SIGNAL(inboxPollEvent()), m_rxth, SLOT(onInboxPollEvent()));
+    connect(m_rxth, SIGNAL(gotMessage(QString,QString, QString,QString)), this, SLOT(onNewMessage(QString,QString, QString,QString)));
+    connect(m_pollth, SIGNAL(done()), this, SLOT(onPollDone()));
+    connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
+    connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
+    connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
+    connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
+
+    m_pollth->start(); m_rxth->start(); m_txth->start();
+}
+
+void MainWindow::shutdownNetwork()
+{
+    if (m_rxth ){
+        m_rxth->stop();
+    }
+    if (m_txth) {
+        m_txth->stop();
+    }
+    if (m_pollth) {
+        m_pollth->stop();
+    }
+}
+
 void MainWindow::onRxDone()
 {
     if (!m_shutdownDialog)
         return ;
 
+    qDebug() << "Rx thread done";
     m_shutdownDialog->SetMessage(tr("Rx thread done."));
 
-    m_rxth->wait(1000);
-
-    delete m_rxth; m_rxth = NULL;
+    m_rxth->wait(1000); delete m_rxth; m_rxth = NULL;
 
     if (!m_rxth && !m_txth && !m_pollth){
         m_shutdownDialog->done(0);
@@ -216,11 +219,10 @@ void MainWindow::onTxDone()
     if (!m_shutdownDialog)
         return ;
 
+    qDebug() << "Tx thread done";
     m_shutdownDialog->SetMessage(tr("Tx thread done."));
 
-    m_txth->wait(1000);
-
-    delete m_txth; m_txth = NULL;
+    m_txth->wait(1000); delete m_txth; m_txth = NULL;
 
     if (!m_rxth && !m_txth && !m_pollth){
         m_shutdownDialog->done(0);
@@ -232,16 +234,40 @@ void MainWindow::onPollDone()
     if (!m_shutdownDialog)
         return ;
 
+    qDebug() << ("Poll thread done");
     m_shutdownDialog->SetMessage(tr("Poll thread done."));
 
-    m_pollth->wait(1000);
-
-    delete m_pollth; m_pollth = NULL;
+    m_pollth->wait(1000); delete m_pollth; m_pollth = NULL;
 
     if (!m_rxth && !m_txth && !m_pollth){
         m_shutdownDialog->done(0);
     }
 }
+
+//! [3]
+void MainWindow::closeEvent(QCloseEvent *event)
+//! [3] //! [4]
+{
+    shutdownNetwork();
+
+    /**
+    * Model here
+    */
+    if (m_rxth || m_txth || m_pollth){
+        m_shutdownDialog = new ShutdownDialog(this);
+        m_shutdownDialog->exec();
+    }
+
+    if (m_bitmail != NULL){
+        BMQTApplication::SaveProfile(m_bitmail);
+        delete m_bitmail;
+        m_bitmail = NULL;
+    }
+
+    qDebug() << "BitMail quit! Bye";
+    event->accept();
+}
+//! [4]
 
 void MainWindow::onBuddyDoubleClicked(QListWidgetItem *actItem)
 {
@@ -266,25 +292,6 @@ void MainWindow::onBuddyDoubleClicked(QListWidgetItem *actItem)
 
     return ;
 }
-
-//! [3]
-void MainWindow::closeEvent(QCloseEvent *event)
-//! [3] //! [4]
-{
-    m_rxth->stop(); m_txth->stop(); m_pollth->stop();
-
-    m_shutdownDialog = new ShutdownDialog(this);
-    m_shutdownDialog->exec();
-
-    if (m_bitmail != NULL){
-        BMQTApplication::SaveProfile(m_bitmail);
-        delete m_bitmail;
-        m_bitmail = NULL;
-    }
-
-    event->accept();    
-}
-//! [4]
 
 //! [17]
 void MainWindow::createActions()
