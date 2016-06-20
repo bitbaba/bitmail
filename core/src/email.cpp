@@ -35,6 +35,7 @@ CMailClient::CMailClient(BMEventCB cb, void * cbp)
 , m_rx(NULL)
 , m_rxIdle(NULL)
 , m_fEnableProxy(false)
+, m_proxyIp("127.0.0.1")
 , m_proxyPort(1080)
 , m_fRemoteDNS(false)
 {
@@ -152,10 +153,64 @@ int CMailClient::SetProxy(const std::string & ip
 	return bmOk;
 }
 
-int CMailClient::EnableProxy(bool fEnable)
+void CMailClient::SetProxyIp(const std::string & ip)
+{
+	m_proxyIp = ip;
+}
+
+std::string CMailClient::GetProxyIp() const
+{
+	return m_proxyIp;
+}
+
+void CMailClient::SetProxyPort(unsigned short port)
+{
+	m_proxyPort = port;
+}
+
+unsigned short CMailClient::GetProxyPort() const
+{
+	return m_proxyPort;
+}
+
+void CMailClient::SetProxyUser(const std::string & user)
+{
+	m_proxyUser = user;;
+}
+
+std::string CMailClient::GetProxyUser() const
+{
+	return m_proxyUser;
+}
+
+void CMailClient::SetProxyPassword(const std::string & password)
+{
+	m_proxyPassword  = password;
+}
+
+std::string CMailClient::GetProxyPassword() const
+{
+	return m_proxyPassword;
+}
+
+void CMailClient::RemoteDNS(bool fEnable)
+{
+	m_fRemoteDNS = fEnable;
+}
+
+bool CMailClient::RemoteDNS() const
+{
+	return m_fRemoteDNS;
+}
+
+void CMailClient::EnableProxy(bool fEnable)
 {
 	m_fEnableProxy = fEnable;
-	return bmOk;
+}
+
+bool CMailClient::EnableProxy() const
+{
+	return m_fEnableProxy;
 }
 
 int CMailClient::SendMsg(const std::string & from, const std::string & to, const std::string & encSignedMail

@@ -71,7 +71,30 @@ public:
 						, const std::string & user, const std::string & pass
 						, bool fRemoteDNS);
 
-	int EnableProxy(bool fEnable);
+    void SetProxyIp(const std::string & ip);
+
+    std::string GetProxyIp() const;
+
+    void SetProxyPort(unsigned short port);
+
+    unsigned short GetProxyPort() const;
+
+    void SetProxyUser(const std::string & user);
+
+    std::string GetProxyUser() const;
+
+    void SetProxyPassword(const std::string & password);
+
+    std::string GetProxyPassword() const;
+
+    void RemoteDNS(bool fEnable);
+
+    bool RemoteDNS() const;
+
+    void EnableProxy(bool fEnable);
+
+    bool EnableProxy() const;
+
 
 	/**
 	 * RTx Routines

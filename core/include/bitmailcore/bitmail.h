@@ -4,6 +4,10 @@
 #include <map>
 #include <vector>
 
+#define BMVER_MAJOR (1)
+#define BMVER_MINOR (0)
+#define BMVER_TINY  (0)
+
 /* Forward decleration */
 class CMailClient;
 class CX509Cert;
@@ -58,6 +62,7 @@ class BitMail
 public:
     BitMail();
     ~BitMail();
+    unsigned int GetVersion() const;
 public:
     // Event Callback
     int OnPollEvent( PollEventCB cb, void * userp);
@@ -78,7 +83,29 @@ public:
 				, const std::string & password
 				, bool fRemoteDNS);
 
-    int EnableProxy(bool fEnable);
+    void SetProxyIp(const std::string & ip);
+
+    std::string GetProxyIp() const;
+
+    void SetProxyPort(unsigned short port);
+
+    unsigned short GetProxyPort() const;
+
+    void SetProxyUser(const std::string & user);
+
+    std::string GetProxyUser() const;
+
+    void SetProxyPassword(const std::string & password);
+
+    std::string GetProxyPassword() const;
+
+    void RemoteDNS(bool fEnable);
+
+    bool RemoteDNS() const;
+
+    void EnableProxy(bool fEnable);
+
+    bool EnableProxy() const;
 
     /*UPNP feature should be external utility, e.g. forked from bittorrent*/
 

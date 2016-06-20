@@ -48,6 +48,11 @@ BitMail::~BitMail()
     }
 }
 
+unsigned int BitMail::GetVersion() const
+{
+	return (BMVER_MAJOR & 0xff000000) + (BMVER_MINOR & 0x00ff0000) + (BMVER_TINY & 0x0000ffff);
+}
+
 /**
 * Callback & params
 */
@@ -97,9 +102,64 @@ int BitMail::SetProxy(const std::string & ip
 	return m_mc->SetProxy(ip, port, user, password, fRemoteDNS);
 }
 
-int BitMail::EnableProxy(bool fEnable)
+void BitMail::SetProxyIp(const std::string & ip)
 {
-	return m_mc->EnableProxy(fEnable);
+	m_mc->SetProxyIp(ip);
+}
+
+std::string BitMail::GetProxyIp() const
+{
+	return m_mc->GetProxyIp();
+}
+
+void BitMail::SetProxyPort(unsigned short port)
+{
+	m_mc->SetProxyPort(port);
+}
+
+unsigned short BitMail::GetProxyPort() const
+{
+	return m_mc->GetProxyPort();
+}
+
+void BitMail::SetProxyUser(const std::string & user)
+{
+	m_mc->SetProxyUser(user);
+}
+
+std::string BitMail::GetProxyUser() const
+{
+	return m_mc->GetProxyUser();
+}
+
+void BitMail::SetProxyPassword(const std::string & password)
+{
+	m_mc->SetProxyPassword(password);
+}
+
+std::string BitMail::GetProxyPassword() const
+{
+	return m_mc->GetProxyPassword();
+}
+
+void BitMail::RemoteDNS(bool fEnable)
+{
+	m_mc->RemoteDNS(fEnable);
+}
+
+bool BitMail::RemoteDNS() const
+{
+	return m_mc->RemoteDNS();
+}
+
+void BitMail::EnableProxy(bool fEnable)
+{
+	m_mc->EnableProxy(fEnable);
+}
+
+bool BitMail::EnableProxy() const
+{
+	return m_mc->EnableProxy();
 }
 
 int BitMail::SetTxUrl(const std::string & u)
