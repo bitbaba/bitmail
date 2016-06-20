@@ -37,7 +37,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 //! [0]
 #include <QtWidgets>
 #include <QJsonArray>
@@ -45,9 +44,7 @@
 #include <QJsonValue>
 #include <QJsonDocument>
 #include <QByteArray>
-
 #include <bitmailcore/bitmail.h>
-
 #include "mainwindow.h"
 //! [0]
 #include "pollthread.h"
@@ -60,9 +57,7 @@
 #include "certdialog.h"
 #include "invitedialog.h"
 #include "messagedialog.h"
-
 #include "main.h"
-
 //! [1]
 MainWindow::MainWindow(BitMail * bitmail)
     : m_bitmail(bitmail)
@@ -79,7 +74,6 @@ MainWindow::MainWindow(BitMail * bitmail)
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
     setWindowIcon(QIcon(":/images/bitmail.png"));
-
     /** Title */
     do {
         QString qsEmail = QString::fromStdString(m_bitmail->GetEmail());
@@ -92,12 +86,10 @@ MainWindow::MainWindow(BitMail * bitmail)
         qsTitle += ")";
         setWindowTitle(qsTitle);
     }while(0);
-
     /** Toolbars */
     createActions();
     createToolBars();
     createStatusBar();
-
     /** Form */
     QVBoxLayout *leftLayout = new QVBoxLayout;
     QHBoxLayout *mainLayout = new QHBoxLayout;
@@ -133,45 +125,37 @@ MainWindow::MainWindow(BitMail * bitmail)
     wrap->setMinimumHeight(640);
     wrap->setLayout(mainLayout);
     setCentralWidget(wrap);
-
     // Add signals
     connect(btnSend, SIGNAL(clicked()) , this, SLOT(onSendBtnClicked()));
     connect(textEdit->document(), SIGNAL(contentsChanged()), this, SLOT(documentWasModified()));
     connect(blist, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onCurrentBuddy(QListWidgetItem*,QListWidgetItem*)));
     connect(blist, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onBuddyDoubleClicked(QListWidgetItem*)));
     connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
-
     // Populate buddies list
     populateBuddies();
-
     // startup network
     startupNetwork();
 }
 //! [2]
-
 MainWindow::~MainWindow()
 {
-
 }
-
 void MainWindow::startupNetwork()
 {
     m_pollth = new PollThread(m_bitmail);
     m_rxth = (new RxThread(m_bitmail));
     m_txth = (new TxThread(m_bitmail));
-
     connect(this, SIGNAL(readyToSend(QString,QString)), m_txth, SLOT(onSendMessage(QString,QString)));
     connect(m_pollth, SIGNAL(inboxPollEvent()), m_rxth, SLOT(onInboxPollEvent()));
     connect(m_rxth, SIGNAL(gotMessage(QString,QString, QString,QString)), this, SLOT(onNewMessage(QString,QString, QString,QString)));
     connect(m_pollth, SIGNAL(done()), this, SLOT(onPollDone()));
+    connect(m_pollth, SIGNAL(inboxPollProgress(QString)), this, SLOT(onPollProgress(QString)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
     connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
     connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
-
     m_pollth->start(); m_rxth->start(); m_txth->start();
 }
-
 void MainWindow::shutdownNetwork()
 {
     if (m_rxth ){
@@ -184,72 +168,62 @@ void MainWindow::shutdownNetwork()
         m_pollth->stop();
     }
 }
-
 void MainWindow::onRxDone()
 {
     if (!m_shutdownDialog)
         return ;
-
     qDebug() << "Rx thread done";
     m_shutdownDialog->SetMessage(tr("Rx thread done."));
-
     m_rxth->wait(1000); delete m_rxth; m_rxth = NULL;
-
     if (!m_rxth && !m_txth && !m_pollth){
         m_shutdownDialog->done(0);
     }
 }
-
 void MainWindow::onRxProgress(const QString &info)
 {
     qDebug() << info;
     statusBar()->showMessage(info, 2000);
     return ;
 }
-
 void MainWindow::onTxProgress(const QString &info)
 {
     qDebug() << info;
     statusBar()->showMessage(info, 2000);
     return ;
 }
+void MainWindow::onPollProgress(const QString &info)
+{
+    qDebug() << info;
+    statusBar()->showMessage(info, 2000);
+}
 
 void MainWindow::onTxDone()
 {
     if (!m_shutdownDialog)
         return ;
-
     qDebug() << "Tx thread done";
     m_shutdownDialog->SetMessage(tr("Tx thread done."));
-
     m_txth->wait(1000); delete m_txth; m_txth = NULL;
-
     if (!m_rxth && !m_txth && !m_pollth){
         m_shutdownDialog->done(0);
     }
 }
-
 void MainWindow::onPollDone()
 {
     if (!m_shutdownDialog)
         return ;
-
     qDebug() << ("Poll thread done");
     m_shutdownDialog->SetMessage(tr("Poll thread done."));
-
     m_pollth->wait(1000); delete m_pollth; m_pollth = NULL;
-
     if (!m_rxth && !m_txth && !m_pollth){
         m_shutdownDialog->done(0);
     }
 }
-
 //! [3]
 void MainWindow::closeEvent(QCloseEvent *event)
 //! [3] //! [4]
 {
     shutdownNetwork();
-
     /**
     * Model here
     */
@@ -257,42 +231,33 @@ void MainWindow::closeEvent(QCloseEvent *event)
         m_shutdownDialog = new ShutdownDialog(this);
         m_shutdownDialog->exec();
     }
-
     if (m_bitmail != NULL){
         BMQTApplication::SaveProfile(m_bitmail);
         delete m_bitmail;
         m_bitmail = NULL;
     }
-
     qDebug() << "BitMail quit! Bye";
     event->accept();
 }
 //! [4]
-
 void MainWindow::onBuddyDoubleClicked(QListWidgetItem *actItem)
 {
     if (actItem == NULL){
         return ;
     }
-
     QString qsEmail = actItem->data(Qt::UserRole).toString();
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(qsEmail.toStdString()));
     QString qsCertID = QString::fromStdString(m_bitmail->GetFriendID(qsEmail.toStdString()));
-
     CertDialog certDialog(this);
     certDialog.SetEmail(qsEmail);
     certDialog.SetNick(qsNick);
     certDialog.SetCertID(qsCertID);
-
     if (QDialog::Rejected == certDialog.exec()){
         return ;
     }
-
     (void)qsEmail;
-
     return ;
 }
-
 //! [17]
 void MainWindow::createActions()
 //! [17] //! [18]
@@ -302,56 +267,43 @@ void MainWindow::createActions()
         configAct->setStatusTip(tr("Configure current account"));
         connect(configAct, SIGNAL(triggered()), this, SLOT(onConfigBtnClicked()));
     }while(0);
-
     do {
         inviteAct = new QAction(QIcon(":/images/invite.png"), tr("&Invite"), this);
         inviteAct->setStatusTip(tr("Invite a new friend by send a request message."));
         connect(inviteAct, SIGNAL(triggered()), this, SLOT(onInviteBtnClicked()));
     }while(0);
-
     do{
         snapAct = new QAction(QIcon(":/images/snap.png"), tr("&Snapshot"), this);
         snapAct->setStatusTip(tr("Snapshot"));
-
         fileAct = new QAction(QIcon(":/images/file.png"), tr("&File"), this);
         fileAct->setStatusTip(tr("File"));
-
         emojAct = new QAction(QIcon(":/images/emoj.png"), tr("&Emoji"), this);
         emojAct->setStatusTip(tr("Emoji"));
-
         soundAct = new QAction(QIcon(":/images/sound.png"), tr("&Sound"), this);
         soundAct->setStatusTip(tr("Sound"));
-
         videoAct = new QAction(QIcon(":/images/video.png"), tr("&Video"), this);
         videoAct->setStatusTip(tr("Video"));
-
         liveAct = new QAction(QIcon(":/images/live.png"), tr("&Live"), this);
         liveAct->setStatusTip(tr("Live"));
-
         payAct = new QAction(QIcon(":/images/bitcoin.png"), tr("&Pay"), this);
         payAct->setStatusTip(tr("Pay by Bitcoin"));
         connect(payAct, SIGNAL(triggered()), this, SLOT(onPayBtnClicked()));
     }while(0);
-
     do{
         walletAct = new QAction(QIcon(":/images/wallet.s.png"), tr("&BitCoinWallet"), this);
         walletAct->setStatusTip(tr("Configure Bitcoin wallet"));
     }while(0);
 }
 //! [24]
-
 //! [29] //! [30]
 void MainWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("Profile"));
     fileToolBar->addAction(configAct);
-
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(inviteAct);
-
     walletToolbar = addToolBar(tr("Wallet"));
     walletToolbar->addAction(walletAct);
-
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->addAction(emojAct);
     chatToolbar->addAction(snapAct);
@@ -363,7 +315,6 @@ void MainWindow::createToolBars()
     chatToolbar->setIconSize(QSize(24,24));
 }
 //! [30]
-
 //! [32]
 void MainWindow::createStatusBar()
 //! [32] //! [33]
@@ -371,7 +322,6 @@ void MainWindow::createStatusBar()
     statusBar()->showMessage(tr("Ready"));
 }
 //! [33]
-
 void MainWindow::onSendBtnClicked()
 {
     QString qsMsg;
@@ -380,27 +330,20 @@ void MainWindow::onSendBtnClicked()
         statusBar()->showMessage(tr("no message to send"), 3000);
         return ;
     }
-
     // If you have not setup a QTextCodec for QString & C-String(ANSI-MB)
     // toLatin1() ignore any codec;
     // toLocal8Bit use QTextCodec::codecForLocale(),
     // toAscii() use QTextCodec::setCodecForCStrings()
     // toUtf8() use UTF8 codec
-
     // QTextCodec::codecForLocale() guess the MOST suitable codec for current locale,
     // if application has not set codec for locale by setCodecForLocale;
-
     std::string sMsg = qsMsg.toStdString();
-
     QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-
     if (blist->currentItem() == NULL){
         statusBar()->showMessage(tr("no current buddy selected"), 3000);
         return ;
     }
-
     QString qsTo = blist->currentItem()->data(Qt::UserRole).toString();
-
     QJsonObject joMsg;
     joMsg["time"]   = QDateTime::currentDateTime().toMSecsSinceEpoch();
     joMsg["latitude"]    = 0.0;
@@ -410,9 +353,7 @@ void MainWindow::onSendBtnClicked()
     joMsg["type"]   = "user"; // others e.g. "system"
     joMsg["msg"]    = qsMsg;
     QJsonDocument jdoc(joMsg);
-
     emit readyToSend(qsTo, jdoc.toJson());
-
     populateMessage(true
                     , qsFrom
                     , qsTo
@@ -420,16 +361,13 @@ void MainWindow::onSendBtnClicked()
                     , QString::fromStdString(m_bitmail->GetID())
                     , QString::fromStdString(m_bitmail->GetCert()));
 
-
     textEdit->clear();
-
     // There are bugs in Qt-Creator's memory view utlity;
     // open <address> in memory window,
     // select the value of the <address>,
     // jump to <value>(little-endien) in a NEW memory window, note: NEW
     return ;
 }
-
 void MainWindow::onPayBtnClicked()
 {
     PayDialog payDialog;
@@ -438,7 +376,6 @@ void MainWindow::onPayBtnClicked()
     }
     return ;
 }
-
 void MainWindow::onConfigBtnClicked()
 {
     OptionDialog optDialog(false, this);
@@ -446,46 +383,36 @@ void MainWindow::onConfigBtnClicked()
     optDialog.SetNick(QString::fromStdString(m_bitmail->GetNick()));
     optDialog.SetPassphrase(QString::fromStdString(m_bitmail->GetPassphrase()));
     optDialog.SetBits(m_bitmail->GetBits());
-
     optDialog.SetSmtpUrl(QString::fromStdString(m_bitmail->GetTxUrl()));
     optDialog.SetSmtpLogin(QString::fromStdString(m_bitmail->GetTxLogin()));
     optDialog.SetSmtpPassword(QString::fromStdString(m_bitmail->GetTxPassword()));
-
     optDialog.SetImapUrl(QString::fromStdString(m_bitmail->GetRxUrl()));
     optDialog.SetImapLogin(QString::fromStdString(m_bitmail->GetRxLogin()));
     optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
-
     optDialog.SetProxyEnable(m_bitmail->EnableProxy());
     optDialog.SetProxyIP(QString::fromStdString(m_bitmail->GetProxyIp()));
     optDialog.SetProxyPort(m_bitmail->GetProxyPort());
     optDialog.SetProxyLogin(QString::fromStdString(m_bitmail->GetProxyUser()));
     optDialog.SetProxyPassword(QString::fromStdString(m_bitmail->GetProxyPassword()));
     optDialog.SetRemoteDNS(m_bitmail->RemoteDNS());
-
     if (QDialog::Accepted != optDialog.exec()){
         return ;
     }
-
     QString qsPassphrase = optDialog.GetPassphrase();
     m_bitmail->SetPassphrase(qsPassphrase.toStdString());
-
     QString qsTxUrl = optDialog.GetSmtpUrl();
     QString qsTxLogin = optDialog.GetSmtpLogin();
     QString qsTxPassword = optDialog.GetSmtpPassword();
-
     QString qsRxUrl = optDialog.GetImapUrl();
     QString qsRxLogin = optDialog.GetImapLogin();
     QString qsRxPassword = optDialog.GetImapPassword();
-
     m_bitmail->InitNetwork(qsTxUrl.toStdString()
                            , qsTxLogin.toStdString()
                            , qsTxPassword.toStdString()
                            , qsRxUrl.toStdString()
                            , qsRxLogin.toStdString()
                            , qsRxPassword.toStdString());
-
     m_bitmail->EnableProxy(optDialog.GetProxyEnable());
-
     do {
         m_bitmail->SetProxyIp(optDialog.GetProxyIP().toStdString());
         m_bitmail->SetProxyPort(optDialog.GetProxyPort());
@@ -493,23 +420,17 @@ void MainWindow::onConfigBtnClicked()
         m_bitmail->SetProxyPassword(optDialog.GetProxyPassword().toStdString());
         m_bitmail->RemoteDNS(optDialog.GetRemoteDNS());
     }while(0);
-
     return ;
 }
-
 //! [15]
 void MainWindow::documentWasModified()
 //! [15] //! [16]
 {
-
 }
 //! [16]
-
 void MainWindow::onWalletBtnClicked()
 {
-
 }
-
 void MainWindow::populateMessage(bool fTx
                                  , const QString &from
                                  , const QString & to
@@ -517,28 +438,20 @@ void MainWindow::populateMessage(bool fTx
                                  , const QString & certid
                                  , const QString & cert)
 {
-
     bool fIsBuddy =  (m_bitmail->IsFriend(from.toStdString(), cert.toStdString()));
-
     QString qsFromNick = fTx ? QString::fromStdString(m_bitmail->GetNick())
                              : QString::fromStdString(m_bitmail->GetFriendNick(from.toStdString()));
-
     QString qsToNick = fTx ? QString::fromStdString(m_bitmail->GetFriendNick(to.toStdString()))
                            : QString::fromStdString(m_bitmail->GetNick());
-
     QString qsDisp = FormatBMMessage(fTx, from, qsFromNick, to, qsToNick, msg);
-
     QListWidgetItem * msgElt = new QListWidgetItem(QIcon(":/images/bubble.png")
                                                    , qsDisp);
-
     msgElt->setFlags((Qt::ItemIsSelectable
                       | Qt::ItemIsEditable)
                       | Qt::ItemIsEnabled);
-
     msgElt->setBackgroundColor((fTx)
                                ? (Qt::lightGray)
                                : (fIsBuddy ? (QColor(Qt::green).lighter()) : (Qt::red)));
-
     QStringList vecMsgData;
     vecMsgData.push_back(fTx ? "tx" : "rx");
     vecMsgData.push_back(from);
@@ -546,36 +459,26 @@ void MainWindow::populateMessage(bool fTx
     vecMsgData.push_back(certid);
     vecMsgData.push_back(cert);
     (void)vecMsgData;
-
     msgElt->setData(Qt::UserRole, QVariant(vecMsgData));
-
     msgView->addItem(msgElt);
-
     msgView->scrollToBottom();
-
     return;
 }
-
 void MainWindow::onNewMessage(const QString &from, const QString &msg, const QString & certid, const QString &cert)
 {
     //TODO: cert check and buddy management
     (void) cert;
-
     QString qsTo = QString::fromStdString(m_bitmail->GetEmail());
-
     //show message
     populateMessage(false, from, qsTo, msg, certid, cert);
-
     //GUI notification
     activateWindow();
 }
-
 void MainWindow::populateBuddies()
 {
     // Add buddies
     std::vector<std::string> vecEmails;
     m_bitmail->GetFriends(vecEmails);
-
     for (std::vector<std::string>::const_iterator it = vecEmails.begin()
          ; it != vecEmails.end(); ++it)
     {
@@ -585,7 +488,6 @@ void MainWindow::populateBuddies()
     }
     return ;
 }
-
 void MainWindow::populateBuddy(const QString &email, const QString &nick)
 {
     QString qsItemDisplay = nick;
@@ -598,25 +500,21 @@ void MainWindow::populateBuddy(const QString &email, const QString &nick)
     blist->addItem(buddy);
     return ;
 }
-
 void MainWindow::clearMsgView()
 {
     return ;
 }
-
 void MainWindow::populateMsgView(const QString &email)
 {
     (void )email;
     return ;
 }
-
 void MainWindow::onCurrentBuddy(QListWidgetItem * current, QListWidgetItem * previous)
 {
     (void)current;
     (void)previous;
     btnSend->setEnabled(true);
 }
-
 void MainWindow::onInviteBtnClicked()
 {
     InviteDialog inviteDialog(this);
@@ -624,17 +522,12 @@ void MainWindow::onInviteBtnClicked()
         return ;
     }
     QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-
     QString qsEmail = inviteDialog.GetEmail();
     QString qsWhisper = inviteDialog.GetWhisper();
-
     (void)qsEmail;
     (void)qsWhisper;
-
     if (!qsEmail.isEmpty()){
-
         emit readyToSend(qsEmail, (qsWhisper));
-
         populateMessage(true
                         , qsFrom
                         , qsEmail
@@ -642,20 +535,16 @@ void MainWindow::onInviteBtnClicked()
                         , QString::fromStdString(m_bitmail->GetID())
                         , QString::fromStdString(m_bitmail->GetCert()));
     }
-
     return ;
 }
-
 void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
 {
     (void)actItem;
-
     QStringList vecMsgData = actItem->data(Qt::UserRole).toStringList();
     QString qsFlag = vecMsgData.front();
     if (qsFlag == "tx"){
         return ;
     }
-
     vecMsgData.pop_front();
     QString qsFrom = vecMsgData.front();
     vecMsgData.pop_front();
@@ -665,22 +554,18 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
     vecMsgData.pop_front();
     QString qsCert = vecMsgData.front();
     vecMsgData.pop_front();
-
     MessageDialog messageDialog(m_bitmail);
     messageDialog.SetFrom(qsFrom);
     messageDialog.SetMessage(qsMessage);
     messageDialog.SetCertID(qsCertID);
     messageDialog.SetCert(qsCert);
-
     connect(&messageDialog, SIGNAL(signalAddFriend(QString))
             , this, SLOT(onAddFriend(QString)));
-
     if (messageDialog.exec() != QDialog::Accepted){
         return ;
     }
     return ;
 }
-
 void MainWindow::onAddFriend(const QString &email)
 {
     if (blist->findItems(email, Qt::MatchContains).size()){
@@ -690,7 +575,6 @@ void MainWindow::onAddFriend(const QString &email)
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
     populateBuddy(email, qsNick);
 }
-
 QString MainWindow::FormatBMMessage(bool fTx
                                     , const QString &from
                                     , const QString &fromnick
@@ -698,15 +582,12 @@ QString MainWindow::FormatBMMessage(bool fTx
                                     , const QString &tonick
                                     , const QString &msg)
 {
-
     QString qsFullFrom = "";
     QString qsFullTo = "";
-
     if (fTx){
         qsFullFrom += "[";
         qsFullFrom += tr("me");
         qsFullFrom += "]";
-
         qsFullTo += "[";
         qsFullTo += tonick;
         qsFullTo += "(";
@@ -720,12 +601,10 @@ QString MainWindow::FormatBMMessage(bool fTx
         qsFullFrom += from;
         qsFullFrom += ")";
         qsFullFrom += "]";
-
         qsFullTo += "[";
         qsFullTo += tr("me");
         qsFullTo += "]";
     }
-
     QString qsNow = QDateTime::currentDateTime().toString();
     QString qsMessageDisplay = qsNow;
     qsMessageDisplay += "\n";
@@ -735,6 +614,5 @@ QString MainWindow::FormatBMMessage(bool fTx
     qsMessageDisplay += "\n\n";
     qsMessageDisplay += msg;
     qsMessageDisplay += "\n\n";
-
     return qsMessageDisplay;
 }

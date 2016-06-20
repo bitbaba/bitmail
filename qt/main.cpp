@@ -37,7 +37,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 //! [0]
 #include <QApplication>
 #include <QDir>
@@ -51,51 +50,39 @@
 #include <QThread>
 #include <QDebug>
 #include <QDateTime>
-
 #include "optiondialog.h"
 #include "logindialog.h"
 #include "mainwindow.h"
 #include <bitmailcore/bitmail.h>
-
 #include "main.h"
-
 static
 FILE * gLoggerHandle = NULL;
-
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(bitmail);
-
     QApplication app(argc, argv);
     app.setOrganizationName(("BitMail"));
     app.setApplicationName(("BitMail Qt Client"));
-
     // About logger
     if (!BMQTApplication::InitLogger()){
         return 1;
     }else{
         qInstallMessageHandler(BMQTApplication::myMessageOutput);
     }
-
     qDebug() << "BitMail logger works.";
-
     // About locale
     // http://doc.qt.io/qt-4.8/qlocale.html
     // 1) track system locale, that is, you do NOT call QLocale::setDefault(locale);
     // 2) or use locale specified by custom in arguments, like this: QLocale::setDefault(QLocale(lang, coutry));
     // 3) use UTF-8 as default text codec, between unicode and ansi
-
     // Query current locale by
     QLocale().name();
-
     // Query system locale by
     QLocale::system().name();
-
     // TODO: Locale from arguments
     // int lang = QLocale::Chinese;
     // int cout = QLocale::China;
     // QLocale::setDefault(QLocale(lang, cout));
-
     // Codec by UTF-8
     // http://doc.qt.io/qt-5/qtextcodec.html#setCodecForLocale
     // http://www.iana.org/assignments/character-sets/character-sets.xml
@@ -106,19 +93,15 @@ int main(int argc, char *argv[])
     //QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
     // Get Account Profile
     QString qsEmail, qsPassphrase;
-
     LoginDialog loginDialog;
     int dlgret = (loginDialog.exec());
-
     if (dlgret == QDialog::Rejected){
         return 1;
     }
-
     if (dlgret == QDialog::Accepted){
         qsEmail = loginDialog.GetEmail();
         qsPassphrase = loginDialog.GetPassphrase();
     }
-
     if (dlgret == LoginDialog::CreateNew){
         OptionDialog optDialog(true);
         if (optDialog.exec() != QDialog::Accepted){
@@ -127,25 +110,20 @@ int main(int argc, char *argv[])
         qsEmail = optDialog.GetEmail();
         qsPassphrase = optDialog.GetPassphrase();
     }
-
     BitMail * bitmail = new BitMail();
     if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
         return 0;
     }
-
     MainWindow mainWin(bitmail);
     mainWin.show();
     return app.exec();
 }
 //! [0]
-
 namespace BMQTApplication {
-
     QString GetAppHome()
     {
         return QApplication::applicationDirPath();
     }
-
     QString GetProfileHome()
     {
         QString qsProfileHome = QDir::homePath();
@@ -164,7 +142,6 @@ namespace BMQTApplication {
         qsProfileHome += "data";
         return qsProfileHome;
     }
-
     QStringList GetProfiles()
     {
         QString qsProfileHome = GetProfileHome();
@@ -180,7 +157,6 @@ namespace BMQTApplication {
         }
         return slist;
     }
-
     QString GetProfilePath(const QString &email)
     {
         QString qsProfilePath = GetProfileHome();
@@ -188,18 +164,15 @@ namespace BMQTApplication {
         qsProfilePath += email;
         return qsProfilePath;
     }
-
     bool IsValidPofile(const QString & qsProfile)
     {
         QFile profile(qsProfile);
-
         if (!profile.exists()){
             return false;
         }
         if (!profile.open(QFile::ReadOnly | QFile::Text)){
             return false;
         }
-
         QJsonDocument jdoc;
         jdoc = QJsonDocument::fromJson(profile.readAll());
         if (!jdoc.isObject()){
@@ -211,21 +184,16 @@ namespace BMQTApplication {
         }
         return true;
     }
-
     bool LoadProfile(BitMail * bm, const QString &email, const QString & passphrase)
     {
         QString qsProfile = GetProfilePath(email);
-
         QFile file(qsProfile);
         if (!file.open(QFile::ReadOnly | QFile::Text)) {
             return false;
         }
-
         QTextStream in(&file);
-
         QJsonDocument jdoc;
         jdoc = QJsonDocument::fromJson(in.readAll().toLatin1());
-
         QJsonObject joRoot = jdoc.object();
         QJsonObject joProfile;
         QJsonObject joTx;
@@ -236,10 +204,8 @@ namespace BMQTApplication {
         QJsonObject joSubscribes;
         (void)joSubscribes;
         QJsonObject joProxy;
-
         if (joRoot.contains("Profile")){
             joProfile = joRoot["Profile"].toObject();
-
             QString qsEmail;
             if (joProfile.contains("email")){
                 qsEmail = joProfile["email"].toString();
@@ -256,16 +222,13 @@ namespace BMQTApplication {
             if (joProfile.contains("key")){
                 qsKey = joProfile["key"].toString();
             }
-
             (void)passphrase;
             if (bmOk != bm->LoadProfile(passphrase.toStdString()
                             , qsKey.toStdString()
                             , qsCert.toStdString())){
                 return false;
             }
-
         }
-
         QString qsTxUrl, qsTxLogin, qsTxPassword;
         if (joRoot.contains("tx")){
             joTx = joRoot["tx"].toObject();
@@ -279,7 +242,6 @@ namespace BMQTApplication {
                 qsTxPassword = QString::fromStdString( bm->Decrypt(joTx["password"].toString().toStdString()));
             }
         }
-
         QString qsRxUrl, qsRxLogin, qsRxPassword;
         if (joRoot.contains("rx")){
             joRx = joRoot["rx"].toObject();
@@ -293,14 +255,11 @@ namespace BMQTApplication {
                 qsRxPassword = QString::fromStdString( bm->Decrypt(joRx["password"].toString().toStdString()));
             }
         }
-
         bm->InitNetwork(qsTxUrl.toStdString(), qsTxLogin.toStdString(), qsTxPassword.toStdString()
                         , qsRxUrl.toStdString(), qsRxLogin.toStdString(), qsRxPassword.toStdString());
-
         if (joRoot.contains("buddies"))
         {
             joBuddies = joRoot["buddies"].toObject();
-
             for(QJsonObject::const_iterator it = joBuddies.constBegin()
                 ; it != joBuddies.constEnd(); it++)
             {
@@ -312,17 +271,14 @@ namespace BMQTApplication {
                 }
             }
         }
-
         if (joRoot.contains("proxy")){
             joProxy = joRoot["proxy"].toObject();
-
             if (joProxy.contains("enable")){
                 bool fProxyEnable = joProxy["enable"].toBool();
                 bm->EnableProxy(fProxyEnable);
             }else{
                 bm->EnableProxy(false);
             }
-
             do {
                 if (joProxy.contains("ip")){
                     QString qsVal = joProxy["ip"].toString();
@@ -346,15 +302,12 @@ namespace BMQTApplication {
                 }
             }while(0);
         }
-
         return true;
     }
-
     bool SaveProfile(BitMail * bm)
     {
         QString qsEmail = QString::fromStdString(bm->GetEmail());
         QString qsProfile = GetProfilePath(qsEmail);
-
         // Format Profile to QJson
         QJsonObject joRoot;
         QJsonObject joProfile;
@@ -366,20 +319,16 @@ namespace BMQTApplication {
         QJsonObject joSubscribes; // Subscribing
         (void) joSubscribes;
         QJsonObject joProxy;
-
         joProfile["email"] = QString::fromStdString(bm->GetEmail());
         joProfile["nick"] = QString::fromStdString(bm->GetNick());
         joProfile["key"] = QString::fromStdString(bm->GetKey());
         joProfile["cert"] = QString::fromStdString(bm->GetCert());
-
         joTx["url"] = QString::fromStdString(bm->GetTxUrl());
         joTx["login"] = QString::fromStdString(bm->GetTxLogin());
         joTx["password"] = QString::fromStdString(bm->Encrypt(bm->GetTxPassword()));
-
         joRx["url"] = QString::fromStdString(bm->GetRxUrl());
         joRx["login"] = QString::fromStdString(bm->GetRxLogin());
         joRx["password"] = QString::fromStdString(bm->Encrypt(bm->GetRxPassword()));
-
         std::vector<std::string > vecBuddies;
         bm->GetFriends(vecBuddies);
         for (std::vector<std::string>::const_iterator it = vecBuddies.begin(); it != vecBuddies.end(); ++it){
@@ -389,7 +338,6 @@ namespace BMQTApplication {
             QString qsEmail = QString::fromStdString(*it);
             joBuddies.insert(qsEmail, joBuddy);
         }
-
         joProxy["enable"] = bm->EnableProxy();
         do {
             joProxy["ip"] = QString::fromStdString( bm->GetProxyIp());
@@ -398,28 +346,21 @@ namespace BMQTApplication {
             joProxy["password"] = QString::fromStdString(bm->Encrypt(bm->GetProxyPassword()));
             joProxy["remoteDNS"] = bm->RemoteDNS();
         }while(0);
-
         // for more readable, instead of `profile'
         joRoot["Profile"] = joProfile;
         joRoot["tx"] = joTx;
         joRoot["rx"] = joRx;
         joRoot["buddies"] = joBuddies;
         joRoot["proxy"] = joProxy;
-
         QJsonDocument jdoc(joRoot);
-
         QFile file(qsProfile);
         if (!file.open(QFile::WriteOnly | QFile::Text)) {
             return false;
         }
-
         QTextStream out(&file);
-
         out << jdoc.toJson();
-
         return true;
     }
-
     bool InitLogger(){
         QString qsLoggerPath = GetDataHome();
         QDir qDataDir = QDir(qsLoggerPath);
@@ -435,29 +376,23 @@ namespace BMQTApplication {
         gLoggerHandle = fopen(qsLoggerPath.toStdString().c_str(), "w");
         return gLoggerHandle != NULL;
     }
-
     bool CloseLogger(){
         fclose(gLoggerHandle);
         gLoggerHandle = NULL;
         return true;
     }
-
     FILE * GetLogger(){
         return gLoggerHandle;
     }
-
     void FlushLogger(){
         if (gLoggerHandle){
             fflush(gLoggerHandle);
         }
     }
-
     void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
     {
         (void) context;
-
         FILE * fout = GetLogger();
-
         QByteArray localMsg = msg.toLocal8Bit();
         switch (type) {
         case QtDebugMsg:
@@ -478,9 +413,7 @@ namespace BMQTApplication {
             fprintf(fout, "[%s] - Fatal: %s \n", QDateTime::currentDateTime().toString().toStdString().c_str(), localMsg.constData());
             abort();
         }
-
         FlushLogger();
     }
 }
-
 

@@ -37,12 +37,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
 #include <QMainWindow>
-
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -59,24 +56,20 @@ class QJsonObject;
 class QJsonValue;
 class QListWidgetItem;
 QT_END_NAMESPACE
-
 class BitMail;
 class PollThread;
 class RxThread;
 class TxThread;
 class ShutdownDialog;
-
 //! [0]
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
 public:
     MainWindow(BitMail * bitmail);
     ~MainWindow();
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
-
 private slots:
     void documentWasModified();
     void onSendBtnClicked();
@@ -90,6 +83,7 @@ private slots:
     void onTxDone();
     void onTxProgress(const QString & info);
     void onPollDone();
+    void onPollProgress(const QString & info);
     void onBuddyDoubleClicked(QListWidgetItem * actItem);
     void onInviteBtnClicked();
     void onMessageDoubleClicked(QListWidgetItem * actItem);
@@ -112,19 +106,14 @@ private:
     QTextEdit *textEdit;
     QListWidget * blist;
     QListWidget *msgView;
-
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QToolBar *chatToolbar;
     QToolBar *walletToolbar;
     QToolBar *netToolbar;
-
     QPushButton * btnSend;
-
     QAction *configAct;
-
     QAction *inviteAct;
-
     QAction *snapAct;
     QAction *fileAct;
     QAction *emojAct;
@@ -143,5 +132,4 @@ signals:
     void readyToSend(const QString & to, const QString & msg);
 };
 //! [0]
-
 #endif
