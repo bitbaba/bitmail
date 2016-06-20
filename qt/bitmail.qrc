@@ -16,5 +16,7 @@
         <file>images/bubble.png</file>
         <file>images/upnp.png</file>
         <file>images/proxy.png</file>
+        <file>images/group.png</file>
+        <file>images/subscribe.png</file>
     </qresource>
 </RCC>

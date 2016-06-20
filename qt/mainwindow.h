@@ -55,6 +55,9 @@ class QJsonArray;
 class QJsonObject;
 class QJsonValue;
 class QListWidgetItem;
+class QTreeWidget;
+class QTreeWidgetItem;
+
 QT_END_NAMESPACE
 class BitMail;
 class PollThread;
@@ -96,7 +99,9 @@ private:
     bool saveProfile(const QString &fileName);
     void populateMessage(bool fTx, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert);
     void populateBuddy(const QString & email, const QString & nick);
+    void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick);
     void populateBuddies();
+    void populateFriendTree(QTreeWidgetItem * node);
     void clearMsgView();
     void populateMsgView(const QString & email);
     QString FormatBMMessage(bool fTx, const QString & from, const QString & fromnick, const QString & to, const QString & tonick, const QString & msg);
@@ -105,6 +110,7 @@ private:
 private:
     QTextEdit *textEdit;
     QListWidget * blist;
+    QTreeWidget * btree;
     QListWidget *msgView;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
