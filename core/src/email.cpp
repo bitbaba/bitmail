@@ -780,6 +780,12 @@ void CMailClient::CurlSend(void *handle, const std::string & req)
 
 int CMailClient::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
 {
+    if (cb ){
+        std::stringstream pollinfo;
+        pollinfo<<"Poll Start";
+        cb(RTS_Start, pollinfo.str().c_str(), userp);
+    }
+
     /**
      * Prepare for IDLE connection handle
      * http://tools.ietf.org/html/rfc2177
@@ -809,7 +815,18 @@ int CMailClient::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
     CURLcode res = curl_easy_perform(curl);
     if( res != CURLE_OK ) {
         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        if (cb ){
+            std::stringstream pollinfo;
+            pollinfo<<"Poll Failed to connect: " << m_rxurl <<", username: " << m_rxuser;
+            cb(RTS_Error, pollinfo.str().c_str(), userp);
+        }
         return bmIdleFail;
+    }
+
+    if (cb ){
+        std::stringstream pollinfo;
+        pollinfo<<"Poll connected: " << m_rxurl <<", username: " << m_rxuser;
+        cb(RTS_Work, pollinfo.str().c_str(), userp);
     }
 
     /**
@@ -856,6 +873,13 @@ int CMailClient::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
      * Stop Idle Mode
      */
     CurlSend(curl, "DONE\r\n");
+
+    if (cb ){
+        std::stringstream pollinfo;
+        pollinfo<<"Poll Done";
+        cb(RTS_Done, pollinfo.str().c_str(), userp);
+    }
+
     return bmOk;
 }
 
