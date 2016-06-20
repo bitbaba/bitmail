@@ -116,7 +116,10 @@ int main(int argc, char *argv[])
     }
     MainWindow mainWin(bitmail);
     mainWin.show();
-    return app.exec();
+    int retCode = app.exec();
+
+    BMQTApplication::CloseLogger();
+    return retCode;
 }
 //! [0]
 namespace BMQTApplication {
