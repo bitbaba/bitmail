@@ -344,6 +344,7 @@ void MainWindow::onSendBtnClicked()
         return ;
     }
     QString qsTo = blist->currentItem()->data(Qt::UserRole).toString();
+
     QJsonObject joMsg;
     joMsg["time"]   = QDateTime::currentDateTime().toMSecsSinceEpoch();
     joMsg["latitude"]    = 0.0;
@@ -352,12 +353,16 @@ void MainWindow::onSendBtnClicked()
     joMsg["version"]= (int)m_bitmail->GetVersion();
     joMsg["type"]   = "user"; // others e.g. "system"
     joMsg["msg"]    = qsMsg;
+
     QJsonDocument jdoc(joMsg);
-    emit readyToSend(qsTo, jdoc.toJson());
+
+    QString qsWrappedMsg = jdoc.toJson();
+
+    emit readyToSend(qsTo, qsWrappedMsg);
     populateMessage(true
                     , qsFrom
                     , qsTo
-                    , QString::fromStdString(sMsg)
+                    , qsWrappedMsg
                     , QString::fromStdString(m_bitmail->GetID())
                     , QString::fromStdString(m_bitmail->GetCert()));
 
@@ -524,14 +529,27 @@ void MainWindow::onInviteBtnClicked()
     QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
     QString qsEmail = inviteDialog.GetEmail();
     QString qsWhisper = inviteDialog.GetWhisper();
-    (void)qsEmail;
-    (void)qsWhisper;
+
+    QJsonObject joMsg;
+    joMsg["time"]   = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    joMsg["latitude"]    = 0.0;
+    joMsg["longtitude"]  = 0.0;
+    joMsg["client"] = "qt";
+    joMsg["version"]= (int)m_bitmail->GetVersion();
+    joMsg["type"]   = "user"; // others e.g. "system"
+    joMsg["msg"]    = qsWhisper;
+    QJsonDocument jdoc(joMsg);
+
+    QString qsWrappedMsg = jdoc.toJson();
+
     if (!qsEmail.isEmpty()){
-        emit readyToSend(qsEmail, (qsWhisper));
+
+        emit readyToSend(qsEmail, qsWrappedMsg);
+
         populateMessage(true
                         , qsFrom
                         , qsEmail
-                        , (qsWhisper)
+                        , qsWrappedMsg
                         , QString::fromStdString(m_bitmail->GetID())
                         , QString::fromStdString(m_bitmail->GetCert()));
     }
