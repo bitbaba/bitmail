@@ -50,7 +50,9 @@ BitMail::~BitMail()
 
 unsigned int BitMail::GetVersion() const
 {
-    return (BMVER_MAJOR & 0xff000000) + (BMVER_MINOR & 0x00ff0000) + (BMVER_TINY & 0x0000ffff);
+    return    ((BMVER_MAJOR<<24) & 0xff000000)
+    		+ ((BMVER_MINOR<<16) & 0x00ff0000)
+			+ (BMVER_TINY & 0x0000ffff);
 }
 
 /**
