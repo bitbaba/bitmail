@@ -10,7 +10,7 @@
 [![license](https://img.shields.io/badge/license-BSD-green.svg?style=flat)](https://github.com/imharrywu/bitmail/edit/master/LICENSE)
 
 ###Download pre-built installer for windows
-http://imharrywu.github.io/bitmail-qt/bitmail-intro.html
+http://bitbaba.github.io/bitmail/index.html
 
 ###Introduction
 - Bitmail(比特信) is a simple chat client currently based on email exchange network, which is securely signed & encrypted with RSA certificate(openssl, https://github.com/openssl/openssl). 
