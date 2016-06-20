@@ -50,9 +50,9 @@ BitMail::~BitMail()
 
 unsigned int BitMail::GetVersion() const
 {
-    return    ((BMVER_MAJOR<<24) & 0xff000000)
-    		+ ((BMVER_MINOR<<16) & 0x00ff0000)
-			+ (BMVER_TINY & 0x0000ffff);
+    return    (BMVER_MAJOR * 1000000)
+    		+ (BMVER_MINOR * 1000)
+			+ (BMVER_TINY);
 }
 
 /**
@@ -319,6 +319,11 @@ int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::strin
         return bmTxFail;
     }
     return bmOk;
+}
+
+int BitMail::PublishMsg(const std::vector<std::string> & to, const std::string & msg, RTXProgressCB cb = NULL, void * userptr = NULL)
+{
+	return 0;
 }
 
 int BitMail::CheckInbox(RTxProgressCB cb, void * userp)

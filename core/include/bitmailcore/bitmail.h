@@ -138,6 +138,8 @@ public:
 
     int GroupMsg(const std::vector<std::string> & to, const std::string & msg, RTxProgressCB cb = NULL, void * userp = NULL);
 
+    inT PublishMsg(const std::vector<std::string> & to, const std::string & msg, RTXProgressCB cb = NULL, void * userptr = NULL);
+
     int CheckInbox(RTxProgressCB cb = NULL, void * userp = NULL);
 
     int StartIdle(unsigned int timeout/*Interval to re-idle*/, RTxProgressCB cb = NULL, void * userp = NULL);
