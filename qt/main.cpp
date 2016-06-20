@@ -230,7 +230,12 @@ namespace BMQTApplication {
         QJsonObject joProfile;
         QJsonObject joTx;
         QJsonObject joRx;
-        QJsonArray  jaBuddies;
+        QJsonObject joBuddies;
+        QJsonObject joGroups;
+        (void)joGroups;
+        QJsonObject joSubscribes;
+        (void)joSubscribes;
+        QJsonObject joProxy;
 
         if (joRoot.contains("Profile")){
             joProfile = joRoot["Profile"].toObject();
@@ -292,19 +297,56 @@ namespace BMQTApplication {
         bm->InitNetwork(qsTxUrl.toStdString(), qsTxLogin.toStdString(), qsTxPassword.toStdString()
                         , qsRxUrl.toStdString(), qsRxLogin.toStdString(), qsRxPassword.toStdString());
 
-        if (joRoot.contains("buddies")){
-            jaBuddies = joRoot["buddies"].toArray();
-            for(QJsonArray::const_iterator it = jaBuddies.constBegin()
-                ; it != jaBuddies.constEnd()
-                ; it++){
-                const QJsonObject & joBuddy = (*it).toObject();
-                QString qsEmail = joBuddy["email"].toString();
-                QString qsCert =  joBuddy["cert"].toString();
+        if (joRoot.contains("buddies"))
+        {
+            joBuddies = joRoot["buddies"].toObject();
+
+            for(QJsonObject::const_iterator it = joBuddies.constBegin()
+                ; it != joBuddies.constEnd(); it++)
+            {
+                QString qsEmail = it.key();
+                QJsonObject joValue = it.value().toObject();
+                QString qsCert =  joValue["cert"].toString();
                 if (!bm->HasFriend(qsEmail.toStdString())){
                     bm->AddFriend(qsEmail.toStdString(), qsCert.toStdString());
                 }
             }
         }
+
+        if (joRoot.contains("proxy")){
+            joProxy = joRoot["proxy"].toObject();
+
+            if (joProxy.contains("enable")){
+                bool fProxyEnable = joProxy["enable"].toBool();
+                bm->EnableProxy(fProxyEnable);
+            }else{
+                bm->EnableProxy(false);
+            }
+
+            do {
+                if (joProxy.contains("ip")){
+                    QString qsVal = joProxy["ip"].toString();
+                    bm->SetProxyIp(qsVal.toStdString());
+                }
+                if (joProxy.contains("port")){
+                    unsigned short port = joProxy["port"].toInt();
+                    bm->SetProxyPort(port);
+                }
+                if (joProxy.contains("user")){
+                    QString qsVal = joProxy["user"].toString();
+                    bm->SetProxyUser(qsVal.toStdString());
+                }
+                if (joProxy.contains("password")){
+                    QString qsVal = joProxy["password"].toString();
+                    bm->SetProxyPassword(bm->Decrypt(qsVal.toStdString()));
+                }
+                if (joProxy.contains("remoteDNS")){
+                    bool fRemoteDNS = joProxy["remoteDNS"].toBool();
+                    bm->RemoteDNS(fRemoteDNS);
+                }
+            }while(0);
+        }
+
         return true;
     }
 
@@ -318,7 +360,12 @@ namespace BMQTApplication {
         QJsonObject joProfile;
         QJsonObject joTx;
         QJsonObject joRx;
-        QJsonArray  jaBuddies;
+        QJsonObject joBuddies;
+        QJsonObject joGroups;     // Group chatting
+        (void) joGroups;
+        QJsonObject joSubscribes; // Subscribing
+        (void) joSubscribes;
+        QJsonObject joProxy;
 
         joProfile["email"] = QString::fromStdString(bm->GetEmail());
         joProfile["nick"] = QString::fromStdString(bm->GetNick());
@@ -338,16 +385,26 @@ namespace BMQTApplication {
         for (std::vector<std::string>::const_iterator it = vecBuddies.begin(); it != vecBuddies.end(); ++it){
             std::string sBuddyCertPem = bm->GetFriendCert(*it);
             QJsonObject joBuddy;
-            joBuddy["email"] = QString::fromStdString(*it);
             joBuddy["cert"]  = QString::fromStdString(sBuddyCertPem);
-            jaBuddies.append(joBuddy);
+            QString qsEmail = QString::fromStdString(*it);
+            joBuddies.insert(qsEmail, joBuddy);
         }
+
+        joProxy["enable"] = bm->EnableProxy();
+        do {
+            joProxy["ip"] = QString::fromStdString( bm->GetProxyIp());
+            joProxy["port"] = (int)bm->GetProxyPort();
+            joProxy["user"] = QString::fromStdString(bm->GetProxyUser());
+            joProxy["password"] = QString::fromStdString(bm->Encrypt(bm->GetProxyPassword()));
+            joProxy["remoteDNS"] = bm->RemoteDNS();
+        }while(0);
 
         // for more readable, instead of `profile'
         joRoot["Profile"] = joProfile;
         joRoot["tx"] = joTx;
         joRoot["rx"] = joRx;
-        joRoot["buddies"] = jaBuddies;
+        joRoot["buddies"] = joBuddies;
+        joRoot["proxy"] = joProxy;
 
         QJsonDocument jdoc(joRoot);
 

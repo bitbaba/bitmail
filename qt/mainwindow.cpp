@@ -391,10 +391,8 @@ void MainWindow::onSendBtnClicked()
     // if application has not set codec for locale by setCodecForLocale;
 
     std::string sMsg = qsMsg.toStdString();
-    (void)sMsg;
 
     QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-    (void)qsFrom;
 
     if (blist->currentItem() == NULL){
         statusBar()->showMessage(tr("no current buddy selected"), 3000);
@@ -403,7 +401,17 @@ void MainWindow::onSendBtnClicked()
 
     QString qsTo = blist->currentItem()->data(Qt::UserRole).toString();
 
-    emit readyToSend(qsTo, QString::fromStdString(sMsg));
+    QJsonObject joMsg;
+    joMsg["time"]   = QDateTime::currentDateTime().toMSecsSinceEpoch();
+    joMsg["latitude"]    = 0.0;
+    joMsg["longtitude"]  = 0.0;
+    joMsg["client"] = "qt";
+    joMsg["version"]= (int)m_bitmail->GetVersion();
+    joMsg["type"]   = "user"; // others e.g. "system"
+    joMsg["msg"]    = qsMsg;
+    QJsonDocument jdoc(joMsg);
+
+    emit readyToSend(qsTo, jdoc.toJson());
 
     populateMessage(true
                     , qsFrom
@@ -447,6 +455,13 @@ void MainWindow::onConfigBtnClicked()
     optDialog.SetImapLogin(QString::fromStdString(m_bitmail->GetRxLogin()));
     optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
 
+    optDialog.SetProxyEnable(m_bitmail->EnableProxy());
+    optDialog.SetProxyIP(QString::fromStdString(m_bitmail->GetProxyIp()));
+    optDialog.SetProxyPort(m_bitmail->GetProxyPort());
+    optDialog.SetProxyLogin(QString::fromStdString(m_bitmail->GetProxyUser()));
+    optDialog.SetProxyPassword(QString::fromStdString(m_bitmail->GetProxyPassword()));
+    optDialog.SetRemoteDNS(m_bitmail->RemoteDNS());
+
     if (QDialog::Accepted != optDialog.exec()){
         return ;
     }
@@ -468,6 +483,16 @@ void MainWindow::onConfigBtnClicked()
                            , qsRxUrl.toStdString()
                            , qsRxLogin.toStdString()
                            , qsRxPassword.toStdString());
+
+    m_bitmail->EnableProxy(optDialog.GetProxyEnable());
+
+    do {
+        m_bitmail->SetProxyIp(optDialog.GetProxyIP().toStdString());
+        m_bitmail->SetProxyPort(optDialog.GetProxyPort());
+        m_bitmail->SetProxyUser(optDialog.GetProxyLogin().toStdString());
+        m_bitmail->SetProxyPassword(optDialog.GetProxyPassword().toStdString());
+        m_bitmail->RemoteDNS(optDialog.GetRemoteDNS());
+    }while(0);
 
     return ;
 }
