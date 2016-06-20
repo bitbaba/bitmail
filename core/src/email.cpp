@@ -140,81 +140,81 @@ std::string CMailClient::GetRxPassword() const
 }
 
 int CMailClient::SetProxy(const std::string & ip
-								, unsigned short port
-								, const std::string & user
-								, const std::string & pass
-								, bool fRemoteDNS)
+                                , unsigned short port
+                                , const std::string & user
+                                , const std::string & pass
+                                , bool fRemoteDNS)
 {
-	m_proxyIp = ip;
-	m_proxyPort = port;
-	m_proxyUser = user;
-	m_proxyPassword = pass;
-	m_fRemoteDNS = fRemoteDNS;
-	return bmOk;
+    m_proxyIp = ip;
+    m_proxyPort = port;
+    m_proxyUser = user;
+    m_proxyPassword = pass;
+    m_fRemoteDNS = fRemoteDNS;
+    return bmOk;
 }
 
 void CMailClient::SetProxyIp(const std::string & ip)
 {
-	m_proxyIp = ip;
+    m_proxyIp = ip;
 }
 
 std::string CMailClient::GetProxyIp() const
 {
-	return m_proxyIp;
+    return m_proxyIp;
 }
 
 void CMailClient::SetProxyPort(unsigned short port)
 {
-	m_proxyPort = port;
+    m_proxyPort = port;
 }
 
 unsigned short CMailClient::GetProxyPort() const
 {
-	return m_proxyPort;
+    return m_proxyPort;
 }
 
 void CMailClient::SetProxyUser(const std::string & user)
 {
-	m_proxyUser = user;;
+    m_proxyUser = user;;
 }
 
 std::string CMailClient::GetProxyUser() const
 {
-	return m_proxyUser;
+    return m_proxyUser;
 }
 
 void CMailClient::SetProxyPassword(const std::string & password)
 {
-	m_proxyPassword  = password;
+    m_proxyPassword  = password;
 }
 
 std::string CMailClient::GetProxyPassword() const
 {
-	return m_proxyPassword;
+    return m_proxyPassword;
 }
 
 void CMailClient::RemoteDNS(bool fEnable)
 {
-	m_fRemoteDNS = fEnable;
+    m_fRemoteDNS = fEnable;
 }
 
 bool CMailClient::RemoteDNS() const
 {
-	return m_fRemoteDNS;
+    return m_fRemoteDNS;
 }
 
 void CMailClient::EnableProxy(bool fEnable)
 {
-	m_fEnableProxy = fEnable;
+    m_fEnableProxy = fEnable;
 }
 
 bool CMailClient::EnableProxy() const
 {
-	return m_fEnableProxy;
+    return m_fEnableProxy;
 }
 
 int CMailClient::SendMsg(const std::string & from, const std::string & to, const std::string & encSignedMail
-						, RTxProgressCB cb, void * userp)
+                        , RTxProgressCB cb, void * userp)
 {
     std::vector<std::string> vecTo;
     vecTo.push_back(to);
@@ -222,12 +222,12 @@ int CMailClient::SendMsg(const std::string & from, const std::string & to, const
 }
 
 int CMailClient::SendMsg( const std::string & from, const std::vector<std::string> & to, const std::string & encSignedMail
-						, RTxProgressCB cb, void * userp)
+                        , RTxProgressCB cb, void * userp)
 {
     if (cb ){
-    	std::stringstream txinfo;
-    	txinfo<< "Try to Send Message";
-    	cb(RTS_Start, txinfo.str().c_str(), userp);
+        std::stringstream txinfo;
+        txinfo<< "Try to Send Message";
+        cb(RTS_Start, txinfo.str().c_str(), userp);
     }
     std::stringstream sstrmMail;
     /**
@@ -307,9 +307,9 @@ int CMailClient::SendMsg( const std::string & from, const std::vector<std::strin
     }
 
     if (cb ){
-    	std::stringstream txinfo;
-    	txinfo<< "Sending Message";
-    	cb(RTS_Work, txinfo.str().c_str(), userp);
+        std::stringstream txinfo;
+        txinfo<< "Sending Message";
+        cb(RTS_Work, txinfo.str().c_str(), userp);
     }
     res = curl_easy_perform(curl);
 
@@ -320,17 +320,17 @@ int CMailClient::SendMsg( const std::string & from, const std::vector<std::strin
     if(res != CURLE_OK){
         fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
         if (cb ){
-        	std::stringstream txinfo;
-        	txinfo<< "Message sent Failed";
-        	cb(RTS_Error, txinfo.str().c_str(), userp);
+            std::stringstream txinfo;
+            txinfo<< "Message sent Failed";
+            cb(RTS_Error, txinfo.str().c_str(), userp);
         }
         return bmTxFail;
     }
 
     if (cb ){
-    	std::stringstream txinfo;
-    	txinfo<< "Message sent Ok";
-    	cb(RTS_Done, txinfo.str().c_str(), userp);
+        std::stringstream txinfo;
+        txinfo<< "Message sent Ok";
+        cb(RTS_Done, txinfo.str().c_str(), userp);
     }
 
     return bmOk;
@@ -338,9 +338,9 @@ int CMailClient::SendMsg( const std::string & from, const std::vector<std::strin
 
 int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
 {
-	if (cb ){
-		cb(RTS_Start, "CheckInbox", userp);
-	}
+    if (cb ){
+        cb(RTS_Start, "CheckInbox", userp);
+    }
 
     std::vector<MessageNo> msgnolist;
     this->GetUnseenMessageNoList(msgnolist);
@@ -350,12 +350,12 @@ int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
             it != msgnolist.end();
             ++it)
     {
-    	proginfo<< *it << ",";
+        proginfo<< *it << ",";
     }
     proginfo << "]";
 
     if (cb ){
-    	cb(RTS_Work, proginfo.str().c_str(), userp);
+        cb(RTS_Work, proginfo.str().c_str(), userp);
     }
 
     for (std::vector<MessageNo>::iterator it = msgnolist.begin();
@@ -365,9 +365,9 @@ int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
         MessageNo msgno = *it;
 
         if (cb ){
-        	std::stringstream rxinfo;
-        	rxinfo<< "Try to Receive Message: [" << *it << "]";
-        	cb(RTS_Work, rxinfo.str().c_str(), userp);
+            std::stringstream rxinfo;
+            rxinfo<< "Try to Receive Message: [" << *it << "]";
+            cb(RTS_Work, rxinfo.str().c_str(), userp);
         }
 
         std::string smime;
@@ -375,9 +375,9 @@ int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
 
 
         if (cb ){
-        	std::stringstream rxinfo;
-        	rxinfo<< "Rx Message size: [" <<  smime.length() << "]";
-        	cb(RTS_Work, rxinfo.str().c_str(), userp);
+            std::stringstream rxinfo;
+            rxinfo<< "Rx Message size: [" <<  smime.length() << "]";
+            cb(RTS_Work, rxinfo.str().c_str(), userp);
         }
 
         if (m_cb){
@@ -394,16 +394,16 @@ int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
         this->StoreFlag(msgno, "\\Seen");
 
         if (cb ){
-        	std::stringstream rxinfo;
-        	rxinfo<<"Rx Store \\Seen Flag to MsgNo: [" <<  msgno << "]";
-        	cb(RTS_Work, rxinfo.str().c_str(), userp);
+            std::stringstream rxinfo;
+            rxinfo<<"Rx Store \\Seen Flag to MsgNo: [" <<  msgno << "]";
+            cb(RTS_Work, rxinfo.str().c_str(), userp);
         }
     }
     
     if (cb ){
-    	std::stringstream rxinfo;
-    	rxinfo<<"Rx Done";
-    	cb(RTS_Done, rxinfo.str().c_str(), userp);
+        std::stringstream rxinfo;
+        rxinfo<<"Rx Done";
+        cb(RTS_Done, rxinfo.str().c_str(), userp);
     }
 
     return msgnolist.size();

@@ -9,32 +9,32 @@ typedef unsigned int MessageNo;
 #define BMMAGIC (0xbeefbeef)
 
 enum BMEventFlag{
-	bmefSystem       =     0,
-	bmefMsgCount     =     1,
-	bmefMessage      =     2,
+    bmefSystem       =     0,
+    bmefMsgCount     =     1,
+    bmefMessage      =     2,
 };
 
 struct BMEventHead{
-	unsigned int magic;
-	BMEventFlag bmef;
+    unsigned int magic;
+    BMEventFlag bmef;
 };
 
 struct BMEventSystem{
-	BMEventHead h;
-	unsigned int reserved;
+    BMEventHead h;
+    unsigned int reserved;
 };
 
 struct BMEventMsgCount{
-	BMEventHead h;
-	unsigned int msgcount;
+    BMEventHead h;
+    unsigned int msgcount;
 };
 
 struct BMEventMessage{
-	BMEventHead h;
-	std::string from;
-	std::string msg;
-	std::string certid;
-	std::string cert;
+    BMEventHead h;
+    std::string from;
+    std::string msg;
+    std::string certid;
+    std::string cert;
 };
 
 typedef int (* BMEventCB)(BMEventHead * h, void * userp);
@@ -48,28 +48,28 @@ public:
     int InitTx( const std::string & url
               , const std::string & user
               , const std::string & pass);
-	
+
     void SetTxUrl(const std::string & u);
-	std::string GetTxUrl() const;
-	void SetTxLogin(const std::string & l);
-	std::string GetTxLogin() const;
-	void SetTxPassword(const std::string & p);
-	std::string GetTxPassword() const;
+    std::string GetTxUrl() const;
+    void SetTxLogin(const std::string & l);
+    std::string GetTxLogin() const;
+    void SetTxPassword(const std::string & p);
+    std::string GetTxPassword() const;
 
     int InitRx( const std::string & url
               , const std::string & user
               , const std::string & pass);
     
     void SetRxUrl(const std::string & u);
-	std::string GetRxUrl() const;
-	void SetRxLogin(const std::string & l);
-	std::string GetRxLogin() const;
-	void SetRxPassword(const std::string &p);
-	std::string GetRxPassword() const;
-	
-	int SetProxy(const std::string & ip, unsigned short port
-						, const std::string & user, const std::string & pass
-						, bool fRemoteDNS);
+    std::string GetRxUrl() const;
+    void SetRxLogin(const std::string & l);
+    std::string GetRxLogin() const;
+    void SetRxPassword(const std::string &p);
+    std::string GetRxPassword() const;
+
+    int SetProxy(const std::string & ip, unsigned short port
+                        , const std::string & user, const std::string & pass
+                        , bool fRemoteDNS);
 
     void SetProxyIp(const std::string & ip);
 
@@ -96,19 +96,19 @@ public:
     bool EnableProxy() const;
 
 
-	/**
-	 * RTx Routines
-	 */
+    /**
+     * RTx Routines
+     */
 public:
     int SendMsg( const std::string & from
                , const std::string & to
                , const std::string & msg
-			   , RTxProgressCB cb = NULL, void * userp = NULL);
+               , RTxProgressCB cb = NULL, void * userp = NULL);
 
     int SendMsg( const std::string & from
                , const std::vector<std::string> & to
                , const std::string & encSignedMail
-			   , RTxProgressCB cb = NULL, void * userp = NULL);
+               , RTxProgressCB cb = NULL, void * userp = NULL);
 
     int CheckInbox(RTxProgressCB cb = NULL, void * userp = NULL);
     
@@ -132,9 +132,9 @@ protected:
     /* Auxiliary function that waits on the socket. */     
     int  CurlWait(void *curl, bool forRead, unsigned int & timeout_ms);
      
-	void CurlRecv(void *curl, std::string & resp);
+    void CurlRecv(void *curl, std::string & resp);
      
-	void CurlSend(void *curl, const std::string & req);
+    void CurlSend(void *curl, const std::string & req);
 
     
 protected:

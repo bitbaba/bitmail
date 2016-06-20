@@ -33,12 +33,12 @@ BitMail::BitMail()
     OPENSSL_load_builtin_modules();
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
-	
-	// Create a email object
-	m_mc = new CMailClient(EmailHandler, this);
-	
-	// Create a profile object
-	m_profile = new CX509Cert();
+
+    // Create a email object
+    m_mc = new CMailClient(EmailHandler, this);
+
+    // Create a profile object
+    m_profile = new CX509Cert();
 }
 
 BitMail::~BitMail()
@@ -50,7 +50,7 @@ BitMail::~BitMail()
 
 unsigned int BitMail::GetVersion() const
 {
-	return (BMVER_MAJOR & 0xff000000) + (BMVER_MINOR & 0x00ff0000) + (BMVER_TINY & 0x0000ffff);
+    return (BMVER_MAJOR & 0xff000000) + (BMVER_MINOR & 0x00ff0000) + (BMVER_TINY & 0x0000ffff);
 }
 
 /**
@@ -94,146 +94,146 @@ int BitMail::InitNetwork( const std::string & txurl
 }
 
 int BitMail::SetProxy(const std::string & ip
-		, unsigned short port
-		, const std::string & user
-		, const std::string & password
-		, bool fRemoteDNS)
+        , unsigned short port
+        , const std::string & user
+        , const std::string & password
+        , bool fRemoteDNS)
 {
-	return m_mc->SetProxy(ip, port, user, password, fRemoteDNS);
+    return m_mc->SetProxy(ip, port, user, password, fRemoteDNS);
 }
 
 void BitMail::SetProxyIp(const std::string & ip)
 {
-	m_mc->SetProxyIp(ip);
+    m_mc->SetProxyIp(ip);
 }
 
 std::string BitMail::GetProxyIp() const
 {
-	return m_mc->GetProxyIp();
+    return m_mc->GetProxyIp();
 }
 
 void BitMail::SetProxyPort(unsigned short port)
 {
-	m_mc->SetProxyPort(port);
+    m_mc->SetProxyPort(port);
 }
 
 unsigned short BitMail::GetProxyPort() const
 {
-	return m_mc->GetProxyPort();
+    return m_mc->GetProxyPort();
 }
 
 void BitMail::SetProxyUser(const std::string & user)
 {
-	m_mc->SetProxyUser(user);
+    m_mc->SetProxyUser(user);
 }
 
 std::string BitMail::GetProxyUser() const
 {
-	return m_mc->GetProxyUser();
+    return m_mc->GetProxyUser();
 }
 
 void BitMail::SetProxyPassword(const std::string & password)
 {
-	m_mc->SetProxyPassword(password);
+    m_mc->SetProxyPassword(password);
 }
 
 std::string BitMail::GetProxyPassword() const
 {
-	return m_mc->GetProxyPassword();
+    return m_mc->GetProxyPassword();
 }
 
 void BitMail::RemoteDNS(bool fEnable)
 {
-	m_mc->RemoteDNS(fEnable);
+    m_mc->RemoteDNS(fEnable);
 }
 
 bool BitMail::RemoteDNS() const
 {
-	return m_mc->RemoteDNS();
+    return m_mc->RemoteDNS();
 }
 
 void BitMail::EnableProxy(bool fEnable)
 {
-	m_mc->EnableProxy(fEnable);
+    m_mc->EnableProxy(fEnable);
 }
 
 bool BitMail::EnableProxy() const
 {
-	return m_mc->EnableProxy();
+    return m_mc->EnableProxy();
 }
 
 int BitMail::SetTxUrl(const std::string & u)
 {
-	m_mc->SetTxUrl(u);
-	return bmOk;
+    m_mc->SetTxUrl(u);
+    return bmOk;
 }
 
 std::string BitMail::GetTxUrl() const
 {
-	return m_mc->GetTxUrl();
+    return m_mc->GetTxUrl();
 }
 
 int BitMail::SetTxLogin(const std::string & l)
 {
-	m_mc->SetTxLogin(l);
-	return bmOk;
+    m_mc->SetTxLogin(l);
+    return bmOk;
 }
 
 std::string BitMail::GetTxLogin() const
 {
-	return m_mc->GetTxLogin();
+    return m_mc->GetTxLogin();
 }
 
 int BitMail::SetTxPassword(const std::string & p)
 {
-	m_mc->SetTxPassword(p);
-	return bmOk;
+    m_mc->SetTxPassword(p);
+    return bmOk;
 }
 
 std::string BitMail::GetTxPassword() const
 {
-	return m_mc->GetTxPassword();
+    return m_mc->GetTxPassword();
 }
 
 int BitMail::SetRxUrl(const std::string & u)
 {
-	m_mc->SetRxUrl(u);
-	return bmOk;
+    m_mc->SetRxUrl(u);
+    return bmOk;
 }
 
 std::string BitMail::GetRxUrl() const
 {
-	return m_mc->GetRxUrl();
+    return m_mc->GetRxUrl();
 }
 
 int BitMail::SetRxLogin(const std::string & l)
 {
-	m_mc->SetRxLogin(l);
-	return bmOk;
+    m_mc->SetRxLogin(l);
+    return bmOk;
 }
 
 std::string BitMail::GetRxLogin() const
 {
-	return m_mc->GetRxLogin();
+    return m_mc->GetRxLogin();
 }
 
 int BitMail::SetRxPassword(const std::string & p)
 {
-	m_mc->SetRxPassword(p);
-	return bmOk;
+    m_mc->SetRxPassword(p);
+    return bmOk;
 }
 
 std::string BitMail::GetRxPassword() const
 {
-	return m_mc->GetRxPassword();
+    return m_mc->GetRxPassword();
 }
 
 int BitMail::SendMsg(const std::string &email_to, const std::string &msg
-		            , RTxProgressCB cb, void * userp)
+                    , RTxProgressCB cb, void * userp)
 {
-	if (msg.empty()){
-		return bmInvalidParam;
-	}
+    if (msg.empty()){
+        return bmInvalidParam;
+    }
 
     std::string sSignedMsg = m_profile->Sign(msg);
     if (sSignedMsg.empty()){
@@ -265,11 +265,11 @@ int BitMail::SendMsg(const std::string &email_to, const std::string &msg
 }
 
 int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::string &msg
-		             , RTxProgressCB cb, void * userp)
+                     , RTxProgressCB cb, void * userp)
 {
-	if (msg.empty()){
-		return bmInvalidParam;
-	}
+    if (msg.empty()){
+        return bmInvalidParam;
+    }
     /**
      * Note:
      * GroupMsg(msg, vector<bob>) != SendMsg(msg, bob);
@@ -312,8 +312,8 @@ int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::strin
     if (m_mc->SendMsg( m_profile->GetEmail()
                             , email_to
                             , sEncryptedMsg
-							, cb
-							, userp)){
+                            , cb
+                            , userp)){
         return bmTxFail;
     }
     return bmOk;
@@ -330,15 +330,15 @@ int BitMail::CheckInbox(RTxProgressCB cb, void * userp)
 int BitMail::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
 {
         if (m_mc->StartIdle(timeout, cb, userp)){
-		return bmIdleFail;
-	}
-	return bmOk;
+        return bmIdleFail;
+    }
+    return bmOk;
 }
 
 int BitMail::Expunge(RTxProgressCB cb, void * userp)
 {
-	// Clear all <deleted> messages
-	m_mc->Expunge(cb, userp);
+    // Clear all <deleted> messages
+    m_mc->Expunge(cb, userp);
 }
 
 /**
@@ -349,11 +349,11 @@ int BitMail::CreateProfile(const std::string & commonName
         , const std::string & passphrase
         , unsigned int bits)
 {
-	if (NULL != m_profile)
-	{
-		delete m_profile;
-		m_profile = NULL;
-	}
+    if (NULL != m_profile)
+    {
+        delete m_profile;
+        m_profile = NULL;
+    }
     m_profile = new CX509Cert();
     if (m_profile == NULL){
         return bmOutMem;
@@ -386,16 +386,16 @@ int BitMail::LoadProfile(const std::string & passphrase
 }
 
 int BitMail::SaveProfile(const std::string & passphrase
-    				, std::string & keypem
-					, std::string & certpem)
+                    , std::string & keypem
+                    , std::string & certpem)
 {
-	return 0;
+    return 0;
 }
 
 int BitMail::SetPassphrase(const std::string & passphrase)
 {
-	m_profile->SetPassphrase(passphrase);
-	return bmOk;
+    m_profile->SetPassphrase(passphrase);
+    return bmOk;
 }
 
 std::string BitMail::GetNick() const
@@ -405,7 +405,7 @@ std::string BitMail::GetNick() const
 
 std::string BitMail::GetID() const
 {
-	return m_profile->GetID();
+    return m_profile->GetID();
 }
 
 std::string BitMail::GetEmail() const
@@ -415,71 +415,71 @@ std::string BitMail::GetEmail() const
 
 std::string BitMail::GetCert() const
 {
-	return m_profile->GetCertByPem();
+    return m_profile->GetCertByPem();
 }
 
 std::string BitMail::GetKey() const
 {
-	return m_profile->GetPrivateKeyAsEncryptedPem();
+    return m_profile->GetPrivateKeyAsEncryptedPem();
 }
 
 int BitMail::GetBits() const{
-	return m_profile->GetBits();
+    return m_profile->GetBits();
 }
 
 std::string BitMail::GetPassphrase() const
 {
-	return m_profile->GetPassphrase();
+    return m_profile->GetPassphrase();
 }
 
 std::string BitMail::Encrypt(const std::string & text) const
 {
-	return m_profile->Encrypt(text);
+    return m_profile->Encrypt(text);
 }
 
 std::string BitMail::Decrypt(const std::string & code) const
 {
-	return m_profile->Decrypt(code);
+    return m_profile->Decrypt(code);
 }
 
 std::string BitMail::GetFriendNick(const std::string & e) const
 {
-	if (e == GetEmail()){
-		return m_profile->GetCommonName();
-	}
-	if (m_buddies.find(e) == m_buddies.end()){
-		return "";
-	}
-	std::string sCert = m_buddies.find(e)->second;
-	CX509Cert x;
-	x.LoadCertFromPem(sCert);
-	return x.GetCommonName();
+    if (e == GetEmail()){
+        return m_profile->GetCommonName();
+    }
+    if (m_buddies.find(e) == m_buddies.end()){
+        return "";
+    }
+    std::string sCert = m_buddies.find(e)->second;
+    CX509Cert x;
+    x.LoadCertFromPem(sCert);
+    return x.GetCommonName();
 }
 
 std::string BitMail::GetFriendCert(const std::string & e) const
 {
-	if (e == GetEmail()){
-		return m_profile->GetCertByPem();
-	}
-	if (m_buddies.find(e) == m_buddies.end()){
-		return "";
-	}
-	std::string sCert = m_buddies.find(e)->second;
-	return sCert;
+    if (e == GetEmail()){
+        return m_profile->GetCertByPem();
+    }
+    if (m_buddies.find(e) == m_buddies.end()){
+        return "";
+    }
+    std::string sCert = m_buddies.find(e)->second;
+    return sCert;
 }
 
 std::string BitMail::GetFriendID(const std::string & e) const
 {
-	if (e == GetEmail()){
-		return m_profile->GetID();
-	}
-	if (m_buddies.find(e) == m_buddies.end()){
-		return "";
-	}
-	std::string sCert = m_buddies.find(e)->second;
-	CX509Cert x;
-	x.LoadCertFromPem(sCert);
-	return x.GetID();
+    if (e == GetEmail()){
+        return m_profile->GetID();
+    }
+    if (m_buddies.find(e) == m_buddies.end()){
+        return "";
+    }
+    std::string sCert = m_buddies.find(e)->second;
+    CX509Cert x;
+    x.LoadCertFromPem(sCert);
+    return x.GetID();
 }
 
 /**
@@ -494,7 +494,7 @@ int BitMail::AddFriend(const std::string & email, const std::string &certpem)
     }
     std::string e = cert.GetEmail();
     if (email != e){
-    	return bmInvalidCert;
+        return bmInvalidCert;
     }
     m_buddies[email] = certpem;
     return bmOk;
@@ -502,34 +502,34 @@ int BitMail::AddFriend(const std::string & email, const std::string &certpem)
 
 bool BitMail::HasFriend(const std::string & email) const
 {
-	if (m_buddies.find(email) != m_buddies.end()){
-		return true;
-	}
-	return false;
+    if (m_buddies.find(email) != m_buddies.end()){
+        return true;
+    }
+    return false;
 }
 
 bool BitMail::IsFriend(const std::string & email, const std::string & certpem) const
 {
-	CX509Cert testx;
-	testx.LoadCertFromPem(certpem);
-	if (!testx.IsValid()){
-		return false;
-	}
-	std::string e = testx.GetEmail();
-	if (e.empty() || email != e){
-		return false;
-	}
-	if (m_buddies.find(e) == m_buddies.end()){
-		return false;
-	}
-	std::string prevcert = m_buddies.find(e)->second;
-	CX509Cert cert;
-	cert.LoadCertFromPem(prevcert);
-	if (!cert.IsValid()){
-		return false;
-	}
-	return cert.GetEmail() == email
-			&& testx.GetID() == cert.GetID();
+    CX509Cert testx;
+    testx.LoadCertFromPem(certpem);
+    if (!testx.IsValid()){
+        return false;
+    }
+    std::string e = testx.GetEmail();
+    if (e.empty() || email != e){
+        return false;
+    }
+    if (m_buddies.find(e) == m_buddies.end()){
+        return false;
+    }
+    std::string prevcert = m_buddies.find(e)->second;
+    CX509Cert cert;
+    cert.LoadCertFromPem(prevcert);
+    if (!cert.IsValid()){
+        return false;
+    }
+    return cert.GetEmail() == email
+            && testx.GetID() == cert.GetID();
 }
 
 
@@ -544,12 +544,12 @@ int BitMail::RemoveFriend(const std::string & email)
 
 int BitMail::GetFriends(std::vector<std::string> & vecEmails) const
 {
-	for (std::map<std::string, std::string>::const_iterator it = m_buddies.begin();
-		 it != m_buddies.end();
-		 ++it){
-		 vecEmails.push_back(it->first);
-	}
-	return bmOk;
+    for (std::map<std::string, std::string>::const_iterator it = m_buddies.begin();
+         it != m_buddies.end();
+         ++it){
+         vecEmails.push_back(it->first);
+    }
+    return bmOk;
 }
 
 int BitMail::EmailHandler(BMEventHead * h, void * userp)
@@ -557,23 +557,23 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     BitMail * self = (BitMail *)userp;
 
     if (h->magic != BMMAGIC){
-    	return bmInvalidParam;
+        return bmInvalidParam;
     }
 
     if (h->bmef == bmefMsgCount){
-    	if (self && self->m_onPollEvent){
-    		return self->m_onPollEvent(((BMEventMsgCount*)h)->msgcount
-    									, self->m_onPollEventParam);
-    	}else{
-    		return bmInvalidParam;
-    	}    	
+        if (self && self->m_onPollEvent){
+            return self->m_onPollEvent(((BMEventMsgCount*)h)->msgcount
+                                        , self->m_onPollEventParam);
+        }else{
+            return bmInvalidParam;
+        }
     }else if (h->bmef == bmefSystem){
-    	// TODO: not implemented.
-    	return 0;
+        // TODO: not implemented.
+        return 0;
     }else if (h->bmef == bmefMessage){
-    	// process it as following.
+        // process it as following.
     }else{
-    	return bmInvalidParam;
+        return bmInvalidParam;
     }
 
     BMEventMessage * bmeMsg = (BMEventMessage *)h;
@@ -665,27 +665,27 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     }
 
     if (self && self->m_onMessageEvent){
-    	BMEventMessage bmeMessage;
-    	bmeMessage.h = *h;
-    	
-    	if (!sFrom.empty()){
-    		bmeMessage.from = sFrom;
-    	}    	
+        BMEventMessage bmeMessage;
+        bmeMessage.h = *h;
+
+        if (!sFrom.empty()){
+            bmeMessage.from = sFrom;
+        }
 
         if (!sMimeBody.empty()){
             bmeMessage.msg = CX509Cert::b64enc(sMimeBody);
         }
         
         if (buddyCert.IsValid()){
-        	bmeMessage.certid = buddyCert.GetID();
-        	bmeMessage.cert = CX509Cert::b64enc(buddyCert.GetCertByPem());
+            bmeMessage.certid = buddyCert.GetID();
+            bmeMessage.cert = CX509Cert::b64enc(buddyCert.GetCertByPem());
         }
         
         self->m_onMessageEvent(bmeMessage.from.c_str()
-        						, bmeMessage.msg.c_str()
-								, bmeMessage.certid.c_str()
-								, bmeMessage.cert.c_str()
-								, self->m_onMessageEventParam);
+                                , bmeMessage.msg.c_str()
+                                , bmeMessage.certid.c_str()
+                                , bmeMessage.cert.c_str()
+                                , self->m_onMessageEventParam);
     }
 
     return bmOk;
