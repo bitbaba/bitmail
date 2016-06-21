@@ -42,6 +42,12 @@ enum BMError{
     bmAlreadyExist   =     26,
     bmExpungeFail    =     27,
     bmFlagFail       =     28,
+	bmGrpExist       =     29,
+	bmNoGrp          =     30,
+	bmMemberExist    =     31,
+	bmNoMember       =     32,
+	bmSubExist       =     33,
+	bmNoSub          =     34,
 };
 
 enum RTxState{
@@ -138,7 +144,7 @@ public:
 
     int GroupMsg(const std::vector<std::string> & to, const std::string & msg, RTxProgressCB cb = NULL, void * userp = NULL);
 
-    inT PublishMsg(const std::vector<std::string> & to, const std::string & msg, RTXProgressCB cb = NULL, void * userptr = NULL);
+    int PublishMsg(const std::vector<std::string> & to, const std::string & msg, RTxProgressCB cb = NULL, void * userptr = NULL);
 
     int CheckInbox(RTxProgressCB cb = NULL, void * userp = NULL);
 
@@ -199,6 +205,32 @@ public:
 
     bool IsFriend(const std::string & email, const std::string & certpem) const;
 
+    // Groups
+    int AddGroup(const std::string & groupname);
+
+    int RemoveGroup(const std::string & groupname);
+
+    bool HasGroup(const std::string & groupname) const;
+
+    int GetGroups(std::vector<std::string> & groups) const;
+
+    int GetGroupMembers(const std::string & groupname, std::vector<std::string> & members) const;
+
+    int AddGroupMember(const std::string & groupname, const std::string & member);
+
+    bool HasGroupMember(const std::string & groupname, const std::string & member) const;
+
+    int RemoveGroupMember(const std::string & groupname, const std::string & member);
+
+    // Subscribes
+    int Subscribe(const std::string & sub);
+
+    int Unsubscribe(const std::string & sub);
+
+    bool Subscribed(const std::string & sub) const;
+
+    int GetSubscribes(std::vector<std::string> & subscribes);
+
 protected:
 
     PollEventCB          m_onPollEvent;
@@ -214,6 +246,12 @@ protected:
     // Key: email, Value: Certificate In Pem format
     std::map<std::string, std::string> m_buddies;
     
+    // Groups, Key: GroupName, Value: vector of friends' email
+    std::map<std::string, std::vector<std::string> > m_groups;
+
+    // Subscribes: vector of subscribed email
+    std::vector<std::string> m_subscribes;
+
 public:
     CX509Cert          * m_profile;
 

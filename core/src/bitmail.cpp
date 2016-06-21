@@ -22,6 +22,7 @@
 # include <fstream>
 # include <sstream>
 # include <iostream>
+# include <algorithm>
 
 #include <string.h>
 
@@ -321,9 +322,12 @@ int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::strin
     return bmOk;
 }
 
-int BitMail::PublishMsg(const std::vector<std::string> & to, const std::string & msg, RTXProgressCB cb = NULL, void * userptr = NULL)
+int BitMail::PublishMsg(const std::vector<std::string> & to
+						, const std::string & msg
+						, RTxProgressCB cb
+						, void * userptr)
 {
-	return 0;
+	return bmOk;
 }
 
 int BitMail::CheckInbox(RTxProgressCB cb, void * userp)
@@ -557,6 +561,168 @@ int BitMail::GetFriends(std::vector<std::string> & vecEmails) const
          vecEmails.push_back(it->first);
     }
     return bmOk;
+}
+
+// Groups
+int BitMail::AddGroup(const std::string & groupname)
+{
+	if (groupname.empty()){
+		return bmInvalidParam;
+	}
+	if (m_groups.end() != m_groups.find(groupname)){
+		return bmGrpExist;
+	}
+	m_groups.insert(std::make_pair(groupname, std::vector<std::string>()));
+	return bmOk;
+}
+
+int BitMail::RemoveGroup(const std::string & groupname)
+{
+	if (groupname.empty()){
+		return bmInvalidParam;
+	}
+	if (m_groups.end() == m_groups.find(groupname)){
+		return bmOk;
+	}
+	m_groups.erase(groupname);
+	return bmOk;
+}
+
+bool BitMail::HasGroup(const std::string & groupname) const
+{
+	if (groupname.empty()){
+		return false;
+	}
+	return m_groups.find(groupname) != m_groups.end();
+}
+
+int BitMail::GetGroups(std::vector<std::string> & groups) const
+{
+	for (std::map<std::string, std::vector<std::string> >::const_iterator it = m_groups.begin()
+			; it != m_groups.end()
+			; ++it){
+		groups.push_back(it->first);
+	}
+	return bmOk;
+}
+
+int BitMail::GetGroupMembers(const std::string & groupname
+							, std::vector<std::string> & members) const
+{
+	if (groupname.empty()){
+		return bmInvalidParam;
+	}
+	std::map<std::string, std::vector<std::string> >::const_iterator it =
+			m_groups.find(groupname);
+	if (it == m_groups.end()){
+		return bmNoGrp;
+	}
+	members = it->second;
+	return bmOk;
+}
+
+int BitMail::AddGroupMember(const std::string & groupname
+							, const std::string & member)
+{
+	if (groupname.empty() || member.empty()){
+		return bmInvalidParam;
+	}
+	std::map<std::string, std::vector<std::string> >::iterator it =
+			m_groups.find(groupname);
+	if (it == m_groups.end()){
+		return bmNoGrp;
+	}
+	std::vector<std::string> & members = it->second;
+	if (std::find(members.begin(), members.end(), member)
+		!= members.end()){
+		return bmMemberExist;
+	}
+	members.push_back(member);
+	return bmOk;
+}
+
+bool BitMail::HasGroupMember(const std::string & groupname
+							, const std::string & member) const
+{
+	if (groupname.empty() || member.empty()){
+		return bmInvalidParam;
+	}
+	std::map<std::string, std::vector<std::string> >::const_iterator it =
+			m_groups.find(groupname);
+	if (it == m_groups.end()){
+		return false;
+	}
+	const std::vector<std::string> & members = it->second;
+	return (std::find(members.begin(), members.end(), member)
+			!= members.end());
+}
+
+int BitMail::RemoveGroupMember(const std::string & groupname
+							, const std::string & member)
+{
+	if (groupname.empty() || member.empty()){
+		return bmInvalidParam;
+	}
+	std::map<std::string, std::vector<std::string> >::iterator it =
+			m_groups.find(groupname);
+	if (it == m_groups.end()){
+		return bmNoGrp;
+	}
+	std::vector<std::string> & members = it->second;
+	std::vector<std::string>::iterator it_member
+		= std::find(members.begin(), members.end(), member);
+
+	if (it_member == members.end()){
+		return bmNoMember;
+	}
+
+	members.erase(it_member);
+	return bmOk;
+}
+
+// Subscribes
+int BitMail::Subscribe(const std::string & sub)
+{
+	if (sub.empty()){
+		return bmInvalidParam;
+	}
+	std::vector<std::string>::const_iterator it
+		= std::find(m_subscribes.begin(), m_subscribes.end(), sub);
+
+	if (it != m_subscribes.end()){
+		return bmSubExist;
+	}
+	m_subscribes.push_back(sub);
+	return bmOk;
+}
+
+int BitMail::Unsubscribe(const std::string & sub)
+{
+	if (sub.empty()){
+		return bmInvalidParam;
+	}
+	std::vector<std::string>::iterator it
+		= std::find(m_subscribes.begin(), m_subscribes.end(), sub);
+	if (it == m_subscribes.end()){
+		return bmNoSub;
+	}
+	m_subscribes.erase(it);
+	return bmOk;
+}
+
+bool BitMail::Subscribed(const std::string & sub) const
+{
+	if (sub.empty()){
+		return false;
+	}
+	return (std::find(m_subscribes.begin(), m_subscribes.end(), sub)
+		!= m_subscribes.end());
+}
+
+int BitMail::GetSubscribes(std::vector<std::string> & subscribes)
+{
+	subscribes = m_subscribes;
+	return bmOk;
 }
 
 int BitMail::EmailHandler(BMEventHead * h, void * userp)
