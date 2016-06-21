@@ -80,17 +80,20 @@ private slots:
     void onPayBtnClicked();
     void onWalletBtnClicked();
     void onNewMessage(const QString & from, const QString & msg, const QString & certid, const QString & cert);
-    void onCurrentBuddy(QListWidgetItem * current, QListWidgetItem * previous);
+
+    void onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous);
     void onRxDone();
     void onRxProgress(const QString & info);
     void onTxDone();
     void onTxProgress(const QString & info);
     void onPollDone();
     void onPollProgress(const QString & info);
-    void onBuddyDoubleClicked(QListWidgetItem * actItem);
+
+    void onTreeBuddyDoubleClicked(QTreeWidgetItem * actItem,int col);
     void onInviteBtnClicked();
     void onMessageDoubleClicked(QListWidgetItem * actItem);
     void onAddFriend(const QString & email);
+    void onNewSubscribe(const QString & sub);
 private:
     void createActions();
     void createToolBars();
@@ -98,10 +101,14 @@ private:
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
     void populateMessage(bool fTx, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert);
-    void populateBuddy(const QString & email, const QString & nick);
+
     void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick);
-    void populateBuddies();
+    void populateGroupLeaf(QTreeWidgetItem * node, const QString & groupname, const QStringList & members);
+    void populateSubscribeLeaf(QTreeWidgetItem * node, const QString & email, const QString &nick);
+
     void populateFriendTree(QTreeWidgetItem * node);
+    void populateGroupTree(QTreeWidgetItem * node);
+    void populateSubscribeTree(QTreeWidgetItem * node);
     void clearMsgView();
     void populateMsgView(const QString & email);
     QString FormatBMMessage(bool fTx, const QString & from, const QString & fromnick, const QString & to, const QString & tonick, const QString & msg);
@@ -109,8 +116,11 @@ private:
     void shutdownNetwork();
 private:
     QTextEdit *textEdit;
-    QListWidget * blist;
+    //QListWidget * blist;
     QTreeWidget * btree;
+    QTreeWidgetItem * nodeFriends;
+    QTreeWidgetItem * nodeGroups;
+    QTreeWidgetItem * nodeSubscribes;
     QListWidget *msgView;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;

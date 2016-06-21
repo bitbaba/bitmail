@@ -86,10 +86,12 @@ MainWindow::MainWindow(BitMail * bitmail)
         qsTitle += ")";
         setWindowTitle(qsTitle);
     }while(0);
+
     /** Toolbars */
     createActions();
     createToolBars();
     createStatusBar();
+
     /** Form */
     QVBoxLayout *leftLayout = new QVBoxLayout;
     QHBoxLayout *mainLayout = new QHBoxLayout;
@@ -104,30 +106,23 @@ MainWindow::MainWindow(BitMail * bitmail)
     columns.append(tr("Tree"));
     btree->setHeaderLabels(columns);
 
-    QTreeWidgetItem * nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")));
+    nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")));
     nodeFriends->setIcon(0, QIcon(":/images/head.png"));
     populateFriendTree(nodeFriends);
     btree->addTopLevelItem(nodeFriends);
 
-    QTreeWidgetItem * nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")));
+    nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")));
     nodeGroups->setIcon(0, QIcon(":/images/group.png"));
-    populateFriendTree(nodeGroups);
+    populateGroupTree(nodeGroups);
     btree->addTopLevelItem(nodeGroups);
 
-    QTreeWidgetItem * nodeSubscribes = new QTreeWidgetItem(btree, QStringList(tr("Subscribes")));
+    nodeSubscribes = new QTreeWidgetItem(btree, QStringList(tr("Subscribes")));
     nodeSubscribes->setIcon(0, QIcon(":/images/subscribe.png"));
-    populateFriendTree(nodeSubscribes);
+    populateSubscribeTree(nodeSubscribes);
     btree->addTopLevelItem(nodeSubscribes);
 
-    blist = new QListWidget;
-    blist->setIconSize(QSize(48,48));
-    blist->setFixedWidth(256);
+    leftLayout->addWidget(btree);
 
-    if (0){
-        leftLayout->addWidget(blist);
-    }else{
-        leftLayout->addWidget(btree);
-    }
     mainLayout->addLayout(leftLayout);
     msgView = new QListWidget;
     msgView->setIconSize(QSize(48,48));
@@ -155,13 +150,14 @@ MainWindow::MainWindow(BitMail * bitmail)
     wrap->setLayout(mainLayout);
     setCentralWidget(wrap);
     // Add signals
-    connect(btnSend, SIGNAL(clicked()) , this, SLOT(onSendBtnClicked()));
     connect(textEdit->document(), SIGNAL(contentsChanged()), this, SLOT(documentWasModified()));
-    connect(blist, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(onCurrentBuddy(QListWidgetItem*,QListWidgetItem*)));
-    connect(blist, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onBuddyDoubleClicked(QListWidgetItem*)));
+    {
+        connect(btree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(onTreeCurrentBuddy(QTreeWidgetItem*,QTreeWidgetItem*)));
+        connect(btree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(onTreeBuddyDoubleClicked(QTreeWidgetItem*,int)));
+    }
     connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
-    // Populate buddies list
-    populateBuddies();
+    connect(btnSend, SIGNAL(clicked()) , this, SLOT(onSendBtnClicked()));
+
     // startup network
     startupNetwork();
 }
@@ -268,16 +264,30 @@ void MainWindow::closeEvent(QCloseEvent *event)
     qDebug() << "BitMail quit! Bye";
     event->accept();
 }
-//! [4]
-void MainWindow::onBuddyDoubleClicked(QListWidgetItem *actItem)
+void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
 {
     if (actItem == NULL){
         return ;
     }
-    QString qsEmail = actItem->data(Qt::UserRole).toString();
+    if (col != 0){
+        return ;
+    }
+    if (!actItem->data(0, Qt::UserRole).isValid()
+            || actItem->data(0, Qt::UserRole).isNull()){
+        return ;
+    }
+    QString qsEmail = actItem->data(0, Qt::UserRole).toString();
+    if (qsEmail.isEmpty()){
+        return ;
+    }
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(qsEmail.toStdString()));
     QString qsCertID = QString::fromStdString(m_bitmail->GetFriendID(qsEmail.toStdString()));
-    CertDialog certDialog(this);
+    CertDialog certDialog(m_bitmail, this);
+
+    do {
+        connect(&certDialog, SIGNAL(newSubscribe(QString)), this, SLOT(onNewSubscribe(QString)));
+    }while(0);
+
     certDialog.SetEmail(qsEmail);
     certDialog.SetNick(qsNick);
     certDialog.SetCertID(qsCertID);
@@ -366,13 +376,13 @@ void MainWindow::onSendBtnClicked()
     // toUtf8() use UTF8 codec
     // QTextCodec::codecForLocale() guess the MOST suitable codec for current locale,
     // if application has not set codec for locale by setCodecForLocale;
-    std::string sMsg = qsMsg.toStdString();
+
     QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-    if (blist->currentItem() == NULL){
+    if (btree->currentItem() == NULL){
         statusBar()->showMessage(tr("no current buddy selected"), 3000);
         return ;
     }
-    QString qsTo = blist->currentItem()->data(Qt::UserRole).toString();
+    QString qsTo = btree->currentItem()->data(0, Qt::UserRole).toString();
 
     QJsonObject joMsg;
     joMsg["time"]   = QDateTime::currentDateTime().toMSecsSinceEpoch();
@@ -508,20 +518,6 @@ void MainWindow::onNewMessage(const QString &from, const QString &msg, const QSt
     //GUI notification
     activateWindow();
 }
-void MainWindow::populateBuddies()
-{
-    // Add buddies
-    std::vector<std::string> vecEmails;
-    m_bitmail->GetFriends(vecEmails);
-    for (std::vector<std::string>::const_iterator it = vecEmails.begin()
-         ; it != vecEmails.end(); ++it)
-    {
-        std::string sBuddyNick = m_bitmail->GetFriendNick(*it);
-        QString qsNick = QString::fromStdString(sBuddyNick);
-        populateBuddy(QString::fromStdString(*it), qsNick);
-    }
-    return ;
-}
 void MainWindow::populateFriendTree(QTreeWidgetItem * node)
 {
     // Add buddies
@@ -536,18 +532,43 @@ void MainWindow::populateFriendTree(QTreeWidgetItem * node)
     }
     return ;
 }
-void MainWindow::populateBuddy(const QString &email, const QString &nick)
+void MainWindow::populateGroupTree(QTreeWidgetItem * node)
 {
-    QString qsItemDisplay = nick;
-    qsItemDisplay += "\n";
-    qsItemDisplay += "(";
-    qsItemDisplay += email;
-    qsItemDisplay += ")";
-    QListWidgetItem *buddy = new QListWidgetItem(QIcon(":/images/head.png"), qsItemDisplay);
-    buddy->setData(Qt::UserRole, QVariant(email));
-    blist->addItem(buddy);
+    // Add Groups
+    std::vector<std::string> vecGroups;
+    m_bitmail->GetGroups(vecGroups);
+    for (std::vector<std::string>::const_iterator it = vecGroups.begin()
+         ; it != vecGroups.end(); ++it)
+    {
+        QString qsGroupName = QString::fromStdString(*it);
+        std::vector<std::string> vecMembers;
+        m_bitmail->GetGroupMembers(*it, vecMembers);
+        (void )qsGroupName;
+        QStringList qslMembers;
+        for(std::vector<std::string>::const_iterator it_member = vecMembers.begin()
+            ; it_member != vecMembers.end(); it_member ++){
+            qslMembers.append(QString::fromStdString(*it));
+        }
+        populateGroupLeaf(node, qsGroupName, qslMembers);
+    }
     return ;
 }
+void MainWindow::populateSubscribeTree(QTreeWidgetItem * node)
+{
+    // Add buddies
+    std::vector<std::string> vecSubscribes;
+    m_bitmail->GetSubscribes(vecSubscribes);
+    for (std::vector<std::string>::const_iterator it = vecSubscribes.begin()
+         ; it != vecSubscribes.end(); ++it)
+    {
+        QString qsSub = QString::fromStdString(*it);
+        (void)qsSub;
+        QString qsNick = QString::fromStdString( m_bitmail->GetFriendNick(qsSub.toStdString()));
+        populateSubscribeLeaf(node, qsSub, qsNick);
+    }
+    return ;
+}
+
 void MainWindow::populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick)
 {
     QString qsItemDisplay = nick;
@@ -563,6 +584,35 @@ void MainWindow::populateFriendLeaf(QTreeWidgetItem * node, const QString &email
     node->addChild(buddy);
     return ;
 }
+
+void MainWindow::populateGroupLeaf(QTreeWidgetItem * node, const QString & groupname, const QStringList & members)
+{
+    QStringList qslBuddy;
+    qslBuddy.append(groupname);
+    QTreeWidgetItem * group = new QTreeWidgetItem(qslBuddy);
+    group->setIcon(0, QIcon(":/images/head.png"));
+    group->setData(0, Qt::UserRole, QVariant(members));
+    node->addChild(group);
+    return ;
+}
+
+
+void MainWindow::populateSubscribeLeaf(QTreeWidgetItem * node, const QString & email, const QString &nick)
+{
+    QString qsItemDisplay = nick;
+    qsItemDisplay += "\n";
+    qsItemDisplay += "(";
+    qsItemDisplay += email;
+    qsItemDisplay += ")";
+    QStringList qslBuddy;
+    qslBuddy.append(qsItemDisplay);
+    QTreeWidgetItem * sub = new QTreeWidgetItem(qslBuddy);
+    sub->setIcon(0, QIcon(":/images/head.png"));
+    sub->setData(0, Qt::UserRole, QVariant(email));
+    node->addChild(sub);
+    return ;
+}
+
 void MainWindow::clearMsgView()
 {
     return ;
@@ -572,7 +622,7 @@ void MainWindow::populateMsgView(const QString &email)
     (void )email;
     return ;
 }
-void MainWindow::onCurrentBuddy(QListWidgetItem * current, QListWidgetItem * previous)
+void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous)
 {
     (void)current;
     (void)previous;
@@ -644,12 +694,21 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
 }
 void MainWindow::onAddFriend(const QString &email)
 {
-    if (blist->findItems(email, Qt::MatchContains).size()){
+    if (btree->findItems(email, Qt::MatchContains).size()){
         // Already exist;
         return ;
     }
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
-    populateBuddy(email, qsNick);
+    populateFriendLeaf(nodeFriends, email, qsNick);
+}
+void MainWindow::onNewSubscribe(const QString & email)
+{
+    if (btree->findItems(email, Qt::MatchContains).size()){
+        // Already exist;
+        return ;
+    }
+    QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
+    populateSubscribeLeaf(nodeSubscribes, email, qsNick);
 }
 QString MainWindow::FormatBMMessage(bool fTx
                                     , const QString &from

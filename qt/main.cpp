@@ -204,8 +204,8 @@ namespace BMQTApplication {
         QJsonObject joBuddies;
         QJsonObject joGroups;
         (void)joGroups;
-        QJsonObject joSubscribes;
-        (void)joSubscribes;
+        QJsonArray jaSubscribes;
+        (void)jaSubscribes;
         QJsonObject joProxy;
         if (joRoot.contains("Profile")){
             joProfile = joRoot["Profile"].toObject();
@@ -260,9 +260,9 @@ namespace BMQTApplication {
         }
         bm->InitNetwork(qsTxUrl.toStdString(), qsTxLogin.toStdString(), qsTxPassword.toStdString()
                         , qsRxUrl.toStdString(), qsRxLogin.toStdString(), qsRxPassword.toStdString());
-        if (joRoot.contains("buddies"))
+        if (joRoot.contains("friends"))
         {
-            joBuddies = joRoot["buddies"].toObject();
+            joBuddies = joRoot["friends"].toObject();
             for(QJsonObject::const_iterator it = joBuddies.constBegin()
                 ; it != joBuddies.constEnd(); it++)
             {
@@ -274,6 +274,36 @@ namespace BMQTApplication {
                 }
             }
         }
+
+        do {
+            if (!joRoot.contains("groups")){
+                break;
+            }
+            joGroups = joRoot["groups"].toObject();
+            for (QJsonObject::const_iterator it = joGroups.constBegin()
+                 ; it != joGroups.constEnd()
+                 ; it ++){
+                QString qsGroupName = it.key();
+                bm->AddGroup(qsGroupName.toStdString());
+                QJsonArray jaMembers = it.value().toArray();
+                for (int i = 0; i < jaMembers.size(); i++){
+                    QString qsMember = jaMembers.at(i).toString();
+                    bm->AddGroupMember(qsGroupName.toStdString(), qsMember.toStdString());
+                }
+            }
+        }while(0);
+
+        do{
+            if (!joRoot.contains("subscribes")){
+                break;
+            }
+            jaSubscribes = joRoot["subscribes"].toArray();
+            for (int i = 0; i < jaSubscribes.size(); i++){
+                QString qsSub = jaSubscribes.at(i).toString();
+                bm->Subscribe(qsSub.toStdString());
+            }
+        }while(0);
+
         if (joRoot.contains("proxy")){
             joProxy = joRoot["proxy"].toObject();
             if (joProxy.contains("enable")){
@@ -319,8 +349,8 @@ namespace BMQTApplication {
         QJsonObject joBuddies;
         QJsonObject joGroups;     // Group chatting
         (void) joGroups;
-        QJsonObject joSubscribes; // Subscribing
-        (void) joSubscribes;
+        QJsonArray jaSubscribes; // Subscribing
+        (void) jaSubscribes;
         QJsonObject joProxy;
         joProfile["email"] = QString::fromStdString(bm->GetEmail());
         joProfile["nick"] = QString::fromStdString(bm->GetNick());
@@ -332,6 +362,7 @@ namespace BMQTApplication {
         joRx["url"] = QString::fromStdString(bm->GetRxUrl());
         joRx["login"] = QString::fromStdString(bm->GetRxLogin());
         joRx["password"] = QString::fromStdString(bm->Encrypt(bm->GetRxPassword()));
+        // friends
         std::vector<std::string > vecBuddies;
         bm->GetFriends(vecBuddies);
         for (std::vector<std::string>::const_iterator it = vecBuddies.begin(); it != vecBuddies.end(); ++it){
@@ -341,6 +372,33 @@ namespace BMQTApplication {
             QString qsEmail = QString::fromStdString(*it);
             joBuddies.insert(qsEmail, joBuddy);
         }
+        // Groups
+        std::vector<std::string> vecGroups;
+        bm->GetGroups(vecGroups);
+        for (std::vector<std::string>::const_iterator it = vecGroups.begin()
+             ; it != vecGroups.end()
+             ; ++it){
+            const std::string sGroupName = *it;
+            std::vector<std::string> vecMembers;
+            bm->GetGroupMembers(sGroupName, vecMembers);
+            QJsonArray jaMembers;
+            for (std::vector<std::string>::const_iterator it_member = vecMembers.begin()
+                 ; it_member != vecMembers.end()
+                 ; ++it_member){
+                const std::string sMember = *it_member;
+                jaMembers.append(((QString::fromStdString(sMember))));
+            }
+            joGroups.insert(QString::fromStdString(sGroupName), jaMembers);
+        }
+        // Subscribes
+        std::vector<std::string> vecSubscribes;
+        bm->GetSubscribes(vecSubscribes);
+        for (std::vector<std::string>::const_iterator it = vecSubscribes.begin()
+             ; it != vecSubscribes.end()
+             ; ++it){
+            jaSubscribes.append(QString::fromStdString(*it));
+        }
+        // proxy
         joProxy["enable"] = bm->EnableProxy();
         do {
             joProxy["ip"] = QString::fromStdString( bm->GetProxyIp());
@@ -353,8 +411,10 @@ namespace BMQTApplication {
         joRoot["Profile"] = joProfile;
         joRoot["tx"] = joTx;
         joRoot["rx"] = joRx;
-        joRoot["buddies"] = joBuddies;
+        joRoot["friends"] = joBuddies;
         joRoot["proxy"] = joProxy;
+        joRoot["groups"] = joGroups;
+        joRoot["subscribes"] = jaSubscribes;
         QJsonDocument jdoc(joRoot);
         QFile file(qsProfile);
         if (!file.open(QFile::WriteOnly | QFile::Text)) {

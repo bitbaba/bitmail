@@ -4,10 +4,12 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QPlainTextEdit>
+#include <bitmailcore/bitmail.h>
 
-CertDialog::CertDialog(QWidget *parent) :
+CertDialog::CertDialog(BitMail * bm, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::CertDialog)
+    ui(new Ui::CertDialog),
+    m_bitmail(bm)
 {
     ui->setupUi(this);
 
@@ -66,4 +68,17 @@ void CertDialog::CertDialog::SetCertID(const QString & cid)
 QString CertDialog::CertDialog::GetCertID() const
 {
     return m_leCertID->text();
+}
+
+void CertDialog::on_btnSubscribe_clicked()
+{
+    QString qsSub = GetEmail();
+    if (m_bitmail->Subscribed(qsSub.toStdString())){
+        return ;
+    }
+    m_bitmail->Subscribe(qsSub.toStdString());
+
+    emit newSubscribe(qsSub);
+
+    return ;
 }

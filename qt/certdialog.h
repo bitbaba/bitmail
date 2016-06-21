@@ -7,6 +7,7 @@
 class QLineEdit;
 class QLabel;
 class QPlainTextEdit;
+class BitMail;
 
 namespace Ui {
 class CertDialog;
@@ -17,7 +18,7 @@ class CertDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CertDialog( QWidget *parent = 0);
+    explicit CertDialog( BitMail * bm, QWidget *parent = 0);
     ~CertDialog();
 
     void SetEmail(const QString & e);
@@ -34,9 +35,14 @@ private slots:
 
     void on_buttonBox_rejected();
 
+    void on_btnSubscribe_clicked();
+
+signals:
+    void newSubscribe(const QString & sub);
+
 private:
     Ui::CertDialog *ui;
-
+    BitMail   *m_bitmail;
     QLineEdit *m_leEmail;
     QLineEdit *m_leNick;
     QLineEdit *m_leCertID;
