@@ -115,8 +115,7 @@ private:
     void startupNetwork();
     void shutdownNetwork();
 private:
-    QTextEdit *textEdit;
-    //QListWidget * blist;
+    QPlainTextEdit *textEdit;
     QTreeWidget * btree;
     QTreeWidgetItem * nodeFriends;
     QTreeWidgetItem * nodeGroups;

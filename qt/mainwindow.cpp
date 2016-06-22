@@ -102,7 +102,7 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     btree = new QTreeWidget;
     btree->setIconSize(QSize(48,48));
-    btree->setFixedWidth(256);
+    btree->setFixedWidth(320);
     btree->setColumnCount(1);
     QStringList columns;
     columns.append(tr("Tree"));
@@ -129,10 +129,12 @@ MainWindow::MainWindow(BitMail * bitmail)
     msgView = new QListWidget;
     msgView->setIconSize(QSize(48,48));
     msgView->setSpacing(2);
-    textEdit = new QTextEdit;
-    textEdit->setMinimumWidth(400);
+
+    textEdit = new QPlainTextEdit;
+    textEdit->setMinimumWidth(480);
     textEdit->setFixedHeight(96);
     textEdit->setFocus();
+
     btnSend = new QPushButton(tr("Send"));
     btnSend->setToolTip(tr("Ctrl+Enter"));
     btnSend->setFixedWidth(64);
@@ -398,7 +400,7 @@ void MainWindow::onSendBtnClicked()
 
     QJsonDocument jdoc(joMsg);
 
-    QString qsWrappedMsg = jdoc.toJson();
+    QString qsWrappedMsg = qsMsg; (void)jdoc;//jdoc.toJson();
 
     emit readyToSend(qsTo, qsWrappedMsg);
     populateMessage(true
@@ -655,7 +657,7 @@ void MainWindow::onInviteBtnClicked()
     joMsg["msg"]    = qsWhisper;
     QJsonDocument jdoc(joMsg);
 
-    QString qsWrappedMsg = jdoc.toJson();
+    QString qsWrappedMsg = qsWhisper; (void)jdoc;//jdoc.toJson();
 
     if (!qsEmail.isEmpty()){
 
@@ -754,7 +756,9 @@ QString MainWindow::FormatBMMessage(bool fTx
     qsMessageDisplay += tr(" Say: ");
     qsMessageDisplay += qsFullTo;
     qsMessageDisplay += "\n\n";
-    qsMessageDisplay += msg;
+    //TODO: Long message populated into listwidget, will make bitmail-qt in low performance.
+    // Any suggestions?
+    qsMessageDisplay += msg.mid(0, 140);
     qsMessageDisplay += "\n\n";
     return qsMessageDisplay;
 }
