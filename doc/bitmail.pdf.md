@@ -1,18 +1,17 @@
-#BitMail: A Distributed Implementation of Secure Instant Messager
+#BitMail: a peer-to-peer secure instant messenger client
 
 ##Abstract
 
+##Introduction
 
-##Priciples
+##Peer
 
+##Group
 
-##Implementation
+##Subscribe
 
+##Certificate
 
-##Features
-
-
-##Todo list
-
+##Network
 
 ##Acknowledgement
