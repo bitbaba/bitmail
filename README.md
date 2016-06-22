@@ -13,11 +13,13 @@
 http://bitbaba.github.io/bitmail/index.html
 
 ###Introduction
-- Bitmail(比特信) is a simple chat client currently based on email exchange network, which is securely signed & encrypted with RSA certificate(openssl, https://github.com/openssl/openssl). 
+- Bitmail(比特信) is a purly Peer-to-Peer instant messenger client, to help people to communicate with each other securely. Authentication and security is based on PKI(Public Key Infrastructure), powered by (openssl, https://github.com/openssl/openssl). 
 
-- As you known that, Sending a message with your signature, will help your friend to understand that, this email is definitely sent from yourself, not any cracker.Sending a message by encrypted this message with your friend's certificate, will make sure that,this message is not viewed by anyone else.
+- To send your friend a message with your signature, will help your friend to known that, this email is definitely sent from yourself, not from any middle-man.
 
-- The network is now based on traditional mail exchange system(libcurl, https://github.com/bagder/curl), which has more delay than IM servers or IRC network, and in the future, the MX network will be replaced to other communication network. 
+- To send your friend a message encrypted by your friend's certificate, will make sure that, this message is not viewed by anyone while transferring.
+
+- The rx/tx network is now based on MX(eMail eXchange) protocols, e.g. imap(s) & smtp(s), and powered by (libcurl, https://github.com/bagder/curl). There is more delay than real IM or IRC network. But the MX network can be replaced by (or upgraded to) other transfer networks. 
 
 - Talking with your friends, is your right. no one can supervise it.
     
@@ -28,19 +30,11 @@ http://bitbaba.github.io/bitmail/index.html
 - invite friend(s) or accept friend(s) by exchange CertID.
 
 ###TODO
-- Web frontend GUI;
 - Mobile;
-- UPnP;
-- Proxy;
+- Daemon & UPnP;
 - Bitcoin wallet integration;
-- Log;
-- new message GUI notification;
-- bugfix: add friend, no duplicated;
-- local message cache, recall history message while selecting a friend;
-- configuration optimization;
-- liguist
+- Qt-GUI: translations, rich-text support, recall of history message-queue;
 
-                           
 
 ### Welcome to contribute
 - Anyone with Qt, web, mobile, or secure network programming knowledge is welcome.
