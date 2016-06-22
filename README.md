@@ -23,7 +23,7 @@ http://bitbaba.github.io/bitmail/index.html
 
 - Free-speaking is your right. No one can supervise it.
 
-- White paper: [bitmail.pdf](https://github.com/bitbaba/bitmail/doc/bitmail.pdf)
+- White paper: [bitmail.pdf.md](https://github.com/bitbaba/bitmail/doc/bitmail.pdf.md)
     
 ###Features
 - secure talking with trusted buddies.
