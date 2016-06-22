@@ -57,7 +57,9 @@
 #include "certdialog.h"
 #include "invitedialog.h"
 #include "messagedialog.h"
+#include "walletdialog.h"
 #include "main.h"
+
 //! [1]
 MainWindow::MainWindow(BitMail * bitmail)
     : m_bitmail(bitmail)
@@ -331,6 +333,7 @@ void MainWindow::createActions()
     do{
         walletAct = new QAction(QIcon(":/images/wallet.s.png"), tr("&BitCoinWallet"), this);
         walletAct->setStatusTip(tr("Configure Bitcoin wallet"));
+        connect(walletAct, SIGNAL(triggered()), this, SLOT(onWalletBtnClicked()));
     }while(0);
 }
 //! [24]
@@ -474,6 +477,10 @@ void MainWindow::documentWasModified()
 //! [16]
 void MainWindow::onWalletBtnClicked()
 {
+    walletDialog walletdlg(this);
+    if (walletdlg.exec() != QDialog::Accepted){
+        return ;
+    }
 }
 void MainWindow::populateMessage(bool fTx
                                  , const QString &from
