@@ -139,7 +139,11 @@ public:
 
     std::string GetRxPassword() const;
 
-    // RTx Routines;
+    // RTx Routines
+    /**
+     * SendMsg() & GroupMsg() are Primitives of bitmail
+     * PublishMsg() call GroupMsg().
+     */
     int SendMsg(const std::string & to, const std::string & msg, RTxProgressCB cb = NULL, void * userp = NULL);
 
     int GroupMsg(const std::vector<std::string> & to, const std::string & msg, RTxProgressCB cb = NULL, void * userp = NULL);
@@ -194,7 +198,7 @@ public:
 
     std::string GetFriendID(const std::string & email) const;
 
-    // Buddy
+    // Friends
     int AddFriend(const std::string & email, const std::string & certpem);
 
     int RemoveFriend(const std::string & email);
