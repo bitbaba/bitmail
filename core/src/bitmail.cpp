@@ -760,10 +760,6 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
         }
     }
 
-    if (sFrom.empty()){
-        return bmNoFrom;
-    }
-
     if (std::string::npos == mimemsg.find("MIME-Version:")){
         return bmNoMimeBody;
     }else{
@@ -773,7 +769,6 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     /**
     * Crypto filter
     */
-
     if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){
         // Envelopped data
         sMimeBody = self->m_profile->Decrypt(sMimeBody);
