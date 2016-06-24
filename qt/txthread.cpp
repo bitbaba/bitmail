@@ -20,8 +20,9 @@ TxThread::~TxThread()
 
 void TxThread::onSendMessage(const QString &to, const QString &msg)
 {
-    (void)to; (void)msg;
-    BitMailMessage bmMsg("", to, msg, "");
+    QStringList vecTo;
+    vecTo.append(to);
+    BitMailMessage bmMsg("", vecTo, msg, "");
     if (!m_txq.writable(25/*milliseconds*/)){
 
     }else{
@@ -39,15 +40,19 @@ void TxThread::run()
     while(!m_fStopFlag){
         if (m_txq.readable(6*1000)){
             BitMailMessage msg = m_txq.pop();
-            (void)msg;
-            QString qsFrom = msg.from();
-            (void)qsFrom;
-            QString qsTo = msg.to();
+            QStringList qslTo = msg.to();
+            std::vector<std::string> vecTo;
+            for (QStringList::iterator it = qslTo.begin(); it != qslTo.end(); it++){
+                vecTo.push_back(it->toStdString());
+            }
             QString qsMsg = msg.msg();
             if (m_bitmail){
-                m_bitmail->SendMsg(qsTo.toStdString(), qsMsg.toStdString()
-                                   , TxProgressHandler, this);
+                m_bitmail->SendMsg(vecTo
+                                   , qsMsg.toStdString()
+                                   , TxProgressHandler
+                                   , this);
             }
+
         }
     }
 

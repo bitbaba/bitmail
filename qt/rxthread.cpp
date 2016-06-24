@@ -64,27 +64,22 @@ void RxThread::onInboxPollEvent()
 
 int MessageEventHandler(const char * from, const char * msg, const char * certid, const char * cert, void * p)
 {
-    (void)from;    (void)msg;   (void)certid;  (void)cert;    (void)p;
     RxThread * self = (RxThread *)p;
-    (void) self;
-
     QString qsFrom = QString::fromStdString(from);
     QString qsMsg  = QByteArray::fromBase64(QByteArray(msg));
     QString qsCertID = QString::fromStdString(certid);
     QString qsCert = QByteArray::fromBase64(QByteArray(cert));
 
     self->NotifyNewMessage(qsFrom, qsMsg, qsCertID, qsCert);
-    return 0;
+    return bmOk;
 }
 
 int RxProgressHandler(RTxState state, const char *info, void *userptr)
 {
     (void)state;
-    (void)info;
-    (void)userptr;
     RxThread * self = (RxThread *)userptr;
     self->NotifyProgress(QString::fromLatin1(info));
-    return 0;
+    return bmOk;
 }
 
 

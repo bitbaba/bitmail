@@ -6,9 +6,9 @@ BitMailMessage::BitMailMessage()
 
 }
 
-BitMailMessage::BitMailMessage(const QString &f, const QString &t, const QString &m, const QString & c)
-    : m_from(f)
-    , m_to(t)
+BitMailMessage::BitMailMessage(const QString &from, const QStringList & vecTo, const QString &m, const QString & c)
+    : m_from(from)
+    , m_to(vecTo)
     , m_msg(m)
     , m_cert(c)
 {
@@ -25,7 +25,7 @@ QString BitMailMessage::from() const
     return m_from;
 }
 
-QString BitMailMessage::to() const
+QStringList BitMailMessage::to() const
 {
     return m_to;
 }
@@ -45,7 +45,7 @@ void BitMailMessage::setFrom(const QString &f)
     m_from = f;
 }
 
-void BitMailMessage::setTo(const QString &t)
+void BitMailMessage::setTo(const QStringList &t)
 {
     m_to = t;
 }

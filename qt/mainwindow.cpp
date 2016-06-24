@@ -387,7 +387,24 @@ void MainWindow::onSendBtnClicked()
         statusBar()->showMessage(tr("no current buddy selected"), 3000);
         return ;
     }
-    QString qsTo = btree->currentItem()->data(0, Qt::UserRole).toString();
+    if (btree->currentItem() == NULL){
+        return ;
+    }
+    QVariant qvData = btree->currentItem()->data(0, Qt::UserRole);
+    if (!qvData.isValid() || qvData.isNull()){
+        return ;
+    }
+    QStringList qslData = qvData.toStringList();
+    if (qslData.size() < 2){
+        return ;
+    }
+    QString qsType = qslData.at(0);
+    if (qsType != "friend" && qsType != "group" && qsType != "subscribe"){
+        return ;
+    }
+
+    // TODO: Group & Publish
+    QString qsTo = qslData.mid(1).at(0);
 
     QJsonObject joMsg;
     joMsg["time"]   = QDateTime::currentDateTime().toMSecsSinceEpoch();
@@ -589,7 +606,10 @@ void MainWindow::populateFriendLeaf(QTreeWidgetItem * node, const QString &email
     qslBuddy.append(qsItemDisplay);
     QTreeWidgetItem *buddy = new QTreeWidgetItem(qslBuddy);
     buddy->setIcon(0, QIcon(":/images/head.png"));
-    buddy->setData(0, Qt::UserRole, QVariant(email));
+    QStringList qslData;
+    qslData.append("friend");
+    qslData.append(email);
+    buddy->setData(0, Qt::UserRole, QVariant(qslData));
     node->addChild(buddy);
     return ;
 }
@@ -599,8 +619,11 @@ void MainWindow::populateGroupLeaf(QTreeWidgetItem * node, const QString & group
     QStringList qslBuddy;
     qslBuddy.append(groupname);
     QTreeWidgetItem * group = new QTreeWidgetItem(qslBuddy);
-    group->setIcon(0, QIcon(":/images/head.png"));
-    group->setData(0, Qt::UserRole, QVariant(members));
+    group->setIcon(0, QIcon(":/images/group.png"));
+    QStringList qslData;
+    qslData.append("group");
+    qslData += members;
+    group->setData(0, Qt::UserRole, QVariant(qslData));
     node->addChild(group);
     return ;
 }
@@ -616,8 +639,11 @@ void MainWindow::populateSubscribeLeaf(QTreeWidgetItem * node, const QString & e
     QStringList qslBuddy;
     qslBuddy.append(qsItemDisplay);
     QTreeWidgetItem * sub = new QTreeWidgetItem(qslBuddy);
-    sub->setIcon(0, QIcon(":/images/head.png"));
-    sub->setData(0, Qt::UserRole, QVariant(email));
+    sub->setIcon(0, QIcon(":/images/subscribe.png"));
+    QStringList qslData;
+    qslData.append("subscribe");
+    qslData.append(email);
+    sub->setData(0, Qt::UserRole, QVariant(qslData));
     node->addChild(sub);
     return ;
 }
@@ -633,9 +659,25 @@ void MainWindow::populateMsgView(const QString &email)
 }
 void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous)
 {
-    (void)current;
-    (void)previous;
-    btnSend->setEnabled(true);
+    qDebug() << (previous ? previous->text(0) : "null") << " --> " << (current ? current->text(0) : "null") << "!";
+    QVariant qvData = current->data(0, Qt::UserRole);
+    if (qvData.isNull() || !qvData.isValid()){
+        btnSend->setEnabled(false);
+        return ;
+    }
+    QStringList qslData = qvData.toStringList();
+    if (qslData.size() < 2){
+        btnSend->setEnabled(false);
+        return ;
+    }
+    QString qsType = qslData.at(0);
+    if (qsType == "friend" || qsType == "group" || qsType == "subscribe"){
+        btnSend->setEnabled(true);
+        return ;
+    }
+
+    btnSend->setEnabled(false);
+    return ;
 }
 void MainWindow::onInviteBtnClicked()
 {
