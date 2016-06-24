@@ -101,11 +101,6 @@ public:
      */
 public:
     int SendMsg( const std::string & from
-               , const std::string & to
-               , const std::string & msg
-               , RTxProgressCB cb = NULL, void * userp = NULL);
-
-    int SendMsg( const std::string & from
                , const std::vector<std::string> & to
                , const std::string & encSignedMail
                , RTxProgressCB cb = NULL, void * userp = NULL);

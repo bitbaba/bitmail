@@ -140,17 +140,7 @@ public:
     std::string GetRxPassword() const;
 
     // RTx Routines
-    /**
-     * SendMsg(friend, ...) & SendMsg(vector<friend>, ...) are Primitives of bitmail
-     * PublishMsg() & GroupMsg() use them.
-     */
-    int SendMsg(const std::string & to, const std::string & msg, RTxProgressCB cb = NULL, void * userp = NULL);
-
     int SendMsg(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
-
-    int GroupMsg(const std::vector<std::string> & to, const std::string & msg, RTxProgressCB cb = NULL, void * userp = NULL);
-
-    int PublishMsg(const std::vector<std::string> & to, const std::string & msg, RTxProgressCB cb = NULL, void * userptr = NULL);
 
     int CheckInbox(RTxProgressCB cb = NULL, void * userp = NULL);
 

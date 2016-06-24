@@ -232,44 +232,9 @@ std::string BitMail::GetRxPassword() const
     return m_mc->GetRxPassword();
 }
 
-int BitMail::SendMsg(const std::string &email_to, const std::string &msg
-                    , RTxProgressCB cb, void * userp)
-{
-    if (msg.empty()){
-        return bmInvalidParam;
-    }
-
-    std::string sSignedMsg = m_profile->Sign(msg);
-    if (sSignedMsg.empty()){
-        return bmSignFail;
-    }
-
-    std::string sEncryptedMsg = "";
-    if (m_buddies.find(email_to) != m_buddies.end()){
-        CX509Cert buddy;
-        buddy.LoadCertFromPem(m_buddies[email_to]);
-        if (buddy.IsValid()){
-            sEncryptedMsg = buddy.Encrypt(sSignedMsg);
-            if (sEncryptedMsg.empty()){
-                return bmEncryptFail;
-            }
-        }
-    }
-
-    if (m_mc->SendMsg( m_profile->GetEmail()
-                            , email_to
-                            , sEncryptedMsg.empty()
-                            ? sSignedMsg
-                            : sEncryptedMsg
-                            , cb
-                            , userp)){
-        return bmTxFail;
-    }
-    return bmOk;
-}
-
-int BitMail::SendMsg(const std::vector<std::string> &email_to, const std::string &msg
-                     , RTxProgressCB cb, void * userp)
+int BitMail::SendMsg(const std::vector<std::string> & friends
+		, const std::string & msg
+        , RTxProgressCB cb, void * userp)
 {
     if (msg.empty()){
         return bmInvalidParam;
@@ -285,8 +250,8 @@ int BitMail::SendMsg(const std::vector<std::string> &email_to, const std::string
     }
 
     std::vector<CX509Cert> vecTo;
-    for (std::vector<std::string>::const_iterator it = email_to.begin();
-            it != email_to.end();
+    for (std::vector<std::string>::const_iterator it = friends.begin();
+            it != friends.end();
             ++it)
     {
         if (m_buddies.find(*it) != m_buddies.end()){
@@ -297,14 +262,14 @@ int BitMail::SendMsg(const std::vector<std::string> &email_to, const std::string
             }
             vecTo.push_back(buddy);
         }else{
-            //TODO: Ignore, and send signed-only message?
-            // Or, Abort the entire process.
-            // It seems abnormal to Group-Send out Signed-only message.
-            return bmNoBuddy;
+        	// Degrade to signed-only message
+        	vecTo.clear();
+        	break;
         }
     }
 
-    std::string sEncryptedMsg = "";
+    std::string sEncryptedMsg = sSignedMsg;
+    // If certificates  not ready, degrade to send signed-only message.
     if (vecTo.size())
     {
         sEncryptedMsg = CX509Cert::MEncrypt(sSignedMsg, vecTo);
@@ -314,29 +279,13 @@ int BitMail::SendMsg(const std::vector<std::string> &email_to, const std::string
     }
 
     if (m_mc->SendMsg( m_profile->GetEmail()
-                            , email_to
+                            , friends
                             , sEncryptedMsg
                             , cb
                             , userp)){
         return bmTxFail;
     }
     return bmOk;
-}
-
-int BitMail::GroupMsg(const std::vector<std::string> & to
-						, const std::string & msg
-						, RTxProgressCB cb
-						, void * userptr)
-{
-	return bmOk;
-}
-
-int BitMail::PublishMsg(const std::vector<std::string> & to
-						, const std::string & msg
-						, RTxProgressCB cb
-						, void * userptr)
-{
-	return bmOk;
 }
 
 int BitMail::CheckInbox(RTxProgressCB cb, void * userp)
