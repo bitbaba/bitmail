@@ -5,6 +5,7 @@
 # include <bitmailcore/bitmail.h>
 # include <bitmailcore/email.h>
 # include <bitmailcore/x509cert.h>
+# include <json/json.h>
 
 # include <curl/curl.h>
 # include <openssl/cms.h>
@@ -267,7 +268,7 @@ int BitMail::SendMsg(const std::string &email_to, const std::string &msg
     return bmOk;
 }
 
-int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::string &msg
+int BitMail::SendMsg(const std::vector<std::string> &email_to, const std::string &msg
                      , RTxProgressCB cb, void * userp)
 {
     if (msg.empty()){
@@ -320,6 +321,14 @@ int BitMail::GroupMsg(const std::vector<std::string> &email_to, const std::strin
         return bmTxFail;
     }
     return bmOk;
+}
+
+int BitMail::GroupMsg(const std::vector<std::string> & to
+						, const std::string & msg
+						, RTxProgressCB cb
+						, void * userptr)
+{
+	return bmOk;
 }
 
 int BitMail::PublishMsg(const std::vector<std::string> & to

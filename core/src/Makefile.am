@@ -5,7 +5,10 @@ lib_LTLIBRARIES=libbitmailcore.la
 libbitmailcore_la_SOURCES= \
     bitmail.cpp \
     x509cert.cpp \
-    email.cpp 
+    email.cpp \
+	json/json_reader.cpp \
+	json/json_value.cpp \
+	json/json_writer.cpp 
 
 libbitmailcore_la_CXXFLAGS  = -DCURL_STATICLIB
 libbitmailcore_la_LDFLAGS   = -no-undefined -export-all-symbols -compat-implib #-out-implib libbitmailcore.dll.a
