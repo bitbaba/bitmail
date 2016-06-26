@@ -102,10 +102,11 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     btree = new QTreeWidget;
     btree->setIconSize(QSize(48,48));
-    btree->setFixedWidth(320);
+    btree->setFixedWidth(200);
     btree->setColumnCount(1);
+    btree->setFont(QFont("Arial", 8));
     QStringList columns;
-    columns.append(tr("Tree"));
+    columns.append(tr("Contact"));
     btree->setHeaderLabels(columns);
 
     nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")));
@@ -129,11 +130,13 @@ MainWindow::MainWindow(BitMail * bitmail)
     msgView = new QListWidget;
     msgView->setIconSize(QSize(48,48));
     msgView->setSpacing(2);
+    msgView->setFont(QFont("Arial", 8));
 
     textEdit = new QPlainTextEdit;
     textEdit->setMinimumWidth(480);
-    textEdit->setFixedHeight(96);
+    textEdit->setFixedHeight(80);
     textEdit->setFocus();
+    textEdit->setFont(QFont("Arial", 8));
 
     btnSend = new QPushButton(tr("Send"));
     btnSend->setToolTip(tr("Ctrl+Enter"));
@@ -149,8 +152,8 @@ MainWindow::MainWindow(BitMail * bitmail)
     rightLayout->addLayout(btnLayout);
     mainLayout->addLayout(rightLayout);
     QWidget * wrap = new QWidget(this);
-    wrap->setMinimumWidth(720);
-    wrap->setMinimumHeight(640);
+    wrap->setMinimumWidth(560);
+    wrap->setMinimumHeight(420);
     wrap->setLayout(mainLayout);
     setCentralWidget(wrap);
     // Add signals

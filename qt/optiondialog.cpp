@@ -16,13 +16,19 @@ OptionDialog::OptionDialog(bool fNew, QWidget *parent) :
     do {
         m_leEmail        = findChild<QLineEdit*>("leEmail");
         if (!m_fNew) m_leEmail->setEnabled(false);
-        else m_leEmail->setPlaceholderText("someone@somesite.net");
+        else {
+            m_leEmail->setPlaceholderText("someone@somesite.net");
+            m_leEmail->setFocus();
+        }
         m_leEmail->setValidator(new QRegExpValidator(QRegExp("[_a-zA-Z0-9.]+@[a-zA-Z0-9.]+"), m_leEmail));
         m_leNick         = findChild<QLineEdit*>("leNick");
         if (!m_fNew) m_leNick->setEnabled(false);
         m_sbBits         = findChild<QSpinBox*>("sbBits");
         if (!m_fNew) m_sbBits->setEnabled(false);
         m_lePassphrase   = findChild<QLineEdit*>("lePassphrase");
+        if (!m_fNew){
+            m_lePassphrase->setFocus();
+        }
     }while(0);//Profile settings
 
     do {
