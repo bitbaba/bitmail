@@ -133,7 +133,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     msgView->setFont(QFont("Arial", 8));
 
     textEdit = new QPlainTextEdit;
-    textEdit->setMinimumWidth(480);
+    textEdit->setMinimumWidth(400);
     textEdit->setFixedHeight(80);
     textEdit->setFocus();
     textEdit->setFont(QFont("Arial", 8));
