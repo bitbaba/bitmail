@@ -58,6 +58,7 @@
 #include "invitedialog.h"
 #include "messagedialog.h"
 #include "walletdialog.h"
+#include "rssdialog.h"
 #include "main.h"
 
 //! [1]
@@ -340,6 +341,11 @@ void MainWindow::createActions()
         walletAct->setStatusTip(tr("Configure Bitcoin wallet"));
         connect(walletAct, SIGNAL(triggered()), this, SLOT(onWalletBtnClicked()));
     }while(0);
+    do{
+        rssAct = new QAction(QIcon(":/images/subscribe.png"), tr("&rss"), this);
+        rssAct->setStatusTip(tr("RSS"));
+        connect(rssAct, SIGNAL(triggered()), this, SLOT(onRssBtnClicked()));
+    }while(0);
 }
 //! [24]
 //! [29] //! [30]
@@ -351,6 +357,8 @@ void MainWindow::createToolBars()
     editToolBar->addAction(inviteAct);
     walletToolbar = addToolBar(tr("Wallet"));
     walletToolbar->addAction(walletAct);
+    rssToolbar = addToolBar(tr("RSS"));
+    rssToolbar->addAction(rssAct);
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->addAction(emojAct);
     chatToolbar->addAction(snapAct);
@@ -504,6 +512,12 @@ void MainWindow::onWalletBtnClicked()
         return ;
     }
 }
+void MainWindow::onRssBtnClicked()
+{
+    RssDialog rssDialog;
+    rssDialog.exec();
+}
+
 void MainWindow::populateMessage(bool fTx
                                  , const QString &from
                                  , const QString & to

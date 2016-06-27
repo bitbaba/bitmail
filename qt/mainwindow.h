@@ -79,6 +79,7 @@ private slots:
     void onConfigBtnClicked();
     void onPayBtnClicked();
     void onWalletBtnClicked();
+    void onRssBtnClicked();
     void onNewMessage(const QString & from, const QString & msg, const QString & certid, const QString & cert);
 
     void onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous);
@@ -125,6 +126,7 @@ private:
     QToolBar *editToolBar;
     QToolBar *chatToolbar;
     QToolBar *walletToolbar;
+    QToolBar *rssToolbar;
     QToolBar *netToolbar;
     QPushButton * btnSend;
     QAction *configAct;
@@ -137,6 +139,7 @@ private:
     QAction *liveAct;
     QAction *payAct;
     QAction *walletAct;
+    QAction *rssAct;
 private:
     BitMail *m_bitmail;
     PollThread *m_pollth;
