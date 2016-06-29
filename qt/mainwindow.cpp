@@ -125,6 +125,10 @@ MainWindow::MainWindow(BitMail * bitmail)
     populateSubscribeTree(nodeSubscribes);
     btree->addTopLevelItem(nodeSubscribes);
 
+    nodeStrangers = new QTreeWidgetItem(btree, QStringList(tr("Strangers")));
+    nodeStrangers->setIcon(0, QIcon(":/images/stranger.png"));
+    btree->addTopLevelItem(nodeStrangers);
+
     leftLayout->addWidget(btree);
 
     mainLayout->addLayout(leftLayout);
@@ -178,15 +182,19 @@ void MainWindow::startupNetwork()
     m_pollth = new PollThread(m_bitmail);
     m_rxth = (new RxThread(m_bitmail));
     m_txth = (new TxThread(m_bitmail));
-    connect(this, SIGNAL(readyToSend(QString,QString)), m_txth, SLOT(onSendMessage(QString,QString)));
+
     connect(m_pollth, SIGNAL(inboxPollEvent()), m_rxth, SLOT(onInboxPollEvent()));
-    connect(m_rxth, SIGNAL(gotMessage(QString,QString, QString,QString)), this, SLOT(onNewMessage(QString,QString, QString,QString)));
     connect(m_pollth, SIGNAL(done()), this, SLOT(onPollDone()));
     connect(m_pollth, SIGNAL(inboxPollProgress(QString)), this, SLOT(onPollProgress(QString)));
+
+    connect(m_rxth, SIGNAL(gotMessage(QString,QString, QString,QString)), this, SLOT(onNewMessage(QString,QString, QString,QString)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
     connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
+
+    connect(this, SIGNAL(readyToSend(QStringList,QString)), m_txth, SLOT(onSendMessage(QStringList,QString)));
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
     connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
+
     m_pollth->start(); m_rxth->start(); m_txth->start();
 }
 void MainWindow::shutdownNetwork()
@@ -415,7 +423,7 @@ void MainWindow::onSendBtnClicked()
     }
 
     // TODO: Group & Publish
-    QString qsTo = qslData.mid(1).at(0);
+    QStringList qslTo = qslData.mid(1);
 
     QJsonObject joMsg;
     joMsg["time"]   = QDateTime::currentDateTime().toMSecsSinceEpoch();
@@ -430,10 +438,11 @@ void MainWindow::onSendBtnClicked()
 
     QString qsWrappedMsg = qsMsg; (void)jdoc;//jdoc.toJson();
 
-    emit readyToSend(qsTo, qsWrappedMsg);
+    emit readyToSend(qslTo, qsWrappedMsg);
+
     populateMessage(true
                     , qsFrom
-                    , qsTo
+                    , qslData
                     , qsWrappedMsg
                     , QString::fromStdString(m_bitmail->GetID())
                     , QString::fromStdString(m_bitmail->GetCert()));
@@ -514,31 +523,43 @@ void MainWindow::onWalletBtnClicked()
 }
 void MainWindow::onRssBtnClicked()
 {
-    RssDialog rssDialog;
+    RssDialog rssDialog(m_bitmail, this);
     rssDialog.exec();
 }
 
 void MainWindow::populateMessage(bool fTx
-                                 , const QString &from
-                                 , const QString & to
+                                 , const QString & from
+                                 , const QStringList & tolist
                                  , const QString & msg
                                  , const QString & certid
                                  , const QString & cert)
 {
     bool fIsBuddy =  (m_bitmail->IsFriend(from.toStdString(), cert.toStdString()));
+
     QString qsFromNick = fTx ? QString::fromStdString(m_bitmail->GetNick())
                              : QString::fromStdString(m_bitmail->GetFriendNick(from.toStdString()));
-    QString qsToNick = fTx ? QString::fromStdString(m_bitmail->GetFriendNick(to.toStdString()))
-                           : QString::fromStdString(m_bitmail->GetNick());
-    QString qsDisp = FormatBMMessage(fTx, from, qsFromNick, to, qsToNick, msg);
+
+    //TODO: extract email
+    QString to;
+    QString qsType = tolist.at(0);
+    to = tolist.at(1);
+    QString qsToNick = to;
+    if (qsType != "group"){
+        qsToNick = fTx ? QString::fromStdString(m_bitmail->GetFriendNick(to.toStdString()))
+                               : QString::fromStdString(m_bitmail->GetNick());
+    }
+    QString qsDisp = FormatBMMessage(from, qsFromNick, to, qsToNick, msg);
+
     QListWidgetItem * msgElt = new QListWidgetItem(QIcon(":/images/bubble.png")
                                                    , qsDisp);
     msgElt->setFlags((Qt::ItemIsSelectable
                       | Qt::ItemIsEditable)
                       | Qt::ItemIsEnabled);
+
     msgElt->setBackgroundColor((fTx)
                                ? (Qt::lightGray)
                                : (fIsBuddy ? (QColor(Qt::green).lighter()) : (Qt::red)));
+
     QStringList vecMsgData;
     vecMsgData.push_back(fTx ? "tx" : "rx");
     vecMsgData.push_back(from);
@@ -557,7 +578,10 @@ void MainWindow::onNewMessage(const QString &from, const QString &msg, const QSt
     (void) cert;
     QString qsTo = QString::fromStdString(m_bitmail->GetEmail());
     //show message
-    populateMessage(false, from, qsTo, msg, certid, cert);
+    QStringList qslTo;
+    qslTo.append("friend");
+    qslTo.append(qsTo);
+    populateMessage(false, from, qslTo, msg, certid, cert);
     //GUI notification
     activateWindow();
 }
@@ -590,7 +614,7 @@ void MainWindow::populateGroupTree(QTreeWidgetItem * node)
         QStringList qslMembers;
         for(std::vector<std::string>::const_iterator it_member = vecMembers.begin()
             ; it_member != vecMembers.end(); it_member ++){
-            qslMembers.append(QString::fromStdString(*it));
+            qslMembers.append(QString::fromStdString(*it_member));
         }
         populateGroupLeaf(node, qsGroupName, qslMembers);
     }
@@ -639,6 +663,7 @@ void MainWindow::populateGroupLeaf(QTreeWidgetItem * node, const QString & group
     group->setIcon(0, QIcon(":/images/group.png"));
     QStringList qslData;
     qslData.append("group");
+    qslData.append(groupname);
     qslData += members;
     group->setData(0, Qt::UserRole, QVariant(qslData));
     node->addChild(group);
@@ -720,11 +745,15 @@ void MainWindow::onInviteBtnClicked()
 
     if (!qsEmail.isEmpty()){
 
-        emit readyToSend(qsEmail, qsWrappedMsg);
+        QStringList qslTo;
+        qslTo.append("friend");
+        qslTo.append(qsEmail);
+
+        emit readyToSend(qslTo, qsWrappedMsg);
 
         populateMessage(true
                         , qsFrom
-                        , qsEmail
+                        , qslTo
                         , qsWrappedMsg
                         , QString::fromStdString(m_bitmail->GetID())
                         , QString::fromStdString(m_bitmail->GetCert()));
@@ -778,46 +807,27 @@ void MainWindow::onNewSubscribe(const QString & email)
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
     populateSubscribeLeaf(nodeSubscribes, email, qsNick);
 }
-QString MainWindow::FormatBMMessage(bool fTx
-                                    , const QString &from
+QString MainWindow::FormatBMMessage(const QString &from
                                     , const QString &fromnick
                                     , const QString &to
                                     , const QString &tonick
                                     , const QString &msg)
 {
-    QString qsFullFrom = "";
-    QString qsFullTo = "";
-    if (fTx){
-        qsFullFrom += "[";
-        qsFullFrom += tr("me");
-        qsFullFrom += "]";
-        qsFullTo += "[";
-        qsFullTo += tonick;
-        qsFullTo += "(";
-        qsFullTo += to;
-        qsFullTo += ")";
-        qsFullTo += "]";
-    }else{
-        qsFullFrom += "[";
-        qsFullFrom += fromnick;
-        qsFullFrom += "(";
-        qsFullFrom += from;
-        qsFullFrom += ")";
-        qsFullFrom += "]";
-        qsFullTo += "[";
-        qsFullTo += tr("me");
-        qsFullTo += "]";
-    }
+    QString qsFullFrom = QString("(%1[%2]) %3 (%4[%5])")
+            .arg(fromnick)
+            .arg(from)
+            .arg(tr("Says To"))
+            .arg(tonick)
+            .arg(to);
+
     QString qsNow = QDateTime::currentDateTime().toString();
     QString qsMessageDisplay = qsNow;
     qsMessageDisplay += "\n";
     qsMessageDisplay += qsFullFrom;
-    qsMessageDisplay += tr(" Say: ");
-    qsMessageDisplay += qsFullTo;
     qsMessageDisplay += "\n\n";
     //TODO: Long message populated into listwidget, will make bitmail-qt in low performance.
     // Any suggestions?
-    qsMessageDisplay += msg.mid(0, 140);
+    qsMessageDisplay += msg.mid(0, 512);
     qsMessageDisplay += "\n\n";
     return qsMessageDisplay;
 }

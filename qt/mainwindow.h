@@ -101,7 +101,7 @@ private:
     void createStatusBar();
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
-    void populateMessage(bool fTx, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert);
+    void populateMessage(bool fTx, const QString & from, const QStringList & to, const QString & msg, const QString & certid, const QString & cert);
 
     void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick);
     void populateGroupLeaf(QTreeWidgetItem * node, const QString & groupname, const QStringList & members);
@@ -112,7 +112,7 @@ private:
     void populateSubscribeTree(QTreeWidgetItem * node);
     void clearMsgView();
     void populateMsgView(const QString & email);
-    QString FormatBMMessage(bool fTx, const QString & from, const QString & fromnick, const QString & to, const QString & tonick, const QString & msg);
+    QString FormatBMMessage(const QString & from, const QString & fromnick, const QString & to, const QString & tonick, const QString & msg);
     void startupNetwork();
     void shutdownNetwork();
 private:
@@ -121,6 +121,7 @@ private:
     QTreeWidgetItem * nodeFriends;
     QTreeWidgetItem * nodeGroups;
     QTreeWidgetItem * nodeSubscribes;
+    QTreeWidgetItem * nodeStrangers;
     QListWidget *msgView;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
@@ -147,7 +148,7 @@ private:
     TxThread *m_txth;
     ShutdownDialog *m_shutdownDialog;
 signals:
-    void readyToSend(const QString & to, const QString & msg);
+    void readyToSend(const QStringList & to, const QString & msg);
 };
 //! [0]
 #endif

@@ -18,21 +18,14 @@ TxThread::~TxThread()
 
 }
 
-void TxThread::onSendMessage(const QString &to, const QString &msg)
+void TxThread::onSendMessage(const QStringList &to, const QString &msg)
 {
-    QStringList vecTo;
-    vecTo.append(to);
-    BitMailMessage bmMsg("", vecTo, msg, "");
+    BitMailMessage bmMsg("", to, msg, "");
     if (!m_txq.writable(25/*milliseconds*/)){
 
     }else{
         m_txq.push(bmMsg);
     }
-}
-
-void TxThread::onGroupMessage(const QStringList &to, const QString &msg)
-{
-    (void)to; (void)msg;
 }
 
 void TxThread::run()

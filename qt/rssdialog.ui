@@ -40,31 +40,31 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QCheckBox" name="checkBox">
+     <widget class="QRadioButton" name="raPublic">
       <property name="text">
        <string>Public</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QCheckBox" name="checkBox_3">
+     <widget class="QRadioButton" name="raPrivate">
       <property name="text">
        <string>Private</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QCheckBox" name="checkBox_2">
+     <widget class="QRadioButton" name="raGroup">
       <property name="text">
        <string>Group</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QComboBox" name="comboBox"/>
+     <widget class="QComboBox" name="cbbGroup"/>
     </item>
     <item>
-     <widget class="QTextEdit" name="textEdit">
+     <widget class="QTextEdit" name="txtContent">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>

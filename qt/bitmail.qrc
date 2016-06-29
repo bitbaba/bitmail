@@ -18,5 +18,6 @@
         <file>images/proxy.png</file>
         <file>images/group.png</file>
         <file>images/subscribe.png</file>
+        <file>images/stranger.png</file>
     </qresource>
 </RCC>

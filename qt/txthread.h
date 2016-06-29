@@ -19,19 +19,15 @@ public:
     void NotifyTxProgress(const QString & info);
 
 signals:
-    void messageSent(const QString & to
-                     , const QString & msg);
 
     void done();
 
     void txProgress(const QString & info);
 
 public slots:
-    void onSendMessage(const QString & to
+    void onSendMessage(const QStringList & to
                        , const QString & msg);
 
-    void onGroupMessage(const QStringList & to
-                        , const QString & msg);
 private:
     BitMail * m_bitmail;
     MsgQueue m_txq;
