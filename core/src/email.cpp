@@ -819,7 +819,7 @@ int CMailClient::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
 
     if (cb ){
         std::stringstream pollinfo;
-        pollinfo<<"Poll connected: " << m_rxurl <<", username: " << m_rxuser;
+        pollinfo<<"Poll connected ";
         cb(RTS_Work, pollinfo.str().c_str(), userp);
     }
 
