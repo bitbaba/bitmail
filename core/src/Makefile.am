@@ -8,7 +8,8 @@ libbitmailcore_la_SOURCES= \
     email.cpp \
 	json/json_reader.cpp \
 	json/json_value.cpp \
-	json/json_writer.cpp 
+	json/json_writer.cpp \
+	brad/brad.cpp
 
 libbitmailcore_la_CXXFLAGS  = -DCURL_STATICLIB
 libbitmailcore_la_LDFLAGS   = -no-undefined -export-all-symbols -compat-implib #-out-implib libbitmailcore.dll.a
