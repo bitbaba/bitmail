@@ -49,6 +49,16 @@ Brac::~Brac()
 
 }
 
+int Brac::Get(BraId id, const std::string & localp)
+{
+	return 0;
+}
+
+int Brac::Put(Brat t, const std::string & localp)
+{
+	return 0;
+}
+
 Brad::Brad(OnBradStatus cbStatus, OnBradClientConnect cbClient, void * userptr)
 : m_statusHandler(cbStatus)
 , m_clientHandler(cbClient)
@@ -80,6 +90,10 @@ int Brad::Startup(unsigned short port)
 	if (listen(m_serv, SOMAXCONN) == -1){
 		printf("listen error");
 		return BradErrorListen;
+	}
+
+	if (m_statusHandler){
+		m_statusHandler(BradStatusStartup, m_userptr);
 	}
 
 	while (true) {
