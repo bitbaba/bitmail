@@ -438,6 +438,13 @@ void MainWindow::onSendBtnClicked()
 
     QString qsWrappedMsg = qsMsg; (void)jdoc;//jdoc.toJson();
 
+    /**
+      * the right design is to wrap a BITCHAT protocol on
+      * BITMAIL network.
+      * Use BITCHAT protocol to process Group/Subscribe
+      * featrues.
+      *
+    */
     emit readyToSend(qslTo, qsWrappedMsg);
 
     populateMessage(true
@@ -545,6 +552,8 @@ void MainWindow::populateMessage(bool fTx
     to = tolist.at(1);
     QString qsToNick = to;
     if (qsType != "group"){
+        qsToNick = to;
+    }else{
         qsToNick = fTx ? QString::fromStdString(m_bitmail->GetFriendNick(to.toStdString()))
                                : QString::fromStdString(m_bitmail->GetNick());
     }
@@ -669,7 +678,6 @@ void MainWindow::populateGroupLeaf(QTreeWidgetItem * node, const QString & group
     node->addChild(group);
     return ;
 }
-
 
 void MainWindow::populateSubscribeLeaf(QTreeWidgetItem * node, const QString & email, const QString &nick)
 {
