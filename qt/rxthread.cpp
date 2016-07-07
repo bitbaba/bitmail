@@ -4,7 +4,7 @@
 #include <QDebug>
 
 static
-int MessageEventHandler(const char * from, const char * msg, const char * certid, const char * cert, void * p);
+int MessageEventHandler(const char * from, const char * recip, const char * msg, const char * certid, const char * cert, void * p);
 
 static
 int RxProgressHandler(RTxState state, const char * info, void * userptr);
@@ -45,9 +45,9 @@ void RxThread::stop()
     m_fStopFlag = true;
 }
 
-void RxThread::NotifyNewMessage(const QString &from, const QString &msg, const QString & certid, const QString &cert)
+void RxThread::NotifyNewMessage(const QString &from, const QStringList & recip, const QString &msg, const QString & certid, const QString &cert)
 {
-    emit gotMessage(from, msg, certid, cert);
+    emit gotMessage(from, recip, msg, certid, cert);
     return ;
 }
 
@@ -62,15 +62,18 @@ void RxThread::onInboxPollEvent()
     m_inboxPoll.release();
 }
 
-int MessageEventHandler(const char * from, const char * msg, const char * certid, const char * cert, void * p)
+int MessageEventHandler(const char * from, const char * recip, const char * msg, const char * certid, const char * cert, void * p)
 {
     RxThread * self = (RxThread *)p;
     QString qsFrom = QString::fromStdString(from);
+    qDebug() << recip;
+    QString qsRecip = QString::fromStdString(recip);
+    QStringList qslRecip = qsRecip.split(RECIP_SEPARATOR);
     QString qsMsg  = QByteArray::fromBase64(QByteArray(msg));
     QString qsCertID = QString::fromStdString(certid);
     QString qsCert = QByteArray::fromBase64(QByteArray(cert));
 
-    self->NotifyNewMessage(qsFrom, qsMsg, qsCertID, qsCert);
+    self->NotifyNewMessage(qsFrom, qslRecip, qsMsg, qsCertID, qsCert);
     return bmOk;
 }
 

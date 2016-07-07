@@ -187,7 +187,7 @@ void MainWindow::startupNetwork()
     connect(m_pollth, SIGNAL(done()), this, SLOT(onPollDone()));
     connect(m_pollth, SIGNAL(inboxPollProgress(QString)), this, SLOT(onPollProgress(QString)));
 
-    connect(m_rxth, SIGNAL(gotMessage(QString,QString, QString,QString)), this, SLOT(onNewMessage(QString,QString, QString,QString)));
+    connect(m_rxth, SIGNAL(gotMessage(QString, QStringList,QString, QString,QString)), this, SLOT(onNewMessage(QString, QStringList,QString, QString,QString)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
     connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
 
@@ -424,6 +424,9 @@ void MainWindow::onSendBtnClicked()
 
     // TODO: Group & Publish
     QStringList qslTo = qslData.mid(1);
+    if (qsType == "group"){
+        qslTo = qslData.mid(2);
+    }
 
     QJsonObject joMsg;
     joMsg["time"]   = QDateTime::currentDateTime().toMSecsSinceEpoch();
@@ -547,11 +550,10 @@ void MainWindow::populateMessage(bool fTx
                              : QString::fromStdString(m_bitmail->GetFriendNick(from.toStdString()));
 
     //TODO: extract email
-    QString to;
+    QString to = tolist.at(1);
     QString qsType = tolist.at(0);
-    to = tolist.at(1);
-    QString qsToNick = to;
-    if (qsType != "group"){
+    QString qsToNick;
+    if (qsType == "group"){
         qsToNick = to;
     }else{
         qsToNick = fTx ? QString::fromStdString(m_bitmail->GetFriendNick(to.toStdString()))
@@ -572,20 +574,22 @@ void MainWindow::populateMessage(bool fTx
     QStringList vecMsgData;
     vecMsgData.push_back(fTx ? "tx" : "rx");
     vecMsgData.push_back(from);
+    vecMsgData.append(tolist.join("|"));
     vecMsgData.push_back(msg);
     vecMsgData.push_back(certid);
     vecMsgData.push_back(cert);
-    (void)vecMsgData;
     msgElt->setData(Qt::UserRole, QVariant(vecMsgData));
     msgView->addItem(msgElt);
     msgView->scrollToBottom();
     return;
 }
-void MainWindow::onNewMessage(const QString &from, const QString &msg, const QString & certid, const QString &cert)
+void MainWindow::onNewMessage(const QString &from, const QStringList & recip, const QString &msg, const QString & certid, const QString &cert)
 {
     //TODO: cert check and buddy management
     (void) cert;
     QString qsTo = QString::fromStdString(m_bitmail->GetEmail());
+    // TODO: check myself if included in recip;
+    (void)recip;
     //show message
     QStringList qslTo;
     qslTo.append("friend");
@@ -779,6 +783,10 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
     vecMsgData.pop_front();
     QString qsFrom = vecMsgData.front();
     vecMsgData.pop_front();
+    QString qsTo = vecMsgData.front();
+    vecMsgData.pop_front();
+    QStringList qslTo = qsTo.split("|");
+    (void)qslTo;
     QString qsMessage = vecMsgData.front();
     vecMsgData.pop_front();    
     QString qsCertID = vecMsgData.front();

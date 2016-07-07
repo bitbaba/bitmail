@@ -80,7 +80,7 @@ private slots:
     void onPayBtnClicked();
     void onWalletBtnClicked();
     void onRssBtnClicked();
-    void onNewMessage(const QString & from, const QString & msg, const QString & certid, const QString & cert);
+    void onNewMessage(const QString & from, const QStringList & recip, const QString & msg, const QString & certid, const QString & cert);
 
     void onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous);
     void onRxDone();
