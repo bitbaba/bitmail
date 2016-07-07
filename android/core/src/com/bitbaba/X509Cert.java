@@ -10,4 +10,7 @@ package com.bitbaba;
  */
 public class X509Cert {
 
+	public X509Cert(){
+		
+	}
 }

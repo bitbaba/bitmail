@@ -9,4 +9,8 @@ package com.bitbaba;
  */
 public class EMailClient {
 
+	public EMailClient(){
+		
+	}
+	
 }
