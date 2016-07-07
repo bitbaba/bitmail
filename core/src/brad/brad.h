@@ -103,7 +103,8 @@ public:
 	Bra();
 	~Bra();
 public:
-	BraId id() const;
+	BraId Id() const;
+	Brat Type() const;
 };
 
 /**
@@ -113,9 +114,6 @@ class Brac{
 public:
 	Brac(int sockfd);
 	~Brac();
-public:
-	int Get(BraId id, const std::string & path);
-	int Put(Brat t, const std::string & path);
 };
 
 /**
@@ -133,5 +131,7 @@ public:
 public:
 	int Startup(unsigned short port);
 	int CloseClient(Brac * c);
+	int Put(Brac & c, const Bra & bra);
+	int Get(Brac & c, const BraId & braid, Bra & bra);
 	int Shutdown();
 };

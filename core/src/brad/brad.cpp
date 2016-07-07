@@ -49,16 +49,6 @@ Brac::~Brac()
 
 }
 
-int Brac::Get(BraId id, const std::string & localp)
-{
-	return 0;
-}
-
-int Brac::Put(Brat t, const std::string & localp)
-{
-	return 0;
-}
-
 Brad::Brad(OnBradStatus cbStatus, OnBradClientConnect cbClient, void * userptr)
 : m_statusHandler(cbStatus)
 , m_clientHandler(cbClient)

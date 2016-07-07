@@ -6,6 +6,7 @@
 # include <bitmailcore/email.h>
 # include <bitmailcore/x509cert.h>
 # include <json/json.h>
+# include <brad/brad.h>
 
 # include <curl/curl.h>
 # include <openssl/cms.h>
@@ -26,6 +27,7 @@
 # include <algorithm>
 
 #include <string.h>
+
 
 BitMail::BitMail()
 : m_onPollEvent(NULL), m_onPollEventParam(NULL)
@@ -735,11 +737,9 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     /**
     * Very! Simple MIME Parse to get <To> <From> <Subject> & MimeBody
     */
-    std::string sFrom, sSubject, sMimeBody;
+    std::string sFrom, sRecip, sSubject, sMimeBody;
     std::vector<std::string> vecTo;
-    enum{
-        StringBufferLength = 256,
-    };
+
     std::stringstream sstrm;
     sstrm << mimemsg;
     std::string line;
@@ -754,10 +754,15 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
                 sFrom = vecFrom[0];
             }
         }else if (!line.compare(0, 8, "Subject:")){
-            char szTemp [StringBufferLength] = "";
-            sscanf(line.c_str(), "Subject: %s", szTemp);
-            sSubject = szTemp;
+            sSubject = line.substr(8);
         }
+    }
+
+    for (std::vector<std::string>::const_iterator it = vecTo.begin()
+    		; it != vecTo.end()
+    		; ++it){
+    	sRecip += *it;
+    	sRecip += RECIP_SEPARATOR;
     }
 
     if (std::string::npos == mimemsg.find("MIME-Version:")){
@@ -791,26 +796,11 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     }
 
     if (self && self->m_onMessageEvent){
-        BMEventMessage bmeMessage;
-        bmeMessage.h = *h;
-
-        if (!sFrom.empty()){
-            bmeMessage.from = sFrom;
-        }
-
-        if (!sMimeBody.empty()){
-            bmeMessage.msg = CX509Cert::b64enc(sMimeBody);
-        }
-        
-        if (buddyCert.IsValid()){
-            bmeMessage.certid = buddyCert.GetID();
-            bmeMessage.cert = CX509Cert::b64enc(buddyCert.GetCertByPem());
-        }
-        
-        self->m_onMessageEvent(bmeMessage.from.c_str()
-                                , bmeMessage.msg.c_str()
-                                , bmeMessage.certid.c_str()
-                                , bmeMessage.cert.c_str()
+        self->m_onMessageEvent(sFrom.c_str()
+        						, sRecip.c_str()
+                                , CX509Cert::b64enc(sMimeBody).c_str()
+                                , buddyCert.GetID().c_str()
+                                , CX509Cert::b64enc(buddyCert.GetCertByPem()).c_str()
                                 , self->m_onMessageEventParam);
     }
 

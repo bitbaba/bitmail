@@ -8,10 +8,15 @@
 #define BMVER_MINOR (0)
 #define BMVER_TINY  (0)
 
+//https://tools.ietf.org/html/rfc822
+#define RECIP_SEPARATOR (";")
+
+
 /* Forward decleration */
 class CMailClient;
 class CX509Cert;
 struct BMEventHead;
+class Brad;
 
 enum BMError{
     bmOk             =     0,
@@ -59,7 +64,7 @@ enum RTxState{
 
 typedef int (* PollEventCB)(unsigned int count, void * p);
 
-typedef int (* MessageEventCB)(const char * from, const char * msg, const char * certid, const char * cert, void * p);
+typedef int (* MessageEventCB)(const char * from, const char * recip, const char * msg, const char * certid, const char * cert, void * p);
 
 typedef int (* RTxProgressCB)(RTxState, const char * info, void * userptr);
 
@@ -247,6 +252,9 @@ protected:
 
     // Subscribes: vector of subscribed email
     std::vector<std::string> m_subscribes;
+
+    // Bra daemon instance
+    Brad               * m_brad;
 
 public:
     CX509Cert          * m_profile;
