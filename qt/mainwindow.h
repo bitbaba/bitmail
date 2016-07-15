@@ -101,7 +101,7 @@ private:
     void createStatusBar();
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
-    void populateMessage(bool fTx, const QString & from, const QStringList & to, const QString & msg, const QString & certid, const QString & cert);
+    void populateMessage(bool fTx, const QString & qsType, const QString & from, const QStringList & to, const QString & msg, const QString & certid, const QString & cert);
 
     void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick);
     void populateGroupLeaf(QTreeWidgetItem * node, const QString & groupname, const QStringList & members);
@@ -147,6 +147,10 @@ private:
     RxThread *m_rxth;
     TxThread *m_txth;
     ShutdownDialog *m_shutdownDialog;
+    // histroy messages queue
+    std::map<QString, QStringList> m_peermsgQ;
+    std::map<QString, QStringList> m_groupmsgQ;
+    std::map<QString, QStringList> m_submsgQ;
 signals:
     void readyToSend(const QStringList & to, const QString & msg);
 };

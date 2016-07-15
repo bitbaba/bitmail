@@ -19,5 +19,6 @@
         <file>images/group.png</file>
         <file>images/subscribe.png</file>
         <file>images/stranger.png</file>
+        <file>images/head.notify.png</file>
     </qresource>
 </RCC>
