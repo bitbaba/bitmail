@@ -45,9 +45,15 @@ void RxThread::stop()
     m_fStopFlag = true;
 }
 
-void RxThread::NotifyNewMessage(const QString &from, const QStringList & recip, const QString &msg, const QString & certid, const QString &cert)
+void RxThread::NotifyNewMessage(enum MsgType mt
+                                , const QString &from
+                                , const QString & group
+                                , const QStringList & recip
+                                , const QString & content
+                                , const QString & certid
+                                , const QString &cert)
 {
-    emit gotMessage(from, recip, msg, certid, cert);
+    emit gotMessage(mt, from, group, recip, content, certid, cert);
     return ;
 }
 
@@ -64,16 +70,21 @@ void RxThread::onInboxPollEvent()
 
 int MessageEventHandler(const char * from, const char * recip, const char * msg, const char * certid, const char * cert, void * p)
 {
-    RxThread * self = (RxThread *)p;
-    QString qsFrom = QString::fromStdString(from);
-    qDebug() << recip;
-    QString qsRecip = QString::fromStdString(recip);
-    QStringList qslRecip = qsRecip.split(RECIP_SEPARATOR);
-    QString qsMsg  = QByteArray::fromBase64(QByteArray(msg));
-    QString qsCertID = QString::fromStdString(certid);
-    QString qsCert = QByteArray::fromBase64(QByteArray(cert));
+    BMMessage rxMsg;
+    if (!rxMsg.Load(QString::fromStdString((msg)))){
+        return bmInvalidParam;
+    }
+    QString qsGroup = rxMsg.groupName();
+    MsgType mt = rxMsg.msgType();
+    QString qsContent = rxMsg.content();
 
-    self->NotifyNewMessage(qsFrom, qslRecip, qsMsg, qsCertID, qsCert);
+    QString qsFrom = QString::fromStdString(from);
+    QStringList qslRecip = QString::fromStdString(recip).split(RECIP_SEPARATOR, QString::SkipEmptyParts);
+    QString qsCertID = QString::fromStdString(certid);
+    QString qsCert = QString::fromStdString((cert));
+
+    RxThread * self = (RxThread *)p;
+    self->NotifyNewMessage(mt, qsFrom, qsGroup, qslRecip, qsContent, qsCertID, qsCert);
     return bmOk;
 }
 

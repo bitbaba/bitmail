@@ -18,13 +18,25 @@ TxThread::~TxThread()
 
 }
 
-void TxThread::onSendMessage(const QStringList &to, const QString &msg)
+void TxThread::onSendMessage(MsgType mt
+                             , const QString & from
+                             , const QString & group
+                             , const QStringList & recip
+                             , const QString & content)
 {
-    BitMailMessage bmMsg("", to, msg, "");
-    if (!m_txq.writable(25/*milliseconds*/)){
-
+    BMMessage txMsg;
+    txMsg.rtx(true);
+    txMsg.msgType(mt);
+    txMsg.from(from);
+    txMsg.groupName(group);
+    txMsg.recip(recip);
+    txMsg.content(content);
+    txMsg.cert("");
+    txMsg.certid("");
+    if (m_txq.writable(25/*milliseconds*/)){
+        m_txq.push(txMsg);
     }else{
-        m_txq.push(bmMsg);
+        qDebug() << "Tx Queue Overflow, missing message.";
     }
 }
 
@@ -32,16 +44,16 @@ void TxThread::run()
 {    
     while(!m_fStopFlag){
         if (m_txq.readable(6*1000)){
-            BitMailMessage msg = m_txq.pop();
-            QStringList qslTo = msg.to();
+            BMMessage msg = m_txq.pop();
+            QStringList qslTo = msg.recip();
             std::vector<std::string> vecTo;
             for (QStringList::iterator it = qslTo.begin(); it != qslTo.end(); it++){
                 vecTo.push_back(it->toStdString());
             }
-            QString qsMsg = msg.msg();
+            QString qsJsonMsg = msg.Serialize();
             if (m_bitmail){
                 m_bitmail->SendMsg(vecTo
-                                   , qsMsg.toStdString()
+                                   , qsJsonMsg.toStdString()
                                    , TxProgressHandler
                                    , this);
             }

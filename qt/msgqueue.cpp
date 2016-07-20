@@ -1,101 +1,166 @@
 #include "msgqueue.h"
 #include <QMutexLocker>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
-BitMailMessage::BitMailMessage()
+BMMessage::BMMessage()
 {
 
 }
 
-BitMailMessage::BitMailMessage(const QString &from, const QStringList & vecTo, const QString &m, const QString & c)
-    : m_from(from)
-    , m_to(vecTo)
-    , m_msg(m)
-    , m_cert(c)
+BMMessage::~BMMessage()
 {
 
 }
 
-BitMailMessage::~BitMailMessage()
+bool BMMessage::Load(const QString & qsJsonMsg)
 {
+    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
+    if (!jdoc.isObject()){
+        return false;
+    }
+    QJsonObject jsonMsg = jdoc.object();
+    if (jsonMsg.isEmpty()){
+        return false;
+    }
+    if (jsonMsg.contains("fTx")
+            && jsonMsg.contains("msgType")
+            && jsonMsg.contains("from")
+            && jsonMsg.contains("group")
+            && jsonMsg.contains("recip")
+            && jsonMsg.contains("content")
+            && jsonMsg.contains("certId")
+            && jsonMsg.contains("cert")){
 
+    }else{
+        return false;
+    }
+    _fTx = jsonMsg["fTx"].toBool();
+    _MsgType = (MsgType)jsonMsg["msgType"].toInt();
+    _From = jsonMsg["from"].toString();
+    _Recip = jsonMsg["recip"].toString().split(";");
+    _GroupName = jsonMsg["group"].toString();
+    _Content = jsonMsg["content"].toString();
+    _CertId = jsonMsg["certId"].toString();
+    _Cert = jsonMsg["cert"].toString();
+    return true;
 }
 
-QString BitMailMessage::from() const
+QString BMMessage::Serialize()
 {
-    return m_from;
+    QJsonObject jsonMsg;
+    jsonMsg["fTx"] = _fTx;
+    jsonMsg["msgType"] = (int)_MsgType;
+    jsonMsg["from"] = _From;
+    jsonMsg["group"] = _GroupName;
+    jsonMsg["recip"] = _Recip.join(";");
+    jsonMsg["content"] = _Content;
+    jsonMsg["certId"] = _CertId;
+    jsonMsg["cert"] = _Cert;
+    QJsonDocument jdoc;
+    jdoc.setObject(jsonMsg);
+    return jdoc.toJson();
 }
 
-QStringList BitMailMessage::to() const
+bool BMMessage::isTx() const
 {
-    return m_to;
+    return _fTx;
 }
 
-QString BitMailMessage::msg() const
+bool BMMessage::isRx() const
 {
-    return m_msg;
+    return !_fTx;
 }
 
-QString BitMailMessage::cert() const
+enum MsgType BMMessage::msgType() const
 {
-    return m_cert;
+    return _MsgType;
 }
 
-void BitMailMessage::setFrom(const QString &f)
+bool BMMessage::isPeerMsg() const
 {
-    m_from = f;
+    return _MsgType == mt_peer;
 }
 
-void BitMailMessage::setTo(const QStringList &t)
+bool BMMessage::isGroupMsg()const
 {
-    m_to = t;
+    return _MsgType == mt_group;
 }
 
-void BitMailMessage::setMsg(const QString &m)
+bool BMMessage::isSubscribeMsg() const
 {
-    m_msg = m;
+    return _MsgType == mt_subscribe;
 }
 
-void BitMailMessage::setCert(const QString &c)
+QString BMMessage::from() const
 {
-    m_cert = c;
+    return _From;
 }
 
-MsgQueue::MsgQueue(unsigned int capcity)
-    : m_readable(0)
-    , m_writable(capcity)
+QString BMMessage::groupName() const
 {
-
+    return _GroupName;
 }
 
-MsgQueue::~MsgQueue()
+QStringList BMMessage::recip() const
 {
-
+    return _Recip;
 }
 
-bool MsgQueue::readable(int timeout)
+QString BMMessage::content() const
 {
-    return m_readable.tryAcquire(1, timeout);
+    return _Content;
 }
 
-bool MsgQueue::writable(int timeout)
+QString BMMessage::certid() const
 {
-    return m_writable.tryAcquire(1, timeout);
+    return _CertId;
 }
 
-void MsgQueue::push(const BitMailMessage &msg)
+QString BMMessage::cert() const
 {
-    QMutexLocker lock(&m_mutex);
-    m_q.enqueue(msg);
-    lock.unlock();
-    m_readable.release();
-    return ;
+    return _Cert;
 }
 
-BitMailMessage MsgQueue::pop()
+// Setters
+void BMMessage::rtx(bool fTx)
 {
-    QMutexLocker lock(&m_mutex);
-    BitMailMessage msg = m_q.dequeue();
-    lock.unlock();
-    m_writable.release();
-    return msg;
+    _fTx = fTx;
 }
+
+void BMMessage::msgType(MsgType mt)
+{
+    _MsgType = mt;
+}
+
+void BMMessage::from(const QString & f)
+{
+    _From = f;
+}
+
+void BMMessage::groupName(const QString & g)
+{
+    _GroupName = g;
+}
+
+void BMMessage::recip(const QStringList & r)
+{
+    _Recip = r;
+}
+
+void BMMessage::content(const QString & c)
+{
+    _Content = c;
+}
+
+void BMMessage::certid(const QString & cid)
+{
+    _CertId = cid;
+}
+
+void BMMessage::cert(const QString & c)
+{
+    _Cert = c;
+}
+

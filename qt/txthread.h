@@ -25,12 +25,15 @@ signals:
     void txProgress(const QString & info);
 
 public slots:
-    void onSendMessage(const QStringList & to
-                       , const QString & msg);
+    void onSendMessage(MsgType mt
+                       , const QString & from
+                       , const QString & group
+                       , const QStringList & recip
+                       , const QString & content);
 
 private:
     BitMail * m_bitmail;
-    MsgQueue m_txq;
+    MsgQueue<BMMessage> m_txq;
     bool m_fStopFlag;
 };
 

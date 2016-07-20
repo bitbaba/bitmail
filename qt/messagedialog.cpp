@@ -87,16 +87,25 @@ void MessageDialog::on_btnMakeFriend_clicked()
 {
     QString qsFrom = GetFrom();
     QString qsCert = GetCert();
+    QString qsCertID = GetCertID();
 
     if (m_bitmail->HasFriend(qsFrom.toStdString())){
         if (m_bitmail->IsFriend(qsFrom.toStdString(), qsCert.toStdString())){
-            int ret = QMessageBox::question(this
-                                            , tr("Add Friend")
-                                            , tr("Are you sure to replace current friend's certificate")
-                                            , QMessageBox::Yes | QMessageBox::No);
-            if (ret != QMessageBox::Yes){
-                return ;
-            }
+            QMessageBox::information(this
+                                     , tr("Friend")
+                                     , tr("You are already friends.")
+                                     , QMessageBox::Ok);
+            return ;
+        }
+        QString qsPrevCertID = QString::fromStdString(m_bitmail->GetFriendID(qsFrom.toStdString()));
+        int ret = QMessageBox::question(this
+                                        , tr("Add Friend")
+                                        , tr("Replace with this certificate?\r\n")
+                                        + tr("Old: [") + qsPrevCertID + QString("]\r\n")
+                                        + tr("New: [") + qsCertID + QString("]\r\n")
+                                        , QMessageBox::Yes | QMessageBox::No);
+        if (ret != QMessageBox::Yes){
+            return ;
         }
     }
 

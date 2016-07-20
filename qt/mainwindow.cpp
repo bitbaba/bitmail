@@ -112,22 +112,21 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")));
     nodeFriends->setIcon(0, QIcon(":/images/head.png"));
+    nodeFriends->setData(0, Qt::UserRole, "Cat::Friends");
     populateFriendTree(nodeFriends);
     btree->addTopLevelItem(nodeFriends);
 
     nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")));
     nodeGroups->setIcon(0, QIcon(":/images/group.png"));
+    nodeFriends->setData(0, Qt::UserRole, "Cat::Groups");
     populateGroupTree(nodeGroups);
     btree->addTopLevelItem(nodeGroups);
 
     nodeSubscribes = new QTreeWidgetItem(btree, QStringList(tr("Subscribes")));
     nodeSubscribes->setIcon(0, QIcon(":/images/subscribe.png"));
+    nodeFriends->setData(0, Qt::UserRole, "Cat::Subscribes");
     populateSubscribeTree(nodeSubscribes);
     btree->addTopLevelItem(nodeSubscribes);
-
-    nodeStrangers = new QTreeWidgetItem(btree, QStringList(tr("Strangers")));
-    nodeStrangers->setIcon(0, QIcon(":/images/stranger.png"));
-    btree->addTopLevelItem(nodeStrangers);
 
     leftLayout->addWidget(btree);
 
@@ -161,14 +160,30 @@ MainWindow::MainWindow(BitMail * bitmail)
     wrap->setMinimumHeight(420);
     wrap->setLayout(mainLayout);
     setCentralWidget(wrap);
+
+    //register custom enum type <MsgType> for signal/slot;
+    qRegisterMetaType<MsgType>();
+
     // Add signals
     connect(textEdit->document(), SIGNAL(contentsChanged()), this, SLOT(documentWasModified()));
-    {
-        connect(btree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(onTreeCurrentBuddy(QTreeWidgetItem*,QTreeWidgetItem*)));
-        connect(btree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(onTreeBuddyDoubleClicked(QTreeWidgetItem*,int)));
-    }
-    connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
-    connect(btnSend, SIGNAL(clicked()) , this, SLOT(onSendBtnClicked()));
+
+    connect(btree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*))
+            , this, SLOT(onTreeCurrentBuddy(QTreeWidgetItem*,QTreeWidgetItem*)));
+
+    connect(btree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int))
+            , this, SLOT(onTreeBuddyDoubleClicked(QTreeWidgetItem*,int)));
+
+    connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*))
+            , this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
+
+    connect(btnSend, SIGNAL(clicked())
+            , this, SLOT(onSendBtnClicked()));
+
+    connect(this, SIGNAL(loadHistory(MsgType,QString))
+            , this, SLOT(onLoadHistory(MsgType,QString)));
+
+    connect(this, SIGNAL(saveHistory(bool, MsgType,QString,QString,QStringList,QString,QString,QString))
+            , this, SLOT(onSaveHistory(bool, MsgType,QString,QString,QStringList,QString,QString,QString)));
 
     // startup network
     startupNetwork();
@@ -187,15 +202,19 @@ void MainWindow::startupNetwork()
     connect(m_pollth, SIGNAL(done()), this, SLOT(onPollDone()));
     connect(m_pollth, SIGNAL(inboxPollProgress(QString)), this, SLOT(onPollProgress(QString)));
 
-    connect(m_rxth, SIGNAL(gotMessage(QString, QStringList,QString, QString,QString)), this, SLOT(onNewMessage(QString, QStringList,QString, QString,QString)));
+    connect(m_rxth, SIGNAL(gotMessage(MsgType, QString, QString, QStringList,QString, QString,QString))
+            , this, SLOT(onNewMessage(MsgType, QString, QString, QStringList,QString, QString,QString)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
     connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
 
-    connect(this, SIGNAL(readyToSend(QStringList,QString)), m_txth, SLOT(onSendMessage(QStringList,QString)));
+    connect(this, SIGNAL(readyToSend(MsgType,QString,QString,QStringList,QString))
+            , m_txth, SLOT(onSendMessage(MsgType,QString,QString,QStringList,QString)));
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
     connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
 
-    m_pollth->start(); m_rxth->start(); m_txth->start();
+    m_pollth->start();
+    m_rxth->start();
+    m_txth->start();
 }
 void MainWindow::shutdownNetwork()
 {
@@ -282,17 +301,27 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
 {
+    // Process leaf nodes
     if (actItem == NULL){
         return ;
     }
     if (col != 0){
         return ;
     }
-    if (!actItem->data(0, Qt::UserRole).isValid()
-            || actItem->data(0, Qt::UserRole).isNull()){
+    QVariant qvData = actItem->data(0, Qt::UserRole);
+    if (!qvData.isValid()|| qvData.isNull()){
         return ;
     }
-    QString qsEmail = actItem->data(0, Qt::UserRole).toString();
+    QString qvDataTypeName = qvData.typeName();
+    if (qvDataTypeName != "QStringList"){
+        return ;
+    }
+    QStringList qslData = qvData.toStringList();
+    QString qsType = qslData.at(0);
+    if (qsType.at(0) == '#'){
+        return ;
+    }
+    QString qsEmail = qslData.at(1);
     if (qsEmail.isEmpty()){
         return ;
     }
@@ -384,6 +413,42 @@ void MainWindow::createStatusBar()
 {
     statusBar()->showMessage(tr("Ready"));
 }
+
+bool MainWindow::GetCurrentRecip(MsgType & mt, QString & qsGroupName, QStringList & qslRecip)
+{
+    if (btree->currentItem() == NULL){
+        return false;
+    }
+
+    QVariant qvData = btree->currentItem()->data(0, Qt::UserRole);
+    if (!qvData.isValid() || qvData.isNull()){
+        return false;
+    }
+    QString qsVDataTyep = qvData.typeName();
+    if (qsVDataTyep != "QStringList"){
+        return false;
+    }
+    QStringList qslData = qvData.toStringList();
+    if (qslData.size() < 2){
+        return false;
+    }
+    QString qsType = qslData.at(0);
+    mt = mt_undef;
+    if (qsType == "friend"){
+        mt = mt_peer;
+    }else if( qsType.at(0) == '#' ){
+        mt = mt_group;
+        qsGroupName = qsType.mid(1);
+    }else if ( qsType == "subscribe"){
+        mt = mt_subscribe;
+    }else{
+        return false;
+    }
+
+    qslRecip = qslData.mid(1);
+    return true;
+}
+
 //! [33]
 void MainWindow::onSendBtnClicked()
 {
@@ -402,44 +467,16 @@ void MainWindow::onSendBtnClicked()
     // if application has not set codec for locale by setCodecForLocale;
 
     QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-    if (btree->currentItem() == NULL){
-        statusBar()->showMessage(tr("no current buddy selected"), 3000);
-        return ;
-    }
-    if (btree->currentItem() == NULL){
-        return ;
-    }
-    QVariant qvData = btree->currentItem()->data(0, Qt::UserRole);
-    if (!qvData.isValid() || qvData.isNull()){
-        return ;
-    }
-    QStringList qslData = qvData.toStringList();
-    if (qslData.size() < 2){
-        return ;
-    }
-    QString qsType = qslData.at(0);
-    if (qsType != "friend" && qsType != "group" && qsType != "subscribe"){
-        return ;
-    }
 
-    // TODO: Group & Publish
-    QStringList qslTo = qslData.mid(1);
-    if (qsType == "group"){
-        qslTo = qslData.mid(2);
+    MsgType mt = mt_undef;
+
+    QString qsGroupName = "";
+
+    QStringList qslRecip;
+
+    if (!GetCurrentRecip(mt, qsGroupName, qslRecip)){
+        return ;
     }
-
-    QJsonObject joMsg;
-    joMsg["time"]   = QDateTime::currentDateTime().toMSecsSinceEpoch();
-    joMsg["latitude"]    = 0.0;
-    joMsg["longtitude"]  = 0.0;
-    joMsg["client"] = "qt";
-    joMsg["version"]= (int)m_bitmail->GetVersion();
-    joMsg["type"]   = "friend"; // others e.g. "system"
-    joMsg["content"]    = qsMsg;
-
-    QJsonDocument jdoc(joMsg);
-
-    QString qsWrappedMsg = jdoc.toJson();
 
     /**
       * the right design is to wrap a BITCHAT protocol on
@@ -448,15 +485,33 @@ void MainWindow::onSendBtnClicked()
       * featrues.
       *
     */
-    emit readyToSend(qslTo, qsWrappedMsg);
+    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
+
+    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
+
+    emit readyToSend(mt
+                     , QString::fromStdString(m_bitmail->GetEmail())
+                     , qsGroupName
+                     , qslRecip
+                     , qsMsg);
+
+    emit saveHistory(true
+                     , mt
+                     , qsFrom
+                     , qsGroupName
+                     , qslRecip
+                     , qsMsg
+                     , qsCertId
+                     , qsCert);
 
     populateMessage(true
-                    , qsType
+                    , mt
                     , qsFrom
-                    , qslData
-                    , qsWrappedMsg
-                    , QString::fromStdString(m_bitmail->GetID())
-                    , QString::fromStdString(m_bitmail->GetCert()));
+                    , qsGroupName
+                    , qslRecip
+                    , qsMsg
+                    , qsCertId
+                    , qsCert);
 
     textEdit->clear();
     // There are bugs in Qt-Creator's memory view utlity;
@@ -539,141 +594,80 @@ void MainWindow::onRssBtnClicked()
 }
 
 void MainWindow::populateMessage(bool fTx
-                                 , const QString & type
+                                 , MsgType mt
                                  , const QString & from
-                                 , const QStringList & tolist
-                                 , const QString & msg
-                                 , const QString & certid
-                                 , const QString & cert)
+                                 , const QString & groupName
+                                 , const QStringList & recip
+                                 , const QString & msgContent
+                                 , const QString & signerCertId
+                                 , const QString & signerCert)
 {
-    (void)type;
-
-    bool fIsBuddy =  (m_bitmail->IsFriend(from.toStdString(), cert.toStdString()));
-
-    QString qsFromNick = fTx ? QString::fromStdString(m_bitmail->GetNick())
-                             : QString::fromStdString(m_bitmail->GetFriendNick(from.toStdString()));
-
-    //TODO: extract email
-    QString to = tolist.at(1);
-    QString qsType = tolist.at(0);
-    QString qsToNick;
-    if (qsType == "group"){
-        qsToNick = to;
-    }else{
-        qsToNick = fTx ? QString::fromStdString(m_bitmail->GetFriendNick(to.toStdString()))
-                               : QString::fromStdString(m_bitmail->GetNick());
-    }
-    QString qsDisp = FormatBMMessage(from, qsFromNick, to, qsToNick, msg);
-
-    QListWidgetItem * msgElt = new QListWidgetItem(QIcon(":/images/bubble.png")
-                                                   , qsDisp);
-    msgElt->setFlags((Qt::ItemIsSelectable
-                      | Qt::ItemIsEditable)
-                      | Qt::ItemIsEnabled);
-
-    msgElt->setBackgroundColor((fTx)
-                               ? (Qt::lightGray)
-                               : (fIsBuddy ? (QColor(Qt::green).lighter()) : (Qt::red)));
-
-    QStringList vecMsgData;
-    vecMsgData.push_back(fTx ? "tx" : "rx");
-    vecMsgData.push_back(from);
-    vecMsgData.append(tolist.join("|"));
-    vecMsgData.push_back(msg);
-    vecMsgData.push_back(certid);
-    vecMsgData.push_back(cert);
-    msgElt->setData(Qt::UserRole, QVariant(vecMsgData));
+    (void)mt;(void)from;(void)groupName;(void)recip;(void)signerCert;(void)signerCertId;
+    QListWidgetItem * msgElt = new QListWidgetItem();
+    msgElt->setIcon(QIcon(":/images/bubble.png"));
+    msgElt->setText(msgContent);
+    msgElt->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    msgElt->setBackgroundColor((fTx)? (Qt::lightGray) : (QColor(Qt::green).lighter()));
+    do {
+        BMMessage bmMsg;
+        bmMsg.rtx(fTx);
+        bmMsg.msgType(mt);
+        bmMsg.from(from);
+        bmMsg.groupName(groupName);
+        bmMsg.recip(recip);
+        bmMsg.content(msgContent);
+        bmMsg.certid(signerCertId);
+        bmMsg.cert(signerCert);
+        QString qsMsg = bmMsg.Serialize();
+        msgElt->setData(Qt::UserRole, QVariant(qsMsg));
+    }while(0);
     msgView->addItem(msgElt);
     msgView->scrollToBottom();
     return;
 }
-void MainWindow::onNewMessage(const QString &from
+
+/**
+ * @brief MainWindow::onNewMessage
+ * @param mt
+ * @param from
+ * @param group
+ * @param recip
+ * @param msg
+ * @param certid
+ * @param cert
+ * @Note: lesson about signal/slot paramters match
+ * 1) emit signal(MsgType), slot(MsgType) will not called, if MsgType is a custom enumerate type.
+ * 2) in the case1, Q_DECLARE_METATYPE(MsgType) & aRegisterMetaType<MsgType>(), will make case1 to work.
+ */
+void MainWindow::onNewMessage(MsgType mt
+                              , const QString &from
+                              , const QString & group
                               , const QStringList & recip
                               , const QString & msg
                               , const QString & certid
                               , const QString & cert)
 {
-    /**
-    * Serialize of message
-    * ['tx|rx', 'from', 'friend|#group|subscribe, recip...', 'msg', 'certid', 'cert']
-    */
-    QString qsType = "";
-    QString qsContent = "";
-    //TODO: serialize message to queue;
-    do{
-        QJsonParseError parseException;
-        QJsonDocument jdoc = QJsonDocument::fromJson(msg.toLatin1(), &parseException);
-        if (jdoc.isEmpty()||jdoc.isNull()){
-            qDebug() << "Parse Message Exception: " << parseException.errorString();
-            return ;
-        }
-        if (!jdoc.isObject()){
-            return ;
-        }
-        QJsonObject rootObj = jdoc.object();
-        if (rootObj.contains("type")){
-            qsType = rootObj["type"].toString();
-        }else{
-            qDebug() << "invalid message format, no <type> entry, ignore";
-            return ;
-        }
-        if (rootObj.contains("content")){
-            qsContent = rootObj["content"].toString();
-        }else{
-            qDebug() << "invalid message format, no <content> entry, ignore";
-            return ;
-        }
-    }while(0);
-
-    QString qsMatch = from;
-    QString qsGroupName = "";
-    QTreeWidgetItem * node = NULL;
-    if (qsType.at(0) == '#'){
-        node = nodeGroups;
-        qsGroupName = qsType.mid(1);
-        qsMatch = qsGroupName;
-    }else if (qsType == "friend"){
-        node = nodeFriends;
-    }else if (qsType == "subscribe"){
-        node = nodeSubscribes;
-    }else{
-        qDebug() << "Unknown node";
+    emit saveHistory(false, mt, from, group, recip, msg, certid, cert);
+    MsgType mt0 = mt_undef;
+    QString group0;
+    QStringList recip0;
+    if (!GetCurrentRecip(mt0, group0, recip0)){
         return ;
     }
-
-    QTreeWidgetItem *elt = NULL;
-    int eltsCount = node->childCount();
-    for (int i = 0; i < eltsCount; i++){
-        elt = node->child(i);
-        if (elt->text(0).indexOf(qsMatch) != -1){
-            break;
+    if (mt == mt0){
+        if (((mt == mt_peer || mt == mt_subscribe ) && !from.isEmpty() && from == recip0.at(0))
+           ||(mt == mt_group && !group.isEmpty() && group == group0)){
+            populateMessage(false, mt, from, group, recip, msg, certid, cert);
         }
-    }
-
-    QTreeWidgetItem * curr = btree->currentItem();
-    if (elt && (curr == NULL || (curr && curr->text(0) != elt->text(0)))){
-        elt->setIcon(0, QIcon(":/images/head.notify.png"));
-        return ;
-    }
-
-    if (elt && curr && elt->text(0) == curr->text(0)){
-        //TODO: cert check and buddy management
-        (void) cert;
-        QString qsTo = QString::fromStdString(m_bitmail->GetEmail());
-        // TODO: check myself if included in recip;
-        (void)recip;
-        //show message
-        QStringList qslTo;
-        qslTo.append("friend");
-        qslTo.append(qsTo);
-        populateMessage(false, qsType, from, qslTo, msg, certid, cert);
-    }
-
-    if (elt != NULL){
-        //GUI notification
-        activateWindow();
     }
 }
+
+void MainWindow::setNotify(QTreeWidgetItem *item, int no)
+{
+    (void)no;
+    item->setBackground(0, QBrush(QColor(Qt::red)));
+}
+
 void MainWindow::populateFriendTree(QTreeWidgetItem * node)
 {
     // Add buddies
@@ -686,6 +680,8 @@ void MainWindow::populateFriendTree(QTreeWidgetItem * node)
         QString qsNick = QString::fromStdString(sBuddyNick);
         populateFriendLeaf(node, QString::fromStdString(*it), qsNick);
     }
+    // add stranger node
+    populateFriendLeaf(node, "*", tr("Strangers"));
     return ;
 }
 void MainWindow::populateGroupTree(QTreeWidgetItem * node)
@@ -751,8 +747,7 @@ void MainWindow::populateGroupLeaf(QTreeWidgetItem * node, const QString & group
     QTreeWidgetItem * group = new QTreeWidgetItem(qslBuddy);
     group->setIcon(0, QIcon(":/images/group.png"));
     QStringList qslData;
-    qslData.append("group");
-    qslData.append(groupname);
+    qslData.append(QString("#") + groupname);
     qslData += members;
     group->setData(0, Qt::UserRole, QVariant(qslData));
     node->addChild(group);
@@ -787,36 +782,144 @@ void MainWindow::populateMsgView(const QString &email)
     (void )email;
     return ;
 }
+
 void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous)
 {
-    qDebug() << (previous ? previous->text(0) : "null") << " --> " << (current ? current->text(0) : "null") << "!";
     if (current == NULL){
+        (void)previous;
         return ;
     }
-    current->setIcon(0, QIcon(":/images/head.png"));
-
-    msgView->clear();
-    //TODO: and Reload history messages
 
     QVariant qvData = current->data(0, Qt::UserRole);
-    if (qvData.isNull() || !qvData.isValid()){
+    if (qvData.isNull()){
+        return ;
+    }
+    if (!qvData.isValid()){
+        return ;
+    }
+
+    QString qsVDataType = qvData.typeName();
+    if (qsVDataType != "QStringList" ){
         btnSend->setEnabled(false);
         return ;
     }
+
+    //reset to default backgroud color, to remove notify
+    current->setBackgroundColor(0, QColor(Qt::white));
+
+    //clear current message view
+    msgView->clear();
+
     QStringList qslData = qvData.toStringList();
     if (qslData.size() < 2){
         btnSend->setEnabled(false);
         return ;
     }
     QString qsType = qslData.at(0);
-    if (qsType == "friend" || qsType == "group" || qsType == "subscribe"){
+    if (qsType == "friend" || qsType.at(0) == '#'|| qsType == "subscribe"){
         btnSend->setEnabled(true);
+    }
+
+    /*Key: email or groupName*/
+    QString qsKey = qslData.at(1);
+
+    MsgType mt;
+    mt = mt_undef;
+    if (qsType == "friend"){
+        mt = mt_peer;
+    }else if (qsType.at(0) == '#'){
+        mt = mt_group;        
+        qsKey = qsType.mid(1);/* use <GroupName> to load histroy message*/
+    }else if (qsType == "subscribe"){
+        mt = mt_subscribe;
+    }else{
         return ;
     }
 
-    btnSend->setEnabled(false);
+    emit loadHistory(mt, qsKey);
     return ;
 }
+
+void MainWindow::onLoadHistory(MsgType mt, const QString &key)
+{
+    QStringList qslMsg;
+    if (mt == mt_peer){
+        std::map<QString, QStringList>::const_iterator it = m_peermsgQ.find(key);
+        if (it == m_peermsgQ.end()){
+            return ;
+        }
+        qslMsg = it->second;
+    }else if (mt == mt_group){
+        std::map<QString, QStringList>::const_iterator it = m_groupmsgQ.find(key);
+        if (it == m_groupmsgQ.end()){
+            return ;
+        }
+        qslMsg = it->second;
+    }else if (mt == mt_subscribe){
+        std::map<QString, QStringList>::const_iterator it = m_submsgQ.find(key);
+        if (it == m_submsgQ.end()){
+            return ;
+        }
+        qslMsg = it->second;
+    }else{
+        return ;
+    }
+
+    for (int i = 0; i < qslMsg.length(); i++){
+        QString qsMsg = qslMsg.at(i);
+        BMMessage bmMsg;
+        if (!bmMsg.Load(qsMsg)){
+            continue;
+        }
+        bool fTx = bmMsg.isTx();
+        QString qsFrom = bmMsg.from();
+        QString qsGroup = bmMsg.groupName();
+        QStringList qslRecip = bmMsg.recip();
+        QString qsContent = bmMsg.content();
+        QString qsCertId = bmMsg.certid();
+        QString qsCert = bmMsg.cert();
+        populateMessage(fTx, mt, qsFrom, qsGroup, qslRecip, qsContent, qsCertId, qsCert);
+    }
+
+    return ;
+}
+
+void MainWindow::onSaveHistory(bool fTx, MsgType mt
+                               , const QString &from
+                               , const QString &group
+                               , const QStringList &recip
+                               , const QString &content
+                               , const QString &certid
+                               , const QString &cert)
+{
+   BMMessage bmMsg;
+   bmMsg.rtx(fTx);
+   bmMsg.msgType(mt);
+   bmMsg.from(from);
+   bmMsg.groupName(group);
+   bmMsg.recip(recip);
+   bmMsg.content(content);
+   bmMsg.certid(certid);
+   bmMsg.cert(cert);
+   QString qsMsg = bmMsg.Serialize();
+   QString qsKey;
+   if (mt == mt_group){
+       qsKey = group;
+       m_groupmsgQ [qsKey].append(qsMsg);
+   }else if (mt == mt_peer){
+       qsKey = fTx ? recip.at(0) : from;
+       if (bmMsg.isRx() && !m_bitmail->IsFriend(qsKey.toStdString(), cert.toStdString())){
+           qsKey = "*";
+       }
+       m_peermsgQ[qsKey].append(qsMsg);
+   }else if (mt == mt_subscribe){
+       qsKey = fTx ? recip.at(0) : from;
+       m_submsgQ[qsKey].append(qsMsg);
+   }else{
+       return ;
+   }
+}
+
 void MainWindow::onInviteBtnClicked()
 {
     InviteDialog inviteDialog(this);
@@ -826,63 +929,55 @@ void MainWindow::onInviteBtnClicked()
     QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
     QString qsEmail = inviteDialog.GetEmail();
     QString qsWhisper = inviteDialog.GetWhisper();
-
-    QJsonObject joMsg;
-    joMsg["time"]   = QDateTime::currentDateTime().toMSecsSinceEpoch();
-    joMsg["latitude"]    = 0.0;
-    joMsg["longtitude"]  = 0.0;
-    joMsg["client"] = "qt";
-    joMsg["version"]= (int)m_bitmail->GetVersion();
-    joMsg["type"]   = "user"; // others e.g. "system"
-    joMsg["msg"]    = qsWhisper;
-    QJsonDocument jdoc(joMsg);
-
-    QString qsWrappedMsg = qsWhisper; (void)jdoc;//jdoc.toJson();
+    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
+    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
 
     if (!qsEmail.isEmpty()){
-
         QStringList qslTo;
-        qslTo.append("friend");
         qslTo.append(qsEmail);
-
-        emit readyToSend(qslTo, qsWrappedMsg);
-
-        populateMessage(true
-                        , "friend"
-                        , qsFrom
-                        , qslTo
-                        , qsWrappedMsg
-                        , QString::fromStdString(m_bitmail->GetID())
-                        , QString::fromStdString(m_bitmail->GetCert()));
+        emit readyToSend(mt_peer
+                         , qsFrom
+                         , ""
+                         , qslTo
+                         , qsWhisper);
+        emit saveHistory(true, mt_peer, qsFrom, "", qslTo, qsWhisper, qsCertId, qsCert);
     }
     return ;
 }
+
 void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
 {
-    (void)actItem;
-    QStringList vecMsgData = actItem->data(Qt::UserRole).toStringList();
-    QString qsFlag = vecMsgData.front();
-    if (qsFlag == "tx"){
+    if (!actItem){
         return ;
     }
-    vecMsgData.pop_front();
-    QString qsFrom = vecMsgData.front();
-    vecMsgData.pop_front();
-    QString qsTo = vecMsgData.front();
-    vecMsgData.pop_front();
-    QStringList qslTo = qsTo.split("|");
-    (void)qslTo;
-    QString qsMessage = vecMsgData.front();
-    vecMsgData.pop_front();    
-    QString qsCertID = vecMsgData.front();
-    vecMsgData.pop_front();
-    QString qsCert = vecMsgData.front();
-    vecMsgData.pop_front();
+    QVariant qvData = actItem->data(Qt::UserRole);
+    QString qvDataType = qvData.typeName();
+    if (qvDataType != "QString"){
+        return ;
+    }
+    QString qsMsg = qvData.toString();
+
+    QString qsFrom, qsMessage, qsCertID, qsCert;
+    do {
+        BMMessage bmMsg;
+        if (!bmMsg.Load(qsMsg)){
+            return ;
+        }
+        if (bmMsg.isTx()){
+            return ;
+        }
+        qsFrom = bmMsg.from();
+        qsMessage = bmMsg.content();
+        qsCertID = bmMsg.certid();
+        qsCert = bmMsg.cert();
+    }while(0);
+
     MessageDialog messageDialog(m_bitmail);
     messageDialog.SetFrom(qsFrom);
     messageDialog.SetMessage(qsMessage);
     messageDialog.SetCertID(qsCertID);
     messageDialog.SetCert(qsCert);
+
     connect(&messageDialog, SIGNAL(signalAddFriend(QString))
             , this, SLOT(onAddFriend(QString)));
     if (messageDialog.exec() != QDialog::Accepted){
@@ -890,15 +985,13 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
     }
     return ;
 }
+
 void MainWindow::onAddFriend(const QString &email)
 {
-    if (btree->findItems(email, Qt::MatchContains).size()){
-        // Already exist;
-        return ;
-    }
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
     populateFriendLeaf(nodeFriends, email, qsNick);
 }
+
 void MainWindow::onNewSubscribe(const QString & email)
 {
     if (btree->findItems(email, Qt::MatchContains).size()){
@@ -907,28 +1000,4 @@ void MainWindow::onNewSubscribe(const QString & email)
     }
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
     populateSubscribeLeaf(nodeSubscribes, email, qsNick);
-}
-QString MainWindow::FormatBMMessage(const QString &from
-                                    , const QString &fromnick
-                                    , const QString &to
-                                    , const QString &tonick
-                                    , const QString &msg)
-{
-    QString qsFullFrom = QString("(%1[%2]) %3 (%4[%5])")
-            .arg(fromnick)
-            .arg(from)
-            .arg(tr("Says To"))
-            .arg(tonick)
-            .arg(to);
-
-    QString qsNow = QDateTime::currentDateTime().toString();
-    QString qsMessageDisplay = qsNow;
-    qsMessageDisplay += "\n";
-    qsMessageDisplay += qsFullFrom;
-    qsMessageDisplay += "\n\n";
-    //TODO: Long message populated into listwidget, will make bitmail-qt in low performance.
-    // Any suggestions?
-    qsMessageDisplay += msg.mid(0, 512);
-    qsMessageDisplay += "\n\n";
-    return qsMessageDisplay;
 }

@@ -15,7 +15,9 @@ public:
     ~RxThread();
 public:
     void run();
-    void NotifyNewMessage(const QString & from
+    void NotifyNewMessage(MsgType mt
+                          , const QString & from
+                          , const QString & group
                           , const QStringList & recip
                           , const QString & msg
                           , const QString & certid
@@ -26,7 +28,9 @@ public:
     void stop();
 
 signals:
-    void gotMessage(const QString & from
+    void gotMessage(MsgType mt
+                        , const QString & from
+                        , const QString & group
                         , const QStringList & recip
                         , const QString & msg
                         , const QString & certid
