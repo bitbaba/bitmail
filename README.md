@@ -13,13 +13,15 @@
 http://bitbaba.github.io/bitmail/index.html
 
 ###Introduction
-- Bitmail(比特信) is a purly Peer-to-Peer instant messenger client, to help people to communicate with each other securely. Authentication and security is based on PKI(Public Key Infrastructure), powered by [OpenSSL](https://github.com/openssl/openssl). 
+- Bitmail(比特信) is a purly Peer-to-Peer instant messenger client, to help people to communicate with each other securely. 
 
-- To send your friend a message with your signature, will help your friend to known that, this email is definitely sent from yourself, not from a middle-man.
+- Authentication and security are based on PKI(Public Key Infrastructure), and are powered by [OpenSSL](https://github.com/openssl/openssl). 
 
-- To send your friend a message encrypted by your friend's certificate, will make sure that, this message is not viewed by anyone while transferring.
+- A Message singed with your private key is definitely sent from yourself, not from a middle-man.
 
-- The rx/tx network is now based on MX(eMail eXchange) protocols, e.g. imap(s) & smtp(s), and powered by [CURL](https://github.com/bagder/curl). There is more delay than real IM or IRC network. But the MX network can be replaced by (or upgraded to) other transfer networks. 
+- A Message encrypted with your friend's certificate, is not viewed by anyone while transferring.
+
+- The rx/tx network is now based on MX(eMail eXchange) protocols, e.g. imap(s) & smtp(s), and is powered by [CURL](https://github.com/bagder/curl). There is more delay than real IM or IRC network. But the MX network can be replaced by (or upgraded to) other transfer networks. 
 
 - Free-speaking is your right. No one can supervise it.
 
