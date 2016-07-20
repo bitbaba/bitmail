@@ -798,9 +798,9 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     if (self && self->m_onMessageEvent){
         self->m_onMessageEvent(sFrom.c_str()
         						, sRecip.c_str()
-                                , CX509Cert::b64enc(sMimeBody).c_str()
+                                , sMimeBody.c_str()
                                 , buddyCert.GetID().c_str()
-                                , CX509Cert::b64enc(buddyCert.GetCertByPem()).c_str()
+                                , buddyCert.GetCertByPem().c_str()
                                 , self->m_onMessageEventParam);
     }
 
