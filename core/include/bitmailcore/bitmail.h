@@ -207,21 +207,23 @@ public:
     bool IsFriend(const std::string & email, const std::string & certpem) const;
 
     // Groups
-    int AddGroup(const std::string & groupname);
+    int AddGroup(const std::string & gid, const std::string & groupname);
 
-    int RemoveGroup(const std::string & groupname);
+    int GetGroupName(const std::string & gid, std::string & groupName)  const;
 
-    bool HasGroup(const std::string & groupname) const;
+    int RemoveGroup(const std::string & gid);
 
-    int GetGroups(std::vector<std::string> & groups) const;
+    bool HasGroup(const std::string & gid) const;
 
-    int GetGroupMembers(const std::string & groupname, std::vector<std::string> & members) const;
+    int GetGroups(std::vector<std::string> & gids) const;
 
-    int AddGroupMember(const std::string & groupname, const std::string & member);
+    int GetGroupMembers(const std::string & gid, std::vector<std::string> & members) const;
 
-    bool HasGroupMember(const std::string & groupname, const std::string & member) const;
+    int AddGroupMember(const std::string & gid, const std::string & member);
 
-    int RemoveGroupMember(const std::string & groupname, const std::string & member);
+    bool HasGroupMember(const std::string & gid, const std::string & member) const;
+
+    int RemoveGroupMember(const std::string & gid, const std::string & member);
 
     // Subscribes
     int Subscribe(const std::string & sub);
@@ -247,8 +249,11 @@ protected:
     // Key: email, Value: Certificate In Pem format
     std::map<std::string, std::string> m_buddies;
     
-    // Groups, Key: GroupName, Value: vector of friends' email
+    // Groups, Key: GroupID, Value: vector of friends' email
     std::map<std::string, std::vector<std::string> > m_groups;
+
+    // GroupNames, Key: GroupID, Value: GroupName
+    std::map<std::string, std::string> m_groupNames;
 
     // Subscribes: vector of subscribed email
     std::vector<std::string> m_subscribes;

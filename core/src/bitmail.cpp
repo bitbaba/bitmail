@@ -524,36 +524,52 @@ int BitMail::GetFriends(std::vector<std::string> & vecEmails) const
 }
 
 // Groups
-int BitMail::AddGroup(const std::string & groupname)
+int BitMail::AddGroup(const std::string & gid, const std::string & groupname)
 {
+	if (gid.empty()){
+		return bmInvalidParam;
+	}
 	if (groupname.empty()){
 		return bmInvalidParam;
 	}
-	if (m_groups.end() != m_groups.find(groupname)){
+	// Overwrite current groupname, by force.
+	m_groupNames.insert(std::make_pair(gid, groupname));
+
+	if (m_groups.end() != m_groups.find(gid)){
 		return bmGrpExist;
 	}
-	m_groups.insert(std::make_pair(groupname, std::vector<std::string>()));
+	m_groups.insert(std::make_pair(gid, std::vector<std::string>()));
 	return bmOk;
 }
 
-int BitMail::RemoveGroup(const std::string & groupname)
+int BitMail::GetGroupName(const std::string & gid, std::string & groupName) const
 {
-	if (groupname.empty()){
+	if (m_groupNames.find(gid) == m_groupNames.end()){
+		return bmNoGrp;
+	}
+	std::map<std::string, std::string>::const_iterator it = m_groupNames.find(gid);
+	groupName = it->second;
+	return bmOk;
+}
+
+int BitMail::RemoveGroup(const std::string & gid)
+{
+	if (gid.empty()){
 		return bmInvalidParam;
 	}
-	if (m_groups.end() == m_groups.find(groupname)){
+	if (m_groups.end() == m_groups.find(gid)){
 		return bmOk;
 	}
-	m_groups.erase(groupname);
+	m_groups.erase(gid);
 	return bmOk;
 }
 
-bool BitMail::HasGroup(const std::string & groupname) const
+bool BitMail::HasGroup(const std::string & gid) const
 {
-	if (groupname.empty()){
+	if (gid.empty()){
 		return false;
 	}
-	return m_groups.find(groupname) != m_groups.end();
+	return m_groups.find(gid) != m_groups.end();
 }
 
 int BitMail::GetGroups(std::vector<std::string> & groups) const
@@ -566,14 +582,14 @@ int BitMail::GetGroups(std::vector<std::string> & groups) const
 	return bmOk;
 }
 
-int BitMail::GetGroupMembers(const std::string & groupname
+int BitMail::GetGroupMembers(const std::string & gid
 							, std::vector<std::string> & members) const
 {
-	if (groupname.empty()){
+	if (gid.empty()){
 		return bmInvalidParam;
 	}
 	std::map<std::string, std::vector<std::string> >::const_iterator it =
-			m_groups.find(groupname);
+			m_groups.find(gid);
 	if (it == m_groups.end()){
 		return bmNoGrp;
 	}
@@ -581,14 +597,14 @@ int BitMail::GetGroupMembers(const std::string & groupname
 	return bmOk;
 }
 
-int BitMail::AddGroupMember(const std::string & groupname
+int BitMail::AddGroupMember(const std::string & gid
 							, const std::string & member)
 {
-	if (groupname.empty() || member.empty()){
+	if (gid.empty() || member.empty()){
 		return bmInvalidParam;
 	}
 	std::map<std::string, std::vector<std::string> >::iterator it =
-			m_groups.find(groupname);
+			m_groups.find(gid);
 	if (it == m_groups.end()){
 		return bmNoGrp;
 	}
@@ -601,14 +617,14 @@ int BitMail::AddGroupMember(const std::string & groupname
 	return bmOk;
 }
 
-bool BitMail::HasGroupMember(const std::string & groupname
+bool BitMail::HasGroupMember(const std::string & gid
 							, const std::string & member) const
 {
-	if (groupname.empty() || member.empty()){
+	if (gid.empty() || member.empty()){
 		return bmInvalidParam;
 	}
 	std::map<std::string, std::vector<std::string> >::const_iterator it =
-			m_groups.find(groupname);
+			m_groups.find(gid);
 	if (it == m_groups.end()){
 		return false;
 	}
@@ -617,14 +633,14 @@ bool BitMail::HasGroupMember(const std::string & groupname
 			!= members.end());
 }
 
-int BitMail::RemoveGroupMember(const std::string & groupname
+int BitMail::RemoveGroupMember(const std::string & gid
 							, const std::string & member)
 {
-	if (groupname.empty() || member.empty()){
+	if (gid.empty() || member.empty()){
 		return bmInvalidParam;
 	}
 	std::map<std::string, std::vector<std::string> >::iterator it =
-			m_groups.find(groupname);
+			m_groups.find(gid);
 	if (it == m_groups.end()){
 		return bmNoGrp;
 	}
