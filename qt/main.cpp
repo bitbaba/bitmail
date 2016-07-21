@@ -283,12 +283,19 @@ namespace BMQTApplication {
             for (QJsonObject::const_iterator it = joGroups.constBegin()
                  ; it != joGroups.constEnd()
                  ; it ++){
-                QString qsGroupName = it.key();
-                bm->AddGroup(qsGroupName.toStdString());
-                QJsonArray jaMembers = it.value().toArray();
-                for (int i = 0; i < jaMembers.size(); i++){
-                    QString qsMember = jaMembers.at(i).toString();
-                    bm->AddGroupMember(qsGroupName.toStdString(), qsMember.toStdString());
+                QString qsGroupId = it.key();
+                QJsonObject joGroup = it.value().toObject();
+                QString qsGroupName = "";
+                if (joGroup.contains("name")){
+                    qsGroupName = joGroup["name"].toString();
+                }
+                bm->AddGroup(qsGroupId.toStdString(), qsGroupName.toStdString());
+                if (joGroup.contains("members")){
+                    QJsonArray jaMembers = joGroup["members"].toArray();
+                    for (int i = 0; i < jaMembers.size(); i++){
+                        QString qsMember = jaMembers.at(i).toString();
+                        bm->AddGroupMember(qsGroupId.toStdString(), qsMember.toStdString());
+                    }
                 }
             }
         }while(0);
@@ -378,9 +385,17 @@ namespace BMQTApplication {
         for (std::vector<std::string>::const_iterator it = vecGroups.begin()
              ; it != vecGroups.end()
              ; ++it){
-            const std::string sGroupName = *it;
+            QJsonObject joGroup;
+
+            const std::string sGroupId = *it;
+            std::string sGroupName;
+            if (bmOk != bm->GetGroupName(sGroupId, sGroupName)){
+                continue;
+            }
+            joGroup["name"] = QString::fromStdString(sGroupName);
+
             std::vector<std::string> vecMembers;
-            bm->GetGroupMembers(sGroupName, vecMembers);
+            bm->GetGroupMembers(sGroupId, vecMembers);
             QJsonArray jaMembers;
             for (std::vector<std::string>::const_iterator it_member = vecMembers.begin()
                  ; it_member != vecMembers.end()
@@ -388,7 +403,9 @@ namespace BMQTApplication {
                 const std::string sMember = *it_member;
                 jaMembers.append(((QString::fromStdString(sMember))));
             }
-            joGroups.insert(QString::fromStdString(sGroupName), jaMembers);
+            joGroup["members"] = jaMembers;
+
+            joGroups.insert(QString::fromStdString(sGroupId), joGroup);
         }
         // Subscribes
         std::vector<std::string> vecSubscribes;

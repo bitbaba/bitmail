@@ -65,6 +65,7 @@ class PollThread;
 class RxThread;
 class TxThread;
 class ShutdownDialog;
+
 //! [0]
 class MainWindow : public QMainWindow
 {
@@ -77,14 +78,11 @@ protected:
 public slots:
     void documentWasModified();
     void onSendBtnClicked();
-    bool GetCurrentRecip(MsgType & mt, QString & qsGroupName, QStringList & qslRecip);
     void onConfigBtnClicked();
     void onPayBtnClicked();
     void onWalletBtnClicked();
     void onRssBtnClicked();
-    void onNewMessage(MsgType mt
-                      , const QString & from
-                      , const QString & group
+    void onNewMessage(const QString & from
                       , const QStringList & recip
                       , const QString & msg
                       , const QString & certid
@@ -103,19 +101,18 @@ public slots:
     void onMessageDoubleClicked(QListWidgetItem * actItem);
     void onAddFriend(const QString & email);
     void onNewSubscribe(const QString & sub);
-    void onLoadHistory(MsgType mt, const QString & key);
-    void onSaveHistory(bool fTx, MsgType mt, const QString & from, const QString & group, const QStringList & recip, const QString & content, const QString & certid, const QString & cert);
 
 private:
+    bool getCurrentRecipKey(MsgType & mt, QString & qsKey);
+    bool getRecipList(MsgType, const QString & qsKey, QStringList & reciplist);
     void createActions();
     void createToolBars();
     void createStatusBar();
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
-    void populateMessage(bool fTx, MsgType mt, const QString & from, const QString & groupName, const QStringList & to, const QString & msg, const QString & certid, const QString & cert);
-
+    void populateMessage(const RTXMessage & rtxMsg);
     void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick);
-    void populateGroupLeaf(QTreeWidgetItem * node, const QString & groupname, const QStringList & members);
+    void populateGroupLeaf(QTreeWidgetItem * node, const QString & groupid, const QString & groupname);
     void populateSubscribeLeaf(QTreeWidgetItem * node, const QString & email, const QString &nick);
 
     void populateFriendTree(QTreeWidgetItem * node);
@@ -126,6 +123,7 @@ private:
     void startupNetwork();
     void shutdownNetwork();
     void setNotify(QTreeWidgetItem * item, int no);
+
 private:
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;
@@ -163,16 +161,12 @@ private:
     std::map<QString, QStringList> m_groupmsgQ;
     std::map<QString, QStringList> m_submsgQ;
 signals:
-    void readyToSend(MsgType mt
-                     , const QString & from
-                     , const QString & group
+    void readyToSend(  const QString & from
                      , const QStringList & recip
                      , const QString & msg);
 
-    void loadHistory(MsgType mt, const QString & key);
-
-    void saveHistory(bool fTx, MsgType mt, const QString & from, const QString & group, const QStringList & recip, const QString & content, const QString & certid, const QString & cert);
-
 };
+
+
 //! [0]
 #endif

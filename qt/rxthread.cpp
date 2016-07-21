@@ -45,15 +45,13 @@ void RxThread::stop()
     m_fStopFlag = true;
 }
 
-void RxThread::NotifyNewMessage(enum MsgType mt
-                                , const QString &from
-                                , const QString & group
+void RxThread::NotifyNewMessage(const QString &from
                                 , const QStringList & recip
                                 , const QString & content
                                 , const QString & certid
                                 , const QString &cert)
 {
-    emit gotMessage(mt, from, group, recip, content, certid, cert);
+    emit gotMessage(from, recip, content, certid, cert);
     return ;
 }
 
@@ -70,21 +68,14 @@ void RxThread::onInboxPollEvent()
 
 int MessageEventHandler(const char * from, const char * recip, const char * msg, const char * certid, const char * cert, void * p)
 {
-    BMMessage rxMsg;
-    if (!rxMsg.Load(QString::fromStdString((msg)))){
-        return bmInvalidParam;
-    }
-    QString qsGroup = rxMsg.groupName();
-    MsgType mt = rxMsg.msgType();
-    QString qsContent = rxMsg.content();
-
     QString qsFrom = QString::fromStdString(from);
     QStringList qslRecip = QString::fromStdString(recip).split(RECIP_SEPARATOR, QString::SkipEmptyParts);
+    QString qsContent = QString::fromStdString(msg);
     QString qsCertID = QString::fromStdString(certid);
     QString qsCert = QString::fromStdString((cert));
 
     RxThread * self = (RxThread *)p;
-    self->NotifyNewMessage(mt, qsFrom, qsGroup, qslRecip, qsContent, qsCertID, qsCert);
+    self->NotifyNewMessage(qsFrom, qslRecip, qsContent, qsCertID, qsCert);
     return bmOk;
 }
 

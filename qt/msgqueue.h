@@ -7,6 +7,40 @@
 #include <QQueue>
 #include <QStringList>
 
+
+class RTXMessage{
+private:
+    bool         _fTx;                /*true=tx, false=rx*/
+    QString      _From;               /*email*/
+    QStringList  _Recip;              /*recip list of email*/
+    QString      _CertId;             /*identifier of singer's certificate*/
+    QString      _Cert;               /*signer's certificate*/
+    QString      _Content;            /*real message content*/
+
+public:
+    RTXMessage();
+    ~RTXMessage();
+    bool Load(const QString & jsonMsg);
+    QString Serialize() const;
+public:
+    // Getters
+    bool isTx() const;
+    bool isRx() const;
+    QString from() const;
+
+    QStringList recip() const;
+    QString content() const;
+    QString certid() const;
+    QString cert() const;
+    // Setters
+    void rtx(bool fTx);
+    void from(const QString & s);
+    void recip(const QStringList & r);
+    void content(const QString & c);
+    void certid(const QString & cid);
+    void cert(const QString & c);
+};
+
 enum MsgType{
     mt_undef = 0,
     mt_peer,
@@ -17,43 +51,74 @@ enum MsgType{
 Q_DECLARE_METATYPE(MsgType)
 
 class BMMessage{
-private:
-    bool         _fTx;                /*true=tx, false=rx*/
-    enum MsgType _MsgType;            /*{peer, group, subscribe}*/
-    QString      _From;               /*email*/
-    QString      _GroupName;          /*additional attribute for <group> type*/
-    QStringList  _Recip;              /*recip list of email*/
-    QString      _Content;            /*real message content*/
-    QString      _CertId;             /*identifier of singer's certificate*/
-    QString      _Cert;               /*signer's certificate*/
 public:
     BMMessage();
     ~BMMessage();
-    bool Load(const QString & jsonMsg);
+public:
+    bool Load(const QString &jsonMsg);
     QString Serialize();
 public:
-    // Getters
-    bool isTx() const;
-    bool isRx() const;
     enum MsgType msgType() const;
     bool isPeerMsg() const;
     bool isGroupMsg()const;
-    bool isSubscribeMsg() const;
-    QString from() const;
-    QString groupName() const;
-    QStringList recip() const;
-    QString content() const;
-    QString certid() const;
-    QString cert() const;
-    // Setters
-    void rtx(bool fTx);
+    bool isSubMsg() const;
     void msgType(MsgType mt);
-    void from(const QString & s);
-    void groupName(const QString & g);
-    void recip(const QStringList & r);
-    void content(const QString & c);
-    void certid(const QString & cid);
-    void cert(const QString & c);
+    QString content() const;
+    void content(const QString & ctnt);
+private:
+    MsgType _MsgType;
+    QString _Content;
+};
+
+class PeerMessage{
+public:
+    PeerMessage();
+    ~PeerMessage();
+public:
+    bool Load(const QString & qsJsonMsg);
+    QString Serialize()const;
+public:
+    QString content() const;
+    void content(const QString & ctnt);
+private:
+    QString _Content;
+};
+
+class GroupMessage{
+public:
+    GroupMessage();
+    ~GroupMessage();
+public:
+    bool Load(const QString & qsJsonMsg);
+    QString Serialize()const;
+public:
+    QString groupId() const;
+    void groupId(const QString & gid);
+    QString groupName()const;
+    void groupName(const QString & gname);
+    QString content() const;
+    void content(const QString & ctnt);
+private:
+    QString _GroupId;
+    QString _GroupName;
+    QString _Content;
+};
+
+class SubMessage{
+public:
+    SubMessage();
+    ~SubMessage();
+public:
+    bool Load(const QString & qsJsonMsg);
+    QString Serialize()const;
+public:
+    QString refer()const;
+    void refer(const QString & ref);
+    QString content() const;
+    void content(const QString & ctnt);
+private:
+    QString _Refer;
+    QString _Content;
 };
 
 template<class nodeType>

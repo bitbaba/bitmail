@@ -4,17 +4,17 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
-BMMessage::BMMessage()
+RTXMessage::RTXMessage()
 {
 
 }
 
-BMMessage::~BMMessage()
+RTXMessage::~RTXMessage()
 {
 
 }
 
-bool BMMessage::Load(const QString & qsJsonMsg)
+bool RTXMessage::Load(const QString & qsJsonMsg)
 {
     QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
     if (!jdoc.isObject()){
@@ -25,9 +25,7 @@ bool BMMessage::Load(const QString & qsJsonMsg)
         return false;
     }
     if (jsonMsg.contains("fTx")
-            && jsonMsg.contains("msgType")
             && jsonMsg.contains("from")
-            && jsonMsg.contains("group")
             && jsonMsg.contains("recip")
             && jsonMsg.contains("content")
             && jsonMsg.contains("certId")
@@ -37,23 +35,19 @@ bool BMMessage::Load(const QString & qsJsonMsg)
         return false;
     }
     _fTx = jsonMsg["fTx"].toBool();
-    _MsgType = (MsgType)jsonMsg["msgType"].toInt();
     _From = jsonMsg["from"].toString();
     _Recip = jsonMsg["recip"].toString().split(";");
-    _GroupName = jsonMsg["group"].toString();
-    _Content = jsonMsg["content"].toString();
     _CertId = jsonMsg["certId"].toString();
     _Cert = jsonMsg["cert"].toString();
+    _Content = jsonMsg["content"].toString();
     return true;
 }
 
-QString BMMessage::Serialize()
+QString RTXMessage::Serialize() const
 {
     QJsonObject jsonMsg;
     jsonMsg["fTx"] = _fTx;
-    jsonMsg["msgType"] = (int)_MsgType;
     jsonMsg["from"] = _From;
-    jsonMsg["group"] = _GroupName;
     jsonMsg["recip"] = _Recip.join(";");
     jsonMsg["content"] = _Content;
     jsonMsg["certId"] = _CertId;
@@ -63,104 +57,317 @@ QString BMMessage::Serialize()
     return jdoc.toJson();
 }
 
-bool BMMessage::isTx() const
+bool RTXMessage::isTx() const
 {
     return _fTx;
 }
 
-bool BMMessage::isRx() const
+bool RTXMessage::isRx() const
 {
     return !_fTx;
+}
+
+QString RTXMessage::from() const
+{
+    return _From;
+}
+
+QStringList RTXMessage::recip() const
+{
+    return _Recip;
+}
+
+QString RTXMessage::content() const
+{
+    return _Content;
+}
+
+QString RTXMessage::certid() const
+{
+    return _CertId;
+}
+
+QString RTXMessage::cert() const
+{
+    return _Cert;
+}
+
+// Setters
+void RTXMessage::rtx(bool fTx)
+{
+    _fTx = fTx;
+}
+
+void RTXMessage::from(const QString & f)
+{
+    _From = f;
+}
+
+void RTXMessage::recip(const QStringList & r)
+{
+    _Recip = r;
+}
+
+void RTXMessage::content(const QString & c)
+{
+    _Content = c;
+}
+
+void RTXMessage::certid(const QString & cid)
+{
+    _CertId = cid;
+}
+
+void RTXMessage::cert(const QString & c)
+{
+    _Cert = c;
+}
+
+BMMessage::BMMessage()
+{
+
+}
+BMMessage::~BMMessage()
+{
+
+}
+
+bool BMMessage::Load(const QString &qsJsonMsg)
+{
+    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
+    if (!jdoc.isObject()){
+        return false;
+    }
+    QJsonObject jsonMsg = jdoc.object();
+    if (jsonMsg.isEmpty()){
+        return false;
+    }
+    if (jsonMsg.contains("msgType")
+            && jsonMsg.contains("content")){
+
+    }else{
+        return false;
+    }
+    _MsgType = (MsgType)jsonMsg["msgType"].toInt();
+    _Content = jsonMsg["content"].toString();
+    return true;
+}
+
+QString BMMessage::Serialize()
+{
+    QJsonObject jsonMsg;
+    jsonMsg["msgType"] = (int)_MsgType;
+    jsonMsg["content"] = _Content;
+    QJsonDocument jdoc;
+    jdoc.setObject(jsonMsg);
+    return jdoc.toJson();
 }
 
 enum MsgType BMMessage::msgType() const
 {
     return _MsgType;
 }
-
 bool BMMessage::isPeerMsg() const
 {
     return _MsgType == mt_peer;
 }
-
 bool BMMessage::isGroupMsg()const
 {
     return _MsgType == mt_group;
 }
-
-bool BMMessage::isSubscribeMsg() const
+bool BMMessage::isSubMsg() const
 {
     return _MsgType == mt_subscribe;
 }
-
-QString BMMessage::from() const
+void BMMessage::msgType(MsgType mt)
 {
-    return _From;
-}
-
-QString BMMessage::groupName() const
-{
-    return _GroupName;
-}
-
-QStringList BMMessage::recip() const
-{
-    return _Recip;
+    _MsgType = mt;
 }
 
 QString BMMessage::content() const
 {
     return _Content;
 }
-
-QString BMMessage::certid() const
+void BMMessage::content(const QString & ctnt)
 {
-    return _CertId;
+    _Content = ctnt;
 }
 
-QString BMMessage::cert() const
+
+PeerMessage::PeerMessage()
 {
-    return _Cert;
+
 }
 
-// Setters
-void BMMessage::rtx(bool fTx)
+PeerMessage::~PeerMessage()
 {
-    _fTx = fTx;
+
 }
 
-void BMMessage::msgType(MsgType mt)
+bool PeerMessage::Load(const QString & qsJsonMsg)
 {
-    _MsgType = mt;
+    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
+    if (!jdoc.isObject()){
+        return false;
+    }
+    QJsonObject jsonMsg = jdoc.object();
+    if (jsonMsg.isEmpty()){
+        return false;
+    }
+    if (jsonMsg.contains("content")){
+
+    }else{
+        return false;
+    }
+    _Content = jsonMsg["content"].toString();
+    return true;
 }
 
-void BMMessage::from(const QString & f)
+QString PeerMessage::Serialize()const
 {
-    _From = f;
+    QJsonObject jsonMsg;
+    jsonMsg["content"] = _Content;
+    QJsonDocument jdoc;
+    jdoc.setObject(jsonMsg);
+    return jdoc.toJson();
 }
 
-void BMMessage::groupName(const QString & g)
+QString PeerMessage::content() const
 {
-    _GroupName = g;
+    return _Content;
+}
+void PeerMessage::content(const QString & ctnt)
+{
+    _Content = ctnt;
 }
 
-void BMMessage::recip(const QStringList & r)
+GroupMessage::GroupMessage()
 {
-    _Recip = r;
+
 }
 
-void BMMessage::content(const QString & c)
+GroupMessage::~GroupMessage()
 {
-    _Content = c;
+
 }
 
-void BMMessage::certid(const QString & cid)
+bool GroupMessage::Load(const QString & qsJsonMsg)
 {
-    _CertId = cid;
+    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
+    if (!jdoc.isObject()){
+        return false;
+    }
+    QJsonObject jsonMsg = jdoc.object();
+    if (jsonMsg.isEmpty()){
+        return false;
+    }
+    if (jsonMsg.contains("groupId")
+            && jsonMsg.contains("groupName")
+            && jsonMsg.contains("content")){
+
+    }else{
+        return false;
+    }
+    _GroupId = jsonMsg["groupId"].toString();
+    _GroupName = jsonMsg["groupName"].toString();
+    _Content = jsonMsg["content"].toString();
+    return true;
 }
 
-void BMMessage::cert(const QString & c)
+QString GroupMessage::Serialize()const
 {
-    _Cert = c;
+    QJsonObject jsonMsg;
+    jsonMsg["groupId"] = _GroupId;
+    jsonMsg["groupName"] = _GroupName;
+    jsonMsg["content"] = _Content;
+    QJsonDocument jdoc;
+    jdoc.setObject(jsonMsg);
+    return jdoc.toJson();
+}
+
+QString GroupMessage::groupId() const
+{
+    return _GroupId;
+}
+void GroupMessage::groupId(const QString & gid)
+{
+    _GroupId = gid;
+}
+
+QString GroupMessage::groupName()const
+{
+    return _GroupName;
+}
+void GroupMessage::groupName(const QString & gname)
+{
+    _GroupName = gname;
+}
+
+QString GroupMessage::content() const
+{
+    return _Content;
+}
+void GroupMessage::content(const QString & ctnt)
+{
+    _Content = ctnt;
+}
+
+SubMessage::SubMessage()
+{
+
+}
+
+SubMessage::~SubMessage()
+{
+
+}
+
+bool SubMessage::Load(const QString & qsJsonMsg)
+{
+    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
+    if (!jdoc.isObject()){
+        return false;
+    }
+    QJsonObject jsonMsg = jdoc.object();
+    if (jsonMsg.isEmpty()){
+        return false;
+    }
+    if (jsonMsg.contains("refer")
+            && jsonMsg.contains("content")){
+
+    }else{
+        return false;
+    }
+    _Refer = jsonMsg["refer"].toString();
+    _Content = jsonMsg["content"].toString();
+    return true;
+}
+
+QString SubMessage::Serialize()const
+{
+    QJsonObject jsonMsg;
+    jsonMsg["refer"] = _Refer;
+    jsonMsg["content"] = _Content;
+    QJsonDocument jdoc;
+    jdoc.setObject(jsonMsg);
+    return jdoc.toJson();
+}
+
+QString SubMessage::refer()const
+{
+    return _Refer;
+}
+void SubMessage::refer(const QString & ref)
+{
+    _Refer = ref;
+}
+
+QString SubMessage::content() const
+{
+    return _Content;
+}
+void SubMessage::content(const QString & ctnt)
+{
+    _Content = ctnt;
 }
 

@@ -18,17 +18,13 @@ TxThread::~TxThread()
 
 }
 
-void TxThread::onSendMessage(MsgType mt
-                             , const QString & from
-                             , const QString & group
+void TxThread::onSendMessage(const QString & from
                              , const QStringList & recip
                              , const QString & content)
 {
-    BMMessage txMsg;
+    RTXMessage txMsg;
     txMsg.rtx(true);
-    txMsg.msgType(mt);
     txMsg.from(from);
-    txMsg.groupName(group);
     txMsg.recip(recip);
     txMsg.content(content);
     txMsg.cert("");
@@ -44,16 +40,16 @@ void TxThread::run()
 {    
     while(!m_fStopFlag){
         if (m_txq.readable(6*1000)){
-            BMMessage msg = m_txq.pop();
+            RTXMessage msg = m_txq.pop();
             QStringList qslTo = msg.recip();
             std::vector<std::string> vecTo;
             for (QStringList::iterator it = qslTo.begin(); it != qslTo.end(); it++){
                 vecTo.push_back(it->toStdString());
             }
-            QString qsJsonMsg = msg.Serialize();
+            QString qsContent = msg.content();
             if (m_bitmail){
                 m_bitmail->SendMsg(vecTo
-                                   , qsJsonMsg.toStdString()
+                                   , qsContent.toStdString()
                                    , TxProgressHandler
                                    , this);
             }
