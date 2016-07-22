@@ -16,7 +16,7 @@ RTXMessage::~RTXMessage()
 
 bool RTXMessage::Load(const QString & qsJsonMsg)
 {
-    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
+    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toUtf8());
     if (!jdoc.isObject()){
         return false;
     }
@@ -134,7 +134,7 @@ BMMessage::~BMMessage()
 
 bool BMMessage::Load(const QString &qsJsonMsg)
 {
-    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
+    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toUtf8());
     if (!jdoc.isObject()){
         return false;
     }
@@ -206,7 +206,7 @@ PeerMessage::~PeerMessage()
 
 bool PeerMessage::Load(const QString & qsJsonMsg)
 {
-    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
+    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toUtf8());
     if (!jdoc.isObject()){
         return false;
     }
@@ -253,7 +253,7 @@ GroupMessage::~GroupMessage()
 
 bool GroupMessage::Load(const QString & qsJsonMsg)
 {
-    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
+    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toUtf8());
     if (!jdoc.isObject()){
         return false;
     }
@@ -324,7 +324,7 @@ SubMessage::~SubMessage()
 
 bool SubMessage::Load(const QString & qsJsonMsg)
 {
-    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toLatin1());
+    QJsonDocument jdoc = QJsonDocument::fromJson(qsJsonMsg.toUtf8());
     if (!jdoc.isObject()){
         return false;
     }
