@@ -69,7 +69,6 @@
 //! [1]
 MainWindow::MainWindow(BitMail * bitmail)
     : m_bitmail(bitmail)
-    , m_pollth(NULL)
     , m_rxth(NULL)
     , m_txth(NULL)
     , m_shutdownDialog(NULL)
@@ -136,6 +135,16 @@ MainWindow::MainWindow(BitMail * bitmail)
     leftLayout->addWidget(btree);
 
     mainLayout->addLayout(leftLayout);
+
+    sessLabel = new QLabel;
+    sessLabel->setMaximumHeight(20);
+    sessLabel->setAlignment(Qt::AlignCenter);
+    sessLabel->setFont(QFont("FixedSys", 8));
+    QPalette pa;
+    pa.setColor(QPalette::WindowText,Qt::red);
+    sessLabel->setPalette(pa);
+    sessLabel->setText("");
+
     msgView = new QListWidget;
     msgView->setIconSize(QSize(48,48));
     msgView->setSpacing(2);
@@ -155,6 +164,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     btnSend->setShortcut(QKeySequence("Ctrl+Return"));
     btnLayout->addWidget(btnSend);
     btnLayout->setAlignment(btnSend, Qt::AlignLeft);
+    rightLayout->addWidget(sessLabel);
     rightLayout->addWidget(msgView);
     rightLayout->addWidget(chatToolbar);
     rightLayout->addWidget(textEdit);
@@ -193,33 +203,18 @@ MainWindow::~MainWindow()
 }
 void MainWindow::startupNetwork()
 {
-    m_pollth = new PollThread(m_bitmail);
     m_rxth = (new RxThread(m_bitmail));
-    m_txth = (new TxThread(m_bitmail));
-
-    connect(m_pollth, SIGNAL(inboxPollEvent())
-            , m_rxth, SLOT(onInboxPollEvent()));
-
-    connect(m_pollth, SIGNAL(done())
-            , this, SLOT(onPollDone()));
-
-    connect(m_pollth, SIGNAL(inboxPollProgress(QString))
-            , this, SLOT(onPollProgress(QString)));
-
     connect(m_rxth, SIGNAL(gotMessage(QString, QStringList,QString, QString,QString))
             , this, SLOT(onNewMessage(QString, QStringList,QString, QString,QString)));
-
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
     connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
+    m_rxth->start();
 
+    m_txth = (new TxThread(m_bitmail));
     connect(this, SIGNAL(readyToSend(QString,QStringList,QString))
             , m_txth, SLOT(onSendMessage(QString,QStringList,QString)));
-
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
     connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
-
-    m_pollth->start();
-    m_rxth->start();
     m_txth->start();
 }
 void MainWindow::shutdownNetwork()
@@ -230,9 +225,7 @@ void MainWindow::shutdownNetwork()
     if (m_txth) {
         m_txth->stop();
     }
-    if (m_pollth) {
-        m_pollth->stop();
-    }
+
 }
 void MainWindow::onRxDone()
 {
@@ -241,7 +234,7 @@ void MainWindow::onRxDone()
     qDebug() << "Rx thread done";
     m_shutdownDialog->SetMessage(tr("Rx thread done."));
     m_rxth->wait(1000); delete m_rxth; m_rxth = NULL;
-    if (!m_rxth && !m_txth && !m_pollth){
+    if (!m_rxth && !m_txth){
         m_shutdownDialog->done(0);
     }
 }
@@ -257,11 +250,6 @@ void MainWindow::onTxProgress(const QString &info)
     statusBar()->showMessage(info, 2000);
     return ;
 }
-void MainWindow::onPollProgress(const QString &info)
-{
-    qDebug() << info;
-    statusBar()->showMessage(info, 2000);
-}
 
 void MainWindow::onTxDone()
 {
@@ -270,18 +258,7 @@ void MainWindow::onTxDone()
     qDebug() << "Tx thread done";
     m_shutdownDialog->SetMessage(tr("Tx thread done."));
     m_txth->wait(1000); delete m_txth; m_txth = NULL;
-    if (!m_rxth && !m_txth && !m_pollth){
-        m_shutdownDialog->done(0);
-    }
-}
-void MainWindow::onPollDone()
-{
-    if (!m_shutdownDialog)
-        return ;
-    qDebug() << ("Poll thread done");
-    m_shutdownDialog->SetMessage(tr("Poll thread done."));
-    m_pollth->wait(1000); delete m_pollth; m_pollth = NULL;
-    if (!m_rxth && !m_txth && !m_pollth){
+    if (!m_rxth && !m_txth){
         m_shutdownDialog->done(0);
     }
 }
@@ -293,7 +270,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     /**
     * Model here
     */
-    if (m_rxth || m_txth || m_pollth){
+    if (m_rxth || m_txth){
         m_shutdownDialog = new ShutdownDialog(this);
         m_shutdownDialog->exec();
     }
@@ -620,6 +597,7 @@ QString MainWindow::formatRTXMessage(const RTXMessage &rtxMsg)
     QString qsShow = rtxMsg.content(); // by default
     QString qsFrom, qsTime, qsContent;
     qsFrom = rtxMsg.from();
+    qsFrom = QString::fromStdString(m_bitmail->GetFriendNick(qsFrom.toStdString()));
     BMMessage bmMsg;
     if (!bmMsg.Load(rtxMsg.content())){
         return qsShow;
@@ -630,7 +608,6 @@ QString MainWindow::formatRTXMessage(const RTXMessage &rtxMsg)
         if (!groupMsg.Load(bmMsg.content())){
             return qsShow;
         }
-        qsFrom = groupMsg.groupName();
         qsContent = groupMsg.content();
     }
     else if (mt == mt_peer){
@@ -638,14 +615,12 @@ QString MainWindow::formatRTXMessage(const RTXMessage &rtxMsg)
         if (!peerMsg.Load(bmMsg.content())){
             return qsShow;
         }
-        qsFrom = QString::fromStdString(m_bitmail->GetFriendNick(qsFrom.toStdString()));
         qsContent = peerMsg.content();
     }else if (mt == mt_subscribe){
         SubMessage subMsg;
         if (!subMsg.Load(bmMsg.content())){
             return  qsShow;
         }
-        qsFrom = QString::fromStdString(m_bitmail->GetFriendNick(qsFrom.toStdString()));
         qsContent = subMsg.content();
     }
     qsTime = QDateTime::currentDateTime().toLocalTime().toString();
@@ -1024,6 +999,22 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
     QString qsKey = qslData.at(1);
     if (qsKey == KEY_STRANGER){
         btnSend->setEnabled(false);
+    }
+
+    /*Setup session label header*/
+    if (qsKey == KEY_STRANGER){
+        sessLabel->setText(tr("Strangers"));
+    }else{
+        if (mt == mt_group){
+            std::string sGroupName;
+            m_bitmail->GetGroupName(qsKey.toStdString(), sGroupName);
+            sessLabel->setText(QString::fromStdString(sGroupName));
+        }else if (mt == mt_peer || mt == mt_subscribe){
+            QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(qsKey.toStdString()));
+            sessLabel->setText(qsNick);
+        }else{
+            return ;
+        }
     }
 
     QList<RTXMessage> rtxList = dequeueMsg(mt, qsKey);

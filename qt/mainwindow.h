@@ -89,12 +89,11 @@ public slots:
                       , const QString & cert);
 
     void onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous);
+
     void onRxDone();
     void onRxProgress(const QString & info);
     void onTxDone();
     void onTxProgress(const QString & info);
-    void onPollDone();
-    void onPollProgress(const QString & info);
 
     void onTreeBuddyDoubleClicked(QTreeWidgetItem * actItem,int col);
     void onInviteBtnClicked();
@@ -132,7 +131,8 @@ private:
     QTreeWidgetItem * nodeFriends;
     QTreeWidgetItem * nodeGroups;
     QTreeWidgetItem * nodeSubscribes;
-    //QTreeWidgetItem * nodeStrangers;
+
+    QLabel * sessLabel;
     QListWidget *msgView;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
@@ -154,10 +154,11 @@ private:
     QAction *rssAct;
 private:
     BitMail *m_bitmail;
-    PollThread *m_pollth;
+
     RxThread *m_rxth;
     TxThread *m_txth;
     ShutdownDialog *m_shutdownDialog;
+
     // histroy messages queue
     std::map<QString, QStringList> m_peermsgQ;
     std::map<QString, QStringList> m_groupmsgQ;
