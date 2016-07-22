@@ -123,7 +123,9 @@ private:
     void startupNetwork();
     void shutdownNetwork();
     void setNotify(QTreeWidgetItem * item, int no);
-
+    void enqueueMsg(MsgType mt, const QString & key, const RTXMessage & rtxMsg);
+    QList<RTXMessage> dequeueMsg(MsgType mt, const QString & key);
+    QString formatRTXMessage(const RTXMessage & rtxMsg);
 private:
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;

@@ -505,6 +505,7 @@ void MainWindow::onNewMessage(const QString & from
                               , const QString & certid
                               , const QString & cert)
 {
+
     RTXMessage rtxMsg;
     rtxMsg.rtx(false);
     rtxMsg.from(from);
@@ -512,20 +513,145 @@ void MainWindow::onNewMessage(const QString & from
     rtxMsg.content(content);
     rtxMsg.certid(certid);
     rtxMsg.cert(cert);
-    populateMessage(rtxMsg);
+
+    BMMessage bmMsg;
+    if (!bmMsg.Load(content)){
+        return ;
+    }
+
+    QString qsKey = from;
+
+    if (bmMsg.msgType() == mt_peer){
+        if (!m_bitmail->IsFriend(from.toStdString(), cert.toStdString())){
+            qsKey = KEY_STRANGER;
+        }
+    }else
+    if (bmMsg.msgType() == mt_group){
+        GroupMessage groupMsg;
+        if (!groupMsg.Load(bmMsg.content())){
+            return ;
+        }
+        QString qsGroupId = groupMsg.groupId();
+        qsKey = qsGroupId;
+        if (!m_bitmail->HasGroup(qsGroupId.toStdString())){
+            qsKey = KEY_STRANGER;
+        }
+    }else
+    if (bmMsg.msgType() == mt_subscribe) {
+        if (!m_bitmail->IsFriend(from.toStdString(), cert.toStdString())){
+            qsKey = KEY_STRANGER;
+        }
+    }else{
+        return;
+    }
+
+    enqueueMsg(bmMsg.msgType(), qsKey, rtxMsg);
+
+    MsgType mt0;
+    QString key0;
+    getCurrentRecipKey(mt0, key0);
+    if (mt0 != mt_undef
+            && mt0 == bmMsg.msgType()
+            && !key0.isEmpty()
+            && key0 == qsKey){
+        populateMessage(rtxMsg);
+    }
+}
+
+void MainWindow::enqueueMsg(MsgType mt, const QString &key, const RTXMessage &rtxMsg)
+{
+    if (mt == mt_peer){
+        m_peermsgQ[key].append(rtxMsg.Serialize());
+    }else if (mt == mt_group){
+        m_groupmsgQ[key].append(rtxMsg.Serialize());
+    }else if (mt == mt_subscribe){
+        m_submsgQ[key].append(rtxMsg.Serialize());
+    }else{
+        return ;
+    }
+}
+
+QList<RTXMessage> MainWindow::dequeueMsg(MsgType mt, const QString &key)
+{
+    QList<RTXMessage> rtxList;
+    std::map<QString, QStringList> * ptr;
+    if (mt == mt_peer){
+        ptr = &m_peermsgQ;
+    }else if (mt == mt_group){
+        ptr = &m_groupmsgQ;
+    }else if (mt == mt_subscribe){
+        ptr = &m_submsgQ;
+    }else{
+        return rtxList;
+    }
+    for (std::map<QString, QStringList>::const_iterator it = ptr->begin()
+         ; it != ptr->end()
+         ; ++it){
+        if (it->first == key){
+            QStringList slist = it->second;
+            for (int i = 0; i < slist.length(); ++i){
+                QString smsg = slist.at(i);
+                RTXMessage rtxMsg;
+                if (rtxMsg.Load(smsg)){
+                    rtxList.append(rtxMsg);
+                }
+            }
+            break;
+        }
+    }
+    return rtxList;
 }
 
 void MainWindow::populateMessage(const RTXMessage & rtxMsg)
 {
     QListWidgetItem * msgElt = new QListWidgetItem();
     msgElt->setIcon(QIcon(":/images/bubble.png"));
-    msgElt->setText(rtxMsg.content());
+    msgElt->setText(formatRTXMessage(rtxMsg));
     msgElt->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     msgElt->setBackgroundColor((rtxMsg.isTx())? (Qt::lightGray) : (QColor(Qt::green).lighter()));
     msgElt->setData(Qt::UserRole, QVariant(rtxMsg.Serialize()));
     msgView->addItem(msgElt);
     msgView->scrollToBottom();
     return;
+}
+
+QString MainWindow::formatRTXMessage(const RTXMessage &rtxMsg)
+{
+    QString qsShow = rtxMsg.content(); // by default
+    QString qsFrom, qsTime, qsContent;
+    qsFrom = rtxMsg.from();
+    BMMessage bmMsg;
+    if (!bmMsg.Load(rtxMsg.content())){
+        return qsShow;
+    }
+    MsgType mt = bmMsg.msgType();
+    if (mt == mt_group){
+        GroupMessage groupMsg;
+        if (!groupMsg.Load(bmMsg.content())){
+            return qsShow;
+        }
+        qsFrom = groupMsg.groupName();
+        qsContent = groupMsg.content();
+    }
+    else if (mt == mt_peer){
+        PeerMessage peerMsg;
+        if (!peerMsg.Load(bmMsg.content())){
+            return qsShow;
+        }
+        qsFrom = QString::fromStdString(m_bitmail->GetFriendNick(qsFrom.toStdString()));
+        qsContent = peerMsg.content();
+    }else if (mt == mt_subscribe){
+        SubMessage subMsg;
+        if (!subMsg.Load(bmMsg.content())){
+            return  qsShow;
+        }
+        qsFrom = QString::fromStdString(m_bitmail->GetFriendNick(qsFrom.toStdString()));
+        qsContent = subMsg.content();
+    }
+    qsTime = QDateTime::currentDateTime().toLocalTime().toString();
+
+    qsShow = QString("[%1] - (%2)\r\n\r\n%3\r\n\r\n").arg(qsTime).arg(qsFrom).arg(qsContent);
+    return qsShow;
 }
 
 void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
@@ -550,7 +676,6 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
             return ;
         }
         qsFrom = rtxMsg.from();
-        // TODO: parse qsContent => {PeerMessage|GroupMessage|SubMessage}
         qsContent = rtxMsg.content();
         qsCertID = rtxMsg.certid();
         qsCert = rtxMsg.cert();
@@ -634,6 +759,8 @@ void MainWindow::onSendBtnClicked()
     emit readyToSend(qsFrom
                      , qslRecip
                      , rtxMsg.content());
+
+    enqueueMsg(mt, qsKey, rtxMsg);
 
     populateMessage(rtxMsg);
 
@@ -885,9 +1012,11 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
     //clear current message view
     msgView->clear();
 
+    MsgType mt = mt_undef;
     QStringList qslData = qvData.toStringList();
     QString qsType = qslData.at(0);
     if (qsType == TAG_PER || qsType == TAG_GRP || qsType == TAG_SUB){
+        mt = qsType == TAG_PER ? mt_peer : ( qsType == TAG_GRP ? mt_group : mt_subscribe);
         btnSend->setEnabled(true);
     }
 
@@ -896,6 +1025,14 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
     if (qsKey == KEY_STRANGER){
         btnSend->setEnabled(false);
     }
+
+    QList<RTXMessage> rtxList = dequeueMsg(mt, qsKey);
+
+    for (int i = 0; i < rtxList.length(); ++i){
+        RTXMessage rtxMsg = rtxList.at(i);
+        populateMessage(rtxMsg);
+    }
+
     return ;
 }
 
