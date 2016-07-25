@@ -28,11 +28,20 @@ Network operations is implemented in CEMailClient class, including:
 
 # Message
 - PeerMessage
-> a message sent from a peer to anther peer
+
+```
+a message sent from a peer to anther peer
+```
+
 - GroupMessage
-> a message sent from a peer to a group a peer, with groupid, groupname etc.
+```
+a message sent from a peer to a group a peer, with groupid, groupname etc.
+```
+
 - SubscribeMessage
-> a message sent from a peer to all subscribers
+```
+a message sent from a peer to all subscribers
+```
 
 # Payment
 - integration with bitcoin
