@@ -191,6 +191,9 @@ function onRequest(req, resp) {
 
 function httpHandler(req, body, resp)
 {
+	console.log("Request Url: " + req.url);
+	console.log("Request Body:" + JSON.stringify(body));
+	
 	var request = URL.parse(req.url);
 	
 	console.log(JSON.stringify(request));
