@@ -7,6 +7,8 @@ const HTTP = require("http");
 const URL = require("url");
 const PATH = require("path");
 const CRYPTO = require("crypto");
+const ICONV = require("iconv-lite");
+const XML = require("node-xml-lite");
 
 /*
 * Http Server wrapper
@@ -195,8 +197,9 @@ function httpHandler(req, body, resp)
 	
 	if (typeof request.pathname === 'undefined'
 		|| request.pathname == null
-		|| request.pathname.toLowerCase() != "/query"){
+		|| request.pathname.toLowerCase() != "/search"){
 		resp.writeHead(404, {'Content-Type': 'text/plain'});
+		resp.write("no this handler");
 		resp.end();
 		return ;
 	}
@@ -221,6 +224,8 @@ function httpHandler(req, body, resp)
 		// the default socks5 daemon running at: 127.0.0.1:1080
 		var shttps = require('socks5-https-client');
 		shttps.get({
+			socksHost: "127.0.0.1",
+			socksPort: 1080,
 			hostname: 'encrypted.google.com',
 			path: '/search?site=&source=hp&q=' + request.query,
 			rejectUnauthorized: true // This is the default.
@@ -228,16 +233,24 @@ function httpHandler(req, body, resp)
 			var page = "";
 			res.setEncoding('utf8');
 			res.on('readable', function() {
+				//console.log("Receiving ...");
 				page += res.read(); // Log response to console.
 			});
 			res.on('end', function(){
-				var retobj = {};	
-				retobj.errcode = 0;
-				retobj.result = googleParse(page);
-				resp.writeHead(200, {'Content-Type': 'application/json'});							
-				resp.write(JSON.stringify(retobj));	
+				console.log("Response Done");
+				resp.writeHead(200, {'Content-Type': 'text/html; charset=UTF-8'});							
+				resp.write(page);	
 				resp.end();
 			});
+			res.on('error', function(){
+				resp.writeHead(501, {'Content-Type': 'text/html; charset=UTF-8'});	
+				resp.write("Failed to receive response");
+				resp.end();
+			});
+		}).on("error", function(){
+				resp.writeHead(501, {'Content-Type': 'text/html; charset=UTF-8'});
+				resp.write("Failed to request upstream");
+				resp.end();
 		});
 		
 		/**
@@ -260,19 +273,12 @@ function httpHandler(req, body, resp)
 						}
 		});	
 		*/
+	}else{
+		console.error("bad request");
+		resp.writeHead(400, {'Content-Type': 'text/plain'});							
+		resp.write("Bad Request");
+		resp.end();
 	}
 }
-
-function bingParse(/*Buffer*/page){
-	return {};
-}
-
-function googleParse(/*String*/page){
-	var b = page.indexOf('<div id="ires"><ol>');
-	var e = page.indexOf('</ol></div>', b);
-	var sub = page.substring(b, e + 11);
-	return {raw : sub};
-}
-
 
 
