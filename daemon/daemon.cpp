@@ -196,7 +196,9 @@ int onNewMessage(const char * from
 		return bmInvalidParam;
 	}
 	PeerMessage peerMsg;
-	peerMsg.Load(bmMsg.content());
+	if (!peerMsg.Load(bmMsg.content())){
+		return bmInvalidParam;
+	}
 
 	printf("PeerMsg::_Content: %s\n", peerMsg.content().c_str());
 
