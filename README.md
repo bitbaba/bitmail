@@ -23,7 +23,7 @@ http://bitbaba.github.io/bitmail/index.html
 
 - The rx/tx network is now based on MX(eMail eXchange) protocols, e.g. imap(s) & smtp(s), and is powered by [CURL](https://github.com/bagder/curl). There is more delay than real IM or IRC network. But the MX network can be replaced by (or upgraded to) other transfer networks. 
 
-- Free-speaking is your right. No one can supervise it.
+- Free-speaking is your right. Get the privacy-protection from operators back to yourself.
 
 - White paper: [bitmail.pdf.md](./doc/bitmail.pdf.md)
     
