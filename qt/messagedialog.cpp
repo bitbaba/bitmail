@@ -18,7 +18,7 @@ MessageDialog::MessageDialog(BitMail * bitmail, QWidget *parent) :
     m_leCertID = findChild<QLineEdit*>("leCertID");
 
     m_ptxtCert = findChild<QPlainTextEdit*>("ptxtCert");
-    m_ptxtMessage = findChild<QPlainTextEdit*>("ptxtMessage");
+    m_ptxtMessage = findChild<QTextEdit*>("ptxtMessage");
 
     m_btnMakeFriend = findChild<QPushButton*>("btnMakeFriend");
 }
@@ -50,7 +50,7 @@ QString MessageDialog::GetCertID() const
 
 void MessageDialog::SetMessage(const QString & qsMessage)
 {
-    m_ptxtMessage->setPlainText(qsMessage);
+    m_ptxtMessage->setHtml(qsMessage);
 }
 
 QString MessageDialog::GetMessage() const

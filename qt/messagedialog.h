@@ -7,6 +7,7 @@ class QLineEdit;
 class QPlainTextEdit;
 class QPushButton;
 class BitMail;
+class QTextEdit;
 
 namespace Ui {
 class MessageDialog;
@@ -50,7 +51,7 @@ private:
 
     QLineEdit * m_leFrom;
     QLineEdit * m_leCertID;
-    QPlainTextEdit * m_ptxtMessage;
+    QTextEdit * m_ptxtMessage;
     QPlainTextEdit * m_ptxtCert;
     QPushButton * m_btnMakeFriend;
 };

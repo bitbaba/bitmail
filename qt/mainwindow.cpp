@@ -625,7 +625,10 @@ QString MainWindow::formatRTXMessage(const RTXMessage &rtxMsg)
     }
     qsTime = QDateTime::currentDateTime().toLocalTime().toString();
 
-    qsShow = QString("[%1] - (%2)\r\n\r\n%3\r\n\r\n").arg(qsTime).arg(qsFrom).arg(qsContent);
+    qsShow = QString("[%1] - (%2)\r\n\r\n%3\r\n\r\n")
+            .arg(qsTime)
+            .arg(qsFrom)
+            .arg(qsContent.length() > 32 ? (qsContent.mid(0, 32) + tr("...")) : (qsContent));
     return qsShow;
 }
 
@@ -655,6 +658,33 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
         qsCertID = rtxMsg.certid();
         qsCert = rtxMsg.cert();
     }while(0);
+
+    BMMessage bmMsg;
+    if (!bmMsg.Load(qsContent)){
+        return ;
+    }
+
+    if (bmMsg.msgType() == mt_peer){
+        PeerMessage peerMsg;
+        if (!peerMsg.Load(bmMsg.content())){
+            return ;
+        }
+        qsContent = peerMsg.content();
+    }else if (bmMsg.msgType() == mt_group){
+        GroupMessage groupMsg;
+        if (!groupMsg.Load(bmMsg.content())){
+            return ;
+        }
+        qsContent = groupMsg.content();
+    }else if (bmMsg.msgType() == mt_subscribe){
+        SubMessage subMsg;
+        if (!subMsg.Load(bmMsg.content())){
+            return ;
+        }
+        qsContent = subMsg.content();
+    }else{
+        return ;
+    }
 
     MessageDialog messageDialog(m_bitmail);
     messageDialog.SetFrom(qsFrom);
