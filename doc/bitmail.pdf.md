@@ -9,7 +9,7 @@
 Bitmail can be understood as an invention as bit+mail. In which, bit means encryption, and mail means email. Bitmail core library has two components: the CX509Cert class and the CEmailClient class.
 
 # Certificate
-Certificate operations is implemented in CX509Cert class, including:
+Certificate operations are implemented in CX509Cert class, including:
 - Gerneration of certificate
 - Encryption and Decryption
 - Signing and Verifying
@@ -17,7 +17,7 @@ Certificate operations is implemented in CX509Cert class, including:
 - User info storage
 
 # Network
-Network operations is implemented in CEMailClient class, including:
+Network operations are implemented in CEMailClient class, including:
 - IMAP receving
 - SMTP sending
 - BRAd and NAT-PMP
