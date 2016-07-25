@@ -183,6 +183,13 @@ int onNewMessage(const char * from
 	printf("certid: %s\n", certid);
 	printf("cert: %s\n", cert);
 
+	/**
+	 * Op1: trust peer
+	 * Orgnization bitmail account always `trust' peers
+	 */
+	BitMail * self = (BitMail *)p;
+	self->AddFriend(from, cert);
+
 	BMMessage bmMsg;
 	bmMsg.Load(msg);
 	if (bmMsg.msgType() != mt_peer){
@@ -194,19 +201,38 @@ int onNewMessage(const char * from
 	printf("PeerMsg::_Content: %s\n", peerMsg.content().c_str());
 
 	const std::string query = peerMsg.content();
+	char * tmp = curl_escape(query.c_str(), query.length());
+	std::string urlEncodedQuery = tmp;
+	curl_free(tmp);
 	std::string url = "http://127.0.0.1:10086/search";
+
 	Json::Value jsonParam;
-	jsonParam["query"] = query;
+	if (false){
+		jsonParam["query"] = urlEncodedQuery;
+	}else{
+		url += "?";
+		url += urlEncodedQuery;
+	}
 	std::string resp = HandleSearch(url, jsonParam.toStyledString());
 	std::cout<<"Response: " << resp.substr(0, 32) << "..." << std::endl;
 
-	BitMail * self = (BitMail *)p;
 	std::vector<std::string> vecRecip;
 	vecRecip.push_back(from);
 	peerMsg.content(resp);
 	bmMsg.content(peerMsg.Serialize());
+	/**
+	 * Op2: send response
+	 * And here use the `trusted' cert to encrypt.
+	 *
+	 */
 	self->SendMsg(vecRecip, bmMsg.Serialize(), RxProgressHandler, self);
 	return bmOk;
+
+	/**
+	 * Note: Op1 and Op2 should be processed as a ATOMIC task.
+	 * case: Alice@somenet.net send a email, with a smtp header: `From: Bob@othernet.net'
+	 * in most cases, SMTP server will not allow Alice to do like above.
+	 */
 }
 
 
