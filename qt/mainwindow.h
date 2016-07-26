@@ -100,6 +100,7 @@ public slots:
     void onMessageDoubleClicked(QListWidgetItem * actItem);
     void onAddFriend(const QString & email);
     void onNewSubscribe(const QString & sub);
+    void onCtxMenu(const QPoint & pos);
 
 private:
     bool getCurrentRecipKey(MsgType & mt, QString & qsKey);
@@ -121,10 +122,11 @@ private:
     void populateMsgView(const QString & email);
     void startupNetwork();
     void shutdownNetwork();
-    void setNotify(QTreeWidgetItem * item, int no);
+    void setNotify(MsgType, const QString & key);
     void enqueueMsg(MsgType mt, const QString & key, const RTXMessage & rtxMsg);
     QList<RTXMessage> dequeueMsg(MsgType mt, const QString & key);
     QString formatRTXMessage(const RTXMessage & rtxMsg);
+
 private:
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;

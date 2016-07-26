@@ -113,6 +113,9 @@ MainWindow::MainWindow(BitMail * bitmail)
     QStringList columns;
     columns.append(tr("Contact"));
     btree->setHeaderLabels(columns);
+    btree->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(btree, SIGNAL(customContextMenuRequested(QPoint))
+            , this, SLOT(onCtxMenu(QPoint)));
 
     nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")));
     nodeFriends->setIcon(0, QIcon(":/images/head.png"));
@@ -493,6 +496,7 @@ void MainWindow::onNewMessage(const QString & from
 
     BMMessage bmMsg;
     if (!bmMsg.Load(content)){
+        qDebug() << "Invalid BMMessage";
         return ;
     }
 
@@ -506,6 +510,7 @@ void MainWindow::onNewMessage(const QString & from
     if (bmMsg.msgType() == mt_group){
         GroupMessage groupMsg;
         if (!groupMsg.Load(bmMsg.content())){
+            qDebug() << "Invalid GroupMessage";
             return ;
         }
         QString qsGroupId = groupMsg.groupId();
@@ -519,6 +524,7 @@ void MainWindow::onNewMessage(const QString & from
             qsKey = KEY_STRANGER;
         }
     }else{
+        qDebug() << "Invalid BMMessage::MsgType";
         return;
     }
 
@@ -532,6 +538,8 @@ void MainWindow::onNewMessage(const QString & from
             && !key0.isEmpty()
             && key0 == qsKey){
         populateMessage(rtxMsg);
+    }else{
+        setNotify(bmMsg.msgType(), qsKey);
     }
 }
 
@@ -810,10 +818,27 @@ void MainWindow::onInviteBtnClicked()
     return ;
 }
 
-void MainWindow::setNotify(QTreeWidgetItem *item, int no)
+void MainWindow::setNotify(MsgType mt, const QString & qsKey)
 {
-    (void)no;
-    item->setBackground(0, QBrush(QColor(Qt::red)));
+    QTreeWidgetItem * node = NULL;
+    if (mt == mt_peer){
+        node = nodeFriends;
+    }else if (mt == mt_group){
+        node = nodeGroups;
+    }else if (mt == mt_subscribe){
+        node = nodeSubscribes;
+    }else{
+        return ;
+    }
+    for (int i = 0; i < node->childCount(); i++){
+        QTreeWidgetItem * elt = node->child(i);
+        QVariant qvData = elt->data(0, Qt::UserRole);
+        QStringList qslData = qvData.toStringList();
+        QString key = qslData.at(1);
+        if (qsKey == key){
+            elt->setBackground(0, QBrush(QColor(Qt::red)));
+        }
+    }
 }
 
 bool MainWindow::getCurrentRecipKey(MsgType & mt, QString & qsKey)
@@ -992,8 +1017,12 @@ void MainWindow::populateMsgView(const QString &email)
 
 void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous)
 {
+    btnSend->setEnabled(false);
+    sessLabel->setText("");
+    msgView->clear();
+    (void)previous;
+
     if (current == NULL){
-        (void)previous;
         return ;
     }
 
@@ -1007,15 +1036,11 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
 
     QString qsVDataType = qvData.typeName();
     if (qsVDataType != "QStringList" ){
-        btnSend->setEnabled(false);
         return ;
     }
 
     //reset to default backgroud color, to remove notify
     current->setBackgroundColor(0, QColor(Qt::white));
-
-    //clear current message view
-    msgView->clear();
 
     MsgType mt = mt_undef;
     QStringList qslData = qvData.toStringList();
@@ -1065,10 +1090,18 @@ void MainWindow::onAddFriend(const QString &email)
 
 void MainWindow::onNewSubscribe(const QString & email)
 {
-    if (btree->findItems(email, Qt::MatchContains).size()){
-        // Already exist;
-        return ;
-    }
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
     populateSubscribeLeaf(nodeSubscribes, email, qsNick);
 }
+
+void MainWindow::onCtxMenu(const QPoint & pos)
+{
+    QTreeWidgetItem * elt = btree->itemAt(pos);
+    if (elt != NULL){
+        qDebug() << elt->text(0);
+    }
+    //QMenu menu(this);
+    //menu.addAction(inviteAct);
+    //menu.exec(QCursor::pos());
+}
+
