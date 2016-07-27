@@ -19,5 +19,7 @@
         <file>images/group.png</file>
         <file>images/subscribe.png</file>
         <file>images/stranger.png</file>
+        <file>images/add.png</file>
+        <file>images/remove.png</file>
     </qresource>
 </RCC>

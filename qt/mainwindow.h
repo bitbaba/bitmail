@@ -66,6 +66,19 @@ class RxThread;
 class TxThread;
 class ShutdownDialog;
 
+enum nodeType{
+    NT_Undef = 0,
+    NT_Friends,
+    NT_Friend,
+    NT_Stranger,
+    NT_Groups,
+    NT_Group,
+    NT_StrangerGroup,
+    NT_Subscribes,
+    NT_Subscribe,
+    NT_StrangerSub,
+};
+
 //! [0]
 class MainWindow : public QMainWindow
 {
@@ -101,7 +114,12 @@ public slots:
     void onAddFriend(const QString & email);
     void onNewSubscribe(const QString & sub);
     void onCtxMenu(const QPoint & pos);
-
+    // Context Menu slots
+    void onActInvite();
+    void onActImport();
+    void onActRemove();
+    void onActNewGroup();
+    void onActRemoveGroup();
 private:
     bool getCurrentRecipKey(MsgType & mt, QString & qsKey);
     bool getRecipList(MsgType, const QString & qsKey, QStringList & reciplist);
@@ -111,9 +129,9 @@ private:
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
     void populateMessage(const RTXMessage & rtxMsg);
-    void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick);
-    void populateGroupLeaf(QTreeWidgetItem * node, const QString & groupid, const QString & groupname);
-    void populateSubscribeLeaf(QTreeWidgetItem * node, const QString & email, const QString &nick);
+    void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick,  nodeType nt);
+    void populateGroupLeaf(QTreeWidgetItem * node, const QString & groupid, const QString & groupname, nodeType nt);
+    void populateSubscribeLeaf(QTreeWidgetItem * node, const QString & email, const QString &nick, nodeType nt);
 
     void populateFriendTree(QTreeWidgetItem * node);
     void populateGroupTree(QTreeWidgetItem * node);
@@ -154,6 +172,13 @@ private:
     QAction *payAct;
     QAction *walletAct;
     QAction *rssAct;
+    // Context Menu Actions
+    QAction *actInvite;
+    QAction *actRemove;
+    QAction *actImport;
+
+    QAction *actNewGroup;
+    QAction *actRemoveGroup;
 private:
     BitMail *m_bitmail;
 

@@ -117,19 +117,19 @@ MainWindow::MainWindow(BitMail * bitmail)
     connect(btree, SIGNAL(customContextMenuRequested(QPoint))
             , this, SLOT(onCtxMenu(QPoint)));
 
-    nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")));
+    nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")), NT_Friends);
     nodeFriends->setIcon(0, QIcon(":/images/head.png"));
     nodeFriends->setData(0, Qt::UserRole, "Cat::Friends");
     populateFriendTree(nodeFriends);
     btree->addTopLevelItem(nodeFriends);
 
-    nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")));
+    nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")), NT_Groups);
     nodeGroups->setIcon(0, QIcon(":/images/group.png"));
     nodeFriends->setData(0, Qt::UserRole, "Cat::Groups");
     populateGroupTree(nodeGroups);
     btree->addTopLevelItem(nodeGroups);
 
-    nodeSubscribes = new QTreeWidgetItem(btree, QStringList(tr("Subscribes")));
+    nodeSubscribes = new QTreeWidgetItem(btree, QStringList(tr("Subscribes")), NT_Subscribes);
     nodeSubscribes->setIcon(0, QIcon(":/images/subscribe.png"));
     nodeFriends->setData(0, Qt::UserRole, "Cat::Subscribes");
     populateSubscribeTree(nodeSubscribes);
@@ -369,6 +369,37 @@ void MainWindow::createActions()
         rssAct->setStatusTip(tr("RSS"));
         connect(rssAct, SIGNAL(triggered()), this, SLOT(onRssBtnClicked()));
     }while(0);
+
+    do{
+        actInvite = new QAction(QIcon(":/images/invite.png"), tr("&Invite"), this);
+        actInvite->setStatusTip(tr("Invite"));
+        connect(actInvite, SIGNAL(triggered()), this, SLOT(onActInvite()));
+    }while(0);
+
+    do{
+        actImport = new QAction(QIcon(":/images/add.png"), tr("&Import"), this);
+        actImport->setStatusTip(tr("Import"));
+        connect(actImport, SIGNAL(triggered()), this, SLOT(onActImport()));
+    }while(0);
+
+    do{
+        actRemove = new QAction(QIcon(":/images/remove.png"), tr("&Remove"), this);
+        actRemove->setStatusTip(tr("Remove"));
+        connect(actRemove, SIGNAL(triggered()), this, SLOT(onActRemove()));
+    }while(0);
+
+    do{
+        actRemoveGroup = new QAction(QIcon(":/images/remove.png"), tr("&Remove"), this);
+        actRemoveGroup->setStatusTip(tr("RemoveGroup"));
+        connect(actRemoveGroup, SIGNAL(triggered()), this, SLOT(onActRemoveGroup()));
+    }while(0);
+
+    do{
+        actNewGroup = new QAction(QIcon(":/images/add.png"), tr("&Add"), this);
+        actNewGroup->setStatusTip(tr("AddGroup"));
+        connect(actNewGroup, SIGNAL(triggered()), this, SLOT(onActNewGroup()));
+    }while(0);
+
 }
 //! [24]
 //! [29] //! [30]
@@ -904,10 +935,10 @@ void MainWindow::populateFriendTree(QTreeWidgetItem * node)
     {
         std::string sBuddyNick = m_bitmail->GetFriendNick(*it);
         QString qsNick = QString::fromStdString(sBuddyNick);
-        populateFriendLeaf(node, QString::fromStdString(*it), qsNick);
+        populateFriendLeaf(node, QString::fromStdString(*it), qsNick, NT_Friend);
     }
     // add stranger node
-    populateFriendLeaf(node, KEY_STRANGER, tr("Strangers"));
+    populateFriendLeaf(node, KEY_STRANGER, tr("Strangers"), NT_Stranger);
     return ;
 }
 void MainWindow::populateGroupTree(QTreeWidgetItem * node)
@@ -929,9 +960,9 @@ void MainWindow::populateGroupTree(QTreeWidgetItem * node)
             ; it_member != vecMembers.end(); it_member ++){
             qslMembers.append(QString::fromStdString(*it_member));
         }
-        populateGroupLeaf(node, qsGroupId, qsGroupName);
+        populateGroupLeaf(node, qsGroupId, qsGroupName, NT_Group);
     }
-    populateGroupLeaf(node, KEY_STRANGER, tr("Strangers"));
+    populateGroupLeaf(node, KEY_STRANGER, tr("Strangers"), NT_StrangerGroup);
     return ;
 }
 void MainWindow::populateSubscribeTree(QTreeWidgetItem * node)
@@ -945,17 +976,17 @@ void MainWindow::populateSubscribeTree(QTreeWidgetItem * node)
         QString qsSub = QString::fromStdString(*it);
         (void)qsSub;
         QString qsNick = QString::fromStdString( m_bitmail->GetFriendNick(qsSub.toStdString()));
-        populateSubscribeLeaf(node, qsSub, qsNick);
+        populateSubscribeLeaf(node, qsSub, qsNick, NT_Subscribe);
     }
-    populateSubscribeLeaf(node, KEY_STRANGER, tr("Strangers"));
+    populateSubscribeLeaf(node, KEY_STRANGER, tr("Strangers"), NT_StrangerSub);
     return ;
 }
 
-void MainWindow::populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick)
+void MainWindow::populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick, nodeType nt)
 {
     QStringList qslBuddy;
     qslBuddy.append(nick);
-    QTreeWidgetItem *buddy = new QTreeWidgetItem(qslBuddy);
+    QTreeWidgetItem *buddy = new QTreeWidgetItem(node, qslBuddy, nt);
     if (email == KEY_STRANGER){
         buddy->setIcon(0, QIcon(":/images/stranger.png"));
     }else{
@@ -969,11 +1000,11 @@ void MainWindow::populateFriendLeaf(QTreeWidgetItem * node, const QString &email
     return ;
 }
 
-void MainWindow::populateGroupLeaf(QTreeWidgetItem * node, const QString & groupid, const QString & groupname)
+void MainWindow::populateGroupLeaf(QTreeWidgetItem * node, const QString & groupid, const QString & groupname, nodeType nt)
 {
     QStringList qslBuddy;
     qslBuddy.append(groupname);
-    QTreeWidgetItem * group = new QTreeWidgetItem(qslBuddy);
+    QTreeWidgetItem * group = new QTreeWidgetItem(node, qslBuddy, nt);
     if (groupid == KEY_STRANGER){
         group->setIcon(0, QIcon(":/images/stranger.png"));
     }else{
@@ -987,11 +1018,11 @@ void MainWindow::populateGroupLeaf(QTreeWidgetItem * node, const QString & group
     return ;
 }
 
-void MainWindow::populateSubscribeLeaf(QTreeWidgetItem * node, const QString & email, const QString &nick)
+void MainWindow::populateSubscribeLeaf(QTreeWidgetItem * node, const QString & email, const QString &nick, nodeType nt)
 {
     QStringList qslBuddy;
     qslBuddy.append(nick);
-    QTreeWidgetItem * sub = new QTreeWidgetItem(qslBuddy);
+    QTreeWidgetItem * sub = new QTreeWidgetItem(node, qslBuddy, nt);
     if (email == KEY_STRANGER){
         sub->setIcon(0, QIcon(":/images/stranger.png"));
     }else{
@@ -1085,13 +1116,13 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
 void MainWindow::onAddFriend(const QString &email)
 {
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
-    populateFriendLeaf(nodeFriends, email, qsNick);
+    populateFriendLeaf(nodeFriends, email, qsNick, NT_Friend);
 }
 
 void MainWindow::onNewSubscribe(const QString & email)
 {
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
-    populateSubscribeLeaf(nodeSubscribes, email, qsNick);
+    populateSubscribeLeaf(nodeSubscribes, email, qsNick, NT_Subscribe);
 }
 
 void MainWindow::onCtxMenu(const QPoint & pos)
@@ -1100,8 +1131,43 @@ void MainWindow::onCtxMenu(const QPoint & pos)
     if (elt != NULL){
         qDebug() << elt->text(0);
     }
-    //QMenu menu(this);
-    //menu.addAction(inviteAct);
-    //menu.exec(QCursor::pos());
+    nodeType nt = NT_Undef;
+    nt = (nodeType) elt->type();
+
+    QMenu ctxMenu(this);
+    if (nt == NT_Friends){
+        ctxMenu.addAction(actInvite);
+        ctxMenu.addAction(actImport);
+    }else if (nt == NT_Friend){
+        ctxMenu.addAction(actRemove);
+    }
+    else if (nt == NT_Groups){
+        ctxMenu.addAction(actNewGroup);
+    }else if (nt == NT_Group){
+        ctxMenu.addAction(actRemoveGroup);
+    }else{
+        return ;
+    }
+    ctxMenu.exec(QCursor::pos());
 }
 
+void MainWindow::onActInvite()
+{
+
+}
+void MainWindow::onActImport()
+{
+
+}
+void MainWindow::onActRemove()
+{
+
+}
+void MainWindow::onActNewGroup()
+{
+
+}
+void MainWindow::onActRemoveGroup()
+{
+
+}
