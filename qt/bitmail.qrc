@@ -21,5 +21,6 @@
         <file>images/stranger.png</file>
         <file>images/add.png</file>
         <file>images/remove.png</file>
+        <file>images/shutdown.png</file>
     </qresource>
 </RCC>
