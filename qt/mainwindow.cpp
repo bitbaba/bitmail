@@ -1153,7 +1153,7 @@ void MainWindow::onCtxMenu(const QPoint & pos)
 
 void MainWindow::onActInvite()
 {
-
+    onInviteBtnClicked();
 }
 void MainWindow::onActImport()
 {
@@ -1161,7 +1161,8 @@ void MainWindow::onActImport()
 }
 void MainWindow::onActRemove()
 {
-
+    QTreeWidgetItem * elt = btree->currentItem();
+    elt->parent()->removeChild(elt);
 }
 void MainWindow::onActNewGroup()
 {
@@ -1169,5 +1170,6 @@ void MainWindow::onActNewGroup()
 }
 void MainWindow::onActRemoveGroup()
 {
-
+   QTreeWidgetItem * elt = btree->currentItem();
+   elt->parent()->removeChild(elt);
 }
