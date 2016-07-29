@@ -823,3 +823,98 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     return bmOk;
 }
 
+int BitMail::EncMsg(const std::vector<std::string> & friends
+		, const std::string & msg
+		, std::string & smime
+		, bool fSignOnly
+		, bool fSkipStrangers)
+{
+    if (msg.empty()){
+        return bmInvalidParam;
+    }
+    /**
+     * Note:
+     * GroupMsg(msg, vector<bob>) != SendMsg(msg, bob);
+     * GroupMsg must encrypt msg before send it out.
+     */
+    smime = m_profile->Sign(msg);
+    if (smime.empty()){
+        return bmSignFail;
+    }
+
+    if (fSignOnly){
+    	return bmOk;
+    }
+
+    std::vector<CX509Cert> vecTo;
+    for (std::vector<std::string>::const_iterator it = friends.begin();
+            it != friends.end();
+            ++it)
+    {
+        if (m_buddies.find(*it) != m_buddies.end()){
+            CX509Cert buddy;
+            buddy.LoadCertFromPem(m_buddies[*it]);
+            if (!buddy.IsValid()){
+                return bmInvalidCert;
+            }
+            vecTo.push_back(buddy);
+        }else{
+        	if (!fSkipStrangers){
+				vecTo.clear();
+				break;
+        	}
+        }
+    }
+
+    if (!vecTo.size())
+    {
+    	return bmEncryptFail;
+    }
+
+	smime = CX509Cert::MEncrypt(smime, vecTo);
+	if (smime.empty()){
+		return bmEncryptFail;
+	}
+
+	return bmOk;
+}
+
+int BitMail::DecMsg(const std::string & smime
+		, std::string & from
+		, std::string & nick
+		, std::string & msg
+		, std::string & certid
+		, std::string & cert)
+{
+	std::string sMimeBody = smime;
+	BitMail * self = this;
+    if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){
+        sMimeBody = self->m_profile->Decrypt(sMimeBody);
+        if (sMimeBody.empty()){
+            return bmDecryptFail;
+        }
+    }
+
+    CX509Cert buddyCert;
+    if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_signed){
+        buddyCert.LoadCertFromSig(sMimeBody);
+        if (buddyCert.IsValid()){
+            sMimeBody = buddyCert.Verify(sMimeBody);
+            if (sMimeBody.empty()){
+                return bmVerifyFail;
+            }
+        }else{
+            return bmInvalidCert;
+        }
+    }
+
+    from = buddyCert.GetEmail();
+    nick = buddyCert.GetCommonName();
+    msg = sMimeBody;
+    certid = buddyCert.GetID();
+    cert = buddyCert.GetCertByPem();
+
+	return bmOk;
+}
+
+

@@ -147,6 +147,10 @@ public:
     // RTx Routines
     int SendMsg(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
 
+    int EncMsg(const std::vector<std::string> & friends, const std::string & msg, std::string & smime, bool fSignOnly = false, bool fSkipFail = false);
+
+    int DecMsg(const std::string & smime, std::string & from, std::string & nick, std::string & msg, std::string & certid, std::string & cert);
+
     int CheckInbox(RTxProgressCB cb = NULL, void * userp = NULL);
 
     int StartIdle(unsigned int timeout/*Interval to re-idle*/, RTxProgressCB cb = NULL, void * userp = NULL);
