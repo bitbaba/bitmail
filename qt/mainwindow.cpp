@@ -129,11 +129,13 @@ MainWindow::MainWindow(BitMail * bitmail)
     populateGroupTree(nodeGroups);
     btree->addTopLevelItem(nodeGroups);
 
-    nodeSubscribes = new QTreeWidgetItem(btree, QStringList(tr("Subscribes")), NT_Subscribes);
-    nodeSubscribes->setIcon(0, QIcon(":/images/subscribe.png"));
-    nodeFriends->setData(0, Qt::UserRole, "Cat::Subscribes");
-    populateSubscribeTree(nodeSubscribes);
-    btree->addTopLevelItem(nodeSubscribes);
+    if (0){
+        nodeSubscribes = new QTreeWidgetItem(btree, QStringList(tr("Subscribes")), NT_Subscribes);
+        nodeSubscribes->setIcon(0, QIcon(":/images/subscribe.png"));
+        nodeFriends->setData(0, Qt::UserRole, "Cat::Subscribes");
+        populateSubscribeTree(nodeSubscribes);
+        btree->addTopLevelItem(nodeSubscribes);
+    }
 
     leftLayout->addWidget(btree);
 
@@ -196,9 +198,6 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     connect(btnSend, SIGNAL(clicked())
             , this, SLOT(onSendBtnClicked()));
-
-    // startup network
-    startupNetwork();
 }
 //! [2]
 MainWindow::~MainWindow()
@@ -232,12 +231,8 @@ void MainWindow::shutdownNetwork()
 }
 void MainWindow::onRxDone()
 {
-    if (!m_shutdownDialog)
-        return ;
-    qDebug() << "Rx thread done";
-    m_shutdownDialog->SetMessage(tr("Rx thread done."));
     m_rxth->wait(1000); delete m_rxth; m_rxth = NULL;
-    if (!m_rxth && !m_txth){
+    if (!m_rxth && !m_txth && m_shutdownDialog){
         m_shutdownDialog->done(0);
     }
 }
@@ -256,12 +251,8 @@ void MainWindow::onTxProgress(const QString &info)
 
 void MainWindow::onTxDone()
 {
-    if (!m_shutdownDialog)
-        return ;
-    qDebug() << "Tx thread done";
-    m_shutdownDialog->SetMessage(tr("Tx thread done."));
     m_txth->wait(1000); delete m_txth; m_txth = NULL;
-    if (!m_rxth && !m_txth){
+    if (!m_rxth && !m_txth && m_shutdownDialog){
         m_shutdownDialog->done(0);
     }
 }
@@ -271,7 +262,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     shutdownNetwork();
     /**
-    * Model here
+    * Model here3
     */
     if (m_rxth || m_txth){
         m_shutdownDialog = new ShutdownDialog(this);
@@ -400,6 +391,13 @@ void MainWindow::createActions()
         connect(actNewGroup, SIGNAL(triggered()), this, SLOT(onActNewGroup()));
     }while(0);
 
+    do{
+        actNetwork = new QAction(QIcon(":/images/shutdown.png"), tr("&Startup"), this);
+        actNetwork->setStatusTip(tr("Startup"));
+        actNetwork->setCheckable(true);
+        connect(actNetwork, SIGNAL(triggered(bool)), this, SLOT(onActNetwork(bool)));
+    }while(0);
+
 }
 //! [24]
 //! [29] //! [30]
@@ -407,6 +405,7 @@ void MainWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("Profile"));
     fileToolBar->addAction(configAct);
+    fileToolBar->addAction(actNetwork);
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(inviteAct);
     walletToolbar = addToolBar(tr("Wallet"));
@@ -447,44 +446,11 @@ void MainWindow::onConfigBtnClicked()
     optDialog.SetNick(QString::fromStdString(m_bitmail->GetNick()));
     optDialog.SetPassphrase(QString::fromStdString(m_bitmail->GetPassphrase()));
     optDialog.SetBits(m_bitmail->GetBits());
-    optDialog.SetSmtpUrl(QString::fromStdString(m_bitmail->GetTxUrl()));
-    optDialog.SetSmtpLogin(QString::fromStdString(m_bitmail->GetTxLogin()));
-    optDialog.SetSmtpPassword(QString::fromStdString(m_bitmail->GetTxPassword()));
-    optDialog.SetImapUrl(QString::fromStdString(m_bitmail->GetRxUrl()));
-    optDialog.SetImapLogin(QString::fromStdString(m_bitmail->GetRxLogin()));
-    optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
-    optDialog.SetProxyEnable(m_bitmail->EnableProxy());
-    optDialog.SetProxyIP(QString::fromStdString(m_bitmail->GetProxyIp()));
-    optDialog.SetProxyPort(m_bitmail->GetProxyPort());
-    optDialog.SetProxyLogin(QString::fromStdString(m_bitmail->GetProxyUser()));
-    optDialog.SetProxyPassword(QString::fromStdString(m_bitmail->GetProxyPassword()));
-    optDialog.SetRemoteDNS(m_bitmail->RemoteDNS());
     if (QDialog::Accepted != optDialog.exec()){
         return ;
     }
     QString qsPassphrase = optDialog.GetPassphrase();
     m_bitmail->SetPassphrase(qsPassphrase.toStdString());
-    QString qsTxUrl = optDialog.GetSmtpUrl();
-    QString qsTxLogin = optDialog.GetSmtpLogin();
-    QString qsTxPassword = optDialog.GetSmtpPassword();
-    QString qsRxUrl = optDialog.GetImapUrl();
-    QString qsRxLogin = optDialog.GetImapLogin();
-    QString qsRxPassword = optDialog.GetImapPassword();
-    m_bitmail->InitNetwork(qsTxUrl.toStdString()
-                           , qsTxLogin.toStdString()
-                           , qsTxPassword.toStdString()
-                           , qsRxUrl.toStdString()
-                           , qsRxLogin.toStdString()
-                           , qsRxPassword.toStdString());
-    m_bitmail->EnableProxy(optDialog.GetProxyEnable());
-    do {
-        m_bitmail->SetProxyIp(optDialog.GetProxyIP().toStdString());
-        m_bitmail->SetProxyPort(optDialog.GetProxyPort());
-        m_bitmail->SetProxyUser(optDialog.GetProxyLogin().toStdString());
-        m_bitmail->SetProxyPassword(optDialog.GetProxyPassword().toStdString());
-        m_bitmail->RemoteDNS(optDialog.GetRemoteDNS());
-    }while(0);
-    return ;
 }
 //! [15]
 void MainWindow::documentWasModified()
@@ -741,6 +707,10 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
 //! [33]
 void MainWindow::onSendBtnClicked()
 {
+    if (m_txth == NULL){
+        statusBar()->showMessage(tr("No active network"));
+        return ;
+    }
     // If you have not setup a QTextCodec for QString & C-String(ANSI-MB)
     // toLatin1() ignore any codec;
     // toLocal8Bit use QTextCodec::codecForLocale(),
@@ -1172,4 +1142,13 @@ void MainWindow::onActRemoveGroup()
 {
    QTreeWidgetItem * elt = btree->currentItem();
    elt->parent()->removeChild(elt);
+}
+
+void MainWindow::onActNetwork(bool fChecked)
+{
+    if (fChecked){
+        startupNetwork();
+    }else{
+        shutdownNetwork();
+    }
 }

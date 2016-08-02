@@ -14,7 +14,8 @@ HEADERS       = mainwindow.h \
                 invitedialog.h \
                 messagedialog.h \
     walletdialog.h \
-    rssdialog.h
+    rssdialog.h \
+    netoptdialog.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
@@ -30,7 +31,8 @@ SOURCES       = main.cpp \
                 invitedialog.cpp \
                 messagedialog.cpp \
     walletdialog.cpp \
-    rssdialog.cpp
+    rssdialog.cpp \
+    netoptdialog.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
@@ -46,7 +48,8 @@ FORMS += \
     invitedialog.ui \
     messagedialog.ui \
     walletdialog.ui \
-    rssdialog.ui
+    rssdialog.ui \
+    netoptdialog.ui
 
 win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore
 

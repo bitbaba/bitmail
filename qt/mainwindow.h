@@ -120,6 +120,7 @@ public slots:
     void onActRemove();
     void onActNewGroup();
     void onActRemoveGroup();
+    void onActNetwork(bool fChecked);
 private:
     bool getCurrentRecipKey(MsgType & mt, QString & qsKey);
     bool getRecipList(MsgType, const QString & qsKey, QStringList & reciplist);
@@ -172,6 +173,7 @@ private:
     QAction *payAct;
     QAction *walletAct;
     QAction *rssAct;
+    QAction *actNetwork;
     // Context Menu Actions
     QAction *actInvite;
     QAction *actRemove;
