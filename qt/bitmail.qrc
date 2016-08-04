@@ -22,5 +22,7 @@
         <file>images/add.png</file>
         <file>images/remove.png</file>
         <file>images/shutdown.png</file>
+        <file>images/network.png</file>
+        <file>images/sigma.png</file>
     </qresource>
 </RCC>

@@ -1,5 +1,5 @@
-#ifndef OPTIONDIALOG_H
-#define OPTIONDIALOG_H
+#ifndef NETOPTIONDIALOG_H
+#define NETOPTIONDIALOG_H
 
 #include <QDialog>
 
@@ -87,4 +87,4 @@ private:
     QCheckBox *m_cbRemoteDNS;
 };
 
-#endif // OPTIONDIALOG_H
+#endif // NETOPTIONDIALOG_H

@@ -52,6 +52,7 @@
 #include "txthread.h"
 #include "optiondialog.h"
 #include "logindialog.h"
+#include "netoptdialog.h"
 #include "paydialog.h"
 #include "shutdowndialog.h"
 #include "certdialog.h"
@@ -60,6 +61,7 @@
 #include "walletdialog.h"
 #include "rssdialog.h"
 #include "main.h"
+#include "assistantdialog.h"
 
 #define TAG_PER      ("@")
 #define TAG_GRP      ("#")
@@ -398,6 +400,17 @@ void MainWindow::createActions()
         connect(actNetwork, SIGNAL(triggered(bool)), this, SLOT(onActNetwork(bool)));
     }while(0);
 
+    do{
+        actNetConfig = new QAction(QIcon(":/images/network.png"), tr("&Network"), this);
+        actNetConfig->setStatusTip(tr("Network"));
+        connect(actNetConfig, SIGNAL(triggered()), this, SLOT(onNetConfig()));
+    }while(0);
+
+    do{
+        actAssistant = new QAction(QIcon(":/images/sigma.png"), tr("&Assistant"), this);
+        actAssistant->setStatusTip(tr("Assistant"));
+        connect(actAssistant, SIGNAL(triggered()), this, SLOT(onActAssistant()));
+    }while(0);
 }
 //! [24]
 //! [29] //! [30]
@@ -405,7 +418,9 @@ void MainWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("Profile"));
     fileToolBar->addAction(configAct);
+    fileToolBar->addAction(actNetConfig);
     fileToolBar->addAction(actNetwork);
+    fileToolBar->addAction(actAssistant);
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(inviteAct);
     walletToolbar = addToolBar(tr("Wallet"));
@@ -439,6 +454,7 @@ void MainWindow::onPayBtnClicked()
     }
     return ;
 }
+
 void MainWindow::onConfigBtnClicked()
 {
     OptionDialog optDialog(false, this);
@@ -452,6 +468,46 @@ void MainWindow::onConfigBtnClicked()
     QString qsPassphrase = optDialog.GetPassphrase();
     m_bitmail->SetPassphrase(qsPassphrase.toStdString());
 }
+
+void MainWindow::onNetConfig()
+{
+    NetOptionDialog optDialog(this);
+    optDialog.SetImapUrl(QString::fromStdString(m_bitmail->GetRxUrl()));
+    optDialog.SetImapLogin(QString::fromStdString(m_bitmail->GetRxLogin()));
+    optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
+    optDialog.SetProxyEnable(m_bitmail->EnableProxy());
+    optDialog.SetProxyIP(QString::fromStdString(m_bitmail->GetProxyIp()));
+    optDialog.SetProxyPort(m_bitmail->GetProxyPort());
+    optDialog.SetProxyLogin(QString::fromStdString(m_bitmail->GetProxyUser()));
+    optDialog.SetProxyPassword(QString::fromStdString(m_bitmail->GetProxyPassword()));
+    optDialog.SetRemoteDNS(m_bitmail->RemoteDNS());
+    if (QDialog::Accepted != optDialog.exec()){
+        return ;
+    }
+    QString qsTxUrl = optDialog.GetSmtpUrl();
+    QString qsTxLogin = optDialog.GetSmtpLogin();
+    QString qsTxPassword = optDialog.GetSmtpPassword();
+    QString qsRxUrl = optDialog.GetImapUrl();
+    QString qsRxLogin = optDialog.GetImapLogin();
+    QString qsRxPassword = optDialog.GetImapPassword();
+    m_bitmail->InitNetwork(qsTxUrl.toStdString()
+                        , qsTxLogin.toStdString()
+                        , qsTxPassword.toStdString()
+                        , qsRxUrl.toStdString()
+                        , qsRxLogin.toStdString()
+                        , qsRxPassword.toStdString());
+    m_bitmail->EnableProxy(optDialog.GetProxyEnable());
+    do {
+        m_bitmail->SetProxyIp(optDialog.GetProxyIP().toStdString());
+        m_bitmail->SetProxyPort(optDialog.GetProxyPort());
+        m_bitmail->SetProxyUser(optDialog.GetProxyLogin().toStdString());
+        m_bitmail->SetProxyPassword(optDialog.GetProxyPassword().toStdString());
+        m_bitmail->RemoteDNS(optDialog.GetRemoteDNS());
+    }while(0);
+
+    return ;
+}
+
 //! [15]
 void MainWindow::documentWasModified()
 //! [15] //! [16]
@@ -1151,4 +1207,12 @@ void MainWindow::onActNetwork(bool fChecked)
     }else{
         shutdownNetwork();
     }
+}
+
+void MainWindow::onActAssistant()
+{
+    AssistantDialog * assistantDlg = new AssistantDialog(m_bitmail, this);
+    connect(assistantDlg, SIGNAL(addFriend(QString))
+                , this, SLOT(onAddFriend(QString)));
+    assistantDlg->show();
 }

@@ -1,7 +1,5 @@
 #include "netoptdialog.h"
 #include "ui_netoptdialog.h"
-#include "main.h"
-#include <bitmailcore/bitmail.h>
 #include <QRegExpValidator>
 #include <QRegExp>
 #include <QDebug>
@@ -56,41 +54,12 @@ NetOptionDialog::~NetOptionDialog()
 
 void NetOptionDialog::on_buttonBox_accepted()
 {
-    QString qsSmtpUrl = GetSmtpUrl();
-    QString qsSmtpLogin = GetSmtpLogin();
-    QString qsSmtpPassword = GetSmtpPassword();
-
-    QString qsImapUrl = GetImapUrl();
-    QString qsImapLogin = GetImapLogin();
-    QString qsImapPassword = GetImapPassword();
-
-    BitMail * bm = new BitMail();
-
-    bm->InitNetwork(qsSmtpUrl.toStdString()
-                    , qsSmtpLogin.toStdString()
-                    , qsSmtpPassword.toStdString()
-                    , qsImapUrl.toStdString()
-                    , qsImapLogin.toStdString()
-                    , qsImapPassword.toStdString());
-
-    bm->EnableProxy(GetProxyEnable());
-    if (bm->EnableProxy()){
-        bm->SetProxyIp(GetProxyIP().toStdString());
-        bm->SetProxyPort(GetProxyPort());
-        bm->SetProxyUser(GetProxyLogin().toStdString());
-        bm->SetProxyPassword(GetProxyPassword().toStdString());
-        bm->RemoteDNS(GetRemoteDNS());
-    }
-
-    BMQTApplication::SaveProfile(bm);
-
-    delete bm; bm = NULL;
-
     return ;
 }
 
 void NetOptionDialog::on_buttonBox_rejected()
 {
+
     return ;
 }
 
