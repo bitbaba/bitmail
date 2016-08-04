@@ -7,6 +7,7 @@ class QTextEdit;
 class QLineEdit;
 class QPushButton;
 class QCheckBox;
+class QComboBox;
 
 class BitMail;
 
@@ -40,6 +41,10 @@ public:
     QString output() const;
     void output(const QString & o);
 
+    bool signOnly() const;
+
+    bool skipStrangers() const;
+
 private slots:
     void on_btnEncrypt_clicked();
 
@@ -51,6 +56,16 @@ private slots:
 
     void on_txtInput_textChanged();
 
+    void on_cbSignOnly_clicked(bool checked);
+
+    void on_cbSkipStrangers_clicked(bool checked);
+
+    void on_cbHideMain_clicked(bool checked);
+
+    void on_AssistantDialog_rejected();
+
+    void on_btnCopy_clicked();
+
 private:
     Ui::AssistantDialog *ui;
     BitMail * m_bitmail;
@@ -61,9 +76,10 @@ private:
     QTextEdit *m_txtInput;
     QTextEdit *m_txtOutput;
     QTextEdit *m_txtCert;
+    QComboBox *m_cbbFriends;
 
     QPushButton *m_btnAddFriend;
-    QCheckBox   *m_cbSingOnly;
+    QCheckBox   *m_cbSignOnly;
     QCheckBox   *m_cbSkipStrangers;
     QPushButton *m_btnEncrypt;
     QPushButton *m_btnDecrypt;
