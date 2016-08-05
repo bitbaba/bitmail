@@ -906,6 +906,8 @@ int BitMail::DecMsg(const std::string & smime
         }else{
             return bmInvalidCert;
         }
+    }else{
+    	return bmInvalidParam;
     }
 
     from = buddyCert.GetEmail();
