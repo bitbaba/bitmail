@@ -6,9 +6,33 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>631</width>
-    <height>691</height>
+    <width>630</width>
+    <height>700</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>630</width>
+    <height>700</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>630</width>
+    <height>700</height>
+   </size>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>630</width>
+    <height>700</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>im Assistant</string>
@@ -19,7 +43,7 @@
      <x>20</x>
      <y>10</y>
      <width>601</width>
-     <height>161</height>
+     <height>241</height>
     </rect>
    </property>
    <property name="title">
@@ -31,7 +55,7 @@
       <x>10</x>
       <y>20</y>
       <width>581</width>
-      <height>91</height>
+      <height>161</height>
      </rect>
     </property>
     <property name="font">
@@ -41,38 +65,62 @@
      </font>
     </property>
    </widget>
-   <widget class="QPushButton" name="btnClearInput">
+   <widget class="QWidget" name="horizontalLayoutWidget_2">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>120</y>
-      <width>93</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Clear</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="cbHideMain">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>120</y>
-      <width>151</width>
+      <y>200</y>
+      <width>581</width>
       <height>31</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Hide Bitmail-Qt</string>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="btnClearInput">
+       <property name="text">
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnSign">
+       <property name="text">
+        <string>Sign</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="cbbFriends">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnEncrypt">
+       <property name="text">
+        <string>Encrypt</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnDecrypt">
+       <property name="text">
+        <string>Decrypt</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QGroupBox" name="grpFriend">
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>170</y>
+     <y>270</y>
      <width>601</width>
      <height>421</height>
     </rect>
@@ -209,77 +257,21 @@
     </property>
    </widget>
   </widget>
-  <widget class="QPushButton" name="btnEncrypt">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>610</y>
-     <width>93</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Encode</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btnDecrypt">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>650</y>
-     <width>93</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Decode</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="cbSignOnly">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>610</y>
-     <width>91</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>SignOnly</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="cbSkipStrangers">
-   <property name="geometry">
-    <rect>
-     <x>470</x>
-     <y>610</y>
-     <width>141</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>SkipStrangers</string>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="cbbFriends">
-   <property name="geometry">
-    <rect>
-     <x>240</x>
-     <y>610</y>
-     <width>211</width>
-     <height>31</height>
-    </rect>
-   </property>
-  </widget>
  </widget>
  <tabstops>
   <tabstop>txtInput</tabstop>
-  <tabstop>leCertId</tabstop>
-  <tabstop>txtOutput</tabstop>
+  <tabstop>btnClearInput</tabstop>
+  <tabstop>btnSign</tabstop>
+  <tabstop>cbbFriends</tabstop>
   <tabstop>btnEncrypt</tabstop>
-  <tabstop>cbSignOnly</tabstop>
-  <tabstop>cbSkipStrangers</tabstop>
   <tabstop>btnDecrypt</tabstop>
+  <tabstop>leNick</tabstop>
+  <tabstop>leEmail</tabstop>
+  <tabstop>btnAddFriend</tabstop>
+  <tabstop>leCertId</tabstop>
+  <tabstop>txtCert</tabstop>
+  <tabstop>txtOutput</tabstop>
+  <tabstop>btnCopy</tabstop>
  </tabstops>
  <resources/>
  <connections/>

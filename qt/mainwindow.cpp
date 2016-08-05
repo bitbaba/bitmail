@@ -61,7 +61,6 @@
 #include "walletdialog.h"
 #include "rssdialog.h"
 #include "main.h"
-#include "assistantdialog.h"
 
 #define TAG_PER      ("@")
 #define TAG_GRP      ("#")
@@ -270,12 +269,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
         m_shutdownDialog = new ShutdownDialog(this);
         m_shutdownDialog->exec();
     }
-    if (m_bitmail != NULL){
-        BMQTApplication::SaveProfile(m_bitmail);
-        delete m_bitmail;
-        m_bitmail = NULL;
-    }
-    qDebug() << "BitMail quit! Bye";
     event->accept();
 }
 void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
@@ -405,12 +398,6 @@ void MainWindow::createActions()
         actNetConfig->setStatusTip(tr("Network"));
         connect(actNetConfig, SIGNAL(triggered()), this, SLOT(onNetConfig()));
     }while(0);
-
-    do{
-        actAssistant = new QAction(QIcon(":/images/sigma.png"), tr("&Assistant"), this);
-        actAssistant->setStatusTip(tr("Assistant"));
-        connect(actAssistant, SIGNAL(triggered()), this, SLOT(onActAssistant()));
-    }while(0);
 }
 //! [24]
 //! [29] //! [30]
@@ -420,7 +407,7 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(configAct);
     fileToolBar->addAction(actNetConfig);
     fileToolBar->addAction(actNetwork);
-    fileToolBar->addAction(actAssistant);
+    //fileToolBar->addAction(actAssistant);
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(inviteAct);
     walletToolbar = addToolBar(tr("Wallet"));
@@ -1207,12 +1194,4 @@ void MainWindow::onActNetwork(bool fChecked)
     }else{
         shutdownNetwork();
     }
-}
-
-void MainWindow::onActAssistant()
-{
-    AssistantDialog * assistantDlg = new AssistantDialog(m_bitmail, this);
-    connect(assistantDlg, SIGNAL(addFriend(QString))
-                , this, SLOT(onAddFriend(QString)));
-    assistantDlg->show();
 }

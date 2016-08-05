@@ -28,6 +28,8 @@ LoginDialog::LoginDialog(QWidget *parent) :
     m_cbEmail->setFixedHeight(48);
     m_cbEmail->setIconSize(QSize(48,48));
 
+    m_cbAssistant = findChild<QCheckBox*>("cbAssistant");
+
     QStringList sList = BMQTApplication::GetProfiles();
     for (QStringList::iterator it = sList.begin(); it != sList.end(); it++){
         QString qsEmail = *it;
@@ -77,4 +79,15 @@ void LoginDialog::SetPassphrase(const QString & passphrase)
 QString LoginDialog::GetPassphrase() const
 {
     return m_lePassphrase->text();
+}
+
+void LoginDialog::on_cbAssistant_clicked(bool checked)
+{
+    (void)checked;
+}
+
+bool LoginDialog::imAssistant() const
+{
+    bool fChecked = m_cbAssistant->isChecked();
+    return fChecked;
 }

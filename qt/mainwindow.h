@@ -122,7 +122,6 @@ public slots:
     void onActNewGroup();
     void onActRemoveGroup();
     void onActNetwork(bool fChecked);
-    void onActAssistant();
 private:
     bool getCurrentRecipKey(MsgType & mt, QString & qsKey);
     bool getRecipList(MsgType, const QString & qsKey, QStringList & reciplist);
@@ -185,7 +184,6 @@ private:
     QAction *actRemoveGroup;
 
     QAction *actNetConfig;
-    QAction *actAssistant;
 private:
     BitMail *m_bitmail;
 

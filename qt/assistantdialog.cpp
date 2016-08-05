@@ -19,8 +19,6 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
     m_txtOutput = findChild<QTextEdit*>("txtOutput");
     m_btnEncrypt = findChild<QPushButton*>("btnEncrypt");
     m_btnDecrypt = findChild<QPushButton*>("btnDecrypt");
-    m_cbSignOnly = findChild<QCheckBox*>("cbSignOnly");
-    m_cbSkipStrangers = findChild<QCheckBox*>("cbSkipStrangers");
     m_btnAddFriend = findChild<QPushButton*>("btnAddFriend");
     m_cbbFriends = findChild<QComboBox*>("cbbFriends");
 
@@ -46,6 +44,8 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
                               , QString::fromStdString(sNick)
                               , QVariant(QString::fromStdString(*it)));
     }
+    m_clip = QApplication::clipboard();
+    connect(m_clip, SIGNAL(dataChanged()), this, SLOT(onClipDataChanged()));
 }
 
 AssistantDialog::~AssistantDialog()
@@ -107,22 +107,10 @@ void AssistantDialog::output(const QString & o)
     m_txtOutput->setPlainText(o);
 }
 
-bool AssistantDialog::signOnly() const
-{
-    return m_cbSignOnly->isChecked();
-}
-
-bool AssistantDialog::skipStrangers() const
-{
-    return m_cbSkipStrangers->isChecked();
-}
-
 void AssistantDialog::on_btnEncrypt_clicked()
 {
     std::vector<std::string> vecFriends;
-    bool fSignOnly = signOnly();
-    bool fSkipStranger = skipStrangers();
-    if (!fSignOnly){
+    do {
         QString qsData = m_cbbFriends->currentData().toString();
         QChar cPrefix = qsData.at(0);
         if (cPrefix == '*'){       // ---- All
@@ -133,10 +121,10 @@ void AssistantDialog::on_btnEncrypt_clicked()
         }else{                     // ---- Peer
             vecFriends.push_back(qsData.toStdString());
         }
-    }
+    }while(0);
     std::string smime;
     std::string msg = input().toStdString();
-    m_bitmail->EncMsg(vecFriends, msg, smime, fSignOnly, fSkipStranger);
+    m_bitmail->EncMsg(vecFriends, msg, smime, false, true);
     output(QString::fromStdString(smime));
     nick("");
     email("");
@@ -187,6 +175,10 @@ void AssistantDialog::on_btnAddFriend_clicked()
         return ;
     }
 
+    m_cbbFriends->addItem(QIcon(":/images/head.png")
+                          , nick()
+                          , QVariant(qsFrom));
+
     emit addFriend(email());
 }
 
@@ -200,33 +192,27 @@ void AssistantDialog::on_txtInput_textChanged()
     nick(""); email(""); certid(""); cert(""); output("");
 }
 
-void AssistantDialog::on_cbSignOnly_clicked(bool checked)
-{
-    m_cbbFriends->setEnabled(!checked);
-    m_cbSkipStrangers->setEnabled(!checked);
-}
-
-void AssistantDialog::on_cbSkipStrangers_clicked(bool checked)
-{
-    (void)checked;
-}
-
-void AssistantDialog::on_cbHideMain_clicked(bool checked)
-{
-    if (checked){
-        parentWidget()->hide();
-    }else{
-        parentWidget()->show();
-    }
-}
-
-void AssistantDialog::on_AssistantDialog_rejected()
-{
-    parentWidget()->show();
-}
-
 void AssistantDialog::on_btnCopy_clicked()
 {
-    QClipboard * board = QApplication::clipboard();
-    board->setText(m_txtOutput->toPlainText());
+    m_clip->setText(m_txtOutput->toPlainText());
+}
+
+void AssistantDialog::onClipDataChanged()
+{
+   QString text = m_clip->text();
+   qDebug() << "Clipboard: " << text;
+   return ;
+}
+
+void AssistantDialog::on_btnSign_clicked()
+{
+    std::vector<std::string> vecFriends;
+    std::string smime;
+    std::string msg = input().toStdString();
+    m_bitmail->EncMsg(vecFriends, msg, smime, true, false);
+    output(QString::fromStdString(smime));
+    nick("");
+    email("");
+    certid("");
+    cert("");
 }

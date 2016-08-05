@@ -53,6 +53,7 @@
 #include "optiondialog.h"
 #include "logindialog.h"
 #include "mainwindow.h"
+#include "assistantdialog.h"
 #include <bitmailcore/bitmail.h>
 #include "main.h"
 static
@@ -93,33 +94,55 @@ int main(int argc, char *argv[])
     //QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
     // Get Account Profile
     QString qsEmail, qsPassphrase;
-    LoginDialog loginDialog;
-    int dlgret = (loginDialog.exec());
-    if (dlgret == QDialog::Rejected){
-        return 1;
-    }
-    if (dlgret == QDialog::Accepted){
-        qsEmail = loginDialog.GetEmail();
-        qsPassphrase = loginDialog.GetPassphrase();
-    }
-    if (dlgret == LoginDialog::CreateNew){
-        OptionDialog optDialog(true);
-        if (optDialog.exec() != QDialog::Accepted){
-            return 2;
+    bool fAssistant = false;
+
+    while (true){
+        LoginDialog loginDialog;
+        int dlgret = (loginDialog.exec());
+        if (dlgret == QDialog::Rejected){
+            qDebug() << "User close login window, bye!";
+            return 1;
+        }else if (dlgret == QDialog::Accepted){
+            fAssistant = loginDialog.imAssistant();
+            qsEmail = loginDialog.GetEmail();
+            qsPassphrase = loginDialog.GetPassphrase();
+            break;
+        }else if (dlgret == LoginDialog::CreateNew){
+            OptionDialog optDialog(true);
+            if (optDialog.exec() != QDialog::Accepted){
+                continue;
+            }
+            qsEmail = optDialog.GetEmail();
+            qsPassphrase = optDialog.GetPassphrase();
+            break;
         }
-        qsEmail = optDialog.GetEmail();
-        qsPassphrase = optDialog.GetPassphrase();
-    }
+    };
+
     BitMail * bitmail = new BitMail();
     if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
+        qDebug() << "Failed to Load Profile, bye!";
         return 0;
     }
-    MainWindow mainWin(bitmail);
-    mainWin.show();
-    int retCode = app.exec();
+
+    if (!fAssistant){
+        MainWindow mainWin(bitmail);
+        mainWin.show();
+        app.exec();
+    }else{
+        AssistantDialog assistantDlg(bitmail);
+        assistantDlg.show();
+        app.exec();
+    }
+
+    BMQTApplication::SaveProfile(bitmail);
+
+    delete bitmail; bitmail = NULL;
 
     BMQTApplication::CloseLogger();
-    return retCode;
+
+    qDebug() << "BitMail quit! Bye";
+
+    return 0;
 }
 //! [0]
 namespace BMQTApplication {
