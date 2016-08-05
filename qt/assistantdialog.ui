@@ -47,7 +47,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>Message</string>
+    <string>Input</string>
    </property>
    <widget class="QTextEdit" name="txtInput">
     <property name="geometry">
@@ -126,7 +126,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>Friend</string>
+    <string>Output</string>
    </property>
    <widget class="QWidget" name="formLayoutWidget">
     <property name="geometry">

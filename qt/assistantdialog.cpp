@@ -11,6 +11,12 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
     m_bitmail(bm)
 {
     ui->setupUi(this);
+
+#if defined(MACOSX)
+    setUnifiedTitleAndToolBarOnMac(true);
+#endif
+    setWindowIcon(QIcon(":/images/bitmail.png"));
+
     m_leNick = findChild<QLineEdit*>("leNick");
     m_leEmail = findChild<QLineEdit*>("leEmail");
     m_leCertId = findChild<QLineEdit*>("leCertId");
@@ -109,6 +115,7 @@ void AssistantDialog::output(const QString & o)
 
 void AssistantDialog::on_btnEncrypt_clicked()
 {
+    clearOutput();
     std::vector<std::string> vecFriends;
     do {
         QString qsData = m_cbbFriends->currentData().toString();
@@ -126,10 +133,6 @@ void AssistantDialog::on_btnEncrypt_clicked()
     std::string msg = input().toStdString();
     m_bitmail->EncMsg(vecFriends, msg, smime, false, true);
     output(QString::fromStdString(smime));
-    nick("");
-    email("");
-    certid("");
-    cert("");
 }
 
 void AssistantDialog::on_btnDecrypt_clicked()
@@ -189,7 +192,16 @@ void AssistantDialog::on_btnClearInput_clicked()
 
 void AssistantDialog::on_txtInput_textChanged()
 {
-    nick(""); email(""); certid(""); cert(""); output("");
+    clearOutput();
+    const QString MIME_TAG = "MIME-Version: 1.0";
+    QString qsInput = input();
+    if (qsInput.indexOf(MIME_TAG) == 0){
+        on_btnDecrypt_clicked();
+    }else{
+        // Default is Encrypting.
+        // Not Signing
+        on_btnEncrypt_clicked();
+    }
 }
 
 void AssistantDialog::on_btnCopy_clicked()
@@ -200,19 +212,27 @@ void AssistantDialog::on_btnCopy_clicked()
 void AssistantDialog::onClipDataChanged()
 {
    QString text = m_clip->text();
-   qDebug() << "Clipboard: " << text;
+   if (!text.isEmpty()){
+      input(text);
+   }
    return ;
 }
 
 void AssistantDialog::on_btnSign_clicked()
 {
+    clearOutput();
     std::vector<std::string> vecFriends;
     std::string smime;
     std::string msg = input().toStdString();
     m_bitmail->EncMsg(vecFriends, msg, smime, true, false);
     output(QString::fromStdString(smime));
-    nick("");
-    email("");
-    certid("");
-    cert("");
+}
+
+void AssistantDialog::clearOutput()
+{
+    m_txtCert->clear();
+    m_leNick->clear();
+    m_leEmail->clear();
+    m_leCertId->clear();
+    m_txtOutput->clear();
 }

@@ -42,6 +42,9 @@ public:
     QString output() const;
     void output(const QString & o);
 
+private:
+    void clearOutput();
+
 private slots:
     void on_btnEncrypt_clicked();
 
