@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>630</width>
+    <width>600</width>
     <height>700</height>
    </rect>
   </property>
@@ -18,19 +18,19 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>630</width>
+    <width>600</width>
     <height>700</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>630</width>
+    <width>600</width>
     <height>700</height>
    </size>
   </property>
   <property name="baseSize">
    <size>
-    <width>630</width>
+    <width>600</width>
     <height>700</height>
    </size>
   </property>
@@ -40,9 +40,9 @@
   <widget class="QGroupBox" name="grpMsg">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>10</x>
      <y>10</y>
-     <width>601</width>
+     <width>581</width>
      <height>241</height>
     </rect>
    </property>
@@ -54,7 +54,7 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>581</width>
+      <width>561</width>
       <height>161</height>
      </rect>
     </property>
@@ -70,7 +70,7 @@
      <rect>
       <x>10</x>
       <y>200</y>
-      <width>581</width>
+      <width>541</width>
       <height>31</height>
      </rect>
     </property>
@@ -119,9 +119,9 @@
   <widget class="QGroupBox" name="grpFriend">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>10</x>
      <y>270</y>
-     <width>601</width>
+     <width>581</width>
      <height>421</height>
     </rect>
    </property>
@@ -133,7 +133,7 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>581</width>
+      <width>541</width>
       <height>101</height>
      </rect>
     </property>
@@ -141,7 +141,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="lbEmail">
        <property name="text">
-        <string>EMail:</string>
+        <string>From:</string>
        </property>
       </widget>
      </item>
@@ -154,6 +154,9 @@
      </item>
      <item row="2" column="1">
       <widget class="QLineEdit" name="leCertId">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="font">
         <font>
          <family>Fixedsys</family>
@@ -171,6 +174,9 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QLineEdit" name="leEmail">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="readOnly">
           <bool>true</bool>
          </property>
@@ -188,12 +194,15 @@
      <item row="0" column="0">
       <widget class="QLabel" name="lbNick">
        <property name="text">
-        <string>Nick:</string>
+        <string>Singer:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="leNick">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -202,11 +211,14 @@
     </layout>
    </widget>
    <widget class="QTextEdit" name="txtOutput">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>210</y>
-      <width>581</width>
+      <width>561</width>
       <height>161</height>
      </rect>
     </property>
@@ -218,16 +230,22 @@
       <bold>false</bold>
      </font>
     </property>
+    <property name="cursor" stdset="0">
+     <cursorShape>IBeamCursor</cursorShape>
+    </property>
     <property name="readOnly">
      <bool>true</bool>
     </property>
    </widget>
    <widget class="QTextEdit" name="txtCert">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>130</y>
-      <width>581</width>
+      <width>561</width>
       <height>71</height>
      </rect>
     </property>
@@ -238,6 +256,9 @@
       <weight>50</weight>
       <bold>false</bold>
      </font>
+    </property>
+    <property name="cursor" stdset="0">
+     <cursorShape>IBeamCursor</cursorShape>
     </property>
     <property name="readOnly">
      <bool>true</bool>

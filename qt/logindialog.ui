@@ -256,8 +256,10 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>lePassphrase</tabstop>
+  <tabstop>cbEmail</tabstop>
   <tabstop>cmdCreate</tabstop>
+  <tabstop>lePassphrase</tabstop>
+  <tabstop>cbAssistant</tabstop>
  </tabstops>
  <resources/>
  <connections>

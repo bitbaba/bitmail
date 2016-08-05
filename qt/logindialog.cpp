@@ -29,6 +29,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
     m_cbEmail->setIconSize(QSize(48,48));
 
     m_cbAssistant = findChild<QCheckBox*>("cbAssistant");
+    m_cbAssistant->setChecked(true);
 
     QStringList sList = BMQTApplication::GetProfiles();
     for (QStringList::iterator it = sList.begin(); it != sList.end(); it++){

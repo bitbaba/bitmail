@@ -17,39 +17,45 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
 #endif
     setWindowIcon(QIcon(":/images/bitmail.png"));
 
+    m_txtInput = findChild<QTextEdit*>("txtInput");
+    m_btnEncrypt = findChild<QPushButton*>("btnEncrypt");
+    m_btnDecrypt = findChild<QPushButton*>("btnDecrypt");
+    m_btnSign = findChild<QPushButton*>("btnSign");
+    m_btnAddFriend = findChild<QPushButton*>("btnAddFriend");
+    m_cbbFriends = findChild<QComboBox*>("cbbFriends");
+
     m_leNick = findChild<QLineEdit*>("leNick");
     m_leEmail = findChild<QLineEdit*>("leEmail");
     m_leCertId = findChild<QLineEdit*>("leCertId");
     m_txtCert = findChild<QTextEdit*>("txtCert");
-    m_txtInput = findChild<QTextEdit*>("txtInput");
     m_txtOutput = findChild<QTextEdit*>("txtOutput");
-    m_btnEncrypt = findChild<QPushButton*>("btnEncrypt");
-    m_btnDecrypt = findChild<QPushButton*>("btnDecrypt");
-    m_btnAddFriend = findChild<QPushButton*>("btnAddFriend");
-    m_cbbFriends = findChild<QComboBox*>("cbbFriends");
 
-    m_cbbFriends->addItem(QIcon(":/images/group.png")
-                          , tr("All")
-                          , QVariant(QString("*")));
-
-    std::vector<std::string> vecGroupIds;
-    m_bitmail->GetGroups(vecGroupIds);
-    for (unsigned int i = 0; i < vecGroupIds.size(); ++i){
-        std::string sGroupName;
-        m_bitmail->GetGroupName(vecGroupIds[i], sGroupName);
+    // Populate friend list
+    do {
         m_cbbFriends->addItem(QIcon(":/images/group.png")
-                              , QString::fromStdString(sGroupName)
-                              , QVariant(QString("#") + QString::fromStdString(vecGroupIds[i])));
-    }
-    std::vector<std::string> vecFriends;
-    m_bitmail->GetFriends(vecFriends);
-    for (std::vector<std::string>::const_iterator it = vecFriends.begin();
-          it != vecFriends.end(); ++it){
-        std::string sNick=m_bitmail->GetFriendNick(*it);
-        m_cbbFriends->addItem(QIcon(":/images/head.png")
-                              , QString::fromStdString(sNick)
-                              , QVariant(QString::fromStdString(*it)));
-    }
+                              , tr("All")
+                              , QVariant(QString("*")));
+
+        std::vector<std::string> vecGroupIds;
+        m_bitmail->GetGroups(vecGroupIds);
+        for (unsigned int i = 0; i < vecGroupIds.size(); ++i){
+            std::string sGroupName;
+            m_bitmail->GetGroupName(vecGroupIds[i], sGroupName);
+            m_cbbFriends->addItem(QIcon(":/images/group.png")
+                                  , QString::fromStdString(sGroupName)
+                                  , QVariant(QString("#") + QString::fromStdString(vecGroupIds[i])));
+        }
+        std::vector<std::string> vecFriends;
+        m_bitmail->GetFriends(vecFriends);
+        for (std::vector<std::string>::const_iterator it = vecFriends.begin();
+              it != vecFriends.end(); ++it){
+            std::string sNick=m_bitmail->GetFriendNick(*it);
+            m_cbbFriends->addItem(QIcon(":/images/head.png")
+                                  , QString::fromStdString(sNick)
+                                  , QVariant(QString::fromStdString(*it)));
+        }
+    }while(0);
+    // Listen clipboards
     m_clip = QApplication::clipboard();
     connect(m_clip, SIGNAL(dataChanged()), this, SLOT(onClipDataChanged()));
 }
@@ -196,8 +202,16 @@ void AssistantDialog::on_txtInput_textChanged()
     const QString MIME_TAG = "MIME-Version: 1.0";
     QString qsInput = input();
     if (qsInput.indexOf(MIME_TAG) == 0){
+        m_btnSign->setEnabled(false);
+        m_cbbFriends->setEnabled(false);
+        m_btnEncrypt->setEnabled(false);
+        m_btnDecrypt->setEnabled(true);
         on_btnDecrypt_clicked();
     }else{
+        m_btnSign->setEnabled(true);
+        m_cbbFriends->setEnabled(true);
+        m_btnEncrypt->setEnabled(true);
+        m_btnDecrypt->setEnabled(false);
         // Default is Encrypting.
         // Not Signing
         on_btnEncrypt_clicked();
