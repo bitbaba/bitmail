@@ -68,10 +68,44 @@ typedef int (* MessageEventCB)(const char * from, const char * recip, const char
 
 typedef int (* RTxProgressCB)(RTxState, const char * info, void * userptr);
 
+class ILock{
+public:
+	virtual void Lock() = 0;
+	virtual void TryLock(unsigned int ms) = 0;
+	virtual void Unlock() = 0;
+};
+
+class ILockFactory{
+public:
+	virtual ILock * CreateLock() = 0;
+	virtual void FreeLock(ILock * lock) = 0;
+};
+
+
+typedef int (* IRxOnDataCallback)(void * d, unsigned int l, void * userptr);
+
+class IRx{
+public:
+	virtual void onData(IRxOnDataCallback cb, void * userptr) = 0;
+};
+
+class ITx{
+public:
+	virtual int Send(void * d, unsigned int l) = 0;
+};
+
+class IRTxFactory{
+public:
+	virtual IRx * CreateRx() = 0;
+	virtual void FreeRx(IRx * irx) = 0;
+	virtual ITx * CreateTx() = 0;
+	virtual void FreeTx(ITx * itx) = 0;
+};
+
 class BitMail
 {
 public:
-    BitMail();
+    BitMail(ILockFactory * lock = NULL, IRTxFactory * net = NULL);
     ~BitMail();
     unsigned int GetVersion() const;
 public:
@@ -264,6 +298,18 @@ protected:
 
     // Bra daemon instance
     Brad               * m_brad;
+
+    // Lock
+    ILock * m_lock1;
+    ILock * m_lock2;
+    ILock * m_lock3;
+    ILock * m_lock4;
+    ILockFactory * m_lockCraft;
+
+    // Custom network
+    IRx * m_rx;
+    ITx * m_tx;
+    IRTxFactory * m_netCraft;
 
 public:
     CX509Cert          * m_profile;

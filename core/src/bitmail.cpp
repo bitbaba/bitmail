@@ -29,14 +29,30 @@
 #include <string.h>
 
 
-BitMail::BitMail()
+BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
 : m_onPollEvent(NULL), m_onPollEventParam(NULL)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
+, m_rx(NULL), m_tx(NULL)
+, m_lock1(NULL), m_lock2(NULL), m_lock3(NULL), m_lock4(NULL)
 {
     OpenSSL_add_all_ciphers();
     OPENSSL_load_builtin_modules();
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
+
+    if (lock){
+		m_lock1 = lock->CreateLock();
+		m_lock2 = lock->CreateLock();
+		m_lock3 = lock->CreateLock();
+		m_lock4 = lock->CreateLock();
+	    m_lockCraft = lock;
+    }
+
+    if (net){
+		m_tx = net->CreateTx();
+		m_rx = net->CreateRx();
+		m_netCraft = net;
+    }
 
     // Create a email object
     m_mc = new CMailClient(EmailHandler, this);
@@ -47,8 +63,35 @@ BitMail::BitMail()
 
 BitMail::~BitMail()
 {
+	if (m_profile != NULL){
+		delete m_profile; m_profile = NULL;
+	}
     if (m_mc != NULL){
         delete (m_mc); m_mc = NULL;
+    }
+    if (m_rx){
+    	m_netCraft->FreeRx(m_rx);
+    	m_rx = NULL;
+    }
+    if (m_tx){
+    	m_netCraft->FreeTx(m_tx);
+    	m_tx = NULL;
+    }
+    if (m_lock1){
+    	m_lockCraft->FreeLock(m_lock1);
+    	m_lock1 = NULL;
+    }
+    if (m_lock2){
+    	m_lockCraft->FreeLock(m_lock2);
+    	m_lock2 = NULL;
+    }
+    if (m_lock3){
+    	m_lockCraft->FreeLock(m_lock3);
+    	m_lock3 = NULL;
+    }
+    if (m_lock4){
+    	m_lockCraft->FreeLock(m_lock4);
+    	m_lock4 = NULL;
     }
 }
 
