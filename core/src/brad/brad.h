@@ -90,9 +90,6 @@ class Brad;
  */
 typedef int (* OnBradStatus)(BradStatus ec, void * userptr);
 
-typedef int (* OnBradClientConnect)(Brac * c, void * userptr);
-
-
 /**
  * Definition:
  * BRA: Bitmail Resource Attachment
@@ -108,12 +105,16 @@ public:
 };
 
 /**
- * Bra client class
+ * Bra session class
  */
 class Brac{
 public:
 	Brac(int sockfd);
+	bool Connect(const char * peer, unsigned short port);
 	~Brac();
+private:
+	int m_sockfd;
+	bool m_authed;
 };
 
 /**
@@ -123,15 +124,12 @@ class Brad{
 private:
 	int m_serv;
 	OnBradStatus m_statusHandler;
-	OnBradClientConnect m_clientHandler;
 	void * m_userptr;
 public:
-	Brad(OnBradStatus cbStatus, OnBradClientConnect cbClient, void * userptr);
+	Brad(OnBradStatus cbStatus, void * userptr);
+	bool onConnect(Brac * client);
 	~Brad();
 public:
 	int Startup(unsigned short port);
-	int CloseClient(Brac * c);
-	int Put(Brac & c, const Bra & bra);
-	int Get(Brac & c, const BraId & braid, Bra & bra);
 	int Shutdown();
 };
