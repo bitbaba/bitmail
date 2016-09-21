@@ -24,6 +24,7 @@ fi
 if [ -d "$DESTDIR" ]; then
 	cp -f Makefile.natpmp "$DESTDIR"/Makefile
 	cp -f natpmp.getgateway.c "$DESTDIR"/getgateway.c
+	cp -f natpmp.h "$DESTDIR"/natpmp.h
 	cd "$DESTDIR"
 	make DESTDIR="$OutDir" INSTALLPREFIX="" install && make clean
 fi
