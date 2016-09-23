@@ -23,21 +23,21 @@ NetOptionDialog::NetOptionDialog(QWidget *parent) :
 
     do {
         m_leBradPort       = findChild<QLineEdit*>("leBradPort");
-        m_leBradPort->setInputMask("00000");
+        //m_leBradPort->setInputMask("00000");
 
         m_leBradExtIp     = findChild<QLineEdit*>("leBradExtIp");
-        m_leBradExtIp->setInputMask("000.000.000.000");
+        //m_leBradExtIp->setInputMask("000.000.000.000");
 
         m_leBradExtPort    = findChild<QLineEdit*>("leBradExtPort");
-        m_leBradExtPort->setInputMask("00000");
+        //m_leBradExtPort->setInputMask("00000");
     }while(0); // Proxy settings
 
     do {
         m_leProxyIP       = findChild<QLineEdit*>("leProxyIP");
-        m_leProxyIP->setInputMask("000.000.000.000");
+        //m_leProxyIP->setInputMask("000.000.000.000");
 
         m_leProxyPort     = findChild<QLineEdit*>("leProxyPort");
-        m_leProxyPort->setInputMask("00000");
+        //m_leProxyPort->setInputMask("00000");
 
         m_leProxyLogin    = findChild<QLineEdit*>("leProxyLogin");
 
