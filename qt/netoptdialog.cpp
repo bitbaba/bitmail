@@ -19,31 +19,29 @@ NetOptionDialog::NetOptionDialog(QWidget *parent) :
         m_leImapUrl->setValidator(new QRegExpValidator(QRegExp("imaps://[a-ZA-Z0-9.]+/", Qt::CaseInsensitive), m_leImapUrl));
         m_leLogin        = findChild<QLineEdit*>("leLogin");
         m_lePassword     = findChild<QLineEdit*>("lePassword");
-        m_cbEnableUPnP   = findChild<QCheckBox*>("cbUPnP");
     }while(0); // Network settings
 
     do {
-        m_cbProxyEnable   = findChild<QCheckBox*>("cbProxyEnable");
+        m_leBradPort       = findChild<QLineEdit*>("leBradPort");
+        m_leBradPort->setInputMask("00000");
 
+        m_leBradExtIp     = findChild<QLineEdit*>("leBradExtIp");
+        m_leBradExtIp->setInputMask("000.000.000.000");
+
+        m_leBradExtPort    = findChild<QLineEdit*>("leBradExtPort");
+        m_leBradExtPort->setInputMask("00000");
+    }while(0); // Proxy settings
+
+    do {
         m_leProxyIP       = findChild<QLineEdit*>("leProxyIP");
         m_leProxyIP->setInputMask("000.000.000.000");
-        m_leProxyIP->setEnabled(false);
 
         m_leProxyPort     = findChild<QLineEdit*>("leProxyPort");
         m_leProxyPort->setInputMask("00000");
-        m_leProxyPort->setEnabled(false);
 
         m_leProxyLogin    = findChild<QLineEdit*>("leProxyLogin");
-        m_leProxyLogin->setEnabled(false);
 
         m_leProxyPassword = findChild<QLineEdit*>("leProxyPassword");
-        m_leProxyPassword->setEnabled(false);
-
-        m_cbRemoteDNS     = findChild<QCheckBox*>("cbRemoteDNS");
-        m_cbRemoteDNS->setEnabled(false);
-
-        // Note: fowlling state setup will NOT trigger slot
-        m_cbProxyEnable->setCheckState(Qt::Unchecked);
     }while(0); // Proxy settings
 }
 
@@ -124,44 +122,34 @@ QString NetOptionDialog::GetImapPassword() const
     return m_lePassword->text();
 }
 
-void NetOptionDialog::on_cbProxyEnable_clicked()
+void NetOptionDialog::BradPort(unsigned short port)
 {
-
+    m_leBradPort->setText(QString("%1").arg(port));
 }
 
-void NetOptionDialog::on_cbProxyEnable_stateChanged(int arg1)
+unsigned short NetOptionDialog::BradPort() const
 {
-    m_leProxyIP->setEnabled(arg1 == Qt::Checked);
-    m_leProxyPort->setEnabled(arg1 == Qt::Checked);
-    m_leProxyLogin->setEnabled(arg1 == Qt::Checked);
-    m_leProxyPassword->setEnabled(arg1 == Qt::Checked);
-    m_cbRemoteDNS->setEnabled(arg1 == Qt::Checked);
+    return m_leBradPort->text().toInt();
 }
 
-void NetOptionDialog::on_cbUPnP_stateChanged(int arg1)
+void NetOptionDialog::BradExtPort(unsigned short port)
 {
-    (void) arg1;
+    m_leBradExtPort->setText(QString("%1").arg(port));
 }
 
-void NetOptionDialog::SetEnableUPnP(bool enable)
+unsigned short NetOptionDialog::BradExtPort() const
 {
-    m_cbEnableUPnP->setCheckState(enable ? Qt::Checked : Qt::Unchecked);
+    return m_leBradExtPort->text().toInt();
 }
 
-bool NetOptionDialog::GetEnableUPnP() const
+void NetOptionDialog::BradExtIp(const QString & ip)
 {
-    return m_cbEnableUPnP->checkState() == Qt::Checked;
+    m_leBradExtIp->setText(ip);
 }
 
-void NetOptionDialog::SetProxyEnable(bool enable)
+QString NetOptionDialog::BradExtIp() const
 {
-    m_cbProxyEnable->setCheckState(enable ? Qt::Checked : Qt::Unchecked);
-    //on_cbProxyEnable_stateChanged(enable ? Qt::Checked : Qt::Unchecke);
-}
-
-bool NetOptionDialog::GetProxyEnable() const
-{
-    return m_cbProxyEnable->checkState() == Qt::Checked;
+    return m_leBradExtIp->text();
 }
 
 void NetOptionDialog::SetProxyIP(const QString & ip)
@@ -202,14 +190,4 @@ void NetOptionDialog::SetProxyPassword(const QString & pass)
 QString NetOptionDialog::GetProxyPassword() const
 {
     return m_leProxyPassword->text();
-}
-
-void NetOptionDialog::SetRemoteDNS(bool enable)
-{
-    m_cbRemoteDNS->setCheckState(enable ? Qt::Checked : Qt::Unchecked);
-}
-
-bool NetOptionDialog::GetRemoteDNS() const
-{
-    return m_cbRemoteDNS->checkState() == Qt::Checked;
 }

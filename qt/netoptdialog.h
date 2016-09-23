@@ -24,12 +24,6 @@ private slots:
 
     void on_buttonBox_rejected();
 
-    void on_cbProxyEnable_clicked();
-
-    void on_cbProxyEnable_stateChanged(int arg1);
-
-    void on_cbUPnP_stateChanged(int arg1);
-
 private:
     Ui::NetOptionDialog *ui;
 public:
@@ -51,11 +45,14 @@ public:
     void SetImapPassword(const QString & p);
     QString GetImapPassword() const;
 
-    void SetEnableUPnP(bool enable);
-    bool GetEnableUPnP() const;
+    void BradPort(unsigned short port);
+    unsigned short BradPort() const;
 
-    void SetProxyEnable(bool enable);
-    bool GetProxyEnable() const;
+    void BradExtPort(unsigned short port);
+    unsigned short BradExtPort() const;
+
+    void BradExtIp(const QString & ip);
+    QString BradExtIp() const;
 
     void SetProxyIP(const QString & ip);
     QString GetProxyIP() const;
@@ -69,22 +66,20 @@ public:
     void SetProxyPassword(const QString & pass);
     QString GetProxyPassword() const;
 
-    void SetRemoteDNS(bool enable);
-    bool GetRemoteDNS() const;
-
 private:
     QLineEdit *m_leSmtpUrl;    
     QLineEdit *m_leImapUrl;
     QLineEdit *m_leLogin;
     QLineEdit *m_lePassword;
-    QCheckBox *m_cbEnableUPnP;
 
-    QCheckBox *m_cbProxyEnable;
+    QLineEdit *m_leBradPort;
+    QLineEdit *m_leBradExtPort;
+    QLineEdit *m_leBradExtIp;
+
     QLineEdit *m_leProxyIP;
     QLineEdit *m_leProxyPort;
     QLineEdit *m_leProxyLogin;
     QLineEdit *m_leProxyPassword;
-    QCheckBox *m_cbRemoteDNS;
 };
 
 #endif // NETOPTIONDIALOG_H

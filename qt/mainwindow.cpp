@@ -207,8 +207,8 @@ MainWindow::~MainWindow()
 void MainWindow::startupNetwork()
 {
     m_rxth = (new RxThread(m_bitmail));
-    connect(m_rxth, SIGNAL(gotMessage(QString, QStringList,QString, QString,QString))
-            , this, SLOT(onNewMessage(QString, QStringList,QString, QString,QString)));
+    connect(m_rxth, SIGNAL(gotMessage(QString, QString, QString,QString))
+            , this, SLOT(onNewMessage(QString, QString, QString,QString)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
     connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
     m_rxth->start();
@@ -219,9 +219,13 @@ void MainWindow::startupNetwork()
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
     connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
     m_txth->start();
+
+    m_bitmail->StartBrad();
 }
 void MainWindow::shutdownNetwork()
 {
+    m_bitmail->ShutdownBrad();
+
     if (m_rxth ){
         m_rxth->stop();
     }
@@ -415,12 +419,12 @@ void MainWindow::createToolBars()
     rssToolbar = addToolBar(tr("RSS"));
     rssToolbar->addAction(rssAct);
     chatToolbar = addToolBar(tr("Chat"));
-    chatToolbar->addAction(emojAct);
+    //chatToolbar->addAction(emojAct);
     chatToolbar->addAction(snapAct);
     chatToolbar->addAction(fileAct);
-    chatToolbar->addAction(soundAct);
-    chatToolbar->addAction(videoAct);
-    chatToolbar->addAction(liveAct);
+    //chatToolbar->addAction(soundAct);
+    //chatToolbar->addAction(videoAct);
+    //chatToolbar->addAction(liveAct);
     chatToolbar->addAction(payAct);
     chatToolbar->setIconSize(QSize(24,24));
 }
@@ -462,12 +466,16 @@ void MainWindow::onNetConfig()
     optDialog.SetImapUrl(QString::fromStdString(m_bitmail->GetRxUrl()));
     optDialog.SetImapLogin(QString::fromStdString(m_bitmail->GetRxLogin()));
     optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
-    optDialog.SetProxyEnable(m_bitmail->EnableProxy());
+
+    optDialog.BradPort(m_bitmail->GetBradPort());
+    optDialog.BradExtIp(QString::fromStdString(m_bitmail->GetBradExtIp()));
+    optDialog.BradExtPort(m_bitmail->GetBradExtPort());
+
     optDialog.SetProxyIP(QString::fromStdString(m_bitmail->GetProxyIp()));
     optDialog.SetProxyPort(m_bitmail->GetProxyPort());
     optDialog.SetProxyLogin(QString::fromStdString(m_bitmail->GetProxyUser()));
     optDialog.SetProxyPassword(QString::fromStdString(m_bitmail->GetProxyPassword()));
-    optDialog.SetRemoteDNS(m_bitmail->RemoteDNS());
+
     if (QDialog::Accepted != optDialog.exec()){
         return ;
     }
@@ -483,13 +491,16 @@ void MainWindow::onNetConfig()
                         , qsRxUrl.toStdString()
                         , qsRxLogin.toStdString()
                         , qsRxPassword.toStdString());
-    m_bitmail->EnableProxy(optDialog.GetProxyEnable());
     do {
         m_bitmail->SetProxyIp(optDialog.GetProxyIP().toStdString());
         m_bitmail->SetProxyPort(optDialog.GetProxyPort());
         m_bitmail->SetProxyUser(optDialog.GetProxyLogin().toStdString());
         m_bitmail->SetProxyPassword(optDialog.GetProxyPassword().toStdString());
-        m_bitmail->RemoteDNS(optDialog.GetRemoteDNS());
+    }while(0);
+
+    do {
+        m_bitmail->SetBradPort(optDialog.BradPort());
+        m_bitmail->SetBradRedirectManually(optDialog.BradExtIp().toStdString(), optDialog.BradExtPort());
     }while(0);
 
     return ;
@@ -520,7 +531,6 @@ void MainWindow::onRssBtnClicked()
  * 2) in the case1, Q_DECLARE_METATYPE(MsgType) & aRegisterMetaType<MsgType>(), will make case1 to work.
  */
 void MainWindow::onNewMessage(const QString & from
-                              , const QStringList & recip
                               , const QString & content
                               , const QString & certid
                               , const QString & cert)
@@ -529,7 +539,7 @@ void MainWindow::onNewMessage(const QString & from
     RTXMessage rtxMsg;
     rtxMsg.rtx(false);
     rtxMsg.from(from);
-    rtxMsg.recip(recip);
+    rtxMsg.recip(QStringList(QString::fromStdString(m_bitmail->GetEmail())));
     rtxMsg.content(content);
     rtxMsg.certid(certid);
     rtxMsg.cert(cert);
@@ -812,6 +822,7 @@ void MainWindow::onSendBtnClicked()
     rtxMsg.cert(qsCert);
     rtxMsg.recip(qslRecip);
     rtxMsg.content(bmMsg.Serialize());
+    qDebug() << rtxMsg.content();
 
     emit readyToSend(qsFrom
                      , qslRecip
@@ -881,6 +892,7 @@ void MainWindow::setNotify(MsgType mt, const QString & qsKey)
         QString key = qslData.at(1);
         if (qsKey == key){
             elt->setBackground(0, QBrush(QColor(Qt::red)));
+            this->activateWindow();
         }
     }
 }

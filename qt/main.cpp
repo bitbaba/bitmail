@@ -224,6 +224,7 @@ namespace BMQTApplication {
         QJsonObject joProfile;
         QJsonObject joTx;
         QJsonObject joRx;
+        QJsonObject joBrad;
         QJsonObject joBuddies;
         QJsonObject joGroups;
         (void)joGroups;
@@ -248,7 +249,15 @@ namespace BMQTApplication {
             if (joProfile.contains("key")){
                 qsKey = joProfile["key"].toString();
             }
-            (void)passphrase;
+            // Brad
+            if (joProfile.contains("brad")){
+                joBrad = joProfile["brad"].toObject();
+                unsigned short port = joBrad["port"].toInt();
+                bm->SetBradPort(port);
+                QString qsExtIp = joBrad["extIp"].toString();
+                unsigned short extPort = joBrad["extPort"].toInt();
+                bm->SetBradRedirectManually(qsExtIp.toStdString(), extPort);
+            }
             if (bmOk != bm->LoadProfile(passphrase.toStdString()
                             , qsKey.toStdString()
                             , qsCert.toStdString())){
@@ -283,6 +292,7 @@ namespace BMQTApplication {
         }
         bm->InitNetwork(qsTxUrl.toStdString(), qsTxLogin.toStdString(), qsTxPassword.toStdString()
                         , qsRxUrl.toStdString(), qsRxLogin.toStdString(), qsRxPassword.toStdString());
+
         if (joRoot.contains("friends"))
         {
             joBuddies = joRoot["friends"].toObject();
@@ -336,12 +346,6 @@ namespace BMQTApplication {
 
         if (joRoot.contains("proxy")){
             joProxy = joRoot["proxy"].toObject();
-            if (joProxy.contains("enable")){
-                bool fProxyEnable = joProxy["enable"].toBool();
-                bm->EnableProxy(fProxyEnable);
-            }else{
-                bm->EnableProxy(false);
-            }
             do {
                 if (joProxy.contains("ip")){
                     QString qsVal = joProxy["ip"].toString();
@@ -359,10 +363,6 @@ namespace BMQTApplication {
                     QString qsVal = joProxy["password"].toString();
                     bm->SetProxyPassword(bm->Decrypt(qsVal.toStdString()));
                 }
-                if (joProxy.contains("remoteDNS")){
-                    bool fRemoteDNS = joProxy["remoteDNS"].toBool();
-                    bm->RemoteDNS(fRemoteDNS);
-                }
             }while(0);
         }
         return true;
@@ -376,19 +376,28 @@ namespace BMQTApplication {
         QJsonObject joProfile;
         QJsonObject joTx;
         QJsonObject joRx;
+        QJsonObject joBrad;
         QJsonObject joBuddies;
         QJsonObject joGroups;     // Group chatting
         (void) joGroups;
         QJsonArray jaSubscribes; // Subscribing
         (void) jaSubscribes;
         QJsonObject joProxy;
+        // Brad
+        joBrad["port"] = (int) bm->GetBradPort();
+        joBrad["extIp"] = QString::fromStdString(bm->GetBradExtIp());
+        joBrad["extPort"] = (int) bm->GetBradExtPort();
+        // Profile
         joProfile["email"] = QString::fromStdString(bm->GetEmail());
         joProfile["nick"] = QString::fromStdString(bm->GetNick());
         joProfile["key"] = QString::fromStdString(bm->GetKey());
         joProfile["cert"] = QString::fromStdString(bm->GetCert());
+        joProfile["brad"] = joBrad;
+        // Tx
         joTx["url"] = QString::fromStdString(bm->GetTxUrl());
         joTx["login"] = QString::fromStdString(bm->GetTxLogin());
         joTx["password"] = QString::fromStdString(bm->Encrypt(bm->GetTxPassword()));
+        // Rx
         joRx["url"] = QString::fromStdString(bm->GetRxUrl());
         joRx["login"] = QString::fromStdString(bm->GetRxLogin());
         joRx["password"] = QString::fromStdString(bm->Encrypt(bm->GetRxPassword()));
@@ -439,14 +448,13 @@ namespace BMQTApplication {
             jaSubscribes.append(QString::fromStdString(*it));
         }
         // proxy
-        joProxy["enable"] = bm->EnableProxy();
         do {
             joProxy["ip"] = QString::fromStdString( bm->GetProxyIp());
             joProxy["port"] = (int)bm->GetProxyPort();
             joProxy["user"] = QString::fromStdString(bm->GetProxyUser());
             joProxy["password"] = QString::fromStdString(bm->Encrypt(bm->GetProxyPassword()));
-            joProxy["remoteDNS"] = bm->RemoteDNS();
         }while(0);
+
         // for more readable, instead of `profile'
         joRoot["Profile"] = joProfile;
         joRoot["tx"] = joTx;

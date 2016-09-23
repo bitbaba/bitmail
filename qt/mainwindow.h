@@ -97,7 +97,6 @@ public slots:
     void onWalletBtnClicked();
     void onRssBtnClicked();
     void onNewMessage(const QString & from
-                      , const QStringList & recip
                       , const QString & msg
                       , const QString & certid
                       , const QString & cert);

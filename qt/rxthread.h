@@ -16,7 +16,6 @@ public:
 public:
     void run();
     void NotifyNewMessage(const QString & from
-                          , const QStringList & recip
                           , const QString & msg
                           , const QString & certid
                           , const QString & cert);
@@ -27,7 +26,6 @@ public:
 
 signals:
     void gotMessage(const QString & from
-                        , const QStringList & recip
                         , const QString & msg
                         , const QString & certid
                         , const QString & cert);

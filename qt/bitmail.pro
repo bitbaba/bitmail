@@ -98,3 +98,5 @@ win32: LIBS += -lws2_32 -lgdi32
 
 DISTFILES += \
     bitmail.rc
+
+
