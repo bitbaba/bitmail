@@ -149,11 +149,9 @@ public:
 
     unsigned short GetBradPort() const;
 
-    bool SetBradRedirectManually(const std::string & eip, unsigned short eport);
+    bool SetBradExtUrl(const std::string & exturl);
 
-    std::string GetBradExtIp() const;
-
-    unsigned short GetBradExtPort() const;
+    std::string GetBradExtUrl() const;
 
     bool ShutdownBrad();
 
@@ -238,6 +236,11 @@ public:
 
     std::string GetFriendID(const std::string & email) const;
 
+    // Friend brad config
+    bool SetFriendBrad(const std::string & email, const std::string & exturl);
+
+    std::string GetFriendBradExtUrl(const std::string & email) const;
+
     // Friends
     int AddFriend(const std::string & email, const std::string & certpem);
 
@@ -301,11 +304,13 @@ protected:
     // Subscribes: vector of subscribed email
     std::vector<std::string> m_subscribes;
 
+    // Friends brad config
+    std::map<std::string, std::string> m_brads;
+
     // Bra daemon instance
     Brad               * m_brad;
     unsigned short       m_bradPort;
-    std::string          m_bradExtIp;
-    unsigned short       m_bradExtPort;
+    std::string          m_bradExtUrl;
 
     // Lock
     ILock * m_lock1;
