@@ -56,12 +56,12 @@ else
 endif
 endif
 
-HEADERS = natpmp.h
+HEADERS = natpmp.h declspec.h
 
 EXECUTABLES = testgetgateway natpmpc-shared natpmpc-static
 
 INSTALLPREFIX ?= $(PREFIX)/usr
-INSTALLDIRINC = $(INSTALLPREFIX)/include
+INSTALLDIRINC = $(INSTALLPREFIX)/include/natpmp
 INSTALLDIRLIB = $(INSTALLPREFIX)/lib
 INSTALLDIRBIN = $(INSTALLPREFIX)/bin
 
