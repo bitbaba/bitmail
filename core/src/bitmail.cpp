@@ -32,6 +32,9 @@
 BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
 : m_onPollEvent(NULL), m_onPollEventParam(NULL)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
+, m_mc(NULL)
+, m_brad(NULL)
+, m_bradPort(10086), m_bradExtPort(0), m_bradExtIp("")
 , m_rx(NULL), m_tx(NULL)
 , m_lock1(NULL), m_lock2(NULL), m_lock3(NULL), m_lock4(NULL)
 {
@@ -142,13 +145,203 @@ int BitMail::InitNetwork( const std::string & txurl
     return bmOk;
 }
 
+bool BitMail::SetBradPort(unsigned short port)
+{
+	m_bradPort = port;
+	return true;
+}
+
+bool BitMail::StartBrad()
+{
+	if (m_brad != NULL){
+		m_brad->Shutdown();
+		delete m_brad;
+		m_brad = NULL;
+	}
+	m_brad = new Brad(m_bradPort, EmailHandler, this);
+	if (m_brad == NULL){
+		return false;
+	}
+	return m_brad->Startup();
+}
+
+unsigned short BitMail::GetBradPort() const
+{
+	return m_bradPort;
+}
+
+bool BitMail::SetBradRedirectManually(const std::string & eip, unsigned short eport)
+{
+	m_bradExtIp = eip;
+	m_bradExtPort = eport;
+	return true;
+}
+
+#if defined(INTEGRATE_MINIUPNPC)
+bool BitMail::RedirectBradPortByUpnp(unsigned short intport, unsigned short extport)
+{
+	char iport[16]; itoa(intport, iport, 10);
+	char eport[16]; itoa(extport, eport, 10);
+
+	int error = 0;
+	struct UPNPDev * devlist = upnpDiscover(2000
+										  , NULL/*multicast iterface*/
+										  , NULL/*mini ssdpd path*/
+										  , UPNP_LOCAL_PORT_ANY
+										  , 0 /*ipv6*/
+										  , 2 /*ttl*/
+										  , &error);
+	struct UPNPDev * device;
+	struct UPNPUrls urls;
+	struct IGDdatas data;
+	char lanaddr[64] = "unset";	/* my ip address on the LAN */
+	int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+	(void)ret;
+
+	char externalIPAddress[40];
+	int r = UPNP_GetExternalIPAddress(urls.controlURL
+									 , data.first.servicetype
+									 , externalIPAddress);
+	if(r!=UPNPCOMMAND_SUCCESS){
+		printf("GetExternalIPAddress failed.\n");
+
+		FreeUPNPUrls(&urls);
+
+		if (devlist){
+			freeUPNPDevlist(devlist);
+			devlist = 0;
+		}
+		return false;
+	}
+
+	const char PROTO_TCP [4] = { 'T', 'C', 'P', 0};
+	r = UPNP_AddPortMapping(urls.controlURL
+						   , data.first.servicetype
+						   , eport
+						   , iport
+						   , lanaddr
+						   , NULL/*description*/
+						   , PROTO_TCP
+						   , 0
+						   , "0"/*leaseDuration*/);
+
+	if(r!=UPNPCOMMAND_SUCCESS) {
+		printf("AddPortMapping(%s, %s, %s) failed with code %d (%s)\n"
+				, eport
+				, iport
+				, lanaddr
+				, r
+				, strupnperror(r));
+
+		FreeUPNPUrls(&urls);
+
+		if (devlist){
+			freeUPNPDevlist(devlist);
+			devlist = 0;
+		}
+		return false;
+	}
+
+
+	char intClient[40];
+	char intPort[6];
+	char reservedPort[6];
+	char duration[16];
+	r = UPNP_GetSpecificPortMappingEntry(urls.controlURL
+										, data.first.servicetype
+										, eport
+										, PROTO_TCP
+										, NULL/*remoteHost*/
+										, intClient
+										, intPort
+										, NULL/*desc*/
+										, NULL/*enabled*/
+										, duration);
+	if(r!=UPNPCOMMAND_SUCCESS){
+		printf("GetSpecificPortMappingEntry() failed with code %d (%s)\n",
+		       r, strupnperror(r));
+		FreeUPNPUrls(&urls);
+
+		if (devlist){
+			freeUPNPDevlist(devlist);
+			devlist = 0;
+		}
+		return false;
+	}
+
+	FreeUPNPUrls(&urls);
+
+	if (devlist){
+		freeUPNPDevlist(devlist);
+		devlist = 0;
+	}
+
+	m_bradExtIp = externalIPAddress;
+	m_bradExtPort = extport;
+
+	return true;
+}
+
+bool BitMail::RemoveUpnpBradRedirect(unsigned short extport)
+{
+	char eport[16]; itoa(extport, eport, 10);
+
+	int error = 0;
+	struct UPNPDev * devlist = upnpDiscover(2000
+										  , NULL/*multicast iterface*/
+										  , NULL/*mini ssdpd path*/
+										  , UPNP_LOCAL_PORT_ANY
+										  , 0 /*ipv6*/
+										  , 2 /*ttl*/
+										  , &error);
+	struct UPNPDev * device;
+	struct UPNPUrls urls;
+	struct IGDdatas data;
+	char lanaddr[64] = "unset";	/* my ip address on the LAN */
+	int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+	(void)ret;
+
+	const char PROTO_TCP [4] = { 'T', 'C', 'P', 0};
+	int r = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, eport, PROTO_TCP, NULL/*remoteHost*/);
+	printf("UPNP_DeletePortMapping() returned : %d\n", r);
+
+	FreeUPNPUrls(&urls);
+
+	if (devlist){
+		freeUPNPDevlist(devlist);
+		devlist = 0;
+	}
+
+	return true;
+}
+#endif
+
+std::string BitMail::GetBradExtIp() const
+{
+	return m_bradExtIp;
+}
+
+unsigned short BitMail::GetBradExtPort() const
+{
+	return m_bradExtPort;
+}
+
+bool BitMail::ShutdownBrad()
+{
+	if (m_brad != NULL){
+		m_brad->Shutdown();
+		delete m_brad;
+		m_brad = NULL;
+	}
+    return true;
+}
+
 int BitMail::SetProxy(const std::string & ip
         , unsigned short port
         , const std::string & user
-        , const std::string & password
-        , bool fRemoteDNS)
+        , const std::string & password)
 {
-    return m_mc->SetProxy(ip, port, user, password, fRemoteDNS);
+    return m_mc->SetProxy(ip, port, user, password);
 }
 
 void BitMail::SetProxyIp(const std::string & ip)
@@ -189,26 +382,6 @@ void BitMail::SetProxyPassword(const std::string & password)
 std::string BitMail::GetProxyPassword() const
 {
     return m_mc->GetProxyPassword();
-}
-
-void BitMail::RemoteDNS(bool fEnable)
-{
-    m_mc->RemoteDNS(fEnable);
-}
-
-bool BitMail::RemoteDNS() const
-{
-    return m_mc->RemoteDNS();
-}
-
-void BitMail::EnableProxy(bool fEnable)
-{
-    m_mc->EnableProxy(fEnable);
-}
-
-bool BitMail::EnableProxy() const
-{
-    return m_mc->EnableProxy();
 }
 
 int BitMail::SetTxUrl(const std::string & u)
@@ -793,36 +966,7 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/M
     */
 
-    /**
-    * Very! Simple MIME Parse to get <To> <From> <Subject> & MimeBody
-    */
-    std::string sFrom, sRecip, sSubject, sMimeBody;
-    std::vector<std::string> vecTo;
-
-    std::stringstream sstrm;
-    sstrm << mimemsg;
-    std::string line;
-    while(std::getline(sstrm, line)){
-        if (line.empty()) continue;
-        if (!line.compare(0, 3, "To:")){
-            CMailClient::GetEmailAddrList(line.substr(3), vecTo);
-        }else if (!line.compare(0, 5, "From:")){
-            std::vector<std::string> vecFrom;
-            CMailClient::GetEmailAddrList(line.substr(5), vecFrom);
-            if (vecFrom.size()){
-                sFrom = vecFrom[0];
-            }
-        }else if (!line.compare(0, 8, "Subject:")){
-            sSubject = line.substr(8);
-        }
-    }
-
-    for (std::vector<std::string>::const_iterator it = vecTo.begin()
-    		; it != vecTo.end()
-    		; ++it){
-    	sRecip += *it;
-    	sRecip += RECIP_SEPARATOR;
-    }
+    std::string sMimeBody;
 
     if (std::string::npos == mimemsg.find("MIME-Version:")){
         return bmNoMimeBody;
@@ -855,9 +999,9 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     }
 
     if (self && self->m_onMessageEvent){
-        self->m_onMessageEvent(sFrom.c_str()
-        						, sRecip.c_str()
-                                , sMimeBody.c_str()
+        self->m_onMessageEvent(buddyCert.GetEmail().c_str()
+                                , sMimeBody.data()
+								, sMimeBody.length()
                                 , buddyCert.GetID().c_str()
                                 , buddyCert.GetCertByPem().c_str()
                                 , self->m_onMessageEventParam);

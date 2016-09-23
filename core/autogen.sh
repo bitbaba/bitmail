@@ -5,13 +5,15 @@ BitmailOutHome=$BitmailHome/out
 
 cd $BitmailCoreHome
 
+PICFLAGS=""
+
 aclocal -I m4 \
 && autoconf \
 && automake -fac \
 && ./configure --prefix="$BitmailOutHome" \
     --enable-static=yes  \
     --enable-shared=no \
-    CXXFLAGS="-g -O2 -fPIC -fpic" \
+    CXXFLAGS="-g -O2 -fPIC -fpic " \
     CPPFLAGS="-I$BitmailOutHome/include" \
     LDFLAGS=" -L$BitmailOutHome/lib" \
 && make && make install && make clean

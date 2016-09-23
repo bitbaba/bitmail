@@ -4,40 +4,7 @@
 #include <string>
 #include <vector>
 
-typedef unsigned int MessageNo;
-
-#define BMMAGIC (0xbeefbeef)
-
-enum BMEventFlag{
-    bmefSystem       =     0,
-    bmefMsgCount     =     1,
-    bmefMessage      =     2,
-};
-
-struct BMEventHead{
-    unsigned int magic;
-    BMEventFlag bmef;
-};
-
-struct BMEventSystem{
-    BMEventHead h;
-    unsigned int reserved;
-};
-
-struct BMEventMsgCount{
-    BMEventHead h;
-    unsigned int msgcount;
-};
-
-struct BMEventMessage{
-    BMEventHead h;
-    std::string from;
-    std::string msg;
-    std::string certid;
-    std::string cert;
-};
-
-typedef int (* BMEventCB)(BMEventHead * h, void * userp);
+#include <bitmailcore/bitmail.h>
 
 class CMailClient
 {
@@ -68,8 +35,7 @@ public:
     std::string GetRxPassword() const;
 
     int SetProxy(const std::string & ip, unsigned short port
-                        , const std::string & user, const std::string & pass
-                        , bool fRemoteDNS);
+                        , const std::string & user, const std::string & pass);
 
     void SetProxyIp(const std::string & ip);
 
@@ -86,14 +52,6 @@ public:
     void SetProxyPassword(const std::string & password);
 
     std::string GetProxyPassword() const;
-
-    void RemoteDNS(bool fEnable);
-
-    bool RemoteDNS() const;
-
-    void EnableProxy(bool fEnable);
-
-    bool EnableProxy() const;
 
 
     /**
@@ -168,12 +126,10 @@ private:
     /**
      * Socks5 proxy
      */
-    bool m_fEnableProxy;
     std::string m_proxyIp;
     unsigned short m_proxyPort;
     std::string m_proxyUser;
     std::string m_proxyPassword;
-    bool m_fRemoteDNS;
 };
 
 

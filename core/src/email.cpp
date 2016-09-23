@@ -1,4 +1,3 @@
-#include <bitmailcore/bitmail.h>
 #include <bitmailcore/email.h>
 
 #include <curl/curl.h>
@@ -34,10 +33,8 @@ CMailClient::CMailClient(BMEventCB cb, void * cbp)
 , m_tx(NULL)
 , m_rx(NULL)
 , m_rxIdle(NULL)
-, m_fEnableProxy(false)
 , m_proxyIp("127.0.0.1")
 , m_proxyPort(1080)
-, m_fRemoteDNS(false)
 {
 
 }
@@ -142,14 +139,12 @@ std::string CMailClient::GetRxPassword() const
 int CMailClient::SetProxy(const std::string & ip
                                 , unsigned short port
                                 , const std::string & user
-                                , const std::string & pass
-                                , bool fRemoteDNS)
+                                , const std::string & pass)
 {
     m_proxyIp = ip;
     m_proxyPort = port;
     m_proxyUser = user;
     m_proxyPassword = pass;
-    m_fRemoteDNS = fRemoteDNS;
     return bmOk;
 }
 
@@ -191,26 +186,6 @@ void CMailClient::SetProxyPassword(const std::string & password)
 std::string CMailClient::GetProxyPassword() const
 {
     return m_proxyPassword;
-}
-
-void CMailClient::RemoteDNS(bool fEnable)
-{
-    m_fRemoteDNS = fEnable;
-}
-
-bool CMailClient::RemoteDNS() const
-{
-    return m_fRemoteDNS;
-}
-
-void CMailClient::EnableProxy(bool fEnable)
-{
-    m_fEnableProxy = fEnable;
-}
-
-bool CMailClient::EnableProxy() const
-{
-    return m_fEnableProxy;
 }
 
 int CMailClient::SendMsg( const std::string & from
@@ -378,10 +353,7 @@ int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
             BMEventMessage bmeMsg;
             bmeMsg.h.magic = BMMAGIC;
             bmeMsg.h.bmef = bmefMessage;
-            bmeMsg.from = "";
             bmeMsg.msg  = smime;
-            bmeMsg.certid = "";
-            bmeMsg.cert = "";
             m_cb((BMEventHead *)&bmeMsg, m_cbp);
         }
         

@@ -30,21 +30,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sys/types.h>
-
-#if defined(WIN32)
-#   include <winsock2.h>
-typedef int socklen_t;
-#else
-#   include <err.h>
-#   include <netdb.h>
-#   include <sys/socket.h>
-#   include <netinet/in.h>
-#endif
-
 #include <stdbool.h>
 #include <string.h>
-
 #include <string>
+
+#include <bitmailcore/bitmail.h>
 
 /**
  * identifier of bra
@@ -52,10 +42,6 @@ typedef int socklen_t;
  */
 typedef std::string BraId;
 
-/**
- * Invalid socket definition
- */
-#define InvalidSocket (-1)
 
 /**
  * Bra type
@@ -80,5 +66,24 @@ enum BradError{
 	BradErrorBind = 1,
 	BradErrorListen = 2,
 	BradErrorSocket = 3,
+};
+
+struct MHD_Daemon;
+
+
+class Brad
+{
+public:
+	Brad(unsigned short port, BMEventCB cb, void * userp);
+	~Brad();
+public:
+	bool Startup();
+	unsigned short GetPort() const;
+	bool Shutdown();
+public:
+	unsigned short m_port;
+	struct MHD_Daemon * d;
+	BMEventCB m_cb;
+	void * m_userp;
 };
 

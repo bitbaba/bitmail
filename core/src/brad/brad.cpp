@@ -28,15 +28,147 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
 #include "brad.h"
 
-#if defined(WIN32)
-#   define CLOSE(fd) closesocket(fd)
-#else
-#   define CLOSE(fd) do {					\
-		while (close((fd)) == -1 && errno == EINTR)	\
-			;					\
-	} while (0)
-#endif
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <microhttpd.h>
 
+#define POSTBUFFERSIZE  512
+#define MAXNAMESIZE     20
+#define MAXANSWERSIZE   512
+
+
+#define ISPOST(m)       ((m[0]=='p'||m[0]=='P')&&(m[1]=='o'||m[1]=='O')&&(m[2]=='s'||m[2]=='S')&&(m[3]=='t'||m[3]=='T'))
+
+static int
+defaultResponse (struct MHD_Connection *connection, const std::string & resp_body);
+
+static void
+request_completed (void *cls
+				   , struct MHD_Connection *connection
+				   , void **con_cls
+				   , enum MHD_RequestTerminationCode toe);
+
+static int
+answer_to_connection (void *cls
+					  , struct MHD_Connection *connection
+					  , const char *url
+					  , const char *method
+					  , const char *version
+					  , const char *upload_data
+					  , size_t *upload_data_size
+					  , void **con_cls);
+
+
+Brad::Brad(unsigned short port, BMEventCB cb, void * userp)
+{
+	m_port = port;
+	m_cb = cb;
+	m_userp = userp;
+}
+
+Brad::~Brad()
+{
+
+}
+
+bool Brad::Startup() {
+	// Tutorial: https://www.gnu.org/software/libmicrohttpd/tutorial.html
+	// Manual: https://www.gnu.org/software/libmicrohttpd/manual/libmicrohttpd.html
+	d = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG , m_port
+						   , NULL, NULL
+						   , &answer_to_connection, this
+						   , MHD_OPTION_NOTIFY_COMPLETED, &request_completed
+						   , NULL, MHD_OPTION_END);
+	return (d != NULL);
+}
+
+unsigned short Brad::GetPort() const
+{
+	return m_port;
+}
+
+bool Brad::Shutdown()
+{
+	  MHD_stop_daemon(d);
+	  d = NULL;
+	  return 0;
+}
+
+
+int defaultResponse (struct MHD_Connection *connection, const std::string & resp_body)
+{
+	struct MHD_Response *response = MHD_create_response_from_buffer(resp_body.length()
+																    , (void *) resp_body.data()
+																    , MHD_RESPMEM_PERSISTENT);
+	if (!response)
+		return MHD_NO;
+
+	int ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
+
+	MHD_destroy_response (response);
+
+	return ret;
+}
+
+void request_completed (void *cls
+					, struct MHD_Connection *connection
+					, void **con_cls
+					, enum MHD_RequestTerminationCode toe)
+{
+	std::string * req_body = ( std::string *) *con_cls;
+
+	if (req_body != NULL){
+		delete req_body;
+		req_body = NULL;
+	}
+}
+
+
+int answer_to_connection (void *cls
+						, struct MHD_Connection *connection
+						, const char *url
+						, const char *method
+						, const char *version
+						, const char *upload_data
+						, size_t *upload_data_size
+						, void **con_cls)
+{
+	Brad * self = (Brad *)cls;
+
+	if (!ISPOST(method))
+	{
+		return defaultResponse (connection, "error: not supported method");
+	}
+
+	if (NULL == *con_cls)
+	{
+		std::string * req_body = new std::string();
+		*con_cls = (void *) req_body;
+		return MHD_YES;
+	}
+
+	std::string * req_body = ( std::string *) *con_cls;
+
+	if (*upload_data_size != 0){
+		req_body->append(upload_data, *upload_data_size);
+		*upload_data_size = 0;
+		return MHD_YES;
+	}
+	else {
+		//printf("buflen: %d\n", req_body->length());
+		//printf("buffer: \n%s\n", req_body->c_str());
+        if (self->m_cb){
+            BMEventMessage bmeMsg;
+            bmeMsg.h.magic = BMMAGIC;
+            bmeMsg.h.bmef = bmefMessage;
+            bmeMsg.msg = *req_body;
+            self->m_cb((BMEventHead *)&bmeMsg, self->m_userp);
+        }
+        // Async process
+		std::string resp_body = "Ok";
+		return defaultResponse(connection, resp_body);
+	}
+}

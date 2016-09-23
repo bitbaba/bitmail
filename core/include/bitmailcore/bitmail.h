@@ -64,7 +64,7 @@ enum RTxState{
 
 typedef int (* PollEventCB)(unsigned int count, void * p);
 
-typedef int (* MessageEventCB)(const char * from, const char * recip, const char * msg, const char * certid, const char * cert, void * p);
+typedef int (* MessageEventCB)(const char * from, const char * msg, unsigned int msglen, const char * certid, const char * cert, void * p);
 
 typedef int (* RTxProgressCB)(RTxState, const char * info, void * userptr);
 
@@ -125,8 +125,7 @@ public:
     int SetProxy(const std::string & ip
                 , unsigned short port
                 , const std::string & user
-                , const std::string & password
-                , bool fRemoteDNS);
+                , const std::string & password);
 
     void SetProxyIp(const std::string & ip);
 
@@ -144,13 +143,19 @@ public:
 
     std::string GetProxyPassword() const;
 
-    void RemoteDNS(bool fEnable);
+    bool SetBradPort(unsigned short port);
 
-    bool RemoteDNS() const;
+    bool StartBrad();
 
-    void EnableProxy(bool fEnable);
+    unsigned short GetBradPort() const;
 
-    bool EnableProxy() const;
+    bool SetBradRedirectManually(const std::string & eip, unsigned short eport);
+
+    std::string GetBradExtIp() const;
+
+    unsigned short GetBradExtPort() const;
+
+    bool ShutdownBrad();
 
     /*UPNP feature should be external utility, e.g. forked from bittorrent*/
 
@@ -298,6 +303,9 @@ protected:
 
     // Bra daemon instance
     Brad               * m_brad;
+    unsigned short       m_bradPort;
+    std::string          m_bradExtIp;
+    unsigned short       m_bradExtPort;
 
     // Lock
     ILock * m_lock1;
@@ -317,5 +325,40 @@ public:
 protected:
     static int EmailHandler(BMEventHead * h, void * userp);
 };
+
+
+typedef unsigned int MessageNo;
+
+#define BMMAGIC (0xbeefbeef)
+
+enum BMEventFlag{
+    bmefSystem       =     0,
+    bmefMsgCount     =     1,
+    bmefMessage      =     2,
+};
+
+struct BMEventHead{
+    unsigned int magic;
+    BMEventFlag bmef;
+};
+
+struct BMEventSystem{
+    BMEventHead h;
+    unsigned int reserved;
+};
+
+struct BMEventMsgCount{
+    BMEventHead h;
+    unsigned int msgcount;
+};
+
+struct BMEventMessage{
+    BMEventHead h;
+    std::string msg;
+};
+
+typedef int (* BMEventCB)(BMEventHead * h, void * userp);
+
+
 
 #endif // BitMail_H
