@@ -463,6 +463,10 @@ void MainWindow::onConfigBtnClicked()
 void MainWindow::onNetConfig()
 {
     NetOptionDialog optDialog(this);
+    optDialog.SetSmtpUrl(QString::fromStdString(m_bitmail->GetTxUrl()));
+    optDialog.SetSmtpLogin(QString::fromStdString(m_bitmail->GetTxLogin()));
+    optDialog.SetSmtpPassword(QString::fromStdString(m_bitmail->GetTxPassword()));
+
     optDialog.SetImapUrl(QString::fromStdString(m_bitmail->GetRxUrl()));
     optDialog.SetImapLogin(QString::fromStdString(m_bitmail->GetRxLogin()));
     optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
@@ -478,18 +482,22 @@ void MainWindow::onNetConfig()
     if (QDialog::Accepted != optDialog.exec()){
         return ;
     }
+
     QString qsTxUrl = optDialog.GetSmtpUrl();
     QString qsTxLogin = optDialog.GetSmtpLogin();
     QString qsTxPassword = optDialog.GetSmtpPassword();
+
     QString qsRxUrl = optDialog.GetImapUrl();
     QString qsRxLogin = optDialog.GetImapLogin();
     QString qsRxPassword = optDialog.GetImapPassword();
+
     m_bitmail->InitNetwork(qsTxUrl.toStdString()
                         , qsTxLogin.toStdString()
                         , qsTxPassword.toStdString()
                         , qsRxUrl.toStdString()
                         , qsRxLogin.toStdString()
                         , qsRxPassword.toStdString());
+
     do {
         m_bitmail->SetProxyIp(optDialog.GetProxyIP().toStdString());
         m_bitmail->SetProxyPort(optDialog.GetProxyPort());
