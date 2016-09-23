@@ -254,9 +254,8 @@ namespace BMQTApplication {
                 joBrad = joProfile["brad"].toObject();
                 unsigned short port = joBrad["port"].toInt();
                 bm->SetBradPort(port);
-                QString qsExtIp = joBrad["extIp"].toString();
-                unsigned short extPort = joBrad["extPort"].toInt();
-                bm->SetBradRedirectManually(qsExtIp.toStdString(), extPort);
+                QString qsExtUrl = joBrad["extUrl"].toString();
+                bm->SetBradExtUrl(qsExtUrl.toStdString());
             }
             if (bmOk != bm->LoadProfile(passphrase.toStdString()
                             , qsKey.toStdString()
@@ -385,8 +384,7 @@ namespace BMQTApplication {
         QJsonObject joProxy;
         // Brad
         joBrad["port"] = (int) bm->GetBradPort();
-        joBrad["extIp"] = QString::fromStdString(bm->GetBradExtIp());
-        joBrad["extPort"] = (int) bm->GetBradExtPort();
+        joBrad["extUrl"] = QString::fromStdString(bm->GetBradExtUrl());
         // Profile
         joProfile["email"] = QString::fromStdString(bm->GetEmail());
         joProfile["nick"] = QString::fromStdString(bm->GetNick());

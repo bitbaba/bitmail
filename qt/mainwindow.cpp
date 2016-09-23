@@ -468,8 +468,7 @@ void MainWindow::onNetConfig()
     optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
 
     optDialog.BradPort(m_bitmail->GetBradPort());
-    optDialog.BradExtIp(QString::fromStdString(m_bitmail->GetBradExtIp()));
-    optDialog.BradExtPort(m_bitmail->GetBradExtPort());
+    optDialog.BradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
 
     optDialog.SetProxyIP(QString::fromStdString(m_bitmail->GetProxyIp()));
     optDialog.SetProxyPort(m_bitmail->GetProxyPort());
@@ -500,7 +499,7 @@ void MainWindow::onNetConfig()
 
     do {
         m_bitmail->SetBradPort(optDialog.BradPort());
-        m_bitmail->SetBradRedirectManually(optDialog.BradExtIp().toStdString(), optDialog.BradExtPort());
+        m_bitmail->SetBradExtUrl(optDialog.BradExtUrl().toStdString());
     }while(0);
 
     return ;

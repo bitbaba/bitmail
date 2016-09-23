@@ -155,7 +155,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>390</y>
+     <y>370</y>
      <width>381</width>
      <height>131</height>
     </rect>
@@ -281,7 +281,7 @@
      <x>10</x>
      <y>200</y>
      <width>381</width>
-     <height>161</height>
+     <height>121</height>
     </rect>
    </property>
    <property name="title">
@@ -293,7 +293,7 @@
       <x>19</x>
       <y>30</y>
       <width>351</width>
-      <height>108</height>
+      <height>61</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout">
@@ -307,25 +307,15 @@
      <item row="0" column="1">
       <widget class="QLineEdit" name="leBradPort"/>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="lblBradExtPort">
-       <property name="text">
-        <string>External Port:</string>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="0">
       <widget class="QLabel" name="lblBradExtIp">
        <property name="text">
-        <string>External Ip:</string>
+        <string>ExternalUrl:</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="leBradExtIp"/>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="leBradExtPort"/>
+      <widget class="QLineEdit" name="leBradExtUrl"/>
      </item>
     </layout>
    </widget>

@@ -48,11 +48,8 @@ public:
     void BradPort(unsigned short port);
     unsigned short BradPort() const;
 
-    void BradExtPort(unsigned short port);
-    unsigned short BradExtPort() const;
-
-    void BradExtIp(const QString & ip);
-    QString BradExtIp() const;
+    void BradExtUrl(const QString & exturl);
+    QString BradExtUrl() const;
 
     void SetProxyIP(const QString & ip);
     QString GetProxyIP() const;
@@ -73,8 +70,7 @@ private:
     QLineEdit *m_lePassword;
 
     QLineEdit *m_leBradPort;
-    QLineEdit *m_leBradExtPort;
-    QLineEdit *m_leBradExtIp;
+    QLineEdit *m_leBradExtUrl;
 
     QLineEdit *m_leProxyIP;
     QLineEdit *m_leProxyPort;
