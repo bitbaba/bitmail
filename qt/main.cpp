@@ -138,9 +138,9 @@ int main(int argc, char *argv[])
 
     delete bitmail; bitmail = NULL;
 
-    BMQTApplication::CloseLogger();
-
     qDebug() << "BitMail quit! Bye";
+
+    BMQTApplication::CloseLogger();
 
     return 0;
 }
@@ -486,8 +486,10 @@ namespace BMQTApplication {
         return gLoggerHandle != NULL;
     }
     bool CloseLogger(){
-        fclose(gLoggerHandle);
-        gLoggerHandle = NULL;
+        if (gLoggerHandle != NULL){
+            fclose(gLoggerHandle);
+            gLoggerHandle = NULL;
+        }
         return true;
     }
     FILE * GetLogger(){
@@ -502,6 +504,9 @@ namespace BMQTApplication {
     {
         (void) context;
         FILE * fout = GetLogger();
+        if (fout == NULL){
+            return ;
+        }
         QByteArray localMsg = msg.toLocal8Bit();
         switch (type) {
         case QtDebugMsg:
