@@ -332,6 +332,11 @@ void MainWindow::createActions()
         inviteAct->setStatusTip(tr("Invite a new friend by send a request message."));
         connect(inviteAct, SIGNAL(triggered()), this, SLOT(onInviteBtnClicked()));
     }while(0);
+    do {
+        newGroup = new QAction(QIcon(":/images/newgroup.png"), tr("&NewGroup"), this);
+        newGroup->setStatusTip(tr("Create a new Group"));
+        connect(newGroup, SIGNAL(triggered()), this, SLOT(onNewGroupBtnClicked()));
+    }while(0);
     do{
         snapAct = new QAction(QIcon(":/images/snap.png"), tr("&Snapshot"), this);
         snapAct->setStatusTip(tr("Snapshot"));
@@ -412,20 +417,28 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(actNetConfig);
     fileToolBar->addAction(actNetwork);
     //fileToolBar->addAction(actAssistant);
+
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(inviteAct);
+
+    grpToolBar = addToolBar(tr("Groups"));
+    grpToolBar->addAction(newGroup);
+
     walletToolbar = addToolBar(tr("Wallet"));
     walletToolbar->addAction(walletAct);
+
     rssToolbar = addToolBar(tr("RSS"));
     rssToolbar->addAction(rssAct);
+
     chatToolbar = addToolBar(tr("Chat"));
     //chatToolbar->addAction(emojAct);
-    chatToolbar->addAction(snapAct);
-    chatToolbar->addAction(fileAct);
+    //chatToolbar->addAction(snapAct);
+    //chatToolbar->addAction(fileAct);
     //chatToolbar->addAction(soundAct);
     //chatToolbar->addAction(videoAct);
     //chatToolbar->addAction(liveAct);
     chatToolbar->addAction(payAct);
+
     chatToolbar->setIconSize(QSize(24,24));
 }
 //! [30]
@@ -877,6 +890,11 @@ void MainWindow::onInviteBtnClicked()
     emit readyToSend(qsFrom
                      , qslRecip
                      , rtxMsg.content());
+    return ;
+}
+
+void MainWindow::onNewGroupBtnClicked()
+{
     return ;
 }
 

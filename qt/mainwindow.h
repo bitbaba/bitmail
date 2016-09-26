@@ -110,6 +110,7 @@ public slots:
 
     void onTreeBuddyDoubleClicked(QTreeWidgetItem * actItem,int col);
     void onInviteBtnClicked();
+    void onNewGroupBtnClicked();
     void onMessageDoubleClicked(QListWidgetItem * actItem);
     void onAddFriend(const QString & email);
     void onNewSubscribe(const QString & sub);
@@ -156,6 +157,7 @@ private:
     QLabel * sessLabel;
     QListWidget *msgView;
     QToolBar *fileToolBar;
+    QToolBar *grpToolBar;
     QToolBar *editToolBar;
     QToolBar *chatToolbar;
     QToolBar *walletToolbar;
@@ -174,6 +176,7 @@ private:
     QAction *walletAct;
     QAction *rssAct;
     QAction *actNetwork;
+    QAction *newGroup;
     // Context Menu Actions
     QAction *actInvite;
     QAction *actRemove;
