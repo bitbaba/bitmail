@@ -70,7 +70,6 @@ enum BradError{
 
 struct MHD_Daemon;
 
-
 class Brad
 {
 public:
@@ -85,5 +84,15 @@ public:
 	struct MHD_Daemon * d;
 	BMEventCB m_cb;
 	void * m_userp;
+};
+
+class Brac
+{
+private:
+	explicit Brac();
+	~Brac();
+public:
+	static size_t OnTxfer(void *ptr, size_t size, size_t nmemb, void *sstrm);
+	static bool SendMsg(const std::string & url, const std::string & request, RTxProgressCB cb, void * userp);
 };
 

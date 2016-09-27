@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <sstream>
+#include <curl/curl.h>
 #include <microhttpd.h>
 
 #define POSTBUFFERSIZE  512
@@ -171,4 +173,97 @@ int answer_to_connection (void *cls
 		std::string resp_body = "Ok";
 		return defaultResponse(connection, resp_body);
 	}
+}
+
+struct PostCallback_t{
+    const void  * src   ;
+    size_t        length;
+    size_t        offset;
+};
+
+size_t Brac::OnTxfer(void *ptr, size_t size, size_t nmemb, void *sstrm)
+{
+    struct PostCallback_t * ctx = (struct PostCallback_t *)sstrm;
+
+    if (ctx->offset >= ctx->length) {
+        return 0;
+    }
+
+    size_t xfer_bytes = (size*nmemb < ctx->length-ctx->offset)
+                      ? size*nmemb
+                      : ctx->length - ctx->offset;
+
+    memcpy(ptr, (unsigned char *)ctx->src + ctx->offset, xfer_bytes);
+
+    ctx->offset += xfer_bytes;
+
+    return (xfer_bytes); // 0 for EOF
+}
+
+bool Brac::SendMsg(const std::string & url, const std::string & request, RTxProgressCB cb, void * userp)
+{
+	bool verboseFlag = true;
+
+	if (cb ){
+        std::stringstream txinfo;
+        txinfo<< "Try to Send Message";
+        cb(RTS_Start, txinfo.str().c_str(), userp);
+    }
+
+    CURL * curl = curl_easy_init();
+    CURLcode res = CURLE_OK;
+    struct PostCallback_t txcb;
+
+    txcb.src = request.data();
+    txcb.length = request.length();
+    txcb.offset = 0;
+
+    curl_slist *slist = NULL;
+    // Disable http1.1 "Expect: 100"-> "100-continue"
+    slist = curl_slist_append(slist, "Expect:");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    // Feed Data in callback
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, Brac::OnTxfer);
+    curl_easy_setopt(curl, CURLOPT_READDATA, &txcb);
+    // Post setting
+    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, request.length());
+
+    if (verboseFlag){
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    }
+
+    if (cb ){
+        std::stringstream txinfo;
+        txinfo<< "Sending Message";
+        cb(RTS_Work, txinfo.str().c_str(), userp);
+    }
+    res = curl_easy_perform(curl);
+
+    //TODO: free slist
+
+    // AOL spam will block to send message, without any curl error,
+    // do anti-bot here: http://challenge.aol.com/spam.html
+    if(res != CURLE_OK){
+        fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
+        if (cb ){
+            std::stringstream txinfo;
+            txinfo<< "Message sent Failed";
+            cb(RTS_Error, txinfo.str().c_str(), userp);
+        }
+        return bmTxFail;
+    }
+
+    if (cb ){
+        std::stringstream txinfo;
+        txinfo<< "Message sent Ok";
+        cb(RTS_Done, txinfo.str().c_str(), userp);
+    }
+
+    return bmOk;
 }

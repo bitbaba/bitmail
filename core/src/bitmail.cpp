@@ -351,8 +351,23 @@ int BitMail::SendMsg(const std::vector<std::string> & friends
         }
     }
 
-    if (m_mc->SendMsg( m_profile->GetEmail()
-                            , friends
+    std::vector<std::string> vecCollector;
+    for (std::vector<std::string>::const_iterator it = friends.begin()
+		; it != friends.end()
+		; ++it)
+    {
+    	std::string sBradExtUrl = GetFriendBradExtUrl(*it);
+    	if (!sBradExtUrl.empty()){
+    		if (bmOk == Brac::SendMsg(sBradExtUrl, sEncryptedMsg, cb, userp)){
+    			continue;
+    		}
+    	}
+    	vecCollector.push_back(*it);
+    }
+
+    if (vecCollector.size()
+    		&& m_mc->SendMsg( m_profile->GetEmail()
+                            , vecCollector
                             , sEncryptedMsg
                             , cb
                             , userp)){
@@ -529,11 +544,15 @@ std::string BitMail::GetFriendID(const std::string & e) const
  */
 bool BitMail::SetFriendBrad(const std::string & email, const std::string & exturl)
 {
+	m_brads[email] = exturl;
 	return true;
 }
 
 std::string BitMail::GetFriendBradExtUrl(const std::string & email) const
 {
+	if (m_brads.find(email) != m_brads.end()){
+		return m_brads.find(email)->second;
+	}
 	return "";
 }
 
