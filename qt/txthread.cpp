@@ -22,11 +22,16 @@ void TxThread::onSendMessage(const QString & from
                              , const QStringList & recip
                              , const QString & content)
 {
+    BMMessage bmMsg;
+    if (!bmMsg.Load(content)){
+        qDebug() << "Invalid BMMessage format";
+        return ;
+    }
     RTXMessage txMsg;
     txMsg.rtx(true);
     txMsg.from(from);
     txMsg.recip(recip);
-    txMsg.content(content);
+    txMsg.content(bmMsg);
     txMsg.cert("");
     txMsg.certid("");
     if (m_txq.writable(25/*milliseconds*/)){
@@ -40,16 +45,20 @@ void TxThread::run()
 {    
     while(!m_fStopFlag){
         if (m_txq.readable(6*1000)){
-            RTXMessage msg = m_txq.pop();
-            QStringList qslTo = msg.recip();
+            RTXMessage rtxMsg = m_txq.pop();
+            QStringList qslTo = rtxMsg.recip();
             std::vector<std::string> vecTo;
             for (QStringList::iterator it = qslTo.begin(); it != qslTo.end(); it++){
                 vecTo.push_back(it->toStdString());
             }
-            QString qsContent = msg.content();
+            BMMessage bmMsg;
+            if (!bmMsg.Load(rtxMsg.content())){
+                qDebug() << "Invalid BMMessage format";
+                continue;
+            }
             if (m_bitmail){
                 m_bitmail->SendMsg(vecTo
-                                   , qsContent.toStdString()
+                                   , bmMsg.Serialize().toStdString()
                                    , TxProgressHandler
                                    , this);
             }

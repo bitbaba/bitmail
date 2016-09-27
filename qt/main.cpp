@@ -300,9 +300,18 @@ namespace BMQTApplication {
             {
                 QString qsEmail = it.key();
                 QJsonObject joValue = it.value().toObject();
-                QString qsCert =  joValue["cert"].toString();
-                if (!bm->HasFriend(qsEmail.toStdString())){
-                    bm->AddFriend(qsEmail.toStdString(), qsCert.toStdString());
+                if (joValue.contains("cert")){
+                    QString qsCert =  joValue["cert"].toString();
+                    if (!bm->HasFriend(qsEmail.toStdString())){
+                        bm->AddFriend(qsEmail.toStdString(), qsCert.toStdString());
+                    }
+                }
+                if (joValue.contains("brad")){
+                    QJsonObject joFriendBrad = joValue["brad"].toObject();
+                    if (joFriendBrad.contains("extUrl")){
+                        QString qsFriendBradExtUrl = joFriendBrad["extUrl"].toString();
+                        bm->SetFriendBrad(qsEmail.toStdString(), qsFriendBradExtUrl.toStdString());
+                    }
                 }
             }
         }
@@ -406,6 +415,9 @@ namespace BMQTApplication {
             std::string sBuddyCertPem = bm->GetFriendCert(*it);
             QJsonObject joBuddy;
             joBuddy["cert"]  = QString::fromStdString(sBuddyCertPem);
+            QJsonObject joFriendBrad;
+            joFriendBrad["extUrl"] = QString::fromStdString(bm->GetFriendBradExtUrl(*it));
+            joBuddy["brad"] = joFriendBrad;
             QString qsEmail = QString::fromStdString(*it);
             joBuddies.insert(qsEmail, joBuddy);
         }

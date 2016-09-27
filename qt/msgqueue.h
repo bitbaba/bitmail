@@ -6,38 +6,36 @@
 #include <QSemaphore>
 #include <QQueue>
 #include <QStringList>
+#include <QJsonObject>
 
-
-class RTXMessage{
+class RTXMessage {
 private:
-    bool         _fTx;                /*true=tx, false=rx*/
-    QString      _From;               /*email*/
-    QStringList  _Recip;              /*recip list of email*/
-    QString      _CertId;             /*identifier of singer's certificate*/
-    QString      _Cert;               /*signer's certificate*/
-    QString      _Content;            /*real message content*/
+    QJsonObject  _Root;
 
 public:
     RTXMessage();
     ~RTXMessage();
     bool Load(const QString & jsonMsg);
     QString Serialize() const;
+    operator QJsonObject() const;
 public:
-    // Getters
     bool isTx() const;
     bool isRx() const;
-    QString from() const;
+    void rtx(bool fTx);
+
+    QString from() const;    
+    void from(const QString & s);
 
     QStringList recip() const;
-    QString content() const;
-    QString certid() const;
-    QString cert() const;
-    // Setters
-    void rtx(bool fTx);
-    void from(const QString & s);
     void recip(const QStringList & r);
-    void content(const QString & c);
+
+    QJsonObject content() const;
+    void content(const QJsonObject & c);
+
+    QString certid() const;
     void certid(const QString & cid);
+
+    QString cert() const;
     void cert(const QString & c);
 };
 
@@ -56,18 +54,23 @@ public:
     ~BMMessage();
 public:
     bool Load(const QString &jsonMsg);
+    bool Load(const QJsonObject & root);
     QString Serialize();
+    operator QJsonObject() const;
 public:
     enum MsgType msgType() const;
     bool isPeerMsg() const;
     bool isGroupMsg()const;
     bool isSubMsg() const;
     void msgType(MsgType mt);
-    QString content() const;
-    void content(const QString & ctnt);
+
+    QJsonObject content() const;
+    void content(const QJsonObject & ctnt);
+
+    QString bradExtUrl() const;
+    void bradExtUrl(const QString & extUrl);
 private:
-    MsgType _MsgType;
-    QString _Content;
+    QJsonObject _Root;
 };
 
 class PeerMessage{
@@ -76,21 +79,26 @@ public:
     ~PeerMessage();
 public:
     bool Load(const QString & qsJsonMsg);
+    bool Load(const QJsonObject & root);
     QString Serialize()const;
+    operator QJsonObject() const;
 public:
     QString content() const;
     void content(const QString & ctnt);
 private:
-    QString _Content;
+    QJsonObject _Root;
 };
 
 class GroupMessage{
 public:
     GroupMessage();
     ~GroupMessage();
+
 public:
     bool Load(const QString & qsJsonMsg);
+    bool Load(const QJsonObject & root);
     QString Serialize()const;
+    operator QJsonObject() const;
 public:
     QString groupId() const;
     void groupId(const QString & gid);
@@ -99,26 +107,26 @@ public:
     QString content() const;
     void content(const QString & ctnt);
 private:
-    QString _GroupId;
-    QString _GroupName;
-    QString _Content;
+    QJsonObject _Root;
 };
 
 class SubMessage{
 public:
     SubMessage();
     ~SubMessage();
+
 public:
     bool Load(const QString & qsJsonMsg);
+    bool Load(const QJsonObject & root);
     QString Serialize()const;
+    operator QJsonObject() const;
 public:
     QString refer()const;
     void refer(const QString & ref);
     QString content() const;
     void content(const QString & ctnt);
 private:
-    QString _Refer;
-    QString _Content;
+    QJsonObject _Root;
 };
 
 template<class nodeType>

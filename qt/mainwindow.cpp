@@ -60,6 +60,7 @@
 #include "messagedialog.h"
 #include "walletdialog.h"
 #include "rssdialog.h"
+#include "newgroupdialog.h"
 #include "main.h"
 
 #define TAG_PER      ("@")
@@ -118,19 +119,23 @@ MainWindow::MainWindow(BitMail * bitmail)
     connect(btree, SIGNAL(customContextMenuRequested(QPoint))
             , this, SLOT(onCtxMenu(QPoint)));
 
-    nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")), NT_Friends);
-    nodeFriends->setIcon(0, QIcon(":/images/head.png"));
-    nodeFriends->setData(0, Qt::UserRole, "Cat::Friends");
-    populateFriendTree(nodeFriends);
-    btree->addTopLevelItem(nodeFriends);
+    if (1){
+        nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")), NT_Friends);
+        nodeFriends->setIcon(0, QIcon(":/images/head.png"));
+        nodeFriends->setData(0, Qt::UserRole, "Cat::Friends");
+        populateFriendTree(nodeFriends);
+        btree->addTopLevelItem(nodeFriends);
+    }
 
-    nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")), NT_Groups);
-    nodeGroups->setIcon(0, QIcon(":/images/group.png"));
-    nodeFriends->setData(0, Qt::UserRole, "Cat::Groups");
-    populateGroupTree(nodeGroups);
-    btree->addTopLevelItem(nodeGroups);
+    if (1){
+        nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")), NT_Groups);
+        nodeGroups->setIcon(0, QIcon(":/images/group.png"));
+        nodeFriends->setData(0, Qt::UserRole, "Cat::Groups");
+        populateGroupTree(nodeGroups);
+        btree->addTopLevelItem(nodeGroups);
+    }
 
-    if (0){
+    if (1){
         nodeSubscribes = new QTreeWidgetItem(btree, QStringList(tr("Subscribes")), NT_Subscribes);
         nodeSubscribes->setIcon(0, QIcon(":/images/subscribe.png"));
         nodeFriends->setData(0, Qt::UserRole, "Cat::Subscribes");
@@ -413,9 +418,10 @@ void MainWindow::createActions()
 void MainWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("Profile"));
+    fileToolBar->addAction(actNetwork);
     fileToolBar->addAction(configAct);
     fileToolBar->addAction(actNetConfig);
-    fileToolBar->addAction(actNetwork);
+
     //fileToolBar->addAction(actAssistant);
 
     editToolBar = addToolBar(tr("Buddies"));
@@ -424,22 +430,22 @@ void MainWindow::createToolBars()
     grpToolBar = addToolBar(tr("Groups"));
     grpToolBar->addAction(newGroup);
 
-    walletToolbar = addToolBar(tr("Wallet"));
-    walletToolbar->addAction(walletAct);
-
     rssToolbar = addToolBar(tr("RSS"));
     rssToolbar->addAction(rssAct);
 
+    walletToolbar = addToolBar(tr("Wallet"));
+    walletToolbar->addAction(payAct);
+    walletToolbar->addAction(walletAct);
+
+
     chatToolbar = addToolBar(tr("Chat"));
+    chatToolbar->setIconSize(QSize(24,24));
     //chatToolbar->addAction(emojAct);
     //chatToolbar->addAction(snapAct);
     //chatToolbar->addAction(fileAct);
     //chatToolbar->addAction(soundAct);
     //chatToolbar->addAction(videoAct);
     //chatToolbar->addAction(liveAct);
-    chatToolbar->addAction(payAct);
-
-    chatToolbar->setIconSize(QSize(24,24));
 }
 //! [30]
 //! [32]
@@ -555,23 +561,17 @@ void MainWindow::onNewMessage(const QString & from
                               , const QString & certid
                               , const QString & cert)
 {
-
-    RTXMessage rtxMsg;
-    rtxMsg.rtx(false);
-    rtxMsg.from(from);
-    rtxMsg.recip(QStringList(QString::fromStdString(m_bitmail->GetEmail())));
-    rtxMsg.content(content);
-    rtxMsg.certid(certid);
-    rtxMsg.cert(cert);
-
     BMMessage bmMsg;
     if (!bmMsg.Load(content)){
         qDebug() << "Invalid BMMessage";
         return ;
     }
-
+    QString qsFriendBradExtUrl = bmMsg.bradExtUrl();
+    if (!from.isEmpty() && !qsFriendBradExtUrl.isEmpty()){
+        m_bitmail->SetFriendBrad(from.toStdString(), qsFriendBradExtUrl.toStdString());
+        qDebug() << QString("Setup Brad Mapping [%1]=>[%2]").arg(from).arg(qsFriendBradExtUrl);
+    }
     QString qsKey = from;
-
     if (bmMsg.msgType() == mt_peer){
         if (!m_bitmail->IsFriend(from.toStdString(), cert.toStdString())){
             qsKey = KEY_STRANGER;
@@ -597,6 +597,14 @@ void MainWindow::onNewMessage(const QString & from
         qDebug() << "Invalid BMMessage::MsgType";
         return;
     }
+
+    RTXMessage rtxMsg;
+    rtxMsg.rtx(false);
+    rtxMsg.from(from);
+    rtxMsg.recip(QStringList(QString::fromStdString(m_bitmail->GetEmail())));
+    rtxMsg.content(bmMsg);
+    rtxMsg.certid(certid);
+    rtxMsg.cert(cert);
 
     enqueueMsg(bmMsg.msgType(), qsKey, rtxMsg);
 
@@ -672,14 +680,15 @@ void MainWindow::populateMessage(const RTXMessage & rtxMsg)
 
 QString MainWindow::formatRTXMessage(const RTXMessage &rtxMsg)
 {
-    QString qsShow = rtxMsg.content(); // by default
-    QString qsFrom, qsTime, qsContent;
-    qsFrom = rtxMsg.from();
-    qsFrom = QString::fromStdString(m_bitmail->GetFriendNick(qsFrom.toStdString()));
+    QString qsShow = rtxMsg.Serialize();
     BMMessage bmMsg;
     if (!bmMsg.Load(rtxMsg.content())){
         return qsShow;
     }
+
+    QString qsFrom = QString::fromStdString(m_bitmail->GetFriendNick(rtxMsg.from().toStdString()));
+
+    QString qsContent;
     MsgType mt = bmMsg.msgType();
     if (mt == mt_group){
         GroupMessage groupMsg;
@@ -701,12 +710,13 @@ QString MainWindow::formatRTXMessage(const RTXMessage &rtxMsg)
         }
         qsContent = subMsg.content();
     }
-    qsTime = QDateTime::currentDateTime().toLocalTime().toString();
+
+    QString qsTime = QDateTime::currentDateTime().toLocalTime().toString();
 
     qsShow = QString("[%1] - (%2)\r\n\r\n%3\r\n\r\n")
-            .arg(qsTime)
-            .arg(qsFrom)
-            .arg(qsContent.length() > 32 ? (qsContent.mid(0, 32) + tr("...")) : (qsContent));
+                            .arg(qsTime)
+                            .arg(qsFrom)
+                            .arg(qsContent.length() > 32 ? (qsContent.mid(0, 32) + tr("...")) : (qsContent));
     return qsShow;
 }
 
@@ -722,7 +732,8 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
     }
     QString qsMsg = qvData.toString();
 
-    QString qsFrom, qsContent, qsCertID, qsCert;
+    BMMessage bmMsg;
+    QString qsFrom, qsCertID, qsCert;
     do {
         RTXMessage rtxMsg;
         if (!rtxMsg.Load(qsMsg)){
@@ -731,17 +742,15 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
         if (rtxMsg.isTx()){
             return ;
         }
+        if (!bmMsg.Load(rtxMsg.content())){
+            return ;
+        }
         qsFrom = rtxMsg.from();
-        qsContent = rtxMsg.content();
         qsCertID = rtxMsg.certid();
         qsCert = rtxMsg.cert();
     }while(0);
 
-    BMMessage bmMsg;
-    if (!bmMsg.Load(qsContent)){
-        return ;
-    }
-
+    QString qsContent;
     if (bmMsg.msgType() == mt_peer){
         PeerMessage peerMsg;
         if (!peerMsg.Load(bmMsg.content())){
@@ -816,10 +825,11 @@ void MainWindow::onSendBtnClicked()
     RTXMessage rtxMsg;
     BMMessage bmMsg;
     bmMsg.msgType(mt);
+    bmMsg.bradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
     if (mt == mt_peer){
         PeerMessage peerMsg;
         peerMsg.content(qsMsg);
-        bmMsg.content(peerMsg.Serialize());
+        bmMsg.content(peerMsg);
     }else if (mt == mt_group){
         GroupMessage groupMsg;
         groupMsg.groupId(qsKey);
@@ -827,12 +837,12 @@ void MainWindow::onSendBtnClicked()
         m_bitmail->GetGroupName(qsKey.toStdString(), sGroupName);
         groupMsg.groupName(QString::fromStdString(sGroupName));
         groupMsg.content(qsMsg);
-        bmMsg.content(groupMsg.Serialize());
+        bmMsg.content(groupMsg);
     }else if (mt == mt_subscribe){
         SubMessage subMsg;
         subMsg.refer("");
         subMsg.content(qsMsg);
-        bmMsg.content(subMsg.Serialize());
+        bmMsg.content(subMsg);
     }else{
         return ;
     }
@@ -841,12 +851,12 @@ void MainWindow::onSendBtnClicked()
     rtxMsg.certid(qsCertId);
     rtxMsg.cert(qsCert);
     rtxMsg.recip(qslRecip);
-    rtxMsg.content(bmMsg.Serialize());
+    rtxMsg.content(bmMsg);
     qDebug() << rtxMsg.content();
 
     emit readyToSend(qsFrom
                      , qslRecip
-                     , rtxMsg.content());
+                     , bmMsg.Serialize());
 
     enqueueMsg(mt, qsKey, rtxMsg);
 
@@ -876,25 +886,30 @@ void MainWindow::onInviteBtnClicked()
     RTXMessage rtxMsg;
     BMMessage bmMsg;
     bmMsg.msgType(mt_peer);
+    bmMsg.bradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
     PeerMessage peerMsg;
     peerMsg.content(qsWhisper);
-    bmMsg.content(peerMsg.Serialize());
+    bmMsg.content(peerMsg);
 
     rtxMsg.rtx(true);
     rtxMsg.from(qsFrom);
     rtxMsg.certid(qsCertId);
     rtxMsg.cert(qsCert);
     rtxMsg.recip(qslRecip);
-    rtxMsg.content(bmMsg.Serialize());
+    rtxMsg.content(bmMsg);
 
     emit readyToSend(qsFrom
                      , qslRecip
-                     , rtxMsg.content());
+                     , bmMsg.Serialize());
     return ;
 }
 
 void MainWindow::onNewGroupBtnClicked()
 {
+    NewGroupDialog newGroupDialog;
+    if (newGroupDialog.exec() != QDialog::Accepted){
+        return ;
+    }
     return ;
 }
 
