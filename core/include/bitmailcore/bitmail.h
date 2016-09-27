@@ -102,6 +102,8 @@ public:
 	virtual void FreeTx(ITx * itx) = 0;
 };
 
+typedef bool (* MapCallback)(bool fMap, unsigned short iport, const char * exturl, void * userp);
+
 class BitMail
 {
 public:
@@ -239,6 +241,12 @@ public:
     // Friend brad config
     bool SetFriendBrad(const std::string & email, const std::string & exturl);
 
+    void MapBradExtPort(MapCallback cb, void * userp);
+
+    void RemoveBradExtPort(MapCallback cb, void * userp);
+
+    bool IsBradMapped() const;
+
     std::string GetFriendBradExtUrl(const std::string & email) const;
 
     // Friends
@@ -253,7 +261,13 @@ public:
     bool IsFriend(const std::string & email, const std::string & certpem) const;
 
     // Groups
+    std::string GenerateGroupId() const;
+
     int AddGroup(const std::string & gid, const std::string & groupname);
+
+    int SetGroupCreator(const std::string & gid, const std::string & creator);
+
+    std::string GetGroupCreator(const std::string & gid) const;
 
     int GetGroupName(const std::string & gid, std::string & groupName)  const;
 
@@ -270,6 +284,8 @@ public:
     bool HasGroupMember(const std::string & gid, const std::string & member) const;
 
     int RemoveGroupMember(const std::string & gid, const std::string & member);
+
+    int ClearGroupMembers(const std::string & gid);
 
     // Subscribes
     int Subscribe(const std::string & sub);
@@ -301,6 +317,9 @@ protected:
     // GroupNames, Key: GroupID, Value: GroupName
     std::map<std::string, std::string> m_groupNames;
 
+    // GroupCreators, Key: GroupID, Value: Creator
+    std::map<std::string, std::string> m_groupCreators;
+
     // Subscribes: vector of subscribed email
     std::vector<std::string> m_subscribes;
 
@@ -311,6 +330,7 @@ protected:
     Brad               * m_brad;
     unsigned short       m_bradPort;
     std::string          m_bradExtUrl;
+    bool                 m_bradmapped;
 
     // Lock
     ILock * m_lock1;

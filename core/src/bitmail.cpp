@@ -34,7 +34,7 @@ BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
 , m_mc(NULL)
 , m_brad(NULL)
-, m_bradPort(10086), m_bradExtUrl("")
+, m_bradPort(10086), m_bradExtUrl(""), m_bradmapped(false)
 , m_rx(NULL), m_tx(NULL)
 , m_lock1(NULL), m_lock2(NULL), m_lock3(NULL), m_lock4(NULL)
 {
@@ -548,6 +548,31 @@ bool BitMail::SetFriendBrad(const std::string & email, const std::string & extur
 	return true;
 }
 
+void BitMail::MapBradExtPort(MapCallback cb, void * userp)
+{
+	if (cb){
+		m_bradmapped = cb(true, m_bradPort, m_bradExtUrl.c_str(), userp);
+	}else{
+		m_bradmapped = false;
+	}
+	return ;
+}
+
+void BitMail::RemoveBradExtPort(MapCallback cb, void * userp)
+{
+	if (cb){
+		cb(false, m_bradPort, m_bradExtUrl.c_str(), userp);
+	}
+	m_bradmapped = false;
+	return ;
+}
+
+
+bool BitMail::IsBradMapped() const
+{
+	return m_bradmapped;
+}
+
 std::string BitMail::GetFriendBradExtUrl(const std::string & email) const
 {
 	if (m_brads.find(email) != m_brads.end()){
@@ -627,6 +652,14 @@ int BitMail::GetFriends(std::vector<std::string> & vecEmails) const
 }
 
 // Groups
+
+std::string BitMail::GenerateGroupId() const
+{
+	std::stringstream sstrm;
+	sstrm << GetID() << "." << (unsigned int) time(NULL);
+	return sstrm.str();
+}
+
 int BitMail::AddGroup(const std::string & gid, const std::string & groupname)
 {
 	if (gid.empty()){
@@ -636,13 +669,23 @@ int BitMail::AddGroup(const std::string & gid, const std::string & groupname)
 		return bmInvalidParam;
 	}
 	// Overwrite current groupname, by force.
-	m_groupNames.insert(std::make_pair(gid, groupname));
+	m_groupNames[gid] = groupname;
 
-	if (m_groups.end() != m_groups.find(gid)){
-		return bmGrpExist;
-	}
-	m_groups.insert(std::make_pair(gid, std::vector<std::string>()));
 	return bmOk;
+}
+
+int BitMail::SetGroupCreator(const std::string & gid, const std::string & creator)
+{
+	m_groupCreators[gid] = creator;
+	return bmOk;
+}
+
+std::string BitMail::GetGroupCreator(const std::string & gid) const
+{
+	if (m_groupCreators.find(gid) != m_groupCreators.end()){
+		return m_groupCreators.find(gid)->second;
+	}
+	return "";
 }
 
 int BitMail::GetGroupName(const std::string & gid, std::string & groupName) const
@@ -677,8 +720,8 @@ bool BitMail::HasGroup(const std::string & gid) const
 
 int BitMail::GetGroups(std::vector<std::string> & groups) const
 {
-	for (std::map<std::string, std::vector<std::string> >::const_iterator it = m_groups.begin()
-			; it != m_groups.end()
+	for (std::map<std::string, std::string>::const_iterator it = m_groupNames.begin()
+			; it != m_groupNames.end()
 			; ++it){
 		groups.push_back(it->first);
 	}
@@ -709,7 +752,8 @@ int BitMail::AddGroupMember(const std::string & gid
 	std::map<std::string, std::vector<std::string> >::iterator it =
 			m_groups.find(gid);
 	if (it == m_groups.end()){
-		return bmNoGrp;
+		m_groups[gid] = std::vector<std::string>();
+		it = m_groups.find(gid);
 	}
 	std::vector<std::string> & members = it->second;
 	if (std::find(members.begin(), members.end(), member)
@@ -756,6 +800,12 @@ int BitMail::RemoveGroupMember(const std::string & gid
 	}
 
 	members.erase(it_member);
+	return bmOk;
+}
+
+int BitMail::ClearGroupMembers(const std::string & gid)
+{
+	m_groups[gid] = std::vector<std::string>();
 	return bmOk;
 }
 
