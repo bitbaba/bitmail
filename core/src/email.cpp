@@ -14,7 +14,7 @@
 static bool verboseFlag = !false;
 
 struct TxCallback_t{
-    void        * src   ;
+    const void  * src   ;
     size_t        length;
     size_t        offset;
     CMailClient * self  ;
@@ -250,8 +250,9 @@ int CMailClient::SendMsg( const std::string & from
     struct curl_slist *recipients = NULL;
     struct TxCallback_t txcb;
 
-    txcb.src = strdup((char *)sstrmMail.str().c_str());
-    txcb.length = sstrmMail.str().length();
+    std::string strsrc = sstrmMail.str();
+    txcb.src = (void*)strsrc.data();
+    txcb.length = strsrc.length();
     txcb.offset = 0;
     txcb.self = this;
 
