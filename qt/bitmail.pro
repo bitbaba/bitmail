@@ -1,4 +1,4 @@
-QT += widgets
+QT += widgets network
 
 HEADERS       = mainwindow.h \
                 optiondialog.h \

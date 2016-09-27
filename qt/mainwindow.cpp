@@ -44,6 +44,8 @@
 #include <QJsonValue>
 #include <QJsonDocument>
 #include <QByteArray>
+#include <QtNetwork/QHostAddress>
+#include <QtNetwork/QNetworkInterface>
 #include <bitmailcore/bitmail.h>
 #include "mainwindow.h"
 //! [0]
@@ -130,7 +132,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     if (1){
         nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")), NT_Groups);
         nodeGroups->setIcon(0, QIcon(":/images/group.png"));
-        nodeFriends->setData(0, Qt::UserRole, "Cat::Groups");
+        nodeGroups->setData(0, Qt::UserRole, "Cat::Groups");
         populateGroupTree(nodeGroups);
         btree->addTopLevelItem(nodeGroups);
     }
@@ -138,7 +140,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     if (1){
         nodeSubscribes = new QTreeWidgetItem(btree, QStringList(tr("Subscribes")), NT_Subscribes);
         nodeSubscribes->setIcon(0, QIcon(":/images/subscribe.png"));
-        nodeFriends->setData(0, Qt::UserRole, "Cat::Subscribes");
+        nodeSubscribes->setData(0, Qt::UserRole, "Cat::Subscribes");
         populateSubscribeTree(nodeSubscribes);
         btree->addTopLevelItem(nodeSubscribes);
     }
@@ -204,6 +206,8 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     connect(btnSend, SIGNAL(clicked())
             , this, SLOT(onSendBtnClicked()));
+
+    connect(this, SIGNAL(addGroup(QString)), this, SLOT(onAddGroup(QString)));
 }
 //! [2]
 MainWindow::~MainWindow()
@@ -226,10 +230,14 @@ void MainWindow::startupNetwork()
     m_txth->start();
 
     m_bitmail->StartBrad();
+
+    m_bitmail->MapBradExtPort(UPnPCallback, this);
 }
 void MainWindow::shutdownNetwork()
 {
     m_bitmail->ShutdownBrad();
+
+    m_bitmail->RemoveBradExtPort(UPnPCallback, this);
 
     if (m_rxth ){
         m_rxth->stop();
@@ -300,29 +308,68 @@ void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
     QStringList qslData = qvData.toStringList();
     QString qsType = qslData.at(0);
     if (qsType == TAG_GRP){
+        QString qsGroupId = qslData.at(1);
+        ViewGroup(qsGroupId);
         return ;
+    }else if (qsType == TAG_PER){
+        QString qsEmail = qslData.at(1);
+        ViewCert(qsEmail);
     }
-    QString qsEmail = qslData.at(1);
+
+    return ;
+}
+
+void MainWindow::ViewCert(const QString & qsEmail)
+{
     if (qsEmail.isEmpty() || qsEmail == KEY_STRANGER){
         return ;
     }
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(qsEmail.toStdString()));
     QString qsCertID = QString::fromStdString(m_bitmail->GetFriendID(qsEmail.toStdString()));
     CertDialog certDialog(m_bitmail, this);
-
-    do {
-        connect(&certDialog, SIGNAL(newSubscribe(QString)), this, SLOT(onNewSubscribe(QString)));
-    }while(0);
-
+    connect(&certDialog, SIGNAL(newSubscribe(QString)), this, SLOT(onNewSubscribe(QString)));
     certDialog.SetEmail(qsEmail);
     certDialog.SetNick(qsNick);
     certDialog.SetCertID(qsCertID);
     if (QDialog::Rejected == certDialog.exec()){
         return ;
     }
-    (void)qsEmail;
-    return ;
 }
+
+void MainWindow::ViewGroup(const QString &gid)
+{
+    NewGroupDialog dlg(m_bitmail);
+    dlg.creator(QString::fromStdString(m_bitmail->GetGroupCreator(gid.toStdString())));
+    dlg.groupId(gid);
+    std::string sGroupName;
+    m_bitmail->GetGroupName(gid.toStdString(), sGroupName);
+    dlg.groupName(QString::fromStdString(sGroupName));
+    QStringList qslMembers;
+    std::vector<std::string> vecMembers;
+    m_bitmail->GetGroupMembers(gid.toStdString(), vecMembers);
+    for (std::vector<std::string>::const_iterator it = vecMembers.begin()
+         ; it != vecMembers.end()
+         ; it++)
+    {
+        qslMembers.append(QString::fromStdString(*it));
+    }
+    dlg.groupMembers(qslMembers);
+    if (dlg.exec() != QDialog::Accepted){
+        return ;
+    }
+    QString qsCreator = dlg.creator();
+    QString qsGroupId = dlg.groupId();
+    QString qsGroupName = dlg.groupName();
+    qslMembers = dlg.groupMembers();
+    m_bitmail->AddGroup(qsGroupId.toStdString(), qsGroupName.toStdString());
+    m_bitmail->SetGroupCreator(qsGroupId.toStdString(), qsCreator.toStdString());
+    m_bitmail->ClearGroupMembers(qsGroupId.toStdString());
+    for (QStringList::const_iterator it = qslMembers.begin(); it != qslMembers.end(); it++)
+    {
+        m_bitmail->AddGroupMember(qsGroupId.toStdString(), it->toStdString());
+    }
+}
+
 //! [17]
 void MainWindow::createActions()
 //! [17] //! [18]
@@ -458,7 +505,15 @@ void MainWindow::createStatusBar()
 
 void MainWindow::onPayBtnClicked()
 {
-    PayDialog payDialog;
+    MsgType mt;
+    QString qsKey;
+    if (!getCurrentRecipKey(mt, qsKey)){
+        return ;
+    }
+    if (mt != mt_peer){
+        return ;
+    }
+    PayDialog payDialog(qsKey);
     if (payDialog.exec() != QDialog::Accepted){
         return ;
     }
@@ -548,7 +603,51 @@ void MainWindow::onWalletBtnClicked()
 void MainWindow::onRssBtnClicked()
 {
     RssDialog rssDialog(m_bitmail, this);
-    rssDialog.exec();
+    if (rssDialog.exec() != QDialog::Accepted){
+        return ;
+    }
+    std::vector<std::string> receipt;
+    if (rssDialog.isPublic()){
+        m_bitmail->GetFriends(receipt);
+    }else if (rssDialog.isPrivate()){
+        receipt.push_back( m_bitmail->GetEmail());
+    }else if (rssDialog.isGroup()){
+        QString qsGroupId = rssDialog.groupId();
+        m_bitmail->GetGroupMembers(qsGroupId.toStdString(), receipt);
+    }else{
+        return ;
+    }
+
+    QStringList qslRecip;
+    for(std::vector<std::string>::const_iterator it = receipt.begin(); it != receipt.end(); it++){
+        qslRecip.append(QString::fromStdString(*it));
+    }
+
+    RTXMessage rtxMsg;
+    BMMessage bmMsg;
+    bmMsg.msgType(mt_subscribe);
+    if (m_bitmail->IsBradMapped()){
+        bmMsg.bradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
+    }
+    SubMessage subMsg;
+    subMsg.content(rssDialog.content());
+    bmMsg.content(subMsg);
+
+    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
+    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
+    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
+
+    rtxMsg.rtx(true);
+    rtxMsg.from(qsFrom);
+    rtxMsg.certid(qsCertId);
+    rtxMsg.cert(qsCert);
+    rtxMsg.recip(qslRecip);
+    rtxMsg.content(bmMsg);
+
+    emit readyToSend(qsFrom
+                     , qslRecip
+                     , bmMsg.Serialize());
+
 }
 
 /**
@@ -590,7 +689,8 @@ void MainWindow::onNewMessage(const QString & from
         }
     }else
     if (bmMsg.msgType() == mt_subscribe) {
-        if (!m_bitmail->IsFriend(from.toStdString(), cert.toStdString())){
+        if (!m_bitmail->IsFriend(from.toStdString(), cert.toStdString())
+                || !m_bitmail->Subscribed(from.toStdString())){
             qsKey = KEY_STRANGER;
         }
     }else{
@@ -751,6 +851,10 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
     }while(0);
 
     QString qsContent;
+    QString qsGroupId;
+    QString qsGroupName;
+    QString qsGroupCreator;
+    QStringList qslGroupMembers;
     if (bmMsg.msgType() == mt_peer){
         PeerMessage peerMsg;
         if (!peerMsg.Load(bmMsg.content())){
@@ -763,6 +867,10 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
             return ;
         }
         qsContent = groupMsg.content();
+        qsGroupId = groupMsg.groupId();
+        qsGroupName = groupMsg.groupName();
+        qslGroupMembers = groupMsg.members();
+        qsGroupCreator = groupMsg.creator();
     }else if (bmMsg.msgType() == mt_subscribe){
         SubMessage subMsg;
         if (!subMsg.Load(bmMsg.content())){
@@ -778,12 +886,23 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
     messageDialog.SetMessage(qsContent);
     messageDialog.SetCertID(qsCertID);
     messageDialog.SetCert(qsCert);
+    messageDialog.groupId(qsGroupId);
 
     connect(&messageDialog, SIGNAL(signalAddFriend(QString))
             , this, SLOT(onAddFriend(QString)));
-    if (messageDialog.exec() != QDialog::Accepted){
-        return ;
+
+    if (messageDialog.exec() == MessageDialog::ViewGroup)
+    {
+        NewGroupDialog dlg(m_bitmail);
+        dlg.creator(qsGroupCreator);
+        dlg.groupId(qsGroupId);
+        dlg.groupName(qsGroupName);
+        dlg.groupMembers(qslGroupMembers);
+        if (QDialog::Accepted != dlg.exec()){
+            return ;
+        }
     }
+
     return ;
 }
 //! [33]
@@ -825,7 +944,9 @@ void MainWindow::onSendBtnClicked()
     RTXMessage rtxMsg;
     BMMessage bmMsg;
     bmMsg.msgType(mt);
-    bmMsg.bradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
+    if (m_bitmail->IsBradMapped()){
+        bmMsg.bradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
+    }
     if (mt == mt_peer){
         PeerMessage peerMsg;
         peerMsg.content(qsMsg);
@@ -835,6 +956,15 @@ void MainWindow::onSendBtnClicked()
         groupMsg.groupId(qsKey);
         std::string sGroupName;
         m_bitmail->GetGroupName(qsKey.toStdString(), sGroupName);
+        groupMsg.creator(QString::fromStdString(m_bitmail->GetGroupCreator(qsKey.toStdString())));
+        QStringList qslMembers;
+        std::vector<std::string> vecMembers;
+        m_bitmail->GetGroupMembers(qsKey.toStdString(), vecMembers);
+        for (std::vector<std::string>::const_iterator it = vecMembers.begin(); it != vecMembers.end(); ++it)
+        {
+            qslMembers.append(QString::fromStdString(*it));
+        }
+        groupMsg.members(qslMembers);
         groupMsg.groupName(QString::fromStdString(sGroupName));
         groupMsg.content(qsMsg);
         bmMsg.content(groupMsg);
@@ -886,7 +1016,9 @@ void MainWindow::onInviteBtnClicked()
     RTXMessage rtxMsg;
     BMMessage bmMsg;
     bmMsg.msgType(mt_peer);
-    bmMsg.bradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
+    if (m_bitmail->IsBradMapped()){
+        bmMsg.bradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
+    }
     PeerMessage peerMsg;
     peerMsg.content(qsWhisper);
     bmMsg.content(peerMsg);
@@ -906,10 +1038,25 @@ void MainWindow::onInviteBtnClicked()
 
 void MainWindow::onNewGroupBtnClicked()
 {
-    NewGroupDialog newGroupDialog;
-    if (newGroupDialog.exec() != QDialog::Accepted){
+    NewGroupDialog dlg(m_bitmail);
+    dlg.creator(QString::fromStdString(m_bitmail->GetEmail()));
+    dlg.groupId(QString::fromStdString(m_bitmail->GenerateGroupId()));
+    if (dlg.exec() != QDialog::Accepted){
         return ;
     }
+    QString qsCreator = dlg.creator();
+    QString qsGroupId = dlg.groupId();
+    QString qsGroupName = dlg.groupName();
+    QStringList qslMembers = dlg.groupMembers();
+    m_bitmail->AddGroup(qsGroupId.toStdString(), qsGroupName.toStdString());
+    m_bitmail->SetGroupCreator(qsGroupId.toStdString(), qsCreator.toStdString());
+    for (QStringList::const_iterator it = qslMembers.begin(); it != qslMembers.end(); it++)
+    {
+        m_bitmail->AddGroupMember(qsGroupId.toStdString(), it->toStdString());
+    }
+
+    emit addGroup(qsGroupId);
+
     return ;
 }
 
@@ -1184,6 +1331,14 @@ void MainWindow::onAddFriend(const QString &email)
     populateFriendLeaf(nodeFriends, email, qsNick, NT_Friend);
 }
 
+void MainWindow::onAddGroup(const QString &groupId)
+{
+    std::string sGroupName;
+    m_bitmail->GetGroupName(groupId.toStdString(), sGroupName);
+    QString qsGroupName = QString::fromStdString(sGroupName);
+    populateGroupLeaf(nodeGroups, groupId, qsGroupName, NT_Group);
+}
+
 void MainWindow::onNewSubscribe(const QString & email)
 {
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
@@ -1246,4 +1401,25 @@ void MainWindow::onActNetwork(bool fChecked)
     }else{
         shutdownNetwork();
     }
+}
+
+bool MainWindow::UPnPCallback(bool fMap, unsigned short iport, const char * exturl, void * userp)
+{
+    MainWindow * self = (MainWindow *)userp;
+    (void)self;
+    if (fMap){
+        foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
+            QPair<QHostAddress, int> pair = QHostAddress::parseSubnet("192.168.0.0/24");
+            (void)pair;
+            if (address.protocol() == QAbstractSocket::IPv4Protocol
+                    && !address.isLoopback()
+                    //&& address.isInSubnet(QHostAddress::parseSubnet("192.168.0.0/24"))
+                    )
+                 qDebug() << address.toString();
+        }
+        (void)iport;(void)exturl;
+    }else{
+        (void)iport;(void)exturl;
+    }
+    return false;
 }

@@ -21,6 +21,14 @@ public:
     explicit RssDialog(BitMail * bm, QWidget *parent = 0);
     ~RssDialog();
 
+    bool isPublic() const;
+    bool isPrivate() const;
+    bool isGroup()const;
+
+    QString groupId() const;
+
+    QString content() const;
+
 private slots:
     void on_raGroup_toggled(bool checked);
 

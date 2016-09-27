@@ -359,6 +359,30 @@ void GroupMessage::content(const QString & ctnt)
     _Root["content"] = ctnt;
 }
 
+QStringList GroupMessage::members() const
+{
+    if (_Root.contains("members")){
+        return _Root["members"].toString().split(";");
+    }
+    return QStringList();
+}
+void GroupMessage::members(const QStringList & m)
+{
+    _Root["members"] = m.join(";");
+}
+
+QString GroupMessage::creator() const
+{
+    if (_Root.contains("creator")){
+        return _Root["creator"].toString();
+    }
+    return "";
+}
+void GroupMessage::creator(const QString & c)
+{
+    _Root["creator"] = c;
+}
+
 SubMessage::SubMessage()
 {
 
@@ -393,8 +417,7 @@ bool SubMessage::Load(const QJsonObject & root)
     if (_Root.isEmpty()){
         return false;
     }
-    if (_Root.contains("refer")
-            && _Root.contains("content")){
+    if (_Root.contains("content")){
         return true;
     }else{
         return false;
@@ -415,7 +438,10 @@ SubMessage::operator QJsonObject() const
 
 QString SubMessage::refer()const
 {
-    return _Root["refer"].toString();
+    if (_Root.contains("refer")){
+        return _Root["refer"].toString();
+    }
+    return "";
 }
 void SubMessage::refer(const QString & ref)
 {

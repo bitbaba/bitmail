@@ -21,6 +21,8 @@ MessageDialog::MessageDialog(BitMail * bitmail, QWidget *parent) :
     m_ptxtMessage = findChild<QTextEdit*>("ptxtMessage");
 
     m_btnMakeFriend = findChild<QPushButton*>("btnMakeFriend");
+
+    m_leGroupId = findChild<QLineEdit*>("leGroupId");
 }
 
 MessageDialog::~MessageDialog()
@@ -66,6 +68,16 @@ void MessageDialog::SetCert(const QString & qsCert)
 QString MessageDialog::GetCert() const
 {
     return m_ptxtCert->toPlainText();
+}
+
+QString MessageDialog::groupId() const
+{
+    return m_leGroupId->text();
+}
+
+void MessageDialog::groupId(const QString &qsGroupId)
+{
+    m_leGroupId->setText(qsGroupId);
 }
 
 void MessageDialog::on_buttonBox_accepted()
@@ -115,4 +127,9 @@ void MessageDialog::on_btnMakeFriend_clicked()
     }
 
     emit signalAddFriend(qsFrom);
+}
+
+void MessageDialog::on_btnViewGroup_clicked()
+{
+    this->done(ViewGroup);
 }

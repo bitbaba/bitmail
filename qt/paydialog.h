@@ -12,7 +12,7 @@ class PayDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PayDialog(QWidget *parent = 0);
+    explicit PayDialog(const QString & recip, QWidget *parent = 0);
     ~PayDialog();
 
 private slots:
@@ -22,6 +22,8 @@ private slots:
 
 private:
     Ui::PayDialog *ui;
+
+    QString m_recip;
 };
 
 #endif // PAYDIALOG_H

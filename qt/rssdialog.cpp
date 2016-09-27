@@ -33,21 +33,42 @@ RssDialog::RssDialog(BitMail * bm, QWidget *parent) :
     for (std::vector<std::string>::const_iterator it = vecGroups.begin()
          ; it != vecGroups.end()
          ; ++it){
-        std::vector<std::string> vecMembers;
-        m_bitmail->GetGroupMembers(*it, vecMembers);
-        QStringList qslMembers;
-        for (std::vector<std::string>::const_iterator it_member = vecMembers.begin()
-             ; it_member != vecMembers.end()
-             ; ++it_member){
-            qslMembers.append(QString::fromStdString(*it_member));
-        }
-        m_cbbGroup->addItem(QIcon(":/images/group.png"), QString::fromStdString(*it), QVariant(qslMembers));
+        std::string sGroupName;
+        m_bitmail->GetGroupName(*it, sGroupName);
+        m_cbbGroup->addItem(QIcon(":/images/group.png")
+                            , QString::fromStdString(sGroupName)
+                            , QVariant(QString::fromStdString(*it)));
     }
 }
 
 RssDialog::~RssDialog()
 {
     delete ui;
+}
+
+bool RssDialog::isPublic() const
+{
+    return m_raPublic->isChecked();
+}
+
+bool RssDialog::isPrivate() const
+{
+    return m_raPrivate->isChecked();
+}
+
+bool RssDialog::isGroup()const
+{
+    return m_raGroup->isChecked();
+}
+
+QString RssDialog::groupId() const
+{
+    return m_cbbGroup->currentData().toString();
+}
+
+QString RssDialog::content() const
+{
+    return m_txtContent->toPlainText();
 }
 
 void RssDialog::on_raGroup_toggled(bool checked)

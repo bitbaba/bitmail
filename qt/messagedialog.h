@@ -18,6 +18,10 @@ class MessageDialog : public QDialog
     Q_OBJECT
 
 public:
+    enum {
+        ViewGroup = QDialog::Accepted + QDialog::Rejected,
+    };
+
     explicit MessageDialog(BitMail * btimail, QWidget *parent = 0);
     ~MessageDialog();
 
@@ -35,12 +39,17 @@ public:
 
     void EnableMakeFriend(bool fEnable);
 
+    void groupId(const QString & qsGroupId);
+    QString groupId() const;
+
 private slots:
     void on_buttonBox_accepted();
 
     void on_buttonBox_rejected();
 
     void on_btnMakeFriend_clicked();
+
+    void on_btnViewGroup_clicked();
 
 signals:
     void signalAddFriend(const QString & email);
@@ -54,5 +63,6 @@ private:
     QTextEdit * m_ptxtMessage;
     QPlainTextEdit * m_ptxtCert;
     QPushButton * m_btnMakeFriend;
+    QLineEdit * m_leGroupId;
 };
 #endif // MESSAGEDIALOG_H

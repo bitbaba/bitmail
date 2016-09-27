@@ -106,6 +106,10 @@ public:
     void groupName(const QString & gname);
     QString content() const;
     void content(const QString & ctnt);
+    QStringList members() const;
+    void members(const QStringList & m);
+    QString creator() const;
+    void creator(const QString & c);
 private:
     QJsonObject _Root;
 };

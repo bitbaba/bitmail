@@ -113,6 +113,7 @@ public slots:
     void onNewGroupBtnClicked();
     void onMessageDoubleClicked(QListWidgetItem * actItem);
     void onAddFriend(const QString & email);
+    void onAddGroup(const QString & groupId);
     void onNewSubscribe(const QString & sub);
     void onCtxMenu(const QPoint & pos);
     // Context Menu slots
@@ -146,7 +147,9 @@ private:
     void enqueueMsg(MsgType mt, const QString & key, const RTXMessage & rtxMsg);
     QList<RTXMessage> dequeueMsg(MsgType mt, const QString & key);
     QString formatRTXMessage(const RTXMessage & rtxMsg);
-
+    void ViewCert(const QString & e);
+    void ViewGroup(const QString & gid);
+    static bool UPnPCallback(bool fMap, unsigned short, const char * exturl, void * userp);
 private:
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;
@@ -201,6 +204,8 @@ signals:
     void readyToSend(  const QString & from
                      , const QStringList & recip
                      , const QString & msg);
+
+    void addGroup(const QString & gid);
 
 };
 

@@ -43,7 +43,7 @@
   <property name="windowTitle">
    <string>Pay</string>
   </property>
-  <widget class="QGroupBox" name="groupBox_2">
+  <widget class="QGroupBox" name="grpTo">
    <property name="geometry">
     <rect>
      <x>10</x>

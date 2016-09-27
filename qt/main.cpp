@@ -331,6 +331,13 @@ namespace BMQTApplication {
                     qsGroupName = joGroup["name"].toString();
                 }
                 bm->AddGroup(qsGroupId.toStdString(), qsGroupName.toStdString());
+
+                QString qsGroupCreator;
+                if (joGroup.contains("creator")){
+                    qsGroupCreator = joGroup["creator"].toString();
+                }
+                bm->SetGroupCreator(qsGroupId.toStdString(), qsGroupCreator.toStdString());
+
                 if (joGroup.contains("members")){
                     QJsonArray jaMembers = joGroup["members"].toArray();
                     for (int i = 0; i < jaMembers.size(); i++){
@@ -415,9 +422,11 @@ namespace BMQTApplication {
             std::string sBuddyCertPem = bm->GetFriendCert(*it);
             QJsonObject joBuddy;
             joBuddy["cert"]  = QString::fromStdString(sBuddyCertPem);
-            QJsonObject joFriendBrad;
-            joFriendBrad["extUrl"] = QString::fromStdString(bm->GetFriendBradExtUrl(*it));
-            joBuddy["brad"] = joFriendBrad;
+            if (false){ // no need to save friend's brad
+                QJsonObject joFriendBrad;
+                joFriendBrad["extUrl"] = QString::fromStdString(bm->GetFriendBradExtUrl(*it));
+                joBuddy["brad"] = joFriendBrad;
+            }
             QString qsEmail = QString::fromStdString(*it);
             joBuddies.insert(qsEmail, joBuddy);
         }
@@ -435,6 +444,8 @@ namespace BMQTApplication {
                 continue;
             }
             joGroup["name"] = QString::fromStdString(sGroupName);
+
+            joGroup["creator"] = QString::fromStdString(bm->GetGroupCreator(sGroupId));
 
             std::vector<std::string> vecMembers;
             bm->GetGroupMembers(sGroupId, vecMembers);
