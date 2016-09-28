@@ -40,6 +40,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #include <QMainWindow>
+#include <QProcess>
 #include "msgqueue.h"
 
 QT_BEGIN_NAMESPACE
@@ -58,6 +59,7 @@ class QJsonValue;
 class QListWidgetItem;
 class QTreeWidget;
 class QTreeWidgetItem;
+class QProcess;
 
 QT_END_NAMESPACE
 class BitMail;
@@ -123,6 +125,7 @@ public slots:
     void onActNewGroup();
     void onActRemoveGroup();
     void onActNetwork(bool fChecked);
+    void onMapProcFinished(int,QProcess::ExitStatus);
 private:
     bool getCurrentRecipKey(MsgType & mt, QString & qsKey);
     bool getRecipList(MsgType, const QString & qsKey, QStringList & reciplist);
@@ -149,7 +152,10 @@ private:
     QString formatRTXMessage(const RTXMessage & rtxMsg);
     void ViewCert(const QString & e);
     void ViewGroup(const QString & gid);
-    static bool UPnPCallback(bool fMap, unsigned short, const char * exturl, void * userp);
+    static bool UPnPCallback(unsigned short, const char * exturl, void * userp);
+public:
+    void StartUpnpThread(const QString & prog, const QStringList & arg, const QString & output, const QString & errput);
+    void ShutdownUpnpThread();
 private:
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;
@@ -194,6 +200,7 @@ private:
 
     RxThread *m_rxth;
     TxThread *m_txth;
+    QProcess *m_mapproc;
     ShutdownDialog *m_shutdownDialog;
 
     // histroy messages queue

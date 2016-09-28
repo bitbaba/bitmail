@@ -46,6 +46,7 @@
 #include <QByteArray>
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QNetworkInterface>
+#include <QUrl>
 #include <bitmailcore/bitmail.h>
 #include "mainwindow.h"
 //! [0]
@@ -75,6 +76,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     : m_bitmail(bitmail)
     , m_rxth(NULL)
     , m_txth(NULL)
+    , m_mapproc(NULL)
     , m_shutdownDialog(NULL)
 //! [1] //! [2]
 {
@@ -237,7 +239,7 @@ void MainWindow::shutdownNetwork()
 {
     m_bitmail->ShutdownBrad();
 
-    m_bitmail->RemoveBradExtPort(UPnPCallback, this);
+    ShutdownUpnpThread();
 
     if (m_rxth ){
         m_rxth->stop();
@@ -1403,23 +1405,150 @@ void MainWindow::onActNetwork(bool fChecked)
     }
 }
 
-bool MainWindow::UPnPCallback(bool fMap, unsigned short iport, const char * exturl, void * userp)
+void MainWindow::onMapProcFinished(int,QProcess::ExitStatus)
+{
+    qDebug() << "MainWindow: upnp map proc finish";
+    if (m_mapproc){
+        QString qsErrput = m_mapproc->readAllStandardError();
+        //TODO: Analyze upnpc-static.exe output
+        if (qsErrput.contains("No IGD UPnP")){
+            qDebug() << "MainWindow: upnp fail";
+            m_bitmail->SetBradMapped(false);
+        }else{
+            qDebug() << "MainWindow:: upnp Ok";
+            m_bitmail->SetBradMapped(true);
+        }
+    }
+    return ;
+}
+
+void MainWindow::StartUpnpThread( const QString & program
+                                 , const QStringList & arglist
+                                 , const QString & output
+                                 , const QString & errput)
+{
+    if (m_mapproc == NULL){
+        qDebug() << "MainWindow: Create upnp map proc";
+        m_mapproc = new QProcess();
+    }
+
+    if (0){
+        m_mapproc->setStandardOutputFile(output);
+        m_mapproc->setStandardErrorFile(errput);
+    }
+
+    connect(m_mapproc, SIGNAL(finished(int,QProcess::ExitStatus))
+            , this, SLOT(onMapProcFinished(int,QProcess::ExitStatus)));
+
+    qDebug() << "MainWindow: Start upnp map proc";
+    m_mapproc->start(program, arglist);
+}
+
+void MainWindow::ShutdownUpnpThread()
+{
+    if (m_mapproc){
+        qDebug() << "MainWindow: Kill upnp map proc";
+        m_mapproc->kill();
+        qDebug() << "MainWindow: Wait upnp map proc";
+        m_mapproc->waitForFinished(1000);
+        qDebug() << "MainWindow: Destroy upnp map proc";
+        delete m_mapproc;
+        m_mapproc = NULL;
+    }
+    qDebug() << "MainWindow: Shutdown upnp map proc";
+}
+
+bool MainWindow::UPnPCallback(unsigned short iport, const char * exturl, void * userp)
 {
     MainWindow * self = (MainWindow *)userp;
-    (void)self;
-    if (fMap){
-        foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
-            QPair<QHostAddress, int> pair = QHostAddress::parseSubnet("192.168.0.0/24");
-            (void)pair;
-            if (address.protocol() == QAbstractSocket::IPv4Protocol
-                    && !address.isLoopback()
-                    //&& address.isInSubnet(QHostAddress::parseSubnet("192.168.0.0/24"))
-                    )
-                 qDebug() << address.toString();
-        }
-        (void)iport;(void)exturl;
-    }else{
-        (void)iport;(void)exturl;
+    (void )self;
+
+    if (!iport){
+        return false;
     }
-    return false;
+
+    if (!exturl || !*exturl){
+        return false;
+    }
+
+    QString lanaddr;
+    foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
+        if (address.protocol() == QAbstractSocket::IPv4Protocol
+                && !address.isLoopback()
+                && (address.isInSubnet(QHostAddress::parseSubnet("192.168.0.0/16"))
+                    ||  address.isInSubnet(QHostAddress::parseSubnet("172.16.0.0/12"))
+                    ||  address.isInSubnet(QHostAddress::parseSubnet("10.0.0.0/8")))
+           ){
+             lanaddr = address.toString();
+             break; // take only one
+        }
+    }
+    if (lanaddr.isEmpty()){
+        return false;
+    }
+
+    qDebug() << "Lan Address: " << lanaddr;
+
+    QUrl url = QUrl(QString::fromStdString(exturl));
+    if (!url.isValid()){
+        return false;
+    }
+
+    qDebug() << "Ext Url: " << url.toString();
+
+    QString exthost = url.host(); // no DNS lookup, direct ip address.
+    QHostAddress extaddr = QHostAddress(exthost);
+    if (extaddr.isNull()){
+        return false;
+    }
+    if (extaddr.isLoopback()){
+        //return false;
+    }
+    if (extaddr.protocol() != QAbstractSocket::IPv4Protocol ){
+        return false;
+    }
+    if (extaddr.isInSubnet(QHostAddress::parseSubnet("10.0.0.0/8"))){
+        return false;
+    }
+    if (extaddr.isInSubnet(QHostAddress::parseSubnet("172.16.0.0/12"))){
+        return false;
+    }
+    if (extaddr.isInSubnet(QHostAddress::parseSubnet("192.168.0.0/16"))){
+        return false;
+    }
+    if (extaddr.isInSubnet(QHostAddress::parseSubnet("169.254.0.0/16"))){
+        return false;
+    }
+    int extport = url.port();
+    if (extport <= 0){
+        return false;
+    }
+
+    QString program = QApplication::applicationDirPath();
+    program += "/upnpc-static.exe";
+
+    QString output = BMQTApplication::GetDataHome();
+    output += "/upnpc-static.log";
+
+    QString errput = BMQTApplication::GetDataHome();
+    errput += "/upnpc-static.err";
+
+    QStringList qslArgs;
+    if (true){
+        qslArgs << "-a"
+                << lanaddr
+                << QString("%1").arg(iport)
+                << QString("%1").arg(extport)
+                << "tcp";
+    }else{
+        qslArgs << "-d"
+                << QString("%1").arg(extport)
+                << "tcp";
+    }
+
+    if (self){
+        self->StartUpnpThread(program, qslArgs, output, errput);
+    }
+    return true;
 }
+
