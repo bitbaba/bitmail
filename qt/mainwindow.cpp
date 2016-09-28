@@ -168,8 +168,10 @@ MainWindow::MainWindow(BitMail * bitmail)
     textEdit = new QPlainTextEdit;
     textEdit->setMinimumWidth(480);
     textEdit->setFixedHeight(100);
+    QFont font = textEdit->font();
+    font.setBold(true);
+    textEdit->setFont(font);
     textEdit->setFocus();
-    textEdit->setFont(QFont("Arial", 8));
 
     btnSend = new QPushButton(tr("Send"));
     btnSend->setToolTip(tr("Ctrl+Enter"));

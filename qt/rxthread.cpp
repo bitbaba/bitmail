@@ -68,7 +68,7 @@ void RxThread::onInboxPollEvent()
 int MessageEventHandler(const char * from, const char * msg, unsigned int msglen, const char * certid, const char * cert, void * p)
 {
     QString qsFrom = QString::fromStdString(from);
-    QString qsContent = QString::fromLatin1(msg, msglen);
+    QString qsContent = QString::fromUtf8(msg, msglen);
     QString qsCertID = QString::fromStdString(certid);
     QString qsCert = QString::fromStdString((cert));
 
