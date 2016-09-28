@@ -551,26 +551,19 @@ bool BitMail::SetFriendBrad(const std::string & email, const std::string & extur
 void BitMail::MapBradExtPort(MapCallback cb, void * userp)
 {
 	if (cb){
-		m_bradmapped = cb(true, m_bradPort, m_bradExtUrl.c_str(), userp);
-	}else{
-		m_bradmapped = false;
+		cb(m_bradPort, m_bradExtUrl.c_str(), userp);
 	}
 	return ;
 }
-
-void BitMail::RemoveBradExtPort(MapCallback cb, void * userp)
-{
-	if (cb){
-		cb(false, m_bradPort, m_bradExtUrl.c_str(), userp);
-	}
-	m_bradmapped = false;
-	return ;
-}
-
 
 bool BitMail::IsBradMapped() const
 {
 	return m_bradmapped;
+}
+
+void BitMail::SetBradMapped(bool fMapped)
+{
+	m_bradmapped = fMapped;
 }
 
 std::string BitMail::GetFriendBradExtUrl(const std::string & email) const

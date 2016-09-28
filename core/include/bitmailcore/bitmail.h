@@ -102,7 +102,7 @@ public:
 	virtual void FreeTx(ITx * itx) = 0;
 };
 
-typedef bool (* MapCallback)(bool fMap, unsigned short iport, const char * exturl, void * userp);
+typedef bool (* MapCallback)(unsigned short iport, const char * exturl, void * userp);
 
 class BitMail
 {
@@ -246,6 +246,8 @@ public:
     void RemoveBradExtPort(MapCallback cb, void * userp);
 
     bool IsBradMapped() const;
+
+    void SetBradMapped(bool fMapped);
 
     std::string GetFriendBradExtUrl(const std::string & email) const;
 
