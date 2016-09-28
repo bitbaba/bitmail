@@ -76,6 +76,7 @@ Section "BitMail" SecBitMail
   File "Qt5Core.dll"
   File "Qt5Gui.dll"
   File "Qt5Widgets.dll"
+  File "Qt5Network.dll"
   
   SetOutPath "$INSTDIR\platforms"
   File "platforms\qminimal.dll"
