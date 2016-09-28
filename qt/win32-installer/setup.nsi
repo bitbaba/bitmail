@@ -64,6 +64,7 @@ Section "BitMail" SecBitMail
 
   SetOutPath "$INSTDIR"
   File "bitmail.exe"
+  File "upnpc-static.exe"
   File "icudt53.dll"
   File "icuin53.dll"
   File "icuuc53.dll"
