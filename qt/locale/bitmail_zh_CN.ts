@@ -116,7 +116,7 @@
     <message>
         <location filename="../certdialog.ui" line="77"/>
         <source>Email:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">电子邮件:</translation>
     </message>
     <message>
         <location filename="../certdialog.ui" line="84"/>
@@ -149,7 +149,7 @@
     <message>
         <location filename="../invitedialog.ui" line="78"/>
         <source>Email:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">电子邮件:</translation>
     </message>
     <message>
         <location filename="../invitedialog.ui" line="92"/>
@@ -673,12 +673,12 @@
     <message>
         <location filename="../optiondialog.ui" line="91"/>
         <source>Email:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">电子邮件:</translation>
     </message>
     <message>
         <location filename="../optiondialog.ui" line="108"/>
         <source>Passphrase:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">私钥密钥:</translation>
     </message>
     <message>
         <location filename="../optiondialog.ui" line="122"/>

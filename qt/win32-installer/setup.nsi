@@ -11,12 +11,12 @@
 ;General
 
   ;Name and file
-  Name "BitMail installer"
+  Name "BitMail-Qt Win32 Installer"
   OutFile "bitmail-qt-win32-installer.exe"
   Icon "bitmail.256.ico"
 
   ;Default installation folder
-  InstallDir "$LOCALAPPDATA\BitMail"
+  InstallDir "$PROGRAMFILES\BitMail"
   
   ;Get installation folder from registry if available
   InstallDirRegKey HKCU "Software\BitMail" "InstallLocation"
@@ -77,6 +77,10 @@ Section "BitMail" SecBitMail
   File "Qt5Gui.dll"
   File "Qt5Widgets.dll"
   File "Qt5Network.dll"
+  
+
+  SetOutPath "$INSTDIR\locale"
+  File "..\locale\*.qm"
   
   SetOutPath "$INSTDIR\platforms"
   File "platforms\qminimal.dll"
