@@ -751,7 +751,7 @@
     <message>
         <location filename="../paydialog.cpp" line="14"/>
         <source>To</source>
-        <translation>给</translation>
+        <translation>付款给 </translation>
     </message>
 </context>
 <context>
