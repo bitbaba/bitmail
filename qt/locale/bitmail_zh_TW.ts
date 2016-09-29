@@ -190,7 +190,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../logindialog.cpp" line="20"/>
+        <location filename="../logindialog.cpp" line="14"/>
+        <source>Ok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logindialog.cpp" line="22"/>
         <source>BitMail Qt Client</source>
         <translation type="unfinished"></translation>
     </message>
