@@ -687,7 +687,7 @@
     </message>
     <message>
         <location filename="../optiondialog.ui" line="122"/>
-        <source>Bits</source>
+        <source>Bits:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

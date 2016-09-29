@@ -11,6 +11,8 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui(new Ui::LoginDialog)
 {
     ui->setupUi(this);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Ok"));
+
     QLabel * lbLogo = findChild<QLabel *>("lbLogo");
     QPixmap imgLogo = QPixmap(":/images/bkgrd.png");
     QPainter pencil;

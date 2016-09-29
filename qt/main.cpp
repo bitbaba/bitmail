@@ -79,13 +79,19 @@ int main(int argc, char *argv[])
     // 2) or use locale specified by custom in arguments, like this: QLocale::setDefault(QLocale(lang, coutry));
     // 3) use UTF-8 as default text codec, between unicode and ansi
     // Query current locale by
-    QLocale().name();
+    qDebug() << "Application Locale: " << QLocale().name();
     // Query system locale by
-    QLocale::system().name();
+    qDebug() << "System Locale: " << QLocale::system().name();
+
     // TODO: Locale from arguments
-    //QLocale::Language lang = QLocale::Chinese;
-    //QLocale::Country  cout = QLocale::China;
-    //QLocale::setDefault(QLocale(lang, cout));
+    //QLocale::Language lang = QLocale::Japanese;
+    //QLocale::Country  cntry= QLocale::Japan;
+    //QLocale::setDefault(QLocale(lang, cntry));
+
+    // Query current locale: changed by above setting
+    qDebug() << "Application Locale: " << QLocale().name();
+    // Query system locale: intact
+    qDebug() << "System Locale: " << QLocale::system().name();
 
     // Codec by UTF-8
     // http://doc.qt.io/qt-5/qtextcodec.html#setCodecForLocale
@@ -97,6 +103,19 @@ int main(int argc, char *argv[])
     //QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
 
     // Ref: http://doc.qt.io/qt-5/internationalization.html
+
+    // i18n for qt
+    QTranslator qtTranslator;
+    if (qtTranslator.load("qt_" + QLocale().name(), BMQTApplication::GetLocaleHome())){
+        app.installTranslator(&qtTranslator);
+    }
+
+    // i18n for bitmail
+    QTranslator appTranslator;
+    if (appTranslator.load("bitmail_" + QLocale().name(), BMQTApplication::GetLocaleHome())){
+        app.installTranslator(&appTranslator);
+    }
+
     // Get Account Profile
     QString qsEmail, qsPassphrase;
     bool fAssistant = false;
@@ -175,9 +194,7 @@ namespace BMQTApplication {
     }
     QString GetLocaleHome()
     {
-        QString qsLocaleHome = QDir::homePath();
-        qsLocaleHome += "/";
-        qsLocaleHome += "bitmail";
+        QString qsLocaleHome = GetAppHome();
         qsLocaleHome += "/";
         qsLocaleHome += "locale";
         return qsLocaleHome;

@@ -687,8 +687,12 @@
     </message>
     <message>
         <location filename="../optiondialog.ui" line="122"/>
-        <source>Bits</source>
+        <source>Bits:</source>
         <translation>比特：</translation>
+    </message>
+    <message>
+        <source>Bits</source>
+        <translation type="vanished">比特：</translation>
     </message>
     <message>
         <location filename="../optiondialog.ui" line="129"/>
