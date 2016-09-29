@@ -167,22 +167,22 @@
     <message>
         <location filename="../logindialog.ui" line="45"/>
         <source>Login</source>
-        <translation type="unfinished"></translation>
+        <translation>登录</translation>
     </message>
     <message>
         <location filename="../logindialog.ui" line="79"/>
         <source>  BitMail Qt Client</source>
-        <translation type="unfinished"></translation>
+        <translation>比特信Qt客户端</translation>
     </message>
     <message>
         <location filename="../logindialog.ui" line="125"/>
         <source>Email:</source>
-        <translation type="unfinished"></translation>
+        <translation>电子邮件:</translation>
     </message>
     <message>
         <location filename="../logindialog.ui" line="132"/>
         <source>Passphrase:</source>
-        <translation type="unfinished"></translation>
+        <translation>私钥密钥:</translation>
     </message>
     <message>
         <location filename="../logindialog.ui" line="257"/>
