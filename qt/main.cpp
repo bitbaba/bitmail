@@ -50,6 +50,8 @@
 #include <QThread>
 #include <QDebug>
 #include <QDateTime>
+#include <QTranslator>
+#include <QLibraryInfo>
 #include "optiondialog.h"
 #include "logindialog.h"
 #include "mainwindow.h"
@@ -81,9 +83,10 @@ int main(int argc, char *argv[])
     // Query system locale by
     QLocale::system().name();
     // TODO: Locale from arguments
-    // int lang = QLocale::Chinese;
-    // int cout = QLocale::China;
-    // QLocale::setDefault(QLocale(lang, cout));
+    //QLocale::Language lang = QLocale::Chinese;
+    //QLocale::Country  cout = QLocale::China;
+    //QLocale::setDefault(QLocale(lang, cout));
+
     // Codec by UTF-8
     // http://doc.qt.io/qt-5/qtextcodec.html#setCodecForLocale
     // http://www.iana.org/assignments/character-sets/character-sets.xml
@@ -92,6 +95,8 @@ int main(int argc, char *argv[])
     // default use UTF-8 for c-string & translation
     //QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
     //QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
+
+    // Ref: http://doc.qt.io/qt-5/internationalization.html
     // Get Account Profile
     QString qsEmail, qsPassphrase;
     bool fAssistant = false;
@@ -167,6 +172,15 @@ namespace BMQTApplication {
         qsProfileHome += "/";
         qsProfileHome += "data";
         return qsProfileHome;
+    }
+    QString GetLocaleHome()
+    {
+        QString qsLocaleHome = QDir::homePath();
+        qsLocaleHome += "/";
+        qsLocaleHome += "bitmail";
+        qsLocaleHome += "/";
+        qsLocaleHome += "locale";
+        return qsLocaleHome;
     }
     QStringList GetProfiles()
     {

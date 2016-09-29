@@ -1,5 +1,14 @@
 QT += widgets network
 
+CODECFORTR = utf-8
+TRANSLATIONS = locale/bitmail_en.ts \
+			   locale/bitmail_zh_CN.ts \
+			   locale/bitmail_zh_TW.ts \
+			   locale/bitmail_ja.ts \
+			   locale/bitmail_ru.ts \
+			   locale/bitmail_fr.ts \
+			   locale/bitmail_de.ts 
+
 HEADERS       = mainwindow.h \
                 optiondialog.h \
                 logindialog.h \
@@ -17,7 +26,7 @@ HEADERS       = mainwindow.h \
                 rssdialog.h \
                 netoptdialog.h \
                 assistantdialog.h \
-    newgroupdialog.h
+                newgroupdialog.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
@@ -36,7 +45,7 @@ SOURCES       = main.cpp \
                 rssdialog.cpp \
                 netoptdialog.cpp \
                 assistantdialog.cpp \
-    newgroupdialog.cpp
+                newgroupdialog.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]

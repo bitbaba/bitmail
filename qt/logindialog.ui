@@ -53,6 +53,9 @@
      <height>31</height>
     </rect>
    </property>
+   <property name="locale">
+    <locale language="English" country="UnitedStates"/>
+   </property>
    <property name="orientation">
     <enum>Qt::Horizontal</enum>
    </property>

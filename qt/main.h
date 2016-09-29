@@ -10,6 +10,7 @@ namespace BMQTApplication {
     QString GetAppHome();
     QString GetProfileHome();
     QString GetDataHome();
+    QString GetLocaleHome();
     QStringList GetProfiles();
     QString GetProfilePath(const QString & email);
     bool IsValidPofile(const QString & profilePath);
