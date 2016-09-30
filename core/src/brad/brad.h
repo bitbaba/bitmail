@@ -125,7 +125,14 @@ private:
  */
 class Brac{
 public:
-	Brac(int sockfd, bool fInbound);
+	/**
+	 * create a outbound connection to Brad
+	 */
+	explicit Brac(const std::string & url);
+	/**
+	 * create a inbound connection accepted by Brad
+	 */
+	explicit Brac(int sockfd);
 	~Brac();
 public:
 	bool SendMsg(const std::string & request, RTxProgressCB cb, void * userp);
