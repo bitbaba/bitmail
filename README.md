@@ -35,28 +35,28 @@ http://bitbaba.github.io/bitmail/index.html
 
 ###Build
 
-1. clone
+- clone
 
 ```
 $git clone https://github.com/imharrywu/bitmail
 ```
 
-2. Depends
+- Depends
 
 ```
 $cd depends
 $sh openssl.sh && sh curl.sh && sh libmicrohttpd.sh
 ```
 
-3. Core
+- Core
 
 ```
 $sh autogen.sh
 ```
 
-4. Qt
+- Qt
 
-just open \`qt/bitmail.pro' to build
+open \`qt/bitmail.pro' to build
 
 
 ###TODO
