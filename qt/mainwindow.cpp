@@ -1527,7 +1527,12 @@ bool MainWindow::UPnPCallback(unsigned short iport, const char * exturl, void * 
     }
 
     QString program = QApplication::applicationDirPath();
+
+#ifdef WIN32
     program += "/upnpc-static.exe";
+#else
+    program += "/upnpc-static";
+#endif
 
     QString output = BMQTApplication::GetDataHome();
     output += "/upnpc-static.log";
