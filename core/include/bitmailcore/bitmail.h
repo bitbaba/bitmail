@@ -16,7 +16,7 @@
 class CMailClient;
 class CX509Cert;
 struct BMEventHead;
-class Brad;
+class HttpBrad;
 
 enum BMError{
     bmOk             =     0,
@@ -329,7 +329,7 @@ protected:
     std::map<std::string, std::string> m_brads;
 
     // Bra daemon instance
-    Brad               * m_brad;
+    HttpBrad           * m_brad;
     unsigned short       m_bradPort;
     std::string          m_bradExtUrl;
     bool                 m_bradmapped;

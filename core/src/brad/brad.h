@@ -70,11 +70,11 @@ enum BradError{
 
 struct MHD_Daemon;
 
-class Brad
+class HttpBrad
 {
 public:
-	Brad(unsigned short port, BMEventCB cb, void * userp);
-	~Brad();
+	HttpBrad(unsigned short port, BMEventCB cb, void * userp);
+	~HttpBrad();
 public:
 	bool Startup();
 	unsigned short GetPort() const;
@@ -86,13 +86,41 @@ public:
 	void * m_userp;
 };
 
-class Brac
+class HttpBrac
 {
 private:
-	explicit Brac();
-	~Brac();
-public:
+	explicit HttpBrac();
+	~HttpBrac();
+private:
 	static size_t OnTxfer(void *ptr, size_t size, size_t nmemb, void *sstrm);
+public:
 	static bool SendMsg(const std::string & url, const std::string & request, RTxProgressCB cb, void * userp);
 };
 
+// new brad implementation
+
+class Brac;
+
+class Brad{
+public:
+	explicit Brad(unsigned short port, BMEventCB cb, void * userp);
+	~Brad();
+public:
+	bool Startup();
+	unsigned short GetPort() const;
+	bool Shutdown();
+private:
+	unsigned short port_;
+	int servfd_;
+};
+
+
+class Brac{
+public:
+	Brac();
+	~Brac();
+public:
+	bool SendMsg(const std::string & request, RTxProgressCB cb, void * userp);
+private:
+	int sockfd_;
+};

@@ -64,19 +64,19 @@ answer_to_connection (void *cls
 					  , void **con_cls);
 
 
-Brad::Brad(unsigned short port, BMEventCB cb, void * userp)
+HttpBrad::HttpBrad(unsigned short port, BMEventCB cb, void * userp)
 {
 	m_port = port;
 	m_cb = cb;
 	m_userp = userp;
 }
 
-Brad::~Brad()
+HttpBrad::~HttpBrad()
 {
 
 }
 
-bool Brad::Startup() {
+bool HttpBrad::Startup() {
 	// Tutorial: https://www.gnu.org/software/libmicrohttpd/tutorial.html
 	// Manual: https://www.gnu.org/software/libmicrohttpd/manual/libmicrohttpd.html
 	d = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY | MHD_USE_DEBUG , m_port
@@ -87,12 +87,12 @@ bool Brad::Startup() {
 	return (d != NULL);
 }
 
-unsigned short Brad::GetPort() const
+unsigned short HttpBrad::GetPort() const
 {
 	return m_port;
 }
 
-bool Brad::Shutdown()
+bool HttpBrad::Shutdown()
 {
 	  MHD_stop_daemon(d);
 	  d = NULL;
@@ -138,7 +138,7 @@ int answer_to_connection (void *cls
 						, size_t *upload_data_size
 						, void **con_cls)
 {
-	Brad * self = (Brad *)cls;
+	HttpBrad * self = (HttpBrad *)cls;
 
 	if (!ISPOST(method))
 	{
@@ -181,7 +181,7 @@ struct PostCallback_t{
     size_t        offset;
 };
 
-size_t Brac::OnTxfer(void *ptr, size_t size, size_t nmemb, void *sstrm)
+size_t HttpBrac::OnTxfer(void *ptr, size_t size, size_t nmemb, void *sstrm)
 {
     struct PostCallback_t * ctx = (struct PostCallback_t *)sstrm;
 
@@ -200,7 +200,7 @@ size_t Brac::OnTxfer(void *ptr, size_t size, size_t nmemb, void *sstrm)
     return (xfer_bytes); // 0 for EOF
 }
 
-bool Brac::SendMsg(const std::string & url, const std::string & request, RTxProgressCB cb, void * userp)
+bool HttpBrac::SendMsg(const std::string & url, const std::string & request, RTxProgressCB cb, void * userp)
 {
 	bool verboseFlag = true;
 
@@ -228,7 +228,7 @@ bool Brac::SendMsg(const std::string & url, const std::string & request, RTxProg
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     // Feed Data in callback
-    curl_easy_setopt(curl, CURLOPT_READFUNCTION, Brac::OnTxfer);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, HttpBrac::OnTxfer);
     curl_easy_setopt(curl, CURLOPT_READDATA, &txcb);
     // Post setting
     curl_easy_setopt(curl, CURLOPT_POST, 1L);

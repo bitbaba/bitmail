@@ -153,16 +153,16 @@ bool BitMail::SetBradPort(unsigned short port)
 
 bool BitMail::StartBrad()
 {
-	if (m_brad != NULL){
-		m_brad->Shutdown();
-		delete m_brad;
-		m_brad = NULL;
-	}
-	m_brad = new Brad(m_bradPort, EmailHandler, this);
+	m_brad = new HttpBrad(m_bradPort, EmailHandler, this);
 	if (m_brad == NULL){
 		return false;
 	}
-	return m_brad->Startup();
+	if ( !m_brad->Startup()){
+		delete m_brad;
+		m_brad = NULL;
+		return false;
+	}
+	return true;
 }
 
 unsigned short BitMail::GetBradPort() const
@@ -358,9 +358,12 @@ int BitMail::SendMsg(const std::vector<std::string> & friends
     {
     	std::string sBradExtUrl = GetFriendBradExtUrl(*it);
     	if (!sBradExtUrl.empty()){
-    		if (bmOk == Brac::SendMsg(sBradExtUrl, sEncryptedMsg, cb, userp)){
+
+    		if (bmOk == HttpBrac::SendMsg(sBradExtUrl, sEncryptedMsg, cb, userp))
+    		{
     			continue;
     		}
+
     	}
     	vecCollector.push_back(*it);
     }
