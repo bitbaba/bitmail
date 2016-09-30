@@ -33,6 +33,32 @@ http://bitbaba.github.io/bitmail/index.html
 - reject any spam message away.
 - invite friend(s) or accept friend(s) by exchange CertID.
 
+###Build
+
+1. clone
+
+```
+$git clone https://github.com/imharrywu/bitmail
+```
+
+2. Depends
+
+```
+$cd depends
+$sh openssl.sh && sh curl.sh && sh libmicrohttpd.sh
+```
+
+3. Core
+
+```
+$sh autogen.sh
+```
+
+4. Qt
+
+just open \`qt/bitmail.pro' to build
+
+
 ###TODO
 - Mobile;
 - Daemon & UPnP;
