@@ -101,9 +101,15 @@ public:
 
 class Brac;
 
+// callback when inbound connection comming
+typedef int (* InboundConnectionCB)(int sockfd, void * userp);
+
+/**
+ * Bra Daemon class
+ */
 class Brad{
 public:
-	explicit Brad(unsigned short port, BMEventCB cb, void * userp);
+	explicit Brad(unsigned short port, InboundConnectionCB cb, void * userp);
 	~Brad();
 public:
 	bool Startup();
@@ -114,13 +120,16 @@ private:
 	int servfd_;
 };
 
-
+/**
+ * Bra Connection class
+ */
 class Brac{
 public:
-	Brac();
+	Brac(int sockfd, bool fInbound);
 	~Brac();
 public:
 	bool SendMsg(const std::string & request, RTxProgressCB cb, void * userp);
 private:
 	int sockfd_;
+	bool inbound_;
 };

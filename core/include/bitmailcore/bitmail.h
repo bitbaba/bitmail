@@ -17,6 +17,8 @@ class CMailClient;
 class CX509Cert;
 struct BMEventHead;
 class HttpBrad;
+class Brac;
+class Brad;
 
 enum BMError{
     bmOk             =     0,
@@ -108,8 +110,11 @@ class BitMail
 {
 public:
     BitMail(ILockFactory * lock = NULL, IRTxFactory * net = NULL);
+
     ~BitMail();
+
     unsigned int GetVersion() const;
+
 public:
     // Event Callback
     int OnPollEvent( PollEventCB cb, void * userp);
@@ -144,18 +149,6 @@ public:
     void SetProxyPassword(const std::string & password);
 
     std::string GetProxyPassword() const;
-
-    bool SetBradPort(unsigned short port);
-
-    bool StartBrad();
-
-    unsigned short GetBradPort() const;
-
-    bool SetBradExtUrl(const std::string & exturl);
-
-    std::string GetBradExtUrl() const;
-
-    bool ShutdownBrad();
 
     /*UPNP feature should be external utility, e.g. forked from bittorrent*/
 
@@ -238,16 +231,33 @@ public:
 
     std::string GetFriendID(const std::string & email) const;
 
-    // Friend brad config
+    // Brad
+    bool SetBradPort(unsigned short port);
+
+	unsigned short GetBradPort() const;
+
+	bool StartBrad();
+
+	bool ShutdownBrad();
+
+	/**
+	 * Call this poll to check alive and data event of all bra connections.
+	 * Caller may call this poll in another thread,
+	 * please note thread-safety.
+	 */
+	bool PollBraConnections(void);
+
+	bool SetBradExtUrl(const std::string & exturl);
+
+	std::string GetBradExtUrl() const;
+
+	void MapBradExtPort(MapCallback cb, void * userp);
+
+	bool IsBradMapped() const;
+
+	void SetBradMapped(bool fMapped);
+
     bool SetFriendBrad(const std::string & email, const std::string & exturl);
-
-    void MapBradExtPort(MapCallback cb, void * userp);
-
-    void RemoveBradExtPort(MapCallback cb, void * userp);
-
-    bool IsBradMapped() const;
-
-    void SetBradMapped(bool fMapped);
 
     std::string GetFriendBradExtUrl(const std::string & email) const;
 
@@ -328,11 +338,13 @@ protected:
     // Friends brad config
     std::map<std::string, std::string> m_brads;
 
-    // Bra daemon instance
+    // Http Bra daemon instance (may deprecate by Brad)
     HttpBrad           * m_brad;
     unsigned short       m_bradPort;
     std::string          m_bradExtUrl;
     bool                 m_bradmapped;
+    // Tcp version of BRA Connections
+    std::map<std::string, std::vector<Brac *> > m_bracs;
 
     // Lock
     ILock * m_lock1;
@@ -353,6 +365,11 @@ protected:
     static int EmailHandler(BMEventHead * h, void * userp);
 };
 
+/**
+ ******************************************************************************
+ * Following definitions should be in a internal Header for shared reference
+ ******************************************************************************
+ */
 
 typedef unsigned int MessageNo;
 
@@ -386,6 +403,10 @@ struct BMEventMessage{
 
 typedef int (* BMEventCB)(BMEventHead * h, void * userp);
 
-
+/**
+ ******************************************************************************
+ * End of Internal definitions
+ ******************************************************************************
+ */
 
 #endif // BitMail_H
