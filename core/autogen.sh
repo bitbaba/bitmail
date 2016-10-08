@@ -13,7 +13,7 @@ aclocal -I m4 \
 && ./configure --prefix="$BitmailOutHome" \
     --enable-static=yes  \
     --enable-shared=no \
-    CXXFLAGS="-g -O2 -fPIC -fpic " \
+    CXXFLAGS="-g -O0 -fPIC -fpic " \
     CPPFLAGS="-I$BitmailOutHome/include" \
     LDFLAGS=" -L$BitmailOutHome/lib" \
 && make && make install && make clean
