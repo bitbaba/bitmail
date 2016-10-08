@@ -158,11 +158,11 @@ bool BitMail::SetBradPort(unsigned short port)
 
 bool BitMail::StartBrad()
 {
-    m_brad = new HttpBrad(m_bradPort, EmailHandler, this);
+    m_brad = new Brad(m_bradPort, InboundHandler, this);
     if (m_brad == NULL){
         return false;
     }
-    if ( !m_brad->Startup()){
+    if (!m_brad->Startup()){
         delete m_brad;
         m_brad = NULL;
         return false;
@@ -354,26 +354,8 @@ int BitMail::SendMsg(const std::vector<std::string> & friends
         }
     }
 
-    std::vector<std::string> vecCollector;
-    for (std::vector<std::string>::const_iterator it = friends.begin()
-        ; it != friends.end()
-        ; ++it)
-    {
-        std::string sBradExtUrl = GetFriendBradExtUrl(*it);
-        if (!sBradExtUrl.empty()){
-
-            if (bmOk == HttpBrac::SendMsg(sBradExtUrl, sEncryptedMsg, cb, userp))
-            {
-                continue;
-            }
-
-        }
-        vecCollector.push_back(*it);
-    }
-
-    if (vecCollector.size()
-            && m_mc->SendMsg( m_profile->GetEmail()
-                            , vecCollector
+    if (m_mc->SendMsg( m_profile->GetEmail()
+                            , friends
                             , sEncryptedMsg
                             , cb
                             , userp)){
@@ -548,10 +530,16 @@ std::string BitMail::GetFriendID(const std::string & e) const
 /**
  * Friend's brad config
  */
-bool BitMail::SetFriendBrad(const std::string & email, const std::string & exturl)
+bool BitMail::SetFriendBradExtUrl(const std::string & email, const std::string & exturl)
 {
     m_brads[email] = exturl;
     return true;
+}
+
+bool BitMail::HasBrac(const std::string & email) const
+{
+	// Trace m_bracs to check existence;
+	return false;
 }
 
 /**
@@ -1178,4 +1166,23 @@ int BitMail::DecMsg(const std::string & smime
     return bmOk;
 }
 
+int BitMail::InboundHandler(int sockfd, void * userp)
+{
+	BitMail * self = (BitMail *)userp;
+	if (self == NULL){
+		return bmInvalidParam;
+	}
+	Brac * brac = new Brac(sockfd);
+	if (brac == NULL){
+		return bmOutMem;
+	}
 
+	self->AddBrac(brac);
+
+	return bmOk;
+}
+
+bool BitMail::AddBrac(Brac * brac)
+{
+	m_bracs.push_back(brac);
+}

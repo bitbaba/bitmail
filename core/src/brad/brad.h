@@ -139,6 +139,8 @@ public:
 	int sockfd() const;
 	bool Send(RTxProgressCB cb, void * userp);
 	bool Recv(RTxProgressCB cb, void * userp);
+	void email(const std::string & nm);
+	std::string email(void) const;
 private:
 	bool MakeNonBlocking();
 private:
@@ -151,4 +153,5 @@ private:
 	std::string rxbuf_;
 	std::vector<std::string> txq_;
 	std::vector<std::string> rxq_;
+	std::string m_email;
 };

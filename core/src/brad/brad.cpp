@@ -296,11 +296,13 @@ bool Brad::Shutdown()
 
 Brac::Brac(const std::string & url)
 	: sockfd_(CURL_SOCKET_BAD)
+	, curl_(NULL)
 	, inbound_(false)
 	, txoffset_(0)
 	, rxoffset_(0)
 	, txbuf_("")
 	, rxbuf_("")
+	, m_email("")
 {
 	CURLcode res;
 	curl_ = curl_easy_init();
@@ -325,11 +327,13 @@ Brac::Brac(const std::string & url)
 
 Brac::Brac(int sockfd)
 	: sockfd_(sockfd)
+	, curl_(NULL)
 	, inbound_(true)
 	, txoffset_(0)
 	, rxoffset_(0)
 	, txbuf_("")
 	, rxbuf_("")
+	, m_email("")
 {
 	if (sockfd_ != CURL_SOCKET_BAD){
 		MakeNonBlocking();
@@ -379,6 +383,15 @@ bool Brac::MakeNonBlocking()
 #endif
 }
 
+void Brac::email(const std::string & email)
+{
+	m_email = email;
+}
+
+std::string Brac::email(void) const
+{
+	return m_email;
+}
 
 
 

@@ -16,7 +16,6 @@
 class CMailClient;
 class CX509Cert;
 struct BMEventHead;
-class HttpBrad;
 class Brac;
 class Brad;
 
@@ -103,8 +102,6 @@ public:
 	virtual ITx * CreateTx() = 0;
 	virtual void FreeTx(ITx * itx) = 0;
 };
-
-typedef bool (* MapCallback)(unsigned short iport, const char * exturl, void * userp);
 
 class BitMail
 {
@@ -251,9 +248,11 @@ public:
 
 	bool MapBradExtPort();
 
-    bool SetFriendBrad(const std::string & email, const std::string & exturl);
+    bool SetFriendBradExtUrl(const std::string & email, const std::string & exturl);
 
     std::string GetFriendBradExtUrl(const std::string & email) const;
+
+    bool HasBrac(const std::string & email) const;
 
     // Friends
     int AddFriend(const std::string & email, const std::string & certpem);
@@ -333,11 +332,11 @@ protected:
     std::map<std::string, std::string> m_brads;
 
     // Http Bra daemon instance (may deprecate by Brad)
-    HttpBrad           * m_brad;
+    Brad               * m_brad;
     unsigned short       m_bradPort;
     std::string          m_bradExtUrl;
-    // Tcp version of BRA Connections
-    std::map<std::string, std::vector<Brac *> > m_bracs;
+    // BRA Connections
+    std::vector<Brac *>  m_bracs;
 
     // Lock
     ILock * m_lock1;
@@ -356,6 +355,10 @@ public:
 
 protected:
     static int EmailHandler(BMEventHead * h, void * userp);
+    static int InboundHandler(int sockfd, void * userp);
+
+private:
+    bool AddBrac(Brac * brac);
 };
 
 /**
