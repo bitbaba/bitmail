@@ -559,7 +559,7 @@ bool BitMail::SetFriendBrad(const std::string & email, const std::string & extur
 bool BitMail::MapBradExtPort()
 {
     char iport[16] = "";
-    itoa(m_bradPort, iport, 10);
+    sprintf(iport, "%d", m_bradPort);
 
     int error = 0;
     struct UPNPDev * devlist = upnpDiscover(2000
