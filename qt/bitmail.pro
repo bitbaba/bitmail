@@ -26,7 +26,8 @@ HEADERS       = mainwindow.h \
                 rssdialog.h \
                 netoptdialog.h \
                 assistantdialog.h \
-                newgroupdialog.h
+                newgroupdialog.h \
+    upnpthread.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
@@ -45,7 +46,8 @@ SOURCES       = main.cpp \
                 rssdialog.cpp \
                 netoptdialog.cpp \
                 assistantdialog.cpp \
-                newgroupdialog.cpp
+                newgroupdialog.cpp \
+    upnpthread.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
@@ -103,12 +105,21 @@ win32: LIBS += -L$$PWD/../out/lib/ -lmicrohttpd
 INCLUDEPATH += $$PWD/../out/include
 DEPENDPATH += $$PWD/../out/include
 
+
+win32: LIBS += -L$$PWD/../out/lib/ -lminiupnpc
+
+INCLUDEPATH += $$PWD/../out/include
+DEPENDPATH += $$PWD/../out/include
+
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/miniupnpc.lib
+else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libminiupnpc.a
+
+
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/microhttpd.lib
 else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libmicrohttpd.a
 
-win32: LIBS += -lws2_32 -lgdi32
+win32: LIBS += -lws2_32 -lgdi32 -liphlpapi
 
 DISTFILES += \
     bitmail.rc
-
 

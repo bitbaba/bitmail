@@ -66,6 +66,7 @@ class BitMail;
 class PollThread;
 class RxThread;
 class TxThread;
+class UpnpThread;
 class ShutdownDialog;
 
 enum nodeType{
@@ -109,6 +110,7 @@ public slots:
     void onRxProgress(const QString & info);
     void onTxDone();
     void onTxProgress(const QString & info);
+    void onUpnpThDone(bool fOk, const QString & extUrl);
 
     void onTreeBuddyDoubleClicked(QTreeWidgetItem * actItem,int col);
     void onInviteBtnClicked();
@@ -125,7 +127,6 @@ public slots:
     void onActNewGroup();
     void onActRemoveGroup();
     void onActNetwork(bool fChecked);
-    void onMapProcFinished(int,QProcess::ExitStatus);
 private:
     bool getCurrentRecipKey(MsgType & mt, QString & qsKey);
     bool getRecipList(MsgType, const QString & qsKey, QStringList & reciplist);
@@ -152,10 +153,7 @@ private:
     QString formatRTXMessage(const RTXMessage & rtxMsg);
     void ViewCert(const QString & e);
     void ViewGroup(const QString & gid);
-    static bool UPnPCallback(unsigned short, const char * exturl, void * userp);
-public:
-    void StartUpnpThread(const QString & prog, const QStringList & arg, const QString & output, const QString & errput);
-    void ShutdownUpnpThread();
+
 private:
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;
@@ -200,7 +198,8 @@ private:
 
     RxThread *m_rxth;
     TxThread *m_txth;
-    QProcess *m_mapproc;
+    UpnpThread * m_upnpth;
+
     ShutdownDialog *m_shutdownDialog;
 
     // histroy messages queue

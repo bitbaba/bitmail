@@ -49,7 +49,6 @@ public:
     unsigned short BradPort() const;
 
     void BradExtUrl(const QString & exturl);
-    QString BradExtUrl() const;
 
     void SetProxyIP(const QString & ip);
     QString GetProxyIP() const;

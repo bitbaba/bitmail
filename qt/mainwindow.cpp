@@ -53,6 +53,7 @@
 #include "pollthread.h"
 #include "rxthread.h"
 #include "txthread.h"
+#include "upnpthread.h"
 #include "optiondialog.h"
 #include "logindialog.h"
 #include "netoptdialog.h"
@@ -76,7 +77,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     : m_bitmail(bitmail)
     , m_rxth(NULL)
     , m_txth(NULL)
-    , m_mapproc(NULL)
+    , m_upnpth(NULL)
     , m_shutdownDialog(NULL)
 //! [1] //! [2]
 {
@@ -219,29 +220,29 @@ MainWindow::~MainWindow()
 }
 void MainWindow::startupNetwork()
 {
-    m_rxth = (new RxThread(m_bitmail));
+    m_rxth = new RxThread(m_bitmail);
     connect(m_rxth, SIGNAL(gotMessage(QString, QString, QString,QString))
             , this, SLOT(onNewMessage(QString, QString, QString,QString)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
     connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
     m_rxth->start();
 
-    m_txth = (new TxThread(m_bitmail));
+    m_txth = new TxThread(m_bitmail);
     connect(this, SIGNAL(readyToSend(QString,QStringList,QString))
             , m_txth, SLOT(onSendMessage(QString,QStringList,QString)));
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
     connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
     m_txth->start();
 
-    m_bitmail->StartBrad();
+    m_upnpth = new UpnpThread(m_bitmail);
+    connect(m_upnpth, SIGNAL(done(bool,QString)), this, SLOT(onUpnpThDone(bool, QString)));
+    m_upnpth->start();
 
-    m_bitmail->MapBradExtPort(UPnPCallback, this);
+    m_bitmail->StartBrad();
 }
 void MainWindow::shutdownNetwork()
 {
     m_bitmail->ShutdownBrad();
-
-    ShutdownUpnpThread();
 
     if (m_rxth ){
         m_rxth->stop();
@@ -249,12 +250,11 @@ void MainWindow::shutdownNetwork()
     if (m_txth) {
         m_txth->stop();
     }
-
 }
 void MainWindow::onRxDone()
 {
     m_rxth->wait(1000); delete m_rxth; m_rxth = NULL;
-    if (!m_rxth && !m_txth && m_shutdownDialog){
+    if (!m_rxth && !m_txth && !m_upnpth && m_shutdownDialog){
         m_shutdownDialog->done(0);
     }
 }
@@ -274,19 +274,34 @@ void MainWindow::onTxProgress(const QString &info)
 void MainWindow::onTxDone()
 {
     m_txth->wait(1000); delete m_txth; m_txth = NULL;
-    if (!m_rxth && !m_txth && m_shutdownDialog){
+    if (!m_rxth && !m_txth && !m_upnpth && m_shutdownDialog){
         m_shutdownDialog->done(0);
     }
 }
+
+void MainWindow::onUpnpThDone(bool fOk, const QString & extUrl)
+{
+    if (fOk){
+        qDebug() << "Upnp Mapping Ok, extUrl: " << extUrl;
+    }else{
+        qDebug() << "Upnp Mapping Failed";
+    }
+    delete m_upnpth;
+    m_upnpth = NULL;
+    if (!m_rxth && !m_txth && !m_upnpth && m_shutdownDialog){
+        m_shutdownDialog->done(0);
+    }
+}
+
 //! [3]
 void MainWindow::closeEvent(QCloseEvent *event)
 //! [3] //! [4]
 {
     shutdownNetwork();
     /**
-    * Model here3
+    * Model here
     */
-    if (m_rxth || m_txth){
+    if (m_rxth || m_txth || m_upnpth){
         m_shutdownDialog = new ShutdownDialog(this);
         m_shutdownDialog->exec();
     }
@@ -585,7 +600,6 @@ void MainWindow::onNetConfig()
 
     do {
         m_bitmail->SetBradPort(optDialog.BradPort());
-        m_bitmail->SetBradExtUrl(optDialog.BradExtUrl().toStdString());
     }while(0);
 
     return ;
@@ -630,7 +644,7 @@ void MainWindow::onRssBtnClicked()
     RTXMessage rtxMsg;
     BMMessage bmMsg;
     bmMsg.msgType(mt_subscribe);
-    if (m_bitmail->IsBradMapped()){
+    if (true){
         bmMsg.bradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
     }
     SubMessage subMsg;
@@ -948,7 +962,7 @@ void MainWindow::onSendBtnClicked()
     RTXMessage rtxMsg;
     BMMessage bmMsg;
     bmMsg.msgType(mt);
-    if (m_bitmail->IsBradMapped()){
+    if (true){
         bmMsg.bradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
     }
     if (mt == mt_peer){
@@ -1020,7 +1034,7 @@ void MainWindow::onInviteBtnClicked()
     RTXMessage rtxMsg;
     BMMessage bmMsg;
     bmMsg.msgType(mt_peer);
-    if (m_bitmail->IsBradMapped()){
+    if (true){
         bmMsg.bradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
     }
     PeerMessage peerMsg;
@@ -1406,156 +1420,3 @@ void MainWindow::onActNetwork(bool fChecked)
         shutdownNetwork();
     }
 }
-
-void MainWindow::onMapProcFinished(int,QProcess::ExitStatus)
-{
-    qDebug() << "MainWindow: upnp map proc finish";
-    if (m_mapproc){
-        QString qsErrput = m_mapproc->readAllStandardError();
-        //TODO: Analyze upnpc-static.exe output
-        if (qsErrput.contains("No IGD UPnP")){
-            qDebug() << "MainWindow: upnp fail";
-            m_bitmail->SetBradMapped(false);
-        }else{
-            qDebug() << "MainWindow:: upnp Ok";
-            m_bitmail->SetBradMapped(true);
-        }
-    }
-    return ;
-}
-
-void MainWindow::StartUpnpThread( const QString & program
-                                 , const QStringList & arglist
-                                 , const QString & output
-                                 , const QString & errput)
-{
-    if (m_mapproc == NULL){
-        qDebug() << "MainWindow: Create upnp map proc";
-        m_mapproc = new QProcess();
-    }
-
-    if (0){
-        m_mapproc->setStandardOutputFile(output);
-        m_mapproc->setStandardErrorFile(errput);
-    }
-
-    connect(m_mapproc, SIGNAL(finished(int,QProcess::ExitStatus))
-            , this, SLOT(onMapProcFinished(int,QProcess::ExitStatus)));
-
-    qDebug() << "MainWindow: Start upnp map proc";
-    m_mapproc->start(program, arglist);
-}
-
-void MainWindow::ShutdownUpnpThread()
-{
-    if (m_mapproc){
-        qDebug() << "MainWindow: Kill upnp map proc";
-        m_mapproc->kill();
-        qDebug() << "MainWindow: Wait upnp map proc";
-        m_mapproc->waitForFinished(1000);
-        qDebug() << "MainWindow: Destroy upnp map proc";
-        delete m_mapproc;
-        m_mapproc = NULL;
-    }
-    qDebug() << "MainWindow: Shutdown upnp map proc";
-}
-
-bool MainWindow::UPnPCallback(unsigned short iport, const char * exturl, void * userp)
-{
-    MainWindow * self = (MainWindow *)userp;
-    (void )self;
-
-    if (!iport){
-        return false;
-    }
-
-    if (!exturl || !*exturl){
-        return false;
-    }
-
-    QString lanaddr;
-    foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
-        if (address.protocol() == QAbstractSocket::IPv4Protocol
-                && !address.isLoopback()
-                && (address.isInSubnet(QHostAddress::parseSubnet("192.168.0.0/16"))
-                    ||  address.isInSubnet(QHostAddress::parseSubnet("172.16.0.0/12"))
-                    ||  address.isInSubnet(QHostAddress::parseSubnet("10.0.0.0/8")))
-           ){
-             lanaddr = address.toString();
-             break; // take only one
-        }
-    }
-    if (lanaddr.isEmpty()){
-        return false;
-    }
-
-    qDebug() << "Lan Address: " << lanaddr;
-
-    QUrl url = QUrl(QString::fromStdString(exturl));
-    if (!url.isValid()){
-        return false;
-    }
-
-    qDebug() << "Ext Url: " << url.toString();
-
-    QString exthost = url.host(); // no DNS lookup, direct ip address.
-    QHostAddress extaddr = QHostAddress(exthost);
-    if (extaddr.isNull()){
-        return false;
-    }
-    if (extaddr.isLoopback()){
-        //return false;
-    }
-    if (extaddr.protocol() != QAbstractSocket::IPv4Protocol ){
-        return false;
-    }
-    if (extaddr.isInSubnet(QHostAddress::parseSubnet("10.0.0.0/8"))){
-        return false;
-    }
-    if (extaddr.isInSubnet(QHostAddress::parseSubnet("172.16.0.0/12"))){
-        return false;
-    }
-    if (extaddr.isInSubnet(QHostAddress::parseSubnet("192.168.0.0/16"))){
-        return false;
-    }
-    if (extaddr.isInSubnet(QHostAddress::parseSubnet("169.254.0.0/16"))){
-        return false;
-    }
-    int extport = url.port();
-    if (extport <= 0){
-        return false;
-    }
-
-    QString program = QApplication::applicationDirPath();
-
-#ifdef WIN32
-    program += "/upnpc-static.exe";
-#else
-    program += "/upnpc-static";
-#endif
-
-    QString output = BMQTApplication::GetDataHome();
-    output += "/upnpc-static.log";
-
-    QString errput = BMQTApplication::GetDataHome();
-    errput += "/upnpc-static.err";
-
-    QStringList qslArgs;
-    if (true){
-        qslArgs << "-a"
-                << lanaddr
-                << QString("%1").arg(iport)
-                << QString("%1").arg(extport)
-                << "tcp";
-    }else{
-        qslArgs << "-d"
-                << QString("%1").arg(extport)
-                << "tcp";
-    }
-
-    if (self){
-        self->StartUpnpThread(program, qslArgs, output, errput);
-    }
-    return true;
-}
-

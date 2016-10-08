@@ -26,7 +26,7 @@ NetOptionDialog::NetOptionDialog(QWidget *parent) :
         //m_leBradPort->setInputMask("00000");
 
         m_leBradExtUrl     = findChild<QLineEdit*>("leBradExtUrl");
-        //m_leBradExtIp->setInputMask("000.000.000.000");
+        m_leBradExtUrl->setReadOnly(true);
     }while(0); // Proxy settings
 
     do {
@@ -132,11 +132,6 @@ unsigned short NetOptionDialog::BradPort() const
 void NetOptionDialog::BradExtUrl(const QString & exturl)
 {
     m_leBradExtUrl->setText(exturl);
-}
-
-QString NetOptionDialog::BradExtUrl() const
-{
-    return m_leBradExtUrl->text();
 }
 
 void NetOptionDialog::SetProxyIP(const QString & ip)
