@@ -135,8 +135,20 @@ public:
 	explicit Brac(int sockfd);
 	~Brac();
 public:
-	bool SendMsg(const std::string & request, RTxProgressCB cb, void * userp);
+	bool IsValidSocket() const;
+	int sockfd() const;
+	bool Send(RTxProgressCB cb, void * userp);
+	bool Recv(RTxProgressCB cb, void * userp);
 private:
+	bool MakeNonBlocking();
+private:
+	void * curl_;
 	int sockfd_;
 	bool inbound_;
+	unsigned int txoffset_;
+	std::string txbuf_;
+	unsigned int rxoffset_;
+	std::string rxbuf_;
+	std::vector<std::string> txq_;
+	std::vector<std::string> rxq_;
 };

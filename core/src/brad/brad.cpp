@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sstream>
 #include <curl/curl.h>
 #include <microhttpd.h>
+#include <fcntl.h>
 
 #define POSTBUFFERSIZE  512
 #define MAXNAMESIZE     20
@@ -267,3 +268,118 @@ bool HttpBrac::SendMsg(const std::string & url, const std::string & request, RTx
 
     return bmOk;
 }
+
+Brad::Brad(unsigned short port, InboundConnectionCB cb, void * userp)
+{
+
+}
+
+Brad::~Brad()
+{
+
+}
+
+bool Brad::Startup()
+{
+	return true;
+}
+
+unsigned short Brad::GetPort() const
+{
+	return port_;
+}
+
+bool Brad::Shutdown()
+{
+	return true;
+}
+
+Brac::Brac(const std::string & url)
+	: sockfd_(CURL_SOCKET_BAD)
+	, inbound_(false)
+	, txoffset_(0)
+	, rxoffset_(0)
+	, txbuf_("")
+	, rxbuf_("")
+{
+	CURLcode res;
+	curl_ = curl_easy_init();
+	if (curl_){
+		curl_easy_setopt((CURL*)curl_, CURLOPT_URL, url.c_str());
+		curl_easy_setopt((CURL*)curl_, CURLOPT_CONNECT_ONLY, 1l);
+		res = curl_easy_perform((CURL *)curl_);
+		if (res == CURLE_OK){
+			curl_socket_t sockfd = CURL_SOCKET_BAD;
+			res = curl_easy_getinfo((CURL *)curl_
+					, CURLINFO_ACTIVESOCKET
+					, &sockfd);
+			if (res == CURLE_OK){
+				sockfd_ = (int)sockfd;
+			}
+		}
+	}
+	if (CURL_SOCKET_BAD != sockfd_){
+		MakeNonBlocking();
+	}
+}
+
+Brac::Brac(int sockfd)
+	: sockfd_(sockfd)
+	, inbound_(true)
+	, txoffset_(0)
+	, rxoffset_(0)
+	, txbuf_("")
+	, rxbuf_("")
+{
+	if (sockfd_ != CURL_SOCKET_BAD){
+		MakeNonBlocking();
+	}
+}
+
+Brac::~Brac()
+{
+	if (curl_){
+		curl_easy_cleanup((CURL*)curl_);
+		curl_ = NULL;
+	}
+}
+
+bool Brac::IsValidSocket() const
+{
+	return (sockfd_ != CURL_SOCKET_BAD);
+}
+
+int Brac::sockfd() const
+{
+	return sockfd_;
+}
+
+bool Brac::Send(RTxProgressCB cb, void * userp)
+{
+	return true;
+}
+
+bool Brac::Recv(RTxProgressCB cb, void * userp)
+{
+	return true;
+}
+
+bool Brac::MakeNonBlocking()
+{
+#ifdef WIN32
+   unsigned long mode = 1;
+   return (ioctlsocket(sockfd_, FIONBIO, &mode) == 0) ? true : false;
+#else
+   int flags = fcntl(sockfd_, F_GETFL, 0);
+   if (flags < 0) {
+	   return false;
+   }
+   flags = (flags|O_NONBLOCK);
+   return (fcntl(sockfd_, F_SETFL, flags) == 0) ? true : false;
+#endif
+}
+
+
+
+
+

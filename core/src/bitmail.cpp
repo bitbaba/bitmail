@@ -175,6 +175,10 @@ unsigned short BitMail::GetBradPort() const
     return m_bradPort;
 }
 
+bool BitMail::PollBraConnections(unsigned int timeoutMs){
+	return true;
+}
+
 std::string BitMail::GetBradExtUrl() const
 {
     return m_bradExtUrl;

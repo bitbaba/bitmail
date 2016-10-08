@@ -245,7 +245,7 @@ public:
 	 * Caller may call this poll in another thread,
 	 * please note thread-safety.
 	 */
-	bool PollBraConnections(void);
+	bool PollBraConnections(unsigned int timeoutMs);
 
 	std::string GetBradExtUrl() const;
 
