@@ -247,15 +247,9 @@ public:
 	 */
 	bool PollBraConnections(void);
 
-	bool SetBradExtUrl(const std::string & exturl);
-
 	std::string GetBradExtUrl() const;
 
-	void MapBradExtPort(MapCallback cb, void * userp);
-
-	bool IsBradMapped() const;
-
-	void SetBradMapped(bool fMapped);
+	bool MapBradExtPort();
 
     bool SetFriendBrad(const std::string & email, const std::string & exturl);
 
@@ -342,7 +336,6 @@ protected:
     HttpBrad           * m_brad;
     unsigned short       m_bradPort;
     std::string          m_bradExtUrl;
-    bool                 m_bradmapped;
     // Tcp version of BRA Connections
     std::map<std::string, std::vector<Brac *> > m_bracs;
 

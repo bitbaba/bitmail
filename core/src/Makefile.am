@@ -11,6 +11,6 @@ libbitmailcore_la_SOURCES= \
 	json/json_writer.cpp \
 	brad/brad.cpp
 
-libbitmailcore_la_CXXFLAGS  = -DCURL_STATICLIB 
+libbitmailcore_la_CXXFLAGS  = -DCURL_STATICLIB -DMINIUPNP_STATICLIB
 libbitmailcore_la_LDFLAGS   = -no-undefined -export-all-symbols -compat-implib #-out-implib libbitmailcore.dll.a
-libbitmailcore_la_LIBADD    = -lcurl -lssl -lcrypto -lmicrohttpd
+libbitmailcore_la_LIBADD    = -lcurl -lssl -lcrypto -lmicrohttpd -lminiupnpc

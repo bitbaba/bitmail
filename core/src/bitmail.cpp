@@ -28,13 +28,18 @@
 
 #include <string.h>
 
+#include <miniupnpc/miniwget.h>
+#include <miniupnpc/miniupnpc.h>
+#include <miniupnpc/upnpcommands.h>
+#include <miniupnpc/upnperrors.h>
+
 
 BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
 : m_onPollEvent(NULL), m_onPollEventParam(NULL)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
 , m_mc(NULL)
 , m_brad(NULL)
-, m_bradPort(10086), m_bradExtUrl(""), m_bradmapped(false)
+, m_bradPort(10086), m_bradExtUrl("")
 , m_rx(NULL), m_tx(NULL)
 , m_lock1(NULL), m_lock2(NULL), m_lock3(NULL), m_lock4(NULL)
 {
@@ -44,17 +49,17 @@ BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
     ERR_load_crypto_strings();
 
     if (lock){
-		m_lock1 = lock->CreateLock();
-		m_lock2 = lock->CreateLock();
-		m_lock3 = lock->CreateLock();
-		m_lock4 = lock->CreateLock();
-	    m_lockCraft = lock;
+        m_lock1 = lock->CreateLock();
+        m_lock2 = lock->CreateLock();
+        m_lock3 = lock->CreateLock();
+        m_lock4 = lock->CreateLock();
+        m_lockCraft = lock;
     }
 
     if (net){
-		m_tx = net->CreateTx();
-		m_rx = net->CreateRx();
-		m_netCraft = net;
+        m_tx = net->CreateTx();
+        m_rx = net->CreateRx();
+        m_netCraft = net;
     }
 
     // Create a email object
@@ -66,43 +71,43 @@ BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
 
 BitMail::~BitMail()
 {
-	if (m_profile != NULL){
-		delete m_profile; m_profile = NULL;
-	}
+    if (m_profile != NULL){
+        delete m_profile; m_profile = NULL;
+    }
     if (m_mc != NULL){
         delete (m_mc); m_mc = NULL;
     }
     if (m_rx){
-    	m_netCraft->FreeRx(m_rx);
-    	m_rx = NULL;
+        m_netCraft->FreeRx(m_rx);
+        m_rx = NULL;
     }
     if (m_tx){
-    	m_netCraft->FreeTx(m_tx);
-    	m_tx = NULL;
+        m_netCraft->FreeTx(m_tx);
+        m_tx = NULL;
     }
     if (m_lock1){
-    	m_lockCraft->FreeLock(m_lock1);
-    	m_lock1 = NULL;
+        m_lockCraft->FreeLock(m_lock1);
+        m_lock1 = NULL;
     }
     if (m_lock2){
-    	m_lockCraft->FreeLock(m_lock2);
-    	m_lock2 = NULL;
+        m_lockCraft->FreeLock(m_lock2);
+        m_lock2 = NULL;
     }
     if (m_lock3){
-    	m_lockCraft->FreeLock(m_lock3);
-    	m_lock3 = NULL;
+        m_lockCraft->FreeLock(m_lock3);
+        m_lock3 = NULL;
     }
     if (m_lock4){
-    	m_lockCraft->FreeLock(m_lock4);
-    	m_lock4 = NULL;
+        m_lockCraft->FreeLock(m_lock4);
+        m_lock4 = NULL;
     }
 }
 
 unsigned int BitMail::GetVersion() const
 {
     return    (BMVER_MAJOR * 1000000)
-    		+ (BMVER_MINOR * 1000)
-			+ (BMVER_TINY);
+            + (BMVER_MINOR * 1000)
+            + (BMVER_TINY);
 }
 
 /**
@@ -147,47 +152,41 @@ int BitMail::InitNetwork( const std::string & txurl
 
 bool BitMail::SetBradPort(unsigned short port)
 {
-	m_bradPort = port;
-	return true;
+    m_bradPort = port;
+    return true;
 }
 
 bool BitMail::StartBrad()
 {
-	m_brad = new HttpBrad(m_bradPort, EmailHandler, this);
-	if (m_brad == NULL){
-		return false;
-	}
-	if ( !m_brad->Startup()){
-		delete m_brad;
-		m_brad = NULL;
-		return false;
-	}
-	return true;
+    m_brad = new HttpBrad(m_bradPort, EmailHandler, this);
+    if (m_brad == NULL){
+        return false;
+    }
+    if ( !m_brad->Startup()){
+        delete m_brad;
+        m_brad = NULL;
+        return false;
+    }
+    return true;
 }
 
 unsigned short BitMail::GetBradPort() const
 {
-	return m_bradPort;
-}
-
-bool BitMail::SetBradExtUrl(const std::string & exturl)
-{
-	m_bradExtUrl = exturl;
-	return true;
+    return m_bradPort;
 }
 
 std::string BitMail::GetBradExtUrl() const
 {
-	return m_bradExtUrl;
+    return m_bradExtUrl;
 }
 
 bool BitMail::ShutdownBrad()
 {
-	if (m_brad != NULL){
-		m_brad->Shutdown();
-		delete m_brad;
-		m_brad = NULL;
-	}
+    if (m_brad != NULL){
+        m_brad->Shutdown();
+        delete m_brad;
+        m_brad = NULL;
+    }
     return true;
 }
 
@@ -306,7 +305,7 @@ std::string BitMail::GetRxPassword() const
 }
 
 int BitMail::SendMsg(const std::vector<std::string> & friends
-		, const std::string & msg
+        , const std::string & msg
         , RTxProgressCB cb, void * userp)
 {
     if (msg.empty()){
@@ -335,9 +334,9 @@ int BitMail::SendMsg(const std::vector<std::string> & friends
             }
             vecTo.push_back(buddy);
         }else{
-        	// Degrade to signed-only message
-        	vecTo.clear();
-        	break;
+            // Degrade to signed-only message
+            vecTo.clear();
+            break;
         }
     }
 
@@ -353,23 +352,23 @@ int BitMail::SendMsg(const std::vector<std::string> & friends
 
     std::vector<std::string> vecCollector;
     for (std::vector<std::string>::const_iterator it = friends.begin()
-		; it != friends.end()
-		; ++it)
+        ; it != friends.end()
+        ; ++it)
     {
-    	std::string sBradExtUrl = GetFriendBradExtUrl(*it);
-    	if (!sBradExtUrl.empty()){
+        std::string sBradExtUrl = GetFriendBradExtUrl(*it);
+        if (!sBradExtUrl.empty()){
 
-    		if (bmOk == HttpBrac::SendMsg(sBradExtUrl, sEncryptedMsg, cb, userp))
-    		{
-    			continue;
-    		}
+            if (bmOk == HttpBrac::SendMsg(sBradExtUrl, sEncryptedMsg, cb, userp))
+            {
+                continue;
+            }
 
-    	}
-    	vecCollector.push_back(*it);
+        }
+        vecCollector.push_back(*it);
     }
 
     if (vecCollector.size()
-    		&& m_mc->SendMsg( m_profile->GetEmail()
+            && m_mc->SendMsg( m_profile->GetEmail()
                             , vecCollector
                             , sEncryptedMsg
                             , cb
@@ -547,34 +546,170 @@ std::string BitMail::GetFriendID(const std::string & e) const
  */
 bool BitMail::SetFriendBrad(const std::string & email, const std::string & exturl)
 {
-	m_brads[email] = exturl;
-	return true;
+    m_brads[email] = exturl;
+    return true;
 }
 
-void BitMail::MapBradExtPort(MapCallback cb, void * userp)
+/**
+ * Function:
+ *   Map internal port to any available IGD port.
+ *   if successful, setup m_bradExtUrl to `http://extip:extport/';
+ *   otherwise m_bradExtUrl is empty.
+ */
+bool BitMail::MapBradExtPort()
 {
-	if (cb){
-		cb(m_bradPort, m_bradExtUrl.c_str(), userp);
-	}
-	return ;
+    char iport[16] = "";
+    itoa(m_bradPort, iport, 10);
+
+    int error = 0;
+    struct UPNPDev * devlist = upnpDiscover(2000
+                                          , NULL/*multicast iterface*/
+                                          , NULL/*mini ssdpd path*/
+                                          , UPNP_LOCAL_PORT_ANY
+                                          , 0 /*ipv6*/
+                                          , 2 /*ttl*/
+                                          , &error);
+    if (devlist == NULL){
+    	return false;
+    }
+
+    struct UPNPUrls urls;
+    struct IGDdatas data;
+    char lanaddr[64] = "unset";    /* my ip address on the LAN */
+    int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+    (void)ret;
+
+    char externalIPAddress[40];
+    ret = UPNP_GetExternalIPAddress(urls.controlURL
+                                     , data.first.servicetype
+                                     , externalIPAddress);
+    if(ret != UPNPCOMMAND_SUCCESS){
+        printf("GetExternalIPAddress failed with code: %d.\n", ret);
+
+        FreeUPNPUrls(&urls);
+
+        if (devlist){
+            freeUPNPDevlist(devlist);
+            devlist = 0;
+        }
+        return false;
+    }
+
+    const char PROTO_TCP [4] = { 'T', 'C', 'P', 0};
+    char reservedPort[6] = "";
+    const char * eport = iport;
+    ret = UPNP_AddAnyPortMapping(urls.controlURL
+                           , data.first.servicetype
+                           , eport
+                           , iport
+                           , lanaddr
+                           , NULL/*description*/
+                           , PROTO_TCP
+                           , 0
+                           , "0"/*leaseDuration*/
+                           , reservedPort);
+
+    if(ret != UPNPCOMMAND_SUCCESS) {
+        printf("AddPortMapping(%s, %s, %s) failed with code %d (%s)\n"
+                , eport
+                , iport
+                , lanaddr
+                , ret
+                , strupnperror(ret));
+
+        FreeUPNPUrls(&urls);
+
+        if (devlist){
+            freeUPNPDevlist(devlist);
+            devlist = 0;
+        }
+        return false;
+    }
+    // setup the allocated port by IGD2
+    eport = reservedPort;
+
+    char intClient[40];
+    char intPort[6];
+    char duration[16];
+    ret = UPNP_GetSpecificPortMappingEntry(urls.controlURL
+                                        , data.first.servicetype
+                                        , eport
+                                        , PROTO_TCP
+                                        , NULL/*remoteHost*/
+                                        , intClient
+                                        , intPort
+                                        , NULL/*desc*/
+                                        , NULL/*enabled*/
+                                        , duration);
+    if(ret != UPNPCOMMAND_SUCCESS){
+        printf("GetSpecificPortMappingEntry() failed with code %d (%s)\n", ret, strupnperror(ret));
+
+        FreeUPNPUrls(&urls);
+
+        if (devlist){
+            freeUPNPDevlist(devlist);
+            devlist = 0;
+        }
+        return false;
+    }
+
+    FreeUPNPUrls(&urls);
+
+    if (devlist){
+        freeUPNPDevlist(devlist);
+        devlist = 0;
+    }
+
+    char extUrl [100] = "";
+    sprintf(extUrl, "http://%s:%s/", externalIPAddress, eport);
+
+    m_bradExtUrl = extUrl;
+
+    return true;
 }
 
-bool BitMail::IsBradMapped() const
+#if 0
+bool BitMail::RemoveUpnpBradRedirect(unsigned short extport)
 {
-	return m_bradmapped;
-}
+    char eport[16]; itoa(extport, eport, 10);
 
-void BitMail::SetBradMapped(bool fMapped)
-{
-	m_bradmapped = fMapped;
+    int error = 0;
+    struct UPNPDev * devlist = upnpDiscover(2000
+                                          , NULL/*multicast iterface*/
+                                          , NULL/*mini ssdpd path*/
+                                          , UPNP_LOCAL_PORT_ANY
+                                          , 0 /*ipv6*/
+                                          , 2 /*ttl*/
+                                          , &error);
+    struct UPNPDev * device;
+    struct UPNPUrls urls;
+    struct IGDdatas data;
+    char lanaddr[64] = "unset";    /* my ip address on the LAN */
+    int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+    (void)ret;
+
+    const char PROTO_TCP [4] = { 'T', 'C', 'P', 0};
+    int r = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, eport, PROTO_TCP, NULL/*remoteHost*/);
+    printf("UPNP_DeletePortMapping() returned : %d\n", r);
+
+    FreeUPNPUrls(&urls);
+
+    if (devlist){
+        freeUPNPDevlist(devlist);
+        devlist = 0;
+    }
+
+    return true;
 }
+#endif
+
 
 std::string BitMail::GetFriendBradExtUrl(const std::string & email) const
 {
-	if (m_brads.find(email) != m_brads.end()){
-		return m_brads.find(email)->second;
-	}
-	return "";
+    if (m_brads.find(email) != m_brads.end()){
+        return m_brads.find(email)->second;
+    }
+    return "";
 }
 
 /**
@@ -651,203 +786,203 @@ int BitMail::GetFriends(std::vector<std::string> & vecEmails) const
 
 std::string BitMail::GenerateGroupId() const
 {
-	std::stringstream sstrm;
-	sstrm << GetID() << "." << (unsigned int) time(NULL);
-	return sstrm.str();
+    std::stringstream sstrm;
+    sstrm << GetID() << "." << (unsigned int) time(NULL);
+    return sstrm.str();
 }
 
 int BitMail::AddGroup(const std::string & gid, const std::string & groupname)
 {
-	if (gid.empty()){
-		return bmInvalidParam;
-	}
-	if (groupname.empty()){
-		return bmInvalidParam;
-	}
-	// Overwrite current groupname, by force.
-	m_groupNames[gid] = groupname;
+    if (gid.empty()){
+        return bmInvalidParam;
+    }
+    if (groupname.empty()){
+        return bmInvalidParam;
+    }
+    // Overwrite current groupname, by force.
+    m_groupNames[gid] = groupname;
 
-	return bmOk;
+    return bmOk;
 }
 
 int BitMail::SetGroupCreator(const std::string & gid, const std::string & creator)
 {
-	m_groupCreators[gid] = creator;
-	return bmOk;
+    m_groupCreators[gid] = creator;
+    return bmOk;
 }
 
 std::string BitMail::GetGroupCreator(const std::string & gid) const
 {
-	if (m_groupCreators.find(gid) != m_groupCreators.end()){
-		return m_groupCreators.find(gid)->second;
-	}
-	return "";
+    if (m_groupCreators.find(gid) != m_groupCreators.end()){
+        return m_groupCreators.find(gid)->second;
+    }
+    return "";
 }
 
 int BitMail::GetGroupName(const std::string & gid, std::string & groupName) const
 {
-	if (m_groupNames.find(gid) == m_groupNames.end()){
-		return bmNoGrp;
-	}
-	std::map<std::string, std::string>::const_iterator it = m_groupNames.find(gid);
-	groupName = it->second;
-	return bmOk;
+    if (m_groupNames.find(gid) == m_groupNames.end()){
+        return bmNoGrp;
+    }
+    std::map<std::string, std::string>::const_iterator it = m_groupNames.find(gid);
+    groupName = it->second;
+    return bmOk;
 }
 
 int BitMail::RemoveGroup(const std::string & gid)
 {
-	if (gid.empty()){
-		return bmInvalidParam;
-	}
-	if (m_groups.end() == m_groups.find(gid)){
-		return bmOk;
-	}
-	m_groups.erase(gid);
-	return bmOk;
+    if (gid.empty()){
+        return bmInvalidParam;
+    }
+    if (m_groups.end() == m_groups.find(gid)){
+        return bmOk;
+    }
+    m_groups.erase(gid);
+    return bmOk;
 }
 
 bool BitMail::HasGroup(const std::string & gid) const
 {
-	if (gid.empty()){
-		return false;
-	}
-	return m_groups.find(gid) != m_groups.end();
+    if (gid.empty()){
+        return false;
+    }
+    return m_groups.find(gid) != m_groups.end();
 }
 
 int BitMail::GetGroups(std::vector<std::string> & groups) const
 {
-	for (std::map<std::string, std::string>::const_iterator it = m_groupNames.begin()
-			; it != m_groupNames.end()
-			; ++it){
-		groups.push_back(it->first);
-	}
-	return bmOk;
+    for (std::map<std::string, std::string>::const_iterator it = m_groupNames.begin()
+            ; it != m_groupNames.end()
+            ; ++it){
+        groups.push_back(it->first);
+    }
+    return bmOk;
 }
 
 int BitMail::GetGroupMembers(const std::string & gid
-							, std::vector<std::string> & members) const
+                            , std::vector<std::string> & members) const
 {
-	if (gid.empty()){
-		return bmInvalidParam;
-	}
-	std::map<std::string, std::vector<std::string> >::const_iterator it =
-			m_groups.find(gid);
-	if (it == m_groups.end()){
-		return bmNoGrp;
-	}
-	members = it->second;
-	return bmOk;
+    if (gid.empty()){
+        return bmInvalidParam;
+    }
+    std::map<std::string, std::vector<std::string> >::const_iterator it =
+            m_groups.find(gid);
+    if (it == m_groups.end()){
+        return bmNoGrp;
+    }
+    members = it->second;
+    return bmOk;
 }
 
 int BitMail::AddGroupMember(const std::string & gid
-							, const std::string & member)
+                            , const std::string & member)
 {
-	if (gid.empty() || member.empty()){
-		return bmInvalidParam;
-	}
-	std::map<std::string, std::vector<std::string> >::iterator it =
-			m_groups.find(gid);
-	if (it == m_groups.end()){
-		m_groups[gid] = std::vector<std::string>();
-		it = m_groups.find(gid);
-	}
-	std::vector<std::string> & members = it->second;
-	if (std::find(members.begin(), members.end(), member)
-		!= members.end()){
-		return bmMemberExist;
-	}
-	members.push_back(member);
-	return bmOk;
+    if (gid.empty() || member.empty()){
+        return bmInvalidParam;
+    }
+    std::map<std::string, std::vector<std::string> >::iterator it =
+            m_groups.find(gid);
+    if (it == m_groups.end()){
+        m_groups[gid] = std::vector<std::string>();
+        it = m_groups.find(gid);
+    }
+    std::vector<std::string> & members = it->second;
+    if (std::find(members.begin(), members.end(), member)
+        != members.end()){
+        return bmMemberExist;
+    }
+    members.push_back(member);
+    return bmOk;
 }
 
 bool BitMail::HasGroupMember(const std::string & gid
-							, const std::string & member) const
+                            , const std::string & member) const
 {
-	if (gid.empty() || member.empty()){
-		return bmInvalidParam;
-	}
-	std::map<std::string, std::vector<std::string> >::const_iterator it =
-			m_groups.find(gid);
-	if (it == m_groups.end()){
-		return false;
-	}
-	const std::vector<std::string> & members = it->second;
-	return (std::find(members.begin(), members.end(), member)
-			!= members.end());
+    if (gid.empty() || member.empty()){
+        return bmInvalidParam;
+    }
+    std::map<std::string, std::vector<std::string> >::const_iterator it =
+            m_groups.find(gid);
+    if (it == m_groups.end()){
+        return false;
+    }
+    const std::vector<std::string> & members = it->second;
+    return (std::find(members.begin(), members.end(), member)
+            != members.end());
 }
 
 int BitMail::RemoveGroupMember(const std::string & gid
-							, const std::string & member)
+                            , const std::string & member)
 {
-	if (gid.empty() || member.empty()){
-		return bmInvalidParam;
-	}
-	std::map<std::string, std::vector<std::string> >::iterator it =
-			m_groups.find(gid);
-	if (it == m_groups.end()){
-		return bmNoGrp;
-	}
-	std::vector<std::string> & members = it->second;
-	std::vector<std::string>::iterator it_member
-		= std::find(members.begin(), members.end(), member);
+    if (gid.empty() || member.empty()){
+        return bmInvalidParam;
+    }
+    std::map<std::string, std::vector<std::string> >::iterator it =
+            m_groups.find(gid);
+    if (it == m_groups.end()){
+        return bmNoGrp;
+    }
+    std::vector<std::string> & members = it->second;
+    std::vector<std::string>::iterator it_member
+        = std::find(members.begin(), members.end(), member);
 
-	if (it_member == members.end()){
-		return bmNoMember;
-	}
+    if (it_member == members.end()){
+        return bmNoMember;
+    }
 
-	members.erase(it_member);
-	return bmOk;
+    members.erase(it_member);
+    return bmOk;
 }
 
 int BitMail::ClearGroupMembers(const std::string & gid)
 {
-	m_groups[gid] = std::vector<std::string>();
-	return bmOk;
+    m_groups[gid] = std::vector<std::string>();
+    return bmOk;
 }
 
 // Subscribes
 int BitMail::Subscribe(const std::string & sub)
 {
-	if (sub.empty()){
-		return bmInvalidParam;
-	}
-	std::vector<std::string>::const_iterator it
-		= std::find(m_subscribes.begin(), m_subscribes.end(), sub);
+    if (sub.empty()){
+        return bmInvalidParam;
+    }
+    std::vector<std::string>::const_iterator it
+        = std::find(m_subscribes.begin(), m_subscribes.end(), sub);
 
-	if (it != m_subscribes.end()){
-		return bmSubExist;
-	}
-	m_subscribes.push_back(sub);
-	return bmOk;
+    if (it != m_subscribes.end()){
+        return bmSubExist;
+    }
+    m_subscribes.push_back(sub);
+    return bmOk;
 }
 
 int BitMail::Unsubscribe(const std::string & sub)
 {
-	if (sub.empty()){
-		return bmInvalidParam;
-	}
-	std::vector<std::string>::iterator it
-		= std::find(m_subscribes.begin(), m_subscribes.end(), sub);
-	if (it == m_subscribes.end()){
-		return bmNoSub;
-	}
-	m_subscribes.erase(it);
-	return bmOk;
+    if (sub.empty()){
+        return bmInvalidParam;
+    }
+    std::vector<std::string>::iterator it
+        = std::find(m_subscribes.begin(), m_subscribes.end(), sub);
+    if (it == m_subscribes.end()){
+        return bmNoSub;
+    }
+    m_subscribes.erase(it);
+    return bmOk;
 }
 
 bool BitMail::Subscribed(const std::string & sub) const
 {
-	if (sub.empty()){
-		return false;
-	}
-	return (std::find(m_subscribes.begin(), m_subscribes.end(), sub)
-		!= m_subscribes.end());
+    if (sub.empty()){
+        return false;
+    }
+    return (std::find(m_subscribes.begin(), m_subscribes.end(), sub)
+        != m_subscribes.end());
 }
 
 int BitMail::GetSubscribes(std::vector<std::string> & subscribes)
 {
-	subscribes = m_subscribes;
-	return bmOk;
+    subscribes = m_subscribes;
+    return bmOk;
 }
 
 int BitMail::EmailHandler(BMEventHead * h, void * userp)
@@ -934,7 +1069,7 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     if (self && self->m_onMessageEvent){
         self->m_onMessageEvent(buddyCert.GetEmail().c_str()
                                 , sMimeBody.data()
-								, sMimeBody.length()
+                                , sMimeBody.length()
                                 , buddyCert.GetID().c_str()
                                 , buddyCert.GetCertByPem().c_str()
                                 , self->m_onMessageEventParam);
@@ -944,10 +1079,10 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
 }
 
 int BitMail::EncMsg(const std::vector<std::string> & friends
-		, const std::string & msg
-		, std::string & smime
-		, bool fSignOnly
-		, bool fSkipStrangers)
+        , const std::string & msg
+        , std::string & smime
+        , bool fSignOnly
+        , bool fSkipStrangers)
 {
     if (msg.empty()){
         return bmInvalidParam;
@@ -963,7 +1098,7 @@ int BitMail::EncMsg(const std::vector<std::string> & friends
     }
 
     if (fSignOnly){
-    	return bmOk;
+        return bmOk;
     }
 
     std::vector<CX509Cert> vecTo;
@@ -979,35 +1114,35 @@ int BitMail::EncMsg(const std::vector<std::string> & friends
             }
             vecTo.push_back(buddy);
         }else{
-        	if (!fSkipStrangers){
-				vecTo.clear();
-				break;
-        	}
+            if (!fSkipStrangers){
+                vecTo.clear();
+                break;
+            }
         }
     }
 
     if (!vecTo.size())
     {
-    	return bmEncryptFail;
+        return bmEncryptFail;
     }
 
-	smime = CX509Cert::MEncrypt(smime, vecTo);
-	if (smime.empty()){
-		return bmEncryptFail;
-	}
+    smime = CX509Cert::MEncrypt(smime, vecTo);
+    if (smime.empty()){
+        return bmEncryptFail;
+    }
 
-	return bmOk;
+    return bmOk;
 }
 
 int BitMail::DecMsg(const std::string & smime
-		, std::string & from
-		, std::string & nick
-		, std::string & msg
-		, std::string & certid
-		, std::string & cert)
+        , std::string & from
+        , std::string & nick
+        , std::string & msg
+        , std::string & certid
+        , std::string & cert)
 {
-	std::string sMimeBody = smime;
-	BitMail * self = this;
+    std::string sMimeBody = smime;
+    BitMail * self = this;
     if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){
         sMimeBody = self->m_profile->Decrypt(sMimeBody);
         if (sMimeBody.empty()){
@@ -1027,7 +1162,7 @@ int BitMail::DecMsg(const std::string & smime
             return bmInvalidCert;
         }
     }else{
-    	return bmInvalidParam;
+        return bmInvalidParam;
     }
 
     from = buddyCert.GetEmail();
@@ -1036,7 +1171,7 @@ int BitMail::DecMsg(const std::string & smime
     certid = buddyCert.GetID();
     cert = buddyCert.GetCertByPem();
 
-	return bmOk;
+    return bmOk;
 }
 
 
