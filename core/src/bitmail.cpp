@@ -38,7 +38,6 @@ BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
 : m_onPollEvent(NULL), m_onPollEventParam(NULL)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
 , m_mc(NULL)
-, m_brad(NULL)
 , m_bradPort(10086), m_bradExtUrl("")
 , m_rx(NULL), m_tx(NULL)
 , m_lock1(NULL), m_lock2(NULL), m_lock3(NULL), m_lock4(NULL)
@@ -156,20 +155,6 @@ bool BitMail::SetBradPort(unsigned short port)
     return true;
 }
 
-bool BitMail::StartBrad()
-{
-    m_brad = new Brad(m_bradPort, InboundHandler, this);
-    if (m_brad == NULL){
-        return false;
-    }
-    if (!m_brad->Startup()){
-        delete m_brad;
-        m_brad = NULL;
-        return false;
-    }
-    return true;
-}
-
 unsigned short BitMail::GetBradPort() const
 {
     return m_bradPort;
@@ -182,16 +167,6 @@ bool BitMail::PollBraConnections(unsigned int timeoutMs){
 std::string BitMail::GetBradExtUrl() const
 {
     return m_bradExtUrl;
-}
-
-bool BitMail::ShutdownBrad()
-{
-    if (m_brad != NULL){
-        m_brad->Shutdown();
-        delete m_brad;
-        m_brad = NULL;
-    }
-    return true;
 }
 
 int BitMail::SetProxy(const std::string & ip
@@ -534,12 +509,6 @@ bool BitMail::SetFriendBradExtUrl(const std::string & email, const std::string &
 {
     m_brads[email] = exturl;
     return true;
-}
-
-bool BitMail::HasBrac(const std::string & email) const
-{
-	// Trace m_bracs to check existence;
-	return false;
 }
 
 /**
@@ -1166,23 +1135,3 @@ int BitMail::DecMsg(const std::string & smime
     return bmOk;
 }
 
-int BitMail::InboundHandler(int sockfd, void * userp)
-{
-	BitMail * self = (BitMail *)userp;
-	if (self == NULL){
-		return bmInvalidParam;
-	}
-	Brac * brac = new Brac(sockfd);
-	if (brac == NULL){
-		return bmOutMem;
-	}
-
-	self->AddBrac(brac);
-
-	return bmOk;
-}
-
-bool BitMail::AddBrac(Brac * brac)
-{
-	m_bracs.push_back(brac);
-}

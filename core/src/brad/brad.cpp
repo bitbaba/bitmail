@@ -281,7 +281,76 @@ Brad::~Brad()
 
 bool Brad::Startup()
 {
+	servfd_ = socket(AF_INET, SOCK_STREAM, 0);
+
+	struct sockaddr_in my_addr;
+    memset(&my_addr, 0, sizeof(my_addr));
+    my_addr.sin_family = AF_INET;
+    my_addr.sin_addr.s_addr = INADDR_ANY;
+    my_addr.sin_port = htons(port_);
+
+    if (bind(servfd_, (struct sockaddr *) &my_addr, sizeof(my_addr)) == -1)
+    {
+    	closesocket(servfd_);
+    	servfd_ = CURL_SOCKET_BAD;
+    	return false;
+    }
+
+    if (listen(servfd_, 5) == -1){
+    	closesocket(servfd_);
+    	servfd_ = CURL_SOCKET_BAD;
+    	return false;
+    }
+
 	return true;
+}
+
+int Brad::WaitForConnections(unsigned int timeoutMs)
+{
+    fd_set rfds, wfds, efds;
+    struct timeval tv;
+    int retval;
+
+    /* Watch stdin (fd 0) to see when it has input. */
+    FD_ZERO(&rfds);
+    FD_SET(servfd_, &rfds);
+
+    FD_ZERO(&wfds);
+    FD_SET(servfd_, &wfds);
+
+    FD_ZERO(&efds);
+    FD_SET(servfd_, &efds);
+
+    /* Wait up to five seconds. */
+    tv.tv_sec = timeoutMs/1000;
+    tv.tv_usec = timeoutMs%1000 * 1000;
+
+    retval = select(servfd_ + 1, &rfds, NULL, NULL, &tv);
+    /* Don't rely on the value of tv now! */
+
+    if (retval == -1){
+        return bmWaitFail;
+    }
+    if (retval == 0){
+    	return bmWaitTimeout;
+    }
+
+	if (!FD_ISSET(servfd_, &rfds)){
+		return bmOk;
+	}
+
+	struct sockaddr_in peeraddr;
+	socklen_t peeraddrlen = sizeof(peeraddr);
+	int sockfd = accept(servfd_, (sockaddr*)&peeraddr, &peeraddrlen);
+	if (sockfd == CURL_SOCKET_BAD){
+		return bmOk;
+	}
+
+	if (!m_cb || bmOk != m_cb(sockfd, m_userp)){
+		closesocket(sockfd);
+	}
+
+	return bmOk;
 }
 
 unsigned short Brad::GetPort() const
@@ -291,6 +360,10 @@ unsigned short Brad::GetPort() const
 
 bool Brad::Shutdown()
 {
+	if (servfd_ != CURL_SOCKET_BAD){
+		closesocket(servfd_);
+		servfd_ = CURL_SOCKET_BAD;
+	}
 	return true;
 }
 

@@ -54,6 +54,8 @@ enum BMError{
 	bmNoMember       =     32,
 	bmSubExist       =     33,
 	bmNoSub          =     34,
+	bmWaitFail       =     35,
+	bmWaitTimeout    =     36,
 };
 
 enum RTxState{
@@ -233,10 +235,6 @@ public:
 
 	unsigned short GetBradPort() const;
 
-	bool StartBrad();
-
-	bool ShutdownBrad();
-
 	/**
 	 * Call this poll to check alive and data event of all bra connections.
 	 * Caller may call this poll in another thread,
@@ -251,8 +249,6 @@ public:
     bool SetFriendBradExtUrl(const std::string & email, const std::string & exturl);
 
     std::string GetFriendBradExtUrl(const std::string & email) const;
-
-    bool HasBrac(const std::string & email) const;
 
     // Friends
     int AddFriend(const std::string & email, const std::string & certpem);
@@ -332,11 +328,8 @@ protected:
     std::map<std::string, std::string> m_brads;
 
     // Http Bra daemon instance (may deprecate by Brad)
-    Brad               * m_brad;
     unsigned short       m_bradPort;
     std::string          m_bradExtUrl;
-    // BRA Connections
-    std::vector<Brac *>  m_bracs;
 
     // Lock
     ILock * m_lock1;
@@ -355,10 +348,71 @@ public:
 
 protected:
     static int EmailHandler(BMEventHead * h, void * userp);
-    static int InboundHandler(int sockfd, void * userp);
+};
 
+/**
+ ***************************************************************
+ * Bra Daemon class
+ ***************************************************************
+ */
+// callback when inbound connection comming
+typedef int (* InboundConnectionCB)(int sockfd, void * userp);
+
+/**
+ * Bra Daemon class
+ */
+class Brad{
+public:
+	explicit Brad(unsigned short port, InboundConnectionCB cb, void * userp);
+	~Brad();
+public:
+	bool Startup();
+	int  WaitForConnections(unsigned int timeoutMs);
+	unsigned short GetPort() const;
+	bool Shutdown();
 private:
-    bool AddBrac(Brac * brac);
+	unsigned short port_;
+	int servfd_;
+	InboundConnectionCB m_cb;
+	void * m_userp;
+};
+
+/**
+ ***************************************************************
+ * Bra Connection class
+ ***************************************************************
+ */
+class Brac{
+public:
+	/**
+	 * create a outbound connection to Brad
+	 */
+	explicit Brac(const std::string & url);
+	/**
+	 * create a inbound connection accepted by Brad
+	 */
+	explicit Brac(int sockfd);
+	~Brac();
+public:
+	bool IsValidSocket() const;
+	int sockfd() const;
+	bool Send(RTxProgressCB cb, void * userp);
+	bool Recv(RTxProgressCB cb, void * userp);
+	void email(const std::string & nm);
+	std::string email(void) const;
+private:
+	bool MakeNonBlocking();
+private:
+	void * curl_;
+	int sockfd_;
+	bool inbound_;
+	unsigned int txoffset_;
+	std::string txbuf_;
+	unsigned int rxoffset_;
+	std::string rxbuf_;
+	std::vector<std::string> txq_;
+	std::vector<std::string> rxq_;
+	std::string m_email;
 };
 
 /**
