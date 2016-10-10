@@ -246,7 +246,7 @@ void MainWindow::startupNetwork()
 
     m_bradth->start();
 
-    m_bracth = new BracThread();
+    m_bracth = new BracThread(m_bitmail);
     connect(m_bracth, SIGNAL(signalBracThDone())
             , this, SLOT(onBracThDOne()));
     m_bracth->start();

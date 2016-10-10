@@ -39,7 +39,7 @@ void BradThread::stop()
 
 int BradThread::OnInboundConnection(int sockfd, void *userp)
 {
-    qDebug() << "BradThread:: connection coming";
+    qDebug() << "BradThread:: *Connection coming";
     BradThread * self = (BradThread *)userp;
     self->onCreateBrac(sockfd);
     return bmOk;
