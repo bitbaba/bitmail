@@ -53,6 +53,7 @@ private slots:
 
 signals:
     void signalAddFriend(const QString & email);
+    void signalViewGroup(const QString & gid);
 
 private:
     Ui::MessageDialog *ui;

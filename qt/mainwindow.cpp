@@ -355,6 +355,11 @@ void MainWindow::ViewCert(const QString & qsEmail)
     }
 }
 
+void MainWindow::onViewGroup(const QString &gid)
+{
+    ViewGroup(gid);
+}
+
 void MainWindow::ViewGroup(const QString &gid)
 {
     NewGroupDialog dlg(m_bitmail);
@@ -683,11 +688,12 @@ void MainWindow::onNewMessage(const QString & from
         qDebug() << "Invalid BMMessage";
         return ;
     }
-    QString qsFriendBradExtUrl = bmMsg.bradExtUrl();
-    if (!from.isEmpty() && !qsFriendBradExtUrl.isEmpty()){
-        m_bitmail->SetFriendBrad(from.toStdString(), qsFriendBradExtUrl.toStdString());
-        qDebug() << QString("Setup Brad Mapping [%1]=>[%2]").arg(from).arg(qsFriendBradExtUrl);
+
+    if (!from.isEmpty() && !bmMsg.bradExtUrl().isEmpty()){
+        m_bitmail->SetFriendBradExtUrl(from.toStdString(), bmMsg.bradExtUrl().toStdString());
+        qDebug() << QString("Setup Brad Mapping [%1]=>[%2]").arg(from).arg(bmMsg.bradExtUrl());
     }
+
     QString qsKey = from;
     if (bmMsg.msgType() == mt_peer){
         if (!m_bitmail->IsFriend(from.toStdString(), cert.toStdString())){
@@ -909,17 +915,10 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
     connect(&messageDialog, SIGNAL(signalAddFriend(QString))
             , this, SLOT(onAddFriend(QString)));
 
-    if (messageDialog.exec() == MessageDialog::ViewGroup)
-    {
-        NewGroupDialog dlg(m_bitmail);
-        dlg.creator(qsGroupCreator);
-        dlg.groupId(qsGroupId);
-        dlg.groupName(qsGroupName);
-        dlg.groupMembers(qslGroupMembers);
-        if (QDialog::Accepted != dlg.exec()){
-            return ;
-        }
-    }
+    connect(&messageDialog, SIGNAL(signalViewGroup(QString))
+            , this, SLOT(onViewGroup(QString)));
+
+    messageDialog.exec();
 
     return ;
 }

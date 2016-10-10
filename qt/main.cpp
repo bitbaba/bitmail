@@ -339,7 +339,7 @@ namespace BMQTApplication {
                     QJsonObject joFriendBrad = joValue["brad"].toObject();
                     if (joFriendBrad.contains("extUrl")){
                         QString qsFriendBradExtUrl = joFriendBrad["extUrl"].toString();
-                        bm->SetFriendBrad(qsEmail.toStdString(), qsFriendBradExtUrl.toStdString());
+                        bm->SetFriendBradExtUrl(qsEmail.toStdString(), qsFriendBradExtUrl.toStdString());
                     }
                 }
             }

@@ -118,8 +118,10 @@ public slots:
     void onMessageDoubleClicked(QListWidgetItem * actItem);
     void onAddFriend(const QString & email);
     void onAddGroup(const QString & groupId);
+    void onViewGroup(const QString & gid);
     void onNewSubscribe(const QString & sub);
     void onCtxMenu(const QPoint & pos);
+
     // Context Menu slots
     void onActInvite();
     void onActImport();

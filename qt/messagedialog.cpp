@@ -131,5 +131,5 @@ void MessageDialog::on_btnMakeFriend_clicked()
 
 void MessageDialog::on_btnViewGroup_clicked()
 {
-    this->done(ViewGroup);
+    emit signalViewGroup(groupId());
 }
