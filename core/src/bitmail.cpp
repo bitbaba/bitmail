@@ -160,7 +160,46 @@ unsigned short BitMail::GetBradPort() const
     return m_bradPort;
 }
 
-bool BitMail::PollBraConnections(unsigned int timeoutMs){
+bool BitMail::PollBracs(std::vector<Brac *> & bracs, unsigned int timeoutMs)
+{
+	fd_set rfds;
+	FD_ZERO(&rfds);
+	int maxfd = 0;
+	for(std::vector<Brac *>::iterator it = bracs.begin(); it != bracs.end(); ++it)
+	{
+		Brac * brac = *it;
+		if (!brac->IsValidSocket()){
+			continue;
+		}
+		FD_SET(brac->sockfd(), &rfds);
+		maxfd = (maxfd > brac->sockfd() )? maxfd : brac->sockfd();
+	}
+
+	if (maxfd == 0){
+		return false;
+	}
+
+	struct timeval tv;
+	tv.tv_sec = timeoutMs / 1000;
+	tv.tv_usec= timeoutMs % 1000 * 1000;
+
+	int retval = select(maxfd + 1, &rfds, NULL, NULL, &tv);
+
+	if (retval <= 0){
+		return false;
+	}
+
+	for (std::vector<Brac * >::iterator it = bracs.begin(); it != bracs.end(); ++it)
+	{
+		Brac * brac = *it;
+		if (!brac->IsValidSocket()){
+			continue;
+		}
+		if (!FD_ISSET(brac->sockfd(), &rfds)){
+			continue;
+		}
+	}
+
 	return true;
 }
 

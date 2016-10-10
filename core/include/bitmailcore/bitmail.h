@@ -240,7 +240,7 @@ public:
 	 * Caller may call this poll in another thread,
 	 * please note thread-safety.
 	 */
-	bool PollBraConnections(unsigned int timeoutMs);
+	bool PollBracs(std::vector<Brac *> & bracs, unsigned int timeoutMs);
 
 	std::string GetBradExtUrl() const;
 
@@ -395,7 +395,9 @@ public:
 	~Brac();
 public:
 	bool IsValidSocket() const;
-	int sockfd() const;
+	int  sockfd() const;
+	int  IsSendable() const;
+	void Close();
 	bool Send(RTxProgressCB cb, void * userp);
 	bool Recv(RTxProgressCB cb, void * userp);
 	void email(const std::string & nm);
@@ -406,13 +408,11 @@ private:
 	void * curl_;
 	int sockfd_;
 	bool inbound_;
-	unsigned int txoffset_;
 	std::string txbuf_;
-	unsigned int rxoffset_;
 	std::string rxbuf_;
 	std::vector<std::string> txq_;
 	std::vector<std::string> rxq_;
-	std::string m_email;
+	std::string email_;
 };
 
 /**

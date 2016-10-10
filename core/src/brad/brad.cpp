@@ -374,11 +374,9 @@ Brac::Brac(const std::string & url)
 	: sockfd_(CURL_SOCKET_BAD)
 	, curl_(NULL)
 	, inbound_(false)
-	, txoffset_(0)
-	, rxoffset_(0)
 	, txbuf_("")
 	, rxbuf_("")
-	, m_email("")
+	, email_("")
 {
 	CURLcode res;
 	curl_ = curl_easy_init();
@@ -405,11 +403,9 @@ Brac::Brac(int sockfd)
 	: sockfd_(sockfd)
 	, curl_(NULL)
 	, inbound_(true)
-	, txoffset_(0)
-	, rxoffset_(0)
 	, txbuf_("")
 	, rxbuf_("")
-	, m_email("")
+	, email_("")
 {
 	if (sockfd_ != CURL_SOCKET_BAD){
 		MakeNonBlocking();
@@ -418,10 +414,7 @@ Brac::Brac(int sockfd)
 
 Brac::~Brac()
 {
-	if (curl_){
-		curl_easy_cleanup((CURL*)curl_);
-		curl_ = NULL;
-	}
+	Close();
 }
 
 bool Brac::IsValidSocket() const
@@ -432,6 +425,51 @@ bool Brac::IsValidSocket() const
 int Brac::sockfd() const
 {
 	return sockfd_;
+}
+
+int Brac::IsSendable() const
+{
+    fd_set rfds, wfds, efds;
+    struct timeval tv;
+    int retval;
+
+    /* Watch stdin (fd 0) to see when it has input. */
+    FD_ZERO(&rfds);
+    FD_SET(sockfd_, &rfds);
+
+    FD_ZERO(&wfds);
+    FD_SET(sockfd_, &wfds);
+
+    FD_ZERO(&efds);
+    FD_SET(sockfd_, &efds);
+
+    /* Wait up to 0 second. */
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+
+    retval = select(sockfd_ + 1, NULL, &wfds, NULL, &tv);
+    /* Don't rely on the value of tv now! */
+
+    if (retval == -1){
+        return bmWaitFail;
+    }
+    if (retval == 0){
+    	return bmWaitTimeout;
+    }
+
+	return bmOk;
+}
+
+void Brac::Close()
+{
+	if (curl_){
+		curl_easy_cleanup((CURL*)curl_);
+		curl_ = NULL;
+	}
+	if (inbound_ && sockfd_ != CURL_SOCKET_BAD){
+		closesocket(sockfd_);
+	}
+	sockfd_ = CURL_SOCKET_BAD;
 }
 
 bool Brac::Send(RTxProgressCB cb, void * userp)
@@ -461,12 +499,12 @@ bool Brac::MakeNonBlocking()
 
 void Brac::email(const std::string & email)
 {
-	m_email = email;
+	email_ = email;
 }
 
 std::string Brac::email(void) const
 {
-	return m_email;
+	return email_;
 }
 
 
