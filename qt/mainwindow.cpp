@@ -53,6 +53,8 @@
 #include "pollthread.h"
 #include "rxthread.h"
 #include "txthread.h"
+#include "bracthread.h"
+#include "bradthread.h"
 #include "upnpthread.h"
 #include "optiondialog.h"
 #include "logindialog.h"
@@ -77,6 +79,8 @@ MainWindow::MainWindow(BitMail * bitmail)
     : m_bitmail(bitmail)
     , m_rxth(NULL)
     , m_txth(NULL)
+    , m_bradth(NULL)
+    , m_bracth(NULL)
     , m_upnpth(NULL)
     , m_shutdownDialog(NULL)
 //! [1] //! [2]
@@ -234,27 +238,44 @@ void MainWindow::startupNetwork()
     connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
     m_txth->start();
 
+    m_bradth = new BradThread(m_bitmail->GetBradPort());
+    connect(m_bradth, SIGNAL(signalBradThDone())
+            , this, SLOT(onBradThDone()));
+    connect(m_bradth, SIGNAL(signalCreateBrac(int))
+            , this, SLOT(onCreateBrac(int)));
+
+    m_bradth->start();
+
+    m_bracth = new BracThread();
+    connect(m_bracth, SIGNAL(signalBracThDone())
+            , this, SLOT(onBracThDOne()));
+    m_bracth->start();
+
+
     m_upnpth = new UpnpThread(m_bitmail);
     connect(m_upnpth, SIGNAL(done(bool,QString)), this, SLOT(onUpnpThDone(bool, QString)));
     m_upnpth->start();
 
-    m_bitmail->StartBrad();
 }
 void MainWindow::shutdownNetwork()
 {
-    m_bitmail->ShutdownBrad();
-
     if (m_rxth ){
         m_rxth->stop();
     }
     if (m_txth) {
         m_txth->stop();
     }
+    if (m_bracth){
+        m_bracth->stop();
+    }
+    if (m_bradth){
+        m_bradth->stop();
+    }
 }
 void MainWindow::onRxDone()
 {
     m_rxth->wait(1000); delete m_rxth; m_rxth = NULL;
-    if (!m_rxth && !m_txth && !m_upnpth && m_shutdownDialog){
+    if (!m_rxth && !m_txth && !m_upnpth && !m_bracth && !m_bradth && m_shutdownDialog){
         m_shutdownDialog->done(0);
     }
 }
@@ -274,7 +295,7 @@ void MainWindow::onTxProgress(const QString &info)
 void MainWindow::onTxDone()
 {
     m_txth->wait(1000); delete m_txth; m_txth = NULL;
-    if (!m_rxth && !m_txth && !m_upnpth && m_shutdownDialog){
+    if (!m_rxth && !m_txth && !m_upnpth && !m_bracth && !m_bradth && m_shutdownDialog){
         m_shutdownDialog->done(0);
     }
 }
@@ -286,11 +307,33 @@ void MainWindow::onUpnpThDone(bool fOk, const QString & extUrl)
     }else{
         qDebug() << "Upnp Mapping Failed";
     }
-    delete m_upnpth;
-    m_upnpth = NULL;
-    if (!m_rxth && !m_txth && !m_upnpth && m_shutdownDialog){
+    m_upnpth->wait(1000); delete m_upnpth; m_upnpth = NULL;
+    if (!m_rxth && !m_txth && !m_upnpth && !m_bracth && !m_bradth && m_shutdownDialog){
         m_shutdownDialog->done(0);
     }
+}
+
+void MainWindow::onBracThDOne()
+{
+    m_bracth->wait(1000); delete m_bracth; m_bracth = NULL;
+    if (!m_rxth && !m_txth && !m_upnpth && !m_bracth && !m_bradth && m_shutdownDialog){
+        m_shutdownDialog->done(0);
+    }
+}
+
+void MainWindow::onBradThDone()
+{
+    m_bradth->wait(1000); delete m_bradth; m_bradth = NULL;
+    if (!m_rxth && !m_txth && !m_upnpth && !m_bracth && !m_bradth && m_shutdownDialog){
+        m_shutdownDialog->done(0);
+    }
+}
+
+void MainWindow::onCreateBrac(int sockfd)
+{
+    Brac * brac = new Brac(sockfd);
+    (void) brac;
+    return ;
 }
 
 //! [3]
