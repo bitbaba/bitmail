@@ -270,6 +270,9 @@ bool HttpBrac::SendMsg(const std::string & url, const std::string & request, RTx
 }
 
 Brad::Brad(unsigned short port, InboundConnectionCB cb, void * userp)
+    : port_(port)
+    , m_cb(cb)
+    , m_userp(userp)
 {
 
 }
