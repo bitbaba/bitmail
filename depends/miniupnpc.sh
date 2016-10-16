@@ -1,4 +1,8 @@
 #!/bin/bash
+if [ x$(uname -s) == x"Darwin" ]; then
+	alias readlink='greadlink'
+fi
+
 DepSrcRoot=$(dirname $(readlink -f $0) )
 OutDir=$DepSrcRoot/../out
 
@@ -24,7 +28,7 @@ fi
 if [ -d "$DESTDIR" ]; then
 	cd "$DESTDIR"
 	case $(uname -s) in 
-		Linux*)
+		Linux*|Darwin*)
 			make -f Makefile INSTALLPREFIX="$OutDir" install-static
 		;;
 		MINGW32*)
