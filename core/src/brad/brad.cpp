@@ -370,7 +370,7 @@ bool Brad::Shutdown()
 	return true;
 }
 
-Brac::Brac(const std::string & url)
+Brac::Brac(const std::string & url, unsigned int timeout)
 	: sockfd_(CURL_SOCKET_BAD)
 	, curl_(NULL)
 	, inbound_(false)
@@ -383,6 +383,9 @@ Brac::Brac(const std::string & url)
 	if (curl_){
 		curl_easy_setopt((CURL*)curl_, CURLOPT_URL, url.c_str());
 		curl_easy_setopt((CURL*)curl_, CURLOPT_CONNECT_ONLY, 1l);
+		if (timeout){
+			curl_easy_setopt((CURL*)curl_, CURLOPT_CONNECTTIMEOUT, timeout);
+		}
 		res = curl_easy_perform((CURL *)curl_);
 		if (res == CURLE_OK){
 			curl_socket_t sockfd = CURL_SOCKET_BAD;

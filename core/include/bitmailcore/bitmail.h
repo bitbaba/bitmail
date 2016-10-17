@@ -387,7 +387,7 @@ public:
 	/**
 	 * create a outbound connection to Brad
 	 */
-	explicit Brac(const std::string & url);
+	explicit Brac(const std::string & url, unsigned int timeout);
 	/**
 	 * create a inbound connection accepted by Brad
 	 */
