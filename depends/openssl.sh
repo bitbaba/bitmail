@@ -1,4 +1,8 @@
 #!/bin/bash
+if [ x$(uname -s) == x"Darwin" ]; then
+	alias readlink='greadlink'
+fi
+
 DepSrcRoot=$(dirname $(readlink -f $0) )
 OutDir=$DepSrcRoot/../out
 
