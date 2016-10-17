@@ -52,6 +52,7 @@
 #include <QDateTime>
 #include <QTranslator>
 #include <QLibraryInfo>
+#include <QNetworkInterface>
 #include "optiondialog.h"
 #include "logindialog.h"
 #include "mainwindow.h"
@@ -192,6 +193,33 @@ namespace BMQTApplication {
         qsProfileHome += "data";
         return qsProfileHome;
     }
+    QString GetLogHome()
+    {
+        QString qsProfileHome = QDir::homePath();
+        qsProfileHome += "/";
+        qsProfileHome += "bitmail";
+        qsProfileHome += "/";
+        qsProfileHome += "log";
+        return qsProfileHome;
+    }
+    QString GetLanIp()
+    {
+        QString lanaddr;
+        foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
+            if (address.protocol() == QAbstractSocket::IPv4Protocol
+                    && !address.isLoopback()
+                    && (address.isInSubnet(QHostAddress::parseSubnet("192.168.0.0/16"))
+                        ||  address.isInSubnet(QHostAddress::parseSubnet("172.16.0.0/12"))
+                        ||  address.isInSubnet(QHostAddress::parseSubnet("10.0.0.0/8")))
+               )
+            {
+                 lanaddr = address.toString();
+                 break; // take only one
+            }
+        }
+        return lanaddr;
+    }
+
     QString GetLocaleHome()
     {
         QString qsLocaleHome = GetAppHome();
@@ -522,7 +550,7 @@ namespace BMQTApplication {
         return true;
     }
     bool InitLogger(){
-        QString qsLoggerPath = GetDataHome();
+        QString qsLoggerPath = GetLogHome();
         QDir qDataDir = QDir(qsLoggerPath);
         if (!qDataDir.exists()){
             qDataDir.mkpath(qsLoggerPath);
