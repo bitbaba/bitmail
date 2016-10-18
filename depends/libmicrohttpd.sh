@@ -15,6 +15,11 @@ DESTDIR="/tmp/libmicrohttpd-0.9.51"
 DOWNLINK="http://ftp.gnu.org/gnu/libmicrohttpd/libmicrohttpd-0.9.51.tar.gz"
 DOWNOPTS=""
 
+if [[ $(uname -s) != "MINGW"* ]]; then
+	PICFLAGS='-fPIC -fpic'
+fi
+
+
 if ! [ -f "$TARBALL" ]; then
 	echo "Downloading... $DOWNLINK"
 	wget "$DOWNOPTS" "$DOWNLINK"

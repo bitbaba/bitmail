@@ -15,6 +15,11 @@ DESTDIR="/tmp/miniupnpc-1.9.20160209"
 DOWNLINK="http://miniupnp.free.fr/files/miniupnpc-1.9.20160209.tar.gz"
 DOWNOPTS=""
 
+if [[ $(uname -s) != "MINGW"* ]]; then
+	PICFLAGS='-fPIC -fpic'
+fi
+
+
 if ! [ -f "$TARBALL" ]; then
 	echo "Downloading... $DOWNLINK"
 	wget "$DOWNOPTS" "$DOWNLINK"

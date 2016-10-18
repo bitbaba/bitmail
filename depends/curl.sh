@@ -15,6 +15,11 @@ DESTDIR="/tmp/curl-7.48.0"
 DOWNLINK="https://curl.haxx.se/download/curl-7.48.0.tar.gz"
 DOWNOPTS="--no-check-certificate"
 
+if [[ $(uname -s) != "MINGW"* ]]; then
+	PICFLAGS='-fPIC -fpic'
+fi
+
+
 if ! [ -f "$TARBALL" ]; then
 	echo "Downloading... $DOWNLINK"
 	wget "$DOWNOPTS" "$DOWNLINK"
