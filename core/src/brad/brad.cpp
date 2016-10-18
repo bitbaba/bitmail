@@ -377,10 +377,9 @@ bool Brad::Shutdown()
 Brac::Brac(const std::string & url, unsigned int timeout)
 	: sockfd_(CURL_SOCKET_BAD)
 	, curl_(NULL)
-	  , inbound_(false)
-	  , txbuf_("")
-	  , rxbuf_("")
-	  , email_("")
+	, inbound_(false)
+	, rxbuf_("")
+	, email_("")
 {
 	CURLcode res;
 	curl_ = curl_easy_init();
@@ -409,10 +408,9 @@ Brac::Brac(const std::string & url, unsigned int timeout)
 Brac::Brac(int sockfd)
 	: sockfd_(sockfd)
 	, curl_(NULL)
-	  , inbound_(true)
-	  , txbuf_("")
-	  , rxbuf_("")
-	  , email_("")
+	, inbound_(true)
+	, rxbuf_("")
+	, email_("")
 {
 	if (sockfd_ != CURL_SOCKET_BAD){
 		MakeNonBlocking();
@@ -479,8 +477,9 @@ void Brac::Close()
 	sockfd_ = CURL_SOCKET_BAD;
 }
 
-bool Brac::Send(RTxProgressCB cb, void * userp)
+bool Brac::Send(const std::string & msg, RTxProgressCB cb, void * userp)
 {
+	//TODO: encrypting message by BitMail::EncMsg(...);
 	return true;
 }
 

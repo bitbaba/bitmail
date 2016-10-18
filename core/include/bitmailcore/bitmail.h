@@ -178,7 +178,7 @@ public:
     // RTx Routines
     int SendMsg(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
 
-    int EncMsg(const std::vector<std::string> & friends, const std::string & msg, std::string & smime, bool fSignOnly = false, bool fSkipFail = false);
+    std::string EncMsg(const std::vector<std::string> & friends, const std::string & msg, bool fSignOnly);
 
     int DecMsg(const std::string & smime, std::string & from, std::string & nick, std::string & msg, std::string & certid, std::string & cert);
 
@@ -398,7 +398,7 @@ public:
 	int  sockfd() const;
 	int  IsSendable() const;
 	void Close();
-	bool Send(RTxProgressCB cb, void * userp);
+	bool Send(const std::string & msg, RTxProgressCB cb, void * userp);
 	bool Recv(RTxProgressCB cb, void * userp);
 	void email(const std::string & nm);
 	std::string email(void) const;
@@ -408,10 +408,7 @@ private:
 	void * curl_;
 	int sockfd_;
 	bool inbound_;
-	std::string txbuf_;
 	std::string rxbuf_;
-	std::vector<std::string> txq_;
-	std::vector<std::string> rxq_;
 	std::string email_;
 };
 

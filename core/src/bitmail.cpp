@@ -326,51 +326,11 @@ int BitMail::SendMsg(const std::vector<std::string> & friends
         , const std::string & msg
         , RTxProgressCB cb, void * userp)
 {
-    if (msg.empty()){
-        return bmInvalidParam;
-    }
-    /**
-     * Note:
-     * GroupMsg(msg, vector<bob>) != SendMsg(msg, bob);
-     * GroupMsg must encrypt msg before send it out.
-     */
-    std::string sSignedMsg = m_profile->Sign(msg);
-    if (sSignedMsg.empty()){
-        return bmSignFail;
-    }
-
-    std::vector<CX509Cert> vecTo;
-    for (std::vector<std::string>::const_iterator it = friends.begin();
-            it != friends.end();
-            ++it)
-    {
-        if (m_buddies.find(*it) != m_buddies.end()){
-            CX509Cert buddy;
-            buddy.LoadCertFromPem(m_buddies[*it]);
-            if (!buddy.IsValid()){
-                return bmInvalidCert;
-            }
-            vecTo.push_back(buddy);
-        }else{
-            // Degrade to signed-only message
-            vecTo.clear();
-            break;
-        }
-    }
-
-    std::string sEncryptedMsg = sSignedMsg;
-    // If certificates  not ready, degrade to send signed-only message.
-    if (vecTo.size())
-    {
-        sEncryptedMsg = CX509Cert::MEncrypt(sSignedMsg, vecTo);
-        if (sEncryptedMsg.empty()){
-            return bmEncryptFail;
-        }
-    }
+	std::string smime = EncMsg(friends, msg, false);
 
     if (m_mc->SendMsg( m_profile->GetEmail()
                             , friends
-                            , sEncryptedMsg
+                            , smime
                             , cb
                             , userp)){
         return bmTxFail;
@@ -1078,14 +1038,13 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     return bmOk;
 }
 
-int BitMail::EncMsg(const std::vector<std::string> & friends
+std::string BitMail::EncMsg(const std::vector<std::string> & friends
         , const std::string & msg
-        , std::string & smime
-        , bool fSignOnly
-        , bool fSkipStrangers)
+        , bool fSignOnly)
 {
+	std::string smime;
     if (msg.empty()){
-        return bmInvalidParam;
+        return smime;
     }
     /**
      * Note:
@@ -1093,12 +1052,9 @@ int BitMail::EncMsg(const std::vector<std::string> & friends
      * GroupMsg must encrypt msg before send it out.
      */
     smime = m_profile->Sign(msg);
-    if (smime.empty()){
-        return bmSignFail;
-    }
 
     if (fSignOnly){
-        return bmOk;
+        return smime;
     }
 
     std::vector<CX509Cert> vecTo;
@@ -1106,32 +1062,26 @@ int BitMail::EncMsg(const std::vector<std::string> & friends
             it != friends.end();
             ++it)
     {
-        if (m_buddies.find(*it) != m_buddies.end()){
-            CX509Cert buddy;
-            buddy.LoadCertFromPem(m_buddies[*it]);
-            if (!buddy.IsValid()){
-                return bmInvalidCert;
-            }
-            vecTo.push_back(buddy);
-        }else{
-            if (!fSkipStrangers){
-                vecTo.clear();
-                break;
-            }
+        if (m_buddies.find(*it) == m_buddies.end()){
+        	vecTo.clear();
+        	break;
         }
+		CX509Cert buddy;
+		buddy.LoadCertFromPem(m_buddies[*it]);
+		if (!buddy.IsValid()){
+			vecTo.clear();
+			break;
+		}
+		vecTo.push_back(buddy);
     }
 
-    if (!vecTo.size())
-    {
-        return bmEncryptFail;
+    if (!vecTo.size()){
+        return smime;
     }
 
     smime = CX509Cert::MEncrypt(smime, vecTo);
-    if (smime.empty()){
-        return bmEncryptFail;
-    }
 
-    return bmOk;
+    return smime;
 }
 
 int BitMail::DecMsg(const std::string & smime
