@@ -8,7 +8,11 @@ BitmailOutHome=$BitmailHome/out
 
 cd $BitmailCoreHome
 
-PICFLAGS=""
+if [[ $(uname -s) != "MINGW"* ]]; then
+	PICFLAGS='-fPIC -fpic'
+fi
+
+DebugFlags="-g -O0"
 
 aclocal -I m4 \
 && autoconf \
@@ -16,7 +20,7 @@ aclocal -I m4 \
 && ./configure --prefix="$BitmailOutHome" \
     --enable-static=yes  \
     --enable-shared=no \
-    CXXFLAGS="-g -O0 -fPIC -fpic " \
+    CXXFLAGS="${DebugFlags} ${PICFLAGS}" \
     CPPFLAGS="-I$BitmailOutHome/include" \
     LDFLAGS=" -L$BitmailOutHome/lib" \
 && make && make install && make clean
