@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ x$(uname -s) == x"Darwin" ]; then
+if [ x$(uname -s) = x"Darwin" ]; then
 	alias readlink='greadlink'
 fi
 

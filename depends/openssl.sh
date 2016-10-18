@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ x$(uname -s) == x"Darwin" ]; then
+if [ x$(uname -s) = x"Darwin" ]; then
 	alias readlink='greadlink'
 fi
 
@@ -16,6 +16,7 @@ DOWNLINK="https://www.openssl.org/source/openssl-1.0.2h.tar.gz"
 DOWNOPTS="--no-check-certificate"
 
 if [[ $(uname -s) != "MINGW"* ]]; then
+	echo "**********************"
 	PICFLAGS='-fPIC -fpic'
 fi
 
