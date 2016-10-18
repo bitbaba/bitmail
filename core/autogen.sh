@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ x$(uname -s) = x'Darwin' ]; then
+	alias readlink='greadlink'
+fi
 BitmailCoreHome="$(dirname $(readlink -f "$0") )"
 BitmailHome="$(dirname $BitmailCoreHome)"
 BitmailOutHome=$BitmailHome/out
