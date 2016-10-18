@@ -135,10 +135,8 @@ void AssistantDialog::on_btnEncrypt_clicked()
             vecFriends.push_back(qsData.toStdString());
         }
     }while(0);
-    std::string smime;
     std::string msg = input().toStdString();
-    m_bitmail->EncMsg(vecFriends, msg, smime, false, true);
-    output(QString::fromStdString(smime));
+    output(QString::fromStdString(m_bitmail->EncMsg(vecFriends, msg, false)));
 }
 
 void AssistantDialog::on_btnDecrypt_clicked()
@@ -236,10 +234,8 @@ void AssistantDialog::on_btnSign_clicked()
 {
     clearOutput();
     std::vector<std::string> vecFriends;
-    std::string smime;
     std::string msg = input().toStdString();
-    m_bitmail->EncMsg(vecFriends, msg, smime, true, false);
-    output(QString::fromStdString(smime));
+    output(QString::fromStdString(m_bitmail->EncMsg(vecFriends, msg, true)));
 }
 
 void AssistantDialog::clearOutput()

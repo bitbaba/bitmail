@@ -19,6 +19,7 @@ public:
     void stop();
     void Add(Brac * brac);
     void ByMx(const RTXMessage & rtxMsg);
+    Brac * GetBrac(const std::vector<Brac *> & bracs, const QString & to);
 signals:
     void signalBracThDone();
 private:

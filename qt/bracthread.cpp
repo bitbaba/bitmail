@@ -31,24 +31,30 @@ void BracThread::run()
         // Do sending
         while(m_txq.readable(0)){
             RTXMessage rtxMsg = m_txq.pop();
-            if (rtxMsg.recip().size() > 1) {
+            if (rtxMsg.recip().size() > 1) { // do NOT support group sending
                 ByMx(rtxMsg);
                 continue ;
             }
             QString to = rtxMsg.recip().at(0);
+            Brac * brac = GetBrac(copyBracs, to);
+            if (NULL == brac){ // have NO brac connection yet.
+                ByMx(rtxMsg);
+                continue;
+            }
 
-            for (std::vector<Brac *>::iterator it = copyBracs.begin(); it != copyBracs.end(); ++it)
-            {
-                Brac * brac = *it;
-                if (brac->email().empty()){
-                    continue;
-                }
-                if (to != QString::fromStdString(brac->email())){
-                    continue ;
-                }
-                if (bmOk != brac->IsSendable()){
-                    continue;
-                }
+            if (!brac->IsSendable()){ // check brac connection status
+                ByMx(rtxMsg);
+                continue;
+            }
+
+            BMMessage bmMsg;
+            if (!bmMsg.Load(rtxMsg.content())){
+                qDebug() << "Invalid BMMessage format";
+                continue;
+            }
+            if (!brac->Send(bmMsg.Serialize().toStdString(), NULL, NULL)){
+                ByMx(rtxMsg);
+                continue;
             }
         }
 
@@ -79,4 +85,16 @@ void BracThread::ByMx(const RTXMessage &rtxMsg)
 {
     (void)rtxMsg;
     //TODO: emit signal to TxThread;
+}
+
+Brac * BracThread::GetBrac(const std::vector<Brac*> & bracs, const QString &to)
+{
+    for (std::vector<Brac*>::const_iterator it = bracs.begin(); it != bracs.end(); it++){
+        Brac * brac = *it;
+        if (!brac->email().empty()
+                && to == QString::fromStdString(brac->email())){
+            return brac;
+        }
+    }
+    return NULL;
 }
