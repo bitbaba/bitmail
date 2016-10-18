@@ -23,17 +23,16 @@ void BracThread::run()
            copyBracs = m_bracs;
         }while(0);
 
+        // Do receiving
         qDebug() << "BracThread:: Polling";
-        m_bitmail->PollBracs(copyBracs, 1000);
+        m_bitmail->PollBracs(copyBracs, 500);
         qDebug() << "BracThread:: Polling done";
 
+        // Do sending
         while(m_txq.readable(0)){
             RTXMessage rtxMsg = m_txq.pop();
-            if (rtxMsg.recip().size() > 1)
-            {
-                //TODO:
-                // not support now,
-                // just emit to TxThread ( sending by MX network).
+            if (rtxMsg.recip().size() > 1) {
+                ByMx(rtxMsg);
                 continue ;
             }
             QString to = rtxMsg.recip().at(0);
@@ -74,4 +73,10 @@ void BracThread::Add(Brac *brac)
 {
     QMutexLocker lock(&m_mutex);
     m_bracs.push_back(brac);
+}
+
+void BracThread::ByMx(const RTXMessage &rtxMsg)
+{
+    (void)rtxMsg;
+    //TODO: emit signal to TxThread;
 }

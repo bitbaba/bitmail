@@ -18,6 +18,7 @@ public:
     void run();
     void stop();
     void Add(Brac * brac);
+    void ByMx(const RTXMessage & rtxMsg);
 signals:
     void signalBracThDone();
 private:
