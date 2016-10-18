@@ -477,7 +477,7 @@ void Brac::Close()
 	sockfd_ = CURL_SOCKET_BAD;
 }
 
-bool Brac::Send(const std::string & msg, RTxProgressCB cb, void * userp)
+bool Brac::Send(const std::string & email, const std::string & msg, RTxProgressCB cb, void * userp)
 {
 	//TODO: encrypting message by BitMail::EncMsg(...);
 	return true;
