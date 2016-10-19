@@ -63,12 +63,8 @@ class QProcess;
 
 QT_END_NAMESPACE
 class BitMail;
-class BradThread;
-class BracThread;
-class PollThread;
 class RxThread;
 class TxThread;
-class UpnpThread;
 class ShutdownDialog;
 
 enum nodeType{
@@ -112,10 +108,6 @@ public slots:
     void onRxProgress(const QString & info);
     void onTxDone();
     void onTxProgress(const QString & info);
-    void onUpnpThDone(bool fOk, const QString & extUrl);
-    void onBradThDone();
-    void onCreateBrac(int sockfd);
-    void onBracThDOne();
 
     void onTreeBuddyDoubleClicked(QTreeWidgetItem * actItem,int col);
     void onInviteBtnClicked();
@@ -205,9 +197,6 @@ private:
 
     RxThread *m_rxth;
     TxThread *m_txth;
-    BradThread * m_bradth;
-    BracThread * m_bracth;
-    UpnpThread * m_upnpth;
 
     ShutdownDialog *m_shutdownDialog;
 

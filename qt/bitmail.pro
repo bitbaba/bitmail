@@ -16,7 +16,6 @@ HEADERS       = mainwindow.h \
                 txthread.h \
                 rxthread.h \
                 msgqueue.h \
-                pollthread.h \
                 paydialog.h \
                 certdialog.h \
                 shutdowndialog.h \
@@ -26,10 +25,7 @@ HEADERS       = mainwindow.h \
                 rssdialog.h \
                 netoptdialog.h \
                 assistantdialog.h \
-                newgroupdialog.h \
-    upnpthread.h \
-    bradthread.h \
-    bracthread.h
+                newgroupdialog.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
@@ -38,7 +34,6 @@ SOURCES       = main.cpp \
                 txthread.cpp \
                 rxthread.cpp \
                 msgqueue.cpp \
-                pollthread.cpp \
                 paydialog.cpp \
                 certdialog.cpp \
                 shutdowndialog.cpp \
@@ -48,10 +43,7 @@ SOURCES       = main.cpp \
                 rssdialog.cpp \
                 netoptdialog.cpp \
                 assistantdialog.cpp \
-                newgroupdialog.cpp \
-    upnpthread.cpp \
-    bradthread.cpp \
-    bracthread.cpp
+                newgroupdialog.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
