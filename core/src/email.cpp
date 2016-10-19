@@ -1,3 +1,4 @@
+# include <bitmailcore/bitmail_internal.h>
 #include <bitmailcore/email.h>
 
 #include <curl/curl.h>

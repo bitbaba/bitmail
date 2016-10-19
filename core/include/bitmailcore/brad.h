@@ -42,7 +42,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 typedef std::string BraId;
 
-
 /**
  * Bra type
  */
@@ -68,32 +67,65 @@ enum BradError{
 	BradErrorSocket = 3,
 };
 
-struct MHD_Daemon;
+/**
+ ***************************************************************
+ * Bra Daemon class
+ ***************************************************************
+ */
+// callback when inbound connection comming
+typedef int (* InboundConnectionCB)(int sockfd, void * userp);
 
-class HttpBrad
-{
+/**
+ * Bra Daemon class
+ */
+class Brad{
 public:
-	HttpBrad(unsigned short port, BMEventCB cb, void * userp);
-	~HttpBrad();
+	explicit Brad(unsigned short port, InboundConnectionCB cb, void * userp);
+	~Brad();
 public:
 	bool Startup();
+	int  WaitForConnections(unsigned int timeoutMs);
 	unsigned short GetPort() const;
 	bool Shutdown();
-public:
-	unsigned short m_port;
-	struct MHD_Daemon * d;
-	BMEventCB m_cb;
+private:
+	unsigned short port_;
+	int servfd_;
+	InboundConnectionCB m_cb;
 	void * m_userp;
 };
 
-class HttpBrac
-{
-private:
-	explicit HttpBrac();
-	~HttpBrac();
-private:
-	static size_t OnTxfer(void *ptr, size_t size, size_t nmemb, void *sstrm);
+/**
+ ***************************************************************
+ * Bra Connection class
+ ***************************************************************
+ */
+class Brac{
 public:
-	static bool SendMsg(const std::string & url, const std::string & request, RTxProgressCB cb, void * userp);
+	/**
+	 * create a outbound connection to Brad
+	 */
+	explicit Brac(const std::string & url, unsigned int timeout);
+	/**
+	 * create a inbound connection accepted by Brad
+	 */
+	explicit Brac(int sockfd);
+	~Brac();
+public:
+	bool IsValidSocket() const;
+	int  sockfd() const;
+	int  IsSendable() const;
+	void Close();
+	bool Send(const std::string & smime, RTxProgressCB cb, void * userp);
+	bool Recv(RTxProgressCB cb, void * userp);
+	void email(const std::string & nm);
+	std::string email(void) const;
+private:
+	bool MakeNonBlocking();
+private:
+	void * curl_;
+	int sockfd_;
+	bool inbound_;
+	std::string rxbuf_;
+	std::string email_;
 };
 

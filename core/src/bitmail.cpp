@@ -1,12 +1,11 @@
 #if defined(WIN32)
 # include <winsock2.h>
 #endif
-
+# include <bitmailcore/bitmail_internal.h>
 # include <bitmailcore/bitmail.h>
 # include <bitmailcore/email.h>
 # include <bitmailcore/x509cert.h>
-# include <json/json.h>
-# include <brad/brad.h>
+# include <bitmailcore/brad.h>
 
 # include <curl/curl.h>
 # include <openssl/cms.h>

@@ -1,3 +1,4 @@
+# include <bitmailcore/bitmail_internal.h>
 #include <bitmailcore/x509cert.h>
 /*
  * Certificate creation. Demonstrates some certificate related operations.
