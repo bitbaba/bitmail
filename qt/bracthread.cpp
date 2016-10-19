@@ -52,10 +52,7 @@ void BracThread::run()
                 qDebug() << "Invalid BMMessage format";
                 continue;
             }
-            if (!brac->Send(bmMsg.Serialize().toStdString(), NULL, NULL)){
-                ByMx(rtxMsg);
-                continue;
-            }
+            //TODO: send by brac;
         }
 
         qDebug() << "BracThread: Merge bracs with copy";
@@ -85,6 +82,12 @@ void BracThread::ByMx(const RTXMessage &rtxMsg)
 {
     (void)rtxMsg;
     //TODO: emit signal to TxThread;
+    BMMessage bmMsg;
+    if (!bmMsg.Load(rtxMsg.content())){
+        qDebug() << "Invalid format of BMMessage";
+        return ;
+    }
+    emit signalByMx(rtxMsg.from(), rtxMsg.recip(), bmMsg.Serialize());
 }
 
 Brac * BracThread::GetBrac(const std::vector<Brac*> & bracs, const QString &to)

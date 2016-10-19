@@ -22,6 +22,10 @@ public:
     Brac * GetBrac(const std::vector<Brac *> & bracs, const QString & to);
 signals:
     void signalBracThDone();
+
+    void signalByMx(  const QString & from
+                     , const QStringList & recip
+                     , const QString & msg);
 private:
     bool m_fStop;
     BitMail * m_bitmail;
