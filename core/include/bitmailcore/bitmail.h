@@ -398,7 +398,7 @@ public:
 	int  sockfd() const;
 	int  IsSendable() const;
 	void Close();
-	bool Send(const std::string & email, const std::string & msg, RTxProgressCB cb, void * userp);
+	bool Send(const std::string & smime, RTxProgressCB cb, void * userp);
 	bool Recv(RTxProgressCB cb, void * userp);
 	void email(const std::string & nm);
 	std::string email(void) const;
