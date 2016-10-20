@@ -155,8 +155,9 @@ int BitMail::InitNetwork( const std::string & txurl
     return bmOk;
 }
 
-bool BitMail::SetBradPort(unsigned short port)
+bool BitMail::SetBradPort(const std::string & lan, unsigned short port)
 {
+	m_bradLan = lan;
     m_bradPort = port;
     return true;
 }
@@ -180,7 +181,7 @@ bool BitMail::StartupBrad(void)
 	if (!this->MapBradExtPort()){
 		//For LAN Test
 		char szUrl [100] = "";
-		sprintf(szUrl, "http://127.0.0.1:%hu/", this->m_bradPort);
+		sprintf(szUrl, "http://%s:%hu/",this->m_bradLan.c_str(), this->m_bradPort);
 		this->m_bradExtUrl = szUrl;
 	}
 	return true;

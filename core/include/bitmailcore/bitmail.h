@@ -232,7 +232,7 @@ public:
     std::string GetFriendID(const std::string & email) const;
 
     // Brad APIs
-    bool SetBradPort(unsigned short port);
+    bool SetBradPort(const std::string & lan, unsigned short port);
 
 	bool StartupBrad();
 
@@ -337,6 +337,7 @@ protected:
     std::map<std::string, std::string> m_brads;
 
     // Bra daemon config
+    std::string          m_bradLan;
     unsigned short       m_bradPort;
     std::string          m_bradExtUrl;
 
