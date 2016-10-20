@@ -31,6 +31,9 @@ void RxThread::run()
         // signal or timeout
         m_inboxPoll.tryAcquire(1, m_checkInterval);
 
+        // check brac events
+        m_bitmail->PollBracs(1000);
+
         // check inbox
         m_bitmail->CheckInbox(RxProgressHandler, this);
     }

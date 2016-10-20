@@ -52,6 +52,7 @@
 //! [0]
 #include "rxthread.h"
 #include "txthread.h"
+#include "bradthread.h"
 #include "optiondialog.h"
 #include "logindialog.h"
 #include "netoptdialog.h"
@@ -75,6 +76,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     : m_bitmail(bitmail)
     , m_rxth(NULL)
     , m_txth(NULL)
+    , m_bradth(NULL)
     , m_shutdownDialog(NULL)
 //! [1] //! [2]
 {
@@ -230,6 +232,12 @@ void MainWindow::startupNetwork()
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
     connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
     m_txth->start();
+
+
+    m_bradth = new BradThread(m_bitmail);
+    connect(m_bradth, SIGNAL(signalBradThDone())
+            , this, SLOT(onBradDone()));
+    m_bradth->start();
 }
 void MainWindow::shutdownNetwork()
 {
@@ -239,11 +247,14 @@ void MainWindow::shutdownNetwork()
     if (m_txth) {
         m_txth->stop();
     }
+    if (m_bradth){
+        m_bradth->stop();
+    }
 }
 void MainWindow::onRxDone()
 {
     m_rxth->wait(1000); delete m_rxth; m_rxth = NULL;
-    if (!m_rxth && !m_txth && m_shutdownDialog){
+    if (!m_rxth && !m_txth && !m_bradth && m_shutdownDialog){
         m_shutdownDialog->done(0);
     }
 }
@@ -263,7 +274,15 @@ void MainWindow::onTxProgress(const QString &info)
 void MainWindow::onTxDone()
 {
     m_txth->wait(1000); delete m_txth; m_txth = NULL;
-    if (!m_rxth && !m_txth && m_shutdownDialog){
+    if (!m_rxth && !m_txth && !m_bradth && m_shutdownDialog){
+        m_shutdownDialog->done(0);
+    }
+}
+
+void MainWindow::onBradDone()
+{
+    m_bradth->wait(1000); delete m_bradth; m_bradth = NULL;
+    if (!m_rxth && !m_txth && !m_bradth && m_shutdownDialog){
         m_shutdownDialog->done(0);
     }
 }
@@ -276,7 +295,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     /**
     * Model here
     */
-    if (m_rxth || m_txth){
+    if (m_rxth || m_txth || m_bradth){
         m_shutdownDialog = new ShutdownDialog(this);
         m_shutdownDialog->exec();
     }
