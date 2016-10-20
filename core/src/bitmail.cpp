@@ -172,12 +172,26 @@ bool BitMail::StartupBrad(void)
 	if (m_brad == NULL){
 		return false;
 	}
-	return m_brad->Startup();
+	if (!m_brad->Startup()){
+		delete m_brad;
+		m_brad = NULL;
+		return false;
+	}
+	if (!this->MapBradExtPort()){
+		//For LAN Test
+		char szUrl [100] = "";
+		sprintf(szUrl, "http://127.0.0.1:%hu/", this->m_bradPort);
+		this->m_bradExtUrl = szUrl;
+	}
+	return true;
 }
 
 int BitMail::ListenBrad(unsigned int timeoutMs)
 {
-	return m_brad->WaitForConnections(timeoutMs);
+	if (m_brad != NULL){
+		return m_brad->WaitForConnections(timeoutMs);
+	}
+	return bmInvalidParam;
 }
 
 void BitMail::ShutdownBrad(void)
@@ -192,6 +206,7 @@ void BitMail::ShutdownBrad(void)
 
 bool BitMail::PollBracs(unsigned int timeoutMs)
 {
+	//TODO: m_bracs MUST be locked by mutex etc;
 	fd_set rfds;
 	FD_ZERO(&rfds);
 	int maxfd = 0;
@@ -215,8 +230,12 @@ bool BitMail::PollBracs(unsigned int timeoutMs)
 
 	int retval = select(maxfd + 1, &rfds, NULL, NULL, &tv);
 
-	if (retval <= 0){
+	if (retval < 0){
 		return false;
+	}
+
+	if (retval == 0){
+		return true;
 	}
 
 	for (std::vector<Brac * >::iterator it = m_bracs.begin(); it != m_bracs.end(); ++it)
@@ -232,6 +251,9 @@ bool BitMail::PollBracs(unsigned int timeoutMs)
 			brac->Close();
 		}
 	}
+
+	//cleanup bad brac connections;
+	this->RemoveBadBrac(120);// two minutes
 
 	return true;
 }
@@ -258,17 +280,18 @@ Brac* BitMail::GetBrac(const std::string & email)
 
 void BitMail::RemoveBadBrac(unsigned int keepalive)
 {
-	for (std::vector<Brac *>::iterator it = m_bracs.begin(); it != m_bracs.end(); it++)
+	for (std::vector<Brac *>::iterator it = m_bracs.begin(); it != m_bracs.end();)
 	{
 		Brac * brac = *it;
-		if (brac->IsValidSocket()){
+		if (!brac->IsValidSocket()){
 			it = m_bracs.erase(it);
 			continue;
 		}
-		if (brac->IsKeepAlive(keepalive)){
+		if (!brac->IsKeepAlive(keepalive)){
 			it = m_bracs.erase(it);
 			continue;
 		}
+		it++;
 	}
 }
 
@@ -400,7 +423,22 @@ int BitMail::SendMsg(const std::vector<std::string> & friends
 	if (friends.size() == 1){
 		std::string to = friends[0];
 		Brac * brac = this->GetBrac(to);
-		if (brac != NULL && brac->IsSendable()){
+		if (brac == NULL){
+			std::string url = this->GetFriendBradExtUrl(to);
+			if (!url.empty()){
+				brac = new Brac(url, 1500, BitMail::EmailHandler, this);
+				if (brac && brac->IsValidSocket()){
+					this->AddBrac(brac);
+				}else{
+					delete brac;
+					brac = NULL;
+				}
+			}
+		}
+		if (brac != NULL ){
+			if (!brac->IsSendable()){
+				brac->Close();
+			}
 			if (brac->Send(smime, cb, userp)){
 				return bmOk;
 			}else{

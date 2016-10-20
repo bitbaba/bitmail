@@ -231,31 +231,24 @@ public:
 
     std::string GetFriendID(const std::string & email) const;
 
-    // Brad
+    // Brad APIs
     bool SetBradPort(unsigned short port);
-
-	unsigned short GetBradPort() const;
 
 	bool StartupBrad();
 
-	int  ListenBrad(unsigned int timeoutMs);
-
-	void ShutdownBrad();
-
-	/**
-	 * Call this poll to check alive and data event of all bra connections.
-	 * Caller may call this poll in another thread,
-	 * please note thread-safety.
-	 */
-	bool PollBracs(unsigned int timeoutMs);
-
 	std::string GetBradExtUrl() const;
-
-	bool MapBradExtPort();
 
     bool SetFriendBradExtUrl(const std::string & email, const std::string & exturl);
 
     std::string GetFriendBradExtUrl(const std::string & email) const;
+
+	unsigned short GetBradPort() const;
+
+	int  ListenBrad(unsigned int timeoutMs);
+
+	bool PollBracs(unsigned int timeoutMs);
+
+	void ShutdownBrad();
 
     // Friends
     int AddFriend(const std::string & email, const std::string & certpem);
@@ -310,6 +303,8 @@ private:
 	Brac * GetBrac(const std::string & email);
 
 	void RemoveBadBrac(unsigned int keepalive);
+
+	bool MapBradExtPort();
 
 protected:
 

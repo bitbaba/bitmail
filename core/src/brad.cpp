@@ -223,7 +223,7 @@ int Brac::sockfd() const
 	return sockfd_;
 }
 
-int Brac::IsSendable() const
+bool Brac::IsSendable() const
 {
 	fd_set rfds, wfds, efds;
 	struct timeval tv;
@@ -246,14 +246,11 @@ int Brac::IsSendable() const
 	retval = select(sockfd_ + 1, NULL, &wfds, NULL, &tv);
 	/* Don't rely on the value of tv now! */
 
-	if (retval == -1){
-		return bmWaitFail;
-	}
-	if (retval == 0){
-		return bmWaitTimeout;
+	if (retval <= 0){
+		return false;
 	}
 
-	return bmOk;
+	return true;
 }
 
 void Brac::Close()
@@ -326,61 +323,63 @@ bool Brac::Recv(RTxProgressCB cb, void * userp)
 		rxbuf_.append(buf, bytes);
 		lastalive_ = (unsigned int )time(NULL);
 	}
-	// TODO: parse bra smime, if possible
-	const char * payload = rxbuf_.data();
-	size_t payloadlen = rxbuf_.length();
-	if (!payloadlen){
-		return true;
+
+	while(true) {
+		const char * payload = rxbuf_.data();
+		size_t payloadlen = rxbuf_.length();
+		if (!payloadlen){
+			return true;
+		}
+		if (payloadlen>=1 && payload[0]!=BRAMAGIC[0]){
+			return false;
+		}
+		if (payloadlen>=2 && (payload[0]!=BRAMAGIC[0]||payload[1]!=BRAMAGIC[1])){
+			return false;
+		}
+		if (payloadlen>=3 && (payload[0]!=BRAMAGIC[0]||payload[1]!=BRAMAGIC[1]||payload[2]!=BRAMAGIC[2])){
+			return false;
+		}
+		if (payloadlen>=4 && (payload[0]!=BRAMAGIC[0]||payload[1]!=BRAMAGIC[1]||payload[2]!=BRAMAGIC[2]||payload[3]!=BRAMAGIC[3])){
+			return false;
+		}
+
+		if (payloadlen < BRAMAGICLEN + sizeof(unsigned int)){
+			return true;
+		}
+
+		unsigned int smimelen = *(unsigned int*)&payload[BRAMAGICLEN];
+
+		if (payloadlen < BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int)){
+			return true;
+		}
+
+		unsigned int crc = *(unsigned int*)&payload[BRAMAGICLEN + sizeof(unsigned int)];
+
+		if (payloadlen < BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int)){
+			return true;
+		}
+
+		unsigned int reserved = *(unsigned int *)&payload[BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int)];
+
+		if (payloadlen < BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int) + smimelen){
+			return true;
+		}
+
+		std::string smime = "";
+		smime.append(payload + BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int), smimelen);
+
+		rxbuf_.erase(0, BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int) + smimelen);
+
+		if (m_cb){
+			BMEventMessage bmeMsg;
+			bmeMsg.h.magic = BMMAGIC;
+			bmeMsg.h.bmef = bmefMessage;
+			bmeMsg.msg  = smime;
+			bmeMsg.src = bmesBrac;
+			bmeMsg.client = this;
+			m_cb((BMEventHead *)&bmeMsg, m_cbp);
+		}
 	}
-	if (payloadlen>=1 && payload[0]!=BRAMAGIC[0]){
-		return false;
-	}
-	if (payloadlen>=2 && (payload[0]!=BRAMAGIC[0]||payload[1]!=BRAMAGIC[1])){
-		return false;
-	}
-	if (payloadlen>=3 && (payload[0]!=BRAMAGIC[0]||payload[1]!=BRAMAGIC[1]||payload[2]!=BRAMAGIC[2])){
-		return false;
-	}
-	if (payloadlen>=4 && (payload[0]!=BRAMAGIC[0]||payload[1]!=BRAMAGIC[1]||payload[2]!=BRAMAGIC[2]||payload[3]!=BRAMAGIC[3])){
-		return false;
-	}
-
-	if (payloadlen < BRAMAGICLEN + sizeof(unsigned int)){
-		return true;
-	}
-
-	unsigned int smimelen = *(unsigned int*)&payload[BRAMAGICLEN];
-
-	if (payloadlen < BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int)){
-		return true;
-	}
-
-	unsigned int crc = *(unsigned int*)&payload[BRAMAGICLEN + sizeof(unsigned int)];
-
-	if (payloadlen < BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int)){
-		return true;
-	}
-
-	unsigned int reserved = *(unsigned int *)&payload[BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int)];
-
-	if (payloadlen < BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int) + smimelen){
-		return true;
-	}
-
-	std::string smime = "";
-	smime.append(payload + BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int), smimelen);
-
-	rxbuf_.erase(0, BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int) + smimelen);
-
-    if (m_cb){
-        BMEventMessage bmeMsg;
-        bmeMsg.h.magic = BMMAGIC;
-        bmeMsg.h.bmef = bmefMessage;
-        bmeMsg.msg  = smime;
-        bmeMsg.src = bmesBrac;
-        bmeMsg.client = this;
-        m_cb((BMEventHead *)&bmeMsg, m_cbp);
-    }
 	return true;
 }
 

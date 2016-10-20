@@ -114,15 +114,15 @@ public:
 	explicit Brac(int sockfd, BMEventCB cb, void * cbp);
 	~Brac();
 public:
-	bool IsValidSocket() const;
-	bool IsKeepAlive(unsigned int keepalive) const;
 	int  sockfd() const;
-	int  IsSendable() const;
-	void Close();
-	bool Send(const std::string & smime, RTxProgressCB cb, void * userp);
-	bool Recv(RTxProgressCB cb, void * userp);
 	void email(const std::string & nm);
 	std::string email(void) const;
+	bool IsValidSocket() const;
+	bool IsKeepAlive(unsigned int keepalive) const;
+	bool IsSendable() const;
+	bool Send(const std::string & smime, RTxProgressCB cb, void * userp);
+	bool Recv(RTxProgressCB cb, void * userp);
+	void Close();
 private:
 	bool MakeNonBlocking();
 private:
