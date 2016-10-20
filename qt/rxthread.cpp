@@ -2,6 +2,7 @@
 #include <QSemaphore>
 #include <bitmailcore/bitmail.h>
 #include <QDebug>
+#include <QDateTime>
 
 static
 int MessageEventHandler(const char * from, const char * msg, unsigned int msglen, const char * certid, const char * cert, void * p);
@@ -25,17 +26,28 @@ RxThread::~RxThread()
 
 void RxThread::run()
 {
+    qint64 lastCheck = QDateTime::currentMSecsSinceEpoch();
+
     m_bitmail->OnMessageEvent(MessageEventHandler, this);
 
     while(!m_fStopFlag){
-        // signal or timeout
-        m_inboxPoll.tryAcquire(1, m_checkInterval);
-
         // check brac events
-        m_bitmail->PollBracs(1000);
+        qDebug() << "RxThread: Poll brac connections";
+        if(!m_bitmail->PollBracs(m_checkInterval)){
+            qDebug() << "RxThread: Failed to poll brac";
+            // Sleep for `checkInterval'
+            qDebug() << "RxThread: Wait for inbox event";
+            m_inboxPoll.tryAcquire(1, m_checkInterval);
+        }
 
-        // check inbox
-        m_bitmail->CheckInbox(RxProgressHandler, this);
+        qDebug() << "RxThread: check timeout of inbox";
+        qint64 now = QDateTime::currentMSecsSinceEpoch();
+        if (lastCheck + m_checkInterval < now){
+            qDebug() << "RxThread: check inbox";
+            m_bitmail->CheckInbox(RxProgressHandler, this);
+            lastCheck = now;
+        }
+        qDebug() << "RxThread: next loop";
     }
 
     m_bitmail->Expunge();

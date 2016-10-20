@@ -17,8 +17,12 @@ void BradThread::run()
         return ;
     }
 
+    qDebug() << "BradThread: exteranl brad url: " << QString::fromStdString(m_bitmail->GetBradExtUrl());
+
     while(!m_fStopFlag){
-        if( bmOk != m_bitmail->ListenBrad(1000)){
+        qDebug() << "BradThread: listen inbound connections";
+
+        if( bmOk != m_bitmail->ListenBrad(6000)){
             qDebug() << "BradThread: Failed to Listen Brad Connections, break";
             break;
         }
