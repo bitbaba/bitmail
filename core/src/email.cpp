@@ -356,6 +356,8 @@ int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
             bmeMsg.h.magic = BMMAGIC;
             bmeMsg.h.bmef = bmefMessage;
             bmeMsg.msg  = smime;
+            bmeMsg.src  = bmesEmail;
+            bmeMsg.client = this;
             m_cb((BMEventHead *)&bmeMsg, m_cbp);
         }
         

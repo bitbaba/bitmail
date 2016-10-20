@@ -67,6 +67,9 @@ enum BradError{
 	BradErrorSocket = 3,
 };
 
+#define BRAMAGIC    ("Brad")
+#define BRAMAGICLEN (4)
+
 /**
  ***************************************************************
  * Bra Daemon class
@@ -104,14 +107,15 @@ public:
 	/**
 	 * create a outbound connection to Brad
 	 */
-	explicit Brac(const std::string & url, unsigned int timeout);
+	explicit Brac(const std::string & url, unsigned int timeout, BMEventCB cb, void * cbp);
 	/**
 	 * create a inbound connection accepted by Brad
 	 */
-	explicit Brac(int sockfd);
+	explicit Brac(int sockfd, BMEventCB cb, void * cbp);
 	~Brac();
 public:
 	bool IsValidSocket() const;
+	bool IsKeepAlive(unsigned int keepalive) const;
 	int  sockfd() const;
 	int  IsSendable() const;
 	void Close();
@@ -125,7 +129,10 @@ private:
 	void * curl_;
 	int sockfd_;
 	bool inbound_;
+	unsigned int lastalive_;
 	std::string rxbuf_;
 	std::string email_;
+	BMEventCB m_cb;
+	void *    m_cbp;
 };
 

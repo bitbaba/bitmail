@@ -6,6 +6,7 @@
 # include <bitmailcore/email.h>
 # include <bitmailcore/x509cert.h>
 # include <bitmailcore/brad.h>
+# include <bitmailcore/rpc.h>
 
 # include <curl/curl.h>
 # include <openssl/cms.h>
@@ -38,6 +39,7 @@ BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
 , m_mc(NULL)
 , m_bradPort(10086), m_bradExtUrl("")
+, m_brad(NULL)
 , m_rx(NULL), m_tx(NULL)
 , m_lock1(NULL), m_lock2(NULL), m_lock3(NULL), m_lock4(NULL)
 {
@@ -45,6 +47,11 @@ BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
     OPENSSL_load_builtin_modules();
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
+
+#ifdef WIN32
+    WSAData wsa;
+    WSAStartup(MAKEWORD(2,2), &wsa);
+#endif
 
     if (lock){
         m_lock1 = lock->CreateLock();
@@ -159,12 +166,36 @@ unsigned short BitMail::GetBradPort() const
     return m_bradPort;
 }
 
-bool BitMail::PollBracs(std::vector<Brac *> & bracs, unsigned int timeoutMs)
+bool BitMail::StartupBrad(void)
+{
+	m_brad = new Brad(m_bradPort, BitMail::InboundHander, this);
+	if (m_brad == NULL){
+		return false;
+	}
+	return m_brad->Startup();
+}
+
+int BitMail::ListenBrad(unsigned int timeoutMs)
+{
+	return m_brad->WaitForConnections(timeoutMs);
+}
+
+void BitMail::ShutdownBrad(void)
+{
+	if (m_brad){
+		m_brad->Shutdown();
+		delete m_brad;
+		m_brad = NULL;
+	}
+	return ;
+}
+
+bool BitMail::PollBracs(unsigned int timeoutMs)
 {
 	fd_set rfds;
 	FD_ZERO(&rfds);
 	int maxfd = 0;
-	for(std::vector<Brac *>::iterator it = bracs.begin(); it != bracs.end(); ++it)
+	for(std::vector<Brac *>::iterator it = m_bracs.begin(); it != m_bracs.end(); ++it)
 	{
 		Brac * brac = *it;
 		if (!brac->IsValidSocket()){
@@ -188,7 +219,7 @@ bool BitMail::PollBracs(std::vector<Brac *> & bracs, unsigned int timeoutMs)
 		return false;
 	}
 
-	for (std::vector<Brac * >::iterator it = bracs.begin(); it != bracs.end(); ++it)
+	for (std::vector<Brac * >::iterator it = m_bracs.begin(); it != m_bracs.end(); ++it)
 	{
 		Brac * brac = *it;
 		if (!brac->IsValidSocket()){
@@ -197,9 +228,48 @@ bool BitMail::PollBracs(std::vector<Brac *> & bracs, unsigned int timeoutMs)
 		if (!FD_ISSET(brac->sockfd(), &rfds)){
 			continue;
 		}
+		if (!brac->Recv(NULL, NULL)){
+			brac->Close();
+		}
 	}
 
 	return true;
+}
+
+void BitMail::AddBrac(Brac * brac)
+{
+	m_bracs.push_back(brac);
+}
+
+Brac* BitMail::GetBrac(const std::string & email)
+{
+	if (email.empty()){
+		return NULL;
+	}
+	for (std::vector<Brac*>::iterator it = m_bracs.begin(); it != m_bracs.end(); it++)
+	{
+		Brac * brac = *it;
+		if (email == brac->email()){
+			return brac;
+		}
+	}
+	return NULL;
+}
+
+void BitMail::RemoveBadBrac(unsigned int keepalive)
+{
+	for (std::vector<Brac *>::iterator it = m_bracs.begin(); it != m_bracs.end(); it++)
+	{
+		Brac * brac = *it;
+		if (brac->IsValidSocket()){
+			it = m_bracs.erase(it);
+			continue;
+		}
+		if (brac->IsKeepAlive(keepalive)){
+			it = m_bracs.erase(it);
+			continue;
+		}
+	}
 }
 
 std::string BitMail::GetBradExtUrl() const
@@ -326,6 +396,18 @@ int BitMail::SendMsg(const std::vector<std::string> & friends
         , RTxProgressCB cb, void * userp)
 {
 	std::string smime = EncMsg(friends, msg, false);
+
+	if (friends.size() == 1){
+		std::string to = friends[0];
+		Brac * brac = this->GetBrac(to);
+		if (brac != NULL && brac->IsSendable()){
+			if (brac->Send(smime, cb, userp)){
+				return bmOk;
+			}else{
+				brac->Close();
+			}
+		}
+	}
 
     if (m_mc->SendMsg( m_profile->GetEmail()
                             , friends
@@ -458,6 +540,92 @@ std::string BitMail::Encrypt(const std::string & text) const
 std::string BitMail::Decrypt(const std::string & code) const
 {
     return m_profile->Decrypt(code);
+}
+
+std::string BitMail::EncMsg(const std::vector<std::string> & friends
+        , const std::string & msg
+        , bool fSignOnly)
+{
+	std::string smime;
+    if (msg.empty()){
+        return smime;
+    }
+    /**
+     * Note:
+     * GroupMsg(msg, vector<bob>) != SendMsg(msg, bob);
+     * GroupMsg must encrypt msg before send it out.
+     */
+    smime = m_profile->Sign(msg);
+
+    if (fSignOnly){
+        return smime;
+    }
+
+    std::vector<CX509Cert> vecTo;
+    for (std::vector<std::string>::const_iterator it = friends.begin();
+            it != friends.end();
+            ++it)
+    {
+        if (m_buddies.find(*it) == m_buddies.end()){
+        	vecTo.clear();
+        	break;
+        }
+		CX509Cert buddy;
+		buddy.LoadCertFromPem(m_buddies[*it]);
+		if (!buddy.IsValid()){
+			vecTo.clear();
+			break;
+		}
+		vecTo.push_back(buddy);
+    }
+
+    if (!vecTo.size()){
+        return smime;
+    }
+
+    smime = CX509Cert::MEncrypt(smime, vecTo);
+
+    return smime;
+}
+
+int BitMail::DecMsg(const std::string & smime
+        , std::string & from
+        , std::string & nick
+        , std::string & msg
+        , std::string & certid
+        , std::string & cert)
+{
+    std::string sMimeBody = smime;
+    BitMail * self = this;
+    if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){
+        sMimeBody = self->m_profile->Decrypt(sMimeBody);
+        if (sMimeBody.empty()){
+            return bmDecryptFail;
+        }
+    }
+
+    CX509Cert buddyCert;
+    if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_signed){
+        buddyCert.LoadCertFromSig(sMimeBody);
+        if (buddyCert.IsValid()){
+            sMimeBody = buddyCert.Verify(sMimeBody);
+            if (sMimeBody.empty()){
+                return bmVerifyFail;
+            }
+        }else{
+            return bmInvalidCert;
+        }
+    }else{
+        return bmInvalidParam;
+    }
+
+    from = buddyCert.GetEmail();
+    nick = buddyCert.GetCommonName();
+    msg = sMimeBody;
+    certid = buddyCert.GetID();
+    cert = buddyCert.GetCertByPem();
+
+    return bmOk;
 }
 
 std::string BitMail::GetFriendNick(const std::string & e) const
@@ -1025,6 +1193,15 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
         }
     }
 
+    if (bmeMsg->src == bmesBrac && bmeMsg->client != NULL){
+    	Brac * brac = (Brac*)bmeMsg->client;
+    	brac->email(buddyCert.GetEmail());
+    }
+    if (bmeMsg->src == bmesEmail && bmeMsg->client != NULL){
+    	CMailClient * mc = (CMailClient*)bmeMsg->client;
+    	// Nothing todo now;
+    }
+
     if (self && self->m_onMessageEvent){
         self->m_onMessageEvent(buddyCert.GetEmail().c_str()
                                 , sMimeBody.data()
@@ -1037,89 +1214,18 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     return bmOk;
 }
 
-std::string BitMail::EncMsg(const std::vector<std::string> & friends
-        , const std::string & msg
-        , bool fSignOnly)
+int BitMail::InboundHander(int sockfd, void * userp)
 {
-	std::string smime;
-    if (msg.empty()){
-        return smime;
-    }
-    /**
-     * Note:
-     * GroupMsg(msg, vector<bob>) != SendMsg(msg, bob);
-     * GroupMsg must encrypt msg before send it out.
-     */
-    smime = m_profile->Sign(msg);
-
-    if (fSignOnly){
-        return smime;
-    }
-
-    std::vector<CX509Cert> vecTo;
-    for (std::vector<std::string>::const_iterator it = friends.begin();
-            it != friends.end();
-            ++it)
-    {
-        if (m_buddies.find(*it) == m_buddies.end()){
-        	vecTo.clear();
-        	break;
-        }
-		CX509Cert buddy;
-		buddy.LoadCertFromPem(m_buddies[*it]);
-		if (!buddy.IsValid()){
-			vecTo.clear();
-			break;
-		}
-		vecTo.push_back(buddy);
-    }
-
-    if (!vecTo.size()){
-        return smime;
-    }
-
-    smime = CX509Cert::MEncrypt(smime, vecTo);
-
-    return smime;
+	BitMail * self = (BitMail *)userp;
+	if (self == NULL){
+		return bmInvalidParam;
+	}
+	Brac * brac = new Brac(sockfd, BitMail::EmailHandler, self);
+	if (!brac->IsValidSocket()){
+		delete brac;
+		brac = NULL;
+		return bmNetworkError;
+	}
+	self->AddBrac(brac);
+	return bmOk;
 }
-
-int BitMail::DecMsg(const std::string & smime
-        , std::string & from
-        , std::string & nick
-        , std::string & msg
-        , std::string & certid
-        , std::string & cert)
-{
-    std::string sMimeBody = smime;
-    BitMail * self = this;
-    if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){
-        sMimeBody = self->m_profile->Decrypt(sMimeBody);
-        if (sMimeBody.empty()){
-            return bmDecryptFail;
-        }
-    }
-
-    CX509Cert buddyCert;
-    if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_signed){
-        buddyCert.LoadCertFromSig(sMimeBody);
-        if (buddyCert.IsValid()){
-            sMimeBody = buddyCert.Verify(sMimeBody);
-            if (sMimeBody.empty()){
-                return bmVerifyFail;
-            }
-        }else{
-            return bmInvalidCert;
-        }
-    }else{
-        return bmInvalidParam;
-    }
-
-    from = buddyCert.GetEmail();
-    nick = buddyCert.GetCommonName();
-    msg = sMimeBody;
-    certid = buddyCert.GetID();
-    cert = buddyCert.GetCertByPem();
-
-    return bmOk;
-}
-

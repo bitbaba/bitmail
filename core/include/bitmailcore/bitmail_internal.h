@@ -18,6 +18,12 @@ enum BMEventFlag{
     bmefMessage      =     2,
 };
 
+enum BMEventSource{
+	bmesUndef = 0,
+	bmesEmail = 1,
+	bmesBrac  = 2,
+};
+
 struct BMEventHead{
     unsigned int magic;
     BMEventFlag bmef;
@@ -36,6 +42,8 @@ struct BMEventMsgCount{
 struct BMEventMessage{
     BMEventHead h;
     std::string msg;
+    BMEventSource src;
+    void * client;
 };
 
 typedef int (* BMEventCB)(BMEventHead * h, void * userp);

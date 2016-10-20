@@ -38,10 +38,14 @@
 #include <curl/curl.h>
 #include <microhttpd.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #if !defined(WIN32)
-#define closesocket(fd) close(fd)
+#define closesocket(fd)     close(fd)
 #include <arpa/inet.h>
+#define sockerrno           errno
+#else
+#define sockerrno           (WSAGetLastError())
 #endif
 
 Brad::Brad(unsigned short port, InboundConnectionCB cb, void * userp)
@@ -60,6 +64,9 @@ Brad::~Brad()
 bool Brad::Startup()
 {
 	servfd_ = socket(AF_INET, SOCK_STREAM, 0);
+	if (servfd_ == CURL_SOCKET_BAD){
+		return false;
+	}
 
 	struct sockaddr_in my_addr;
 	memset(&my_addr, 0, sizeof(my_addr));
@@ -110,7 +117,7 @@ int Brad::WaitForConnections(unsigned int timeoutMs)
 		return bmWaitFail;
 	}
 	if (retval == 0){
-		return bmWaitTimeout;
+		return bmOk;
 	}
 
 	if (!FD_ISSET(servfd_, &rfds)){
@@ -145,12 +152,14 @@ bool Brad::Shutdown()
 	return true;
 }
 
-Brac::Brac(const std::string & url, unsigned int timeout)
+Brac::Brac(const std::string & url, unsigned int timeout, BMEventCB cb, void * cbp)
 	: sockfd_(CURL_SOCKET_BAD)
 	, curl_(NULL)
 	, inbound_(false)
+	, lastalive_((unsigned int)time(NULL))
 	, rxbuf_("")
 	, email_("")
+	, m_cb(cb), m_cbp(cbp)
 {
 	CURLcode res;
 	curl_ = curl_easy_init();
@@ -176,12 +185,14 @@ Brac::Brac(const std::string & url, unsigned int timeout)
 	}
 }
 
-Brac::Brac(int sockfd)
+Brac::Brac(int sockfd, BMEventCB cb, void * cbp)
 	: sockfd_(sockfd)
 	, curl_(NULL)
 	, inbound_(true)
+	, lastalive_((unsigned int)time(NULL))
 	, rxbuf_("")
 	, email_("")
+	, m_cb(cb), m_cbp(cbp)
 {
 	if (sockfd_ != CURL_SOCKET_BAD){
 		MakeNonBlocking();
@@ -196,6 +207,15 @@ Brac::~Brac()
 bool Brac::IsValidSocket() const
 {
 	return (sockfd_ != CURL_SOCKET_BAD);
+}
+
+bool Brac::IsKeepAlive(unsigned int keepalive) const
+{
+	unsigned int now = (unsigned int)time(NULL);
+	if (lastalive_ + keepalive < now){
+		return false;
+	}
+	return true;
 }
 
 int Brac::sockfd() const
@@ -250,12 +270,117 @@ void Brac::Close()
 
 bool Brac::Send(const std::string & smime, RTxProgressCB cb, void * userp)
 {
-	//TODO: encrypting message by BitMail::EncMsg(...);
+	int bytes = ::send(sockfd_, BRAMAGIC, BRAMAGICLEN, 0);
+	if (bytes != BRAMAGICLEN){
+		return false;
+	}
+
+	// Note: sizeof(unsigned int) should be 4
+	// or use `typeof unsigned int Uint4'
+	// Use big-endian to send and receive
+	unsigned int payloadlen = smime.length();
+	bytes = ::send(sockfd_, (const char *)&payloadlen, sizeof(payloadlen), 0);
+	if (bytes != sizeof(payloadlen)){
+		return false;
+	}
+
+	unsigned int crc = 0;
+	bytes = ::send(sockfd_, (const char *)&crc, sizeof(crc), 0);
+	if (bytes != sizeof(crc)){
+		return false;
+	}
+
+	unsigned int reserved = 0;
+	bytes = ::send(sockfd_, (const char *)&reserved, sizeof(reserved), 0);
+	if (bytes != sizeof(reserved)){
+		return false;
+	}
+
+	const char * payload = smime.data();
+	bytes = ::send(sockfd_, payload, payloadlen, 0);
+	if (bytes != payloadlen){
+		return false;
+	}
 	return true;
 }
 
 bool Brac::Recv(RTxProgressCB cb, void * userp)
 {
+	char buf[1024] = "";
+	while(true){
+		int bytes = ::recv(sockfd_, buf, sizeof(buf), 0);
+                int errcode = sockerrno;
+		if (bytes == 0){
+			// `End-of-file' on socket, shutdown by peer.
+			return false;
+		}
+		if (bytes < 0){
+			// Shit!: windows vs2010
+			if (errcode == 10035){
+			//if (errcode == EAGAIN || errcode == EWOULDBLOCK || errcode == EINTR){
+				break;
+			}else{
+				return false;
+			}
+		}
+		rxbuf_.append(buf, bytes);
+		lastalive_ = (unsigned int )time(NULL);
+	}
+	// TODO: parse bra smime, if possible
+	const char * payload = rxbuf_.data();
+	size_t payloadlen = rxbuf_.length();
+	if (!payloadlen){
+		return true;
+	}
+	if (payloadlen>=1 && payload[0]!=BRAMAGIC[0]){
+		return false;
+	}
+	if (payloadlen>=2 && (payload[0]!=BRAMAGIC[0]||payload[1]!=BRAMAGIC[1])){
+		return false;
+	}
+	if (payloadlen>=3 && (payload[0]!=BRAMAGIC[0]||payload[1]!=BRAMAGIC[1]||payload[2]!=BRAMAGIC[2])){
+		return false;
+	}
+	if (payloadlen>=4 && (payload[0]!=BRAMAGIC[0]||payload[1]!=BRAMAGIC[1]||payload[2]!=BRAMAGIC[2]||payload[3]!=BRAMAGIC[3])){
+		return false;
+	}
+
+	if (payloadlen < BRAMAGICLEN + sizeof(unsigned int)){
+		return true;
+	}
+
+	unsigned int smimelen = *(unsigned int*)&payload[BRAMAGICLEN];
+
+	if (payloadlen < BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int)){
+		return true;
+	}
+
+	unsigned int crc = *(unsigned int*)&payload[BRAMAGICLEN + sizeof(unsigned int)];
+
+	if (payloadlen < BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int)){
+		return true;
+	}
+
+	unsigned int reserved = *(unsigned int *)&payload[BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int)];
+
+	if (payloadlen < BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int) + smimelen){
+		return true;
+	}
+
+	std::string smime = "";
+	smime.append(payload + BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int), smimelen);
+
+	rxbuf_.erase(0, BRAMAGICLEN + sizeof(unsigned int) + sizeof(unsigned int) + sizeof(unsigned int) + smimelen);
+
+    if (m_cb){
+        BMEventMessage bmeMsg;
+        bmeMsg.h.magic = BMMAGIC;
+        bmeMsg.h.bmef = bmefMessage;
+        bmeMsg.msg  = smime;
+        bmeMsg.src = bmesBrac;
+        bmeMsg.client = this;
+        m_cb((BMEventHead *)&bmeMsg, m_cbp);
+    }
 	return true;
 }
 
