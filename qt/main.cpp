@@ -312,7 +312,7 @@ namespace BMQTApplication {
             if (joProfile.contains("brad")){
                 joBrad = joProfile["brad"].toObject();
                 unsigned short port = joBrad["port"].toInt();
-                bm->SetBradPort(port);
+                bm->SetBradPort(BMQTApplication::GetLanIp().toStdString(), port);
             }
             if (bmOk != bm->LoadProfile(passphrase.toStdString()
                             , qsKey.toStdString()

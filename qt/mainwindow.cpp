@@ -598,7 +598,7 @@ void MainWindow::onNetConfig()
     }while(0);
 
     do {
-        m_bitmail->SetBradPort(optDialog.BradPort());
+        m_bitmail->SetBradPort(BMQTApplication::GetLanIp().toStdString(), optDialog.BradPort());
     }while(0);
 
     return ;
