@@ -1,3 +1,11 @@
 /NSIS/
 /*.exe
 /*.dll
+/.qmake.stash
+/Makefile
+/Makefile.*
+/*.Debug
+/*.Release
+/*.h
+/*.cpp
+/debug/
