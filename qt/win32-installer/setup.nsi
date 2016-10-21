@@ -89,10 +89,10 @@ Section "BitMail" SecBitMail
   File "locale\*.qm"
   
   SetOutPath "$INSTDIR\platforms"
-  File "platforms\*.dll"
+  File "qtdist\platforms\*.dll"
   
   SetOutPath "$INSTDIR\imageformats"
-  File "imageformats\*.dll"
+  File "qtdist\imageformats\*.dll"
     
   ;Store installation folder
   WriteRegStr HKCU "Software\BitMail" "Location" "$INSTDIR"
