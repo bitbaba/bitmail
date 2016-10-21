@@ -75,11 +75,6 @@ Section "BitMail" SecBitMail
 	File "qtdist\Qt5Widgets.dll"
 	File "qtdist\Qt5Network.dll"
 	
-  SetOutPath "$INSTDIR"	
-	File "qtdist\icudt54.dll"
-	File "qtdist\icuin54.dll"
-	File "qtdist\icuuc54.dll"
-	
   SetOutPath "$INSTDIR"
 	File "qtdist\libgcc_s_dw2-1.dll"
 	File "qtdist\libstdc++-6.dll"
