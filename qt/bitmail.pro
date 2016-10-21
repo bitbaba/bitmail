@@ -26,7 +26,8 @@ HEADERS       = mainwindow.h \
                 netoptdialog.h \
                 assistantdialog.h \
                 newgroupdialog.h \
-    bradthread.h
+    bradthread.h \
+    lock.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
@@ -45,7 +46,8 @@ SOURCES       = main.cpp \
                 netoptdialog.cpp \
                 assistantdialog.cpp \
                 newgroupdialog.cpp \
-    bradthread.cpp
+    bradthread.cpp \
+    lock.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]

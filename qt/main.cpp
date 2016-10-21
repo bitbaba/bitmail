@@ -59,6 +59,9 @@
 #include "assistantdialog.h"
 #include <bitmailcore/bitmail.h>
 #include "main.h"
+#include "lock.h"
+
+
 static
 FILE * gLoggerHandle = NULL;
 int main(int argc, char *argv[])
@@ -143,7 +146,7 @@ int main(int argc, char *argv[])
         }
     };
 
-    BitMail * bitmail = new BitMail();
+    BitMail * bitmail = new BitMail(new BMLockFactory());
     if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
         qDebug() << "Failed to Load Profile, bye!";
         return 0;
