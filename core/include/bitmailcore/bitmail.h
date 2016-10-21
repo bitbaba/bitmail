@@ -248,6 +248,8 @@ public:
 
 	bool PollBracs(unsigned int timeoutMs);
 
+	void RefreshBracs(unsigned int keepalive);
+
 	void ShutdownBrad();
 
     // Friends
@@ -301,8 +303,6 @@ private:
 	void AddBrac(Brac * brac);
 
 	Brac * GetBrac(const std::string & email);
-
-	void RemoveBadBrac(unsigned int keepalive);
 
 	bool MapBradExtPort();
 

@@ -298,6 +298,10 @@ bool Brac::Send(const std::string & smime, RTxProgressCB cb, void * userp)
 	if (bytes != payloadlen){
 		return false;
 	}
+
+	// remember last alive
+	lastalive_ = (unsigned int)time(NULL);
+
 	return true;
 }
 

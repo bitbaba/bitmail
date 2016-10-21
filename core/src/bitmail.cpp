@@ -271,9 +271,6 @@ bool BitMail::PollBracs(unsigned int timeoutMs)
 		}
 	}
 
-	//cleanup bad brac connections;
-	this->RemoveBadBrac(120);// two minutes
-
 	return true;
 }
 
@@ -314,7 +311,7 @@ Brac* BitMail::GetBrac(const std::string & email)
 	return NULL;
 }
 
-void BitMail::RemoveBadBrac(unsigned int keepalive)
+void BitMail::RefreshBracs(unsigned int keepalive)
 {
 	if (m_bracLock) m_bracLock->Lock();
 
@@ -326,6 +323,8 @@ void BitMail::RemoveBadBrac(unsigned int keepalive)
 			continue;
 		}
 		if (!brac->IsKeepAlive(keepalive)){
+			//Fix: if not alive, close socket and erase record;
+			brac->Close();
 			it = m_bracs.erase(it);
 			continue;
 		}
@@ -466,20 +465,15 @@ int BitMail::SendMsg(const std::vector<std::string> & friends
 		if (brac == NULL){
 			std::string url = this->GetFriendBradExtUrl(to);
 			if (!url.empty()){
-				brac = new Brac(url, 1500, BitMail::EmailHandler, this);
-				if (brac && brac->IsValidSocket()){
+				brac = new Brac(url, 6000, BitMail::EmailHandler, this);
+				if (brac != NULL){ // name new born connection;
+					brac->email(to);
 					this->AddBrac(brac);
-				}else{
-					delete brac;
-					brac = NULL;
 				}
 			}
 		}
 		if (brac != NULL ){
-			if (!brac->IsSendable()){
-				brac->Close();
-			}
-			if (brac->Send(smime, cb, userp)){
+			if (brac->IsSendable() && brac->Send(smime, cb, userp)){
 				return bmOk;
 			}else{
 				brac->Close();
