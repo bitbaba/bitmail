@@ -40,6 +40,9 @@ void RxThread::run()
             m_inboxPoll.tryAcquire(1, m_checkInterval);
         }
 
+        // Refresh brac connections, in 5 minutes
+        m_bitmail->RefreshBracs(300);
+
         qDebug() << "RxThread: check timeout of inbox";
         qint64 now = QDateTime::currentMSecsSinceEpoch();
         if (lastCheck + m_checkInterval < now){
