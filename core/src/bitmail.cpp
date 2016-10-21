@@ -42,6 +42,7 @@ BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
 , m_brad(NULL)
 , m_rx(NULL), m_tx(NULL)
 , m_lock1(NULL), m_lock2(NULL), m_lock3(NULL), m_lock4(NULL)
+, m_bracLock(NULL)
 {
     OpenSSL_add_all_ciphers();
     OPENSSL_load_builtin_modules();
@@ -58,6 +59,7 @@ BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
         m_lock2 = lock->CreateLock();
         m_lock3 = lock->CreateLock();
         m_lock4 = lock->CreateLock();
+        m_bracLock = lock->CreateLock();
         m_lockCraft = lock;
     }
 
@@ -105,6 +107,10 @@ BitMail::~BitMail()
     if (m_lock4){
         m_lockCraft->FreeLock(m_lock4);
         m_lock4 = NULL;
+    }
+    if (m_bracLock){
+    	m_lockCraft->FreeLock(m_bracLock);
+    	m_bracLock = NULL;
     }
 }
 
@@ -208,10 +214,20 @@ void BitMail::ShutdownBrad(void)
 bool BitMail::PollBracs(unsigned int timeoutMs)
 {
 	//TODO: m_bracs MUST be locked by mutex etc;
-	fd_set rfds;
-	FD_ZERO(&rfds);
+
+	if (m_bracLock){
+		m_bracLock->Lock();
+	}
+	std::vector<Brac *> copyBracs = m_bracs;
+	if (m_bracLock){
+		m_bracLock->Unlock();
+	}
+
 	int maxfd = 0;
-	for(std::vector<Brac *>::iterator it = m_bracs.begin(); it != m_bracs.end(); ++it)
+	fd_set rfds; FD_ZERO(&rfds);
+	for(std::vector<Brac *>::iterator it = copyBracs.begin()
+			; it != copyBracs.end()
+			; ++it)
 	{
 		Brac * brac = *it;
 		if (!brac->IsValidSocket()){
@@ -239,7 +255,9 @@ bool BitMail::PollBracs(unsigned int timeoutMs)
 		return true;
 	}
 
-	for (std::vector<Brac * >::iterator it = m_bracs.begin(); it != m_bracs.end(); ++it)
+	for (std::vector<Brac * >::iterator it = copyBracs.begin()
+			; it != copyBracs.end()
+			; ++it)
 	{
 		Brac * brac = *it;
 		if (!brac->IsValidSocket()){
@@ -261,7 +279,15 @@ bool BitMail::PollBracs(unsigned int timeoutMs)
 
 void BitMail::AddBrac(Brac * brac)
 {
+	if (m_bracLock){
+		m_bracLock->Lock();
+	}
+
 	m_bracs.push_back(brac);
+
+	if (m_bracLock){
+		m_bracLock->Unlock();
+	}
 }
 
 Brac* BitMail::GetBrac(const std::string & email)
@@ -269,7 +295,16 @@ Brac* BitMail::GetBrac(const std::string & email)
 	if (email.empty()){
 		return NULL;
 	}
-	for (std::vector<Brac*>::iterator it = m_bracs.begin(); it != m_bracs.end(); it++)
+	if (m_bracLock){
+		m_bracLock->Lock();
+	}
+	std::vector<Brac *> copyBracs = m_bracs;
+	if (m_bracLock){
+		m_bracLock->Unlock();
+	}
+	for (std::vector<Brac*>::iterator it = copyBracs.begin()
+			; it != copyBracs.end()
+			; it++)
 	{
 		Brac * brac = *it;
 		if (email == brac->email()){
@@ -281,6 +316,8 @@ Brac* BitMail::GetBrac(const std::string & email)
 
 void BitMail::RemoveBadBrac(unsigned int keepalive)
 {
+	if (m_bracLock) m_bracLock->Lock();
+
 	for (std::vector<Brac *>::iterator it = m_bracs.begin(); it != m_bracs.end();)
 	{
 		Brac * brac = *it;
@@ -294,6 +331,8 @@ void BitMail::RemoveBadBrac(unsigned int keepalive)
 		}
 		it++;
 	}
+
+	if (m_bracLock)m_bracLock->Unlock();
 }
 
 std::string BitMail::GetBradExtUrl() const

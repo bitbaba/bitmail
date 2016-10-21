@@ -352,6 +352,7 @@ protected:
     ILock * m_lock2;
     ILock * m_lock3;
     ILock * m_lock4;
+    ILock * m_bracLock;
     ILockFactory * m_lockCraft;
 
     // Custom network
