@@ -88,6 +88,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(BitMail * bitmail);
     ~MainWindow();
+    void configNetwork();
+    void startupNetwork();
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 public slots:
@@ -146,7 +148,6 @@ private:
     void populateSubscribeTree(QTreeWidgetItem * node);
     void clearMsgView();
     void populateMsgView(const QString & email);
-    void startupNetwork();
     void shutdownNetwork();
     void setNotify(MsgType, const QString & key);
     void enqueueMsg(MsgType mt, const QString & key, const RTXMessage & rtxMsg);

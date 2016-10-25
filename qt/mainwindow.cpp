@@ -217,6 +217,12 @@ MainWindow::MainWindow(BitMail * bitmail)
 MainWindow::~MainWindow()
 {
 }
+
+void MainWindow::configNetwork()
+{
+    onNetConfig();
+}
+
 void MainWindow::startupNetwork()
 {
     m_rxth = new RxThread(m_bitmail);
@@ -483,7 +489,7 @@ void MainWindow::createActions()
 void MainWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("Profile"));
-    fileToolBar->addAction(actNetwork);
+    //fileToolBar->addAction(actNetwork);
     fileToolBar->addAction(configAct);
     fileToolBar->addAction(actNetConfig);
 

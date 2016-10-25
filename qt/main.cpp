@@ -155,6 +155,14 @@ int main(int argc, char *argv[])
     if (!fAssistant){
         MainWindow mainWin(bitmail);
         mainWin.show();
+        if (bitmail->GetTxUrl().empty()){
+            mainWin.configNetwork();
+            if (bitmail->GetTxUrl().empty()){
+                qDebug() << "Main: no network configuration, exit";
+                return 0;
+            }
+        }
+        mainWin.startupNetwork();
         app.exec();
     }else{
         AssistantDialog assistantDlg(bitmail);
