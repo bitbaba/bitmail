@@ -185,10 +185,11 @@ bool BitMail::StartupBrad(void)
 		return false;
 	}
 	if (!this->MapBradExtPort()){
-		//For LAN Test
-		char szUrl [100] = "";
-		sprintf(szUrl, "http://%s:%hu/",this->m_bradLan.c_str(), this->m_bradPort);
-		this->m_bradExtUrl = szUrl;
+		if (false){//For LAN Test
+			char szUrl [100] = "";
+			sprintf(szUrl, "http://%s:%hu/",this->m_bradLan.c_str(), this->m_bradPort);
+			this->m_bradExtUrl = szUrl;
+		}
 	}
 	return true;
 }
