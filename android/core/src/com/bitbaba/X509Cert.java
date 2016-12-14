@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.math.BigInteger;
@@ -29,7 +30,11 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -49,8 +54,26 @@ import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.cms.CMSAlgorithm;
+import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.CMSTypedData;
+import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -64,10 +87,16 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 import org.bouncycastle.openssl.jcajce.JcePEMEncryptorBuilder;
+import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DigestCalculator;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.util.Store;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
+
+import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 /**
  * @author Administrator
@@ -302,24 +331,188 @@ public class X509Cert {
 		return true;
 	}
 	
-	public String Encrypt(String msg)
+	public String Encrypt(String text)
 	{
-		return msg;
+		CMSTypedData msg = new CMSProcessableByteArray(text.getBytes());
+	
+	   	CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+	
+		try {
+			edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(cert_).setProvider(BouncyCastleProvider.PROVIDER_NAME));
+		} catch (CertificateEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+	   	CMSEnvelopedData ed = null;
+		try {
+			ed = edGen.generate(msg, new JceCMSContentEncryptorBuilder(CMSAlgorithm.DES_EDE3_CBC).setProvider("BC").build());
+		} catch (CMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	   
+		try {
+			return Base64.encode(ed.getEncoded());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return "";
 	}
 	
-	public String Decrypt(String smime)
+	public String Decrypt(String cms)
 	{
-		return smime;
+		CMSEnvelopedData ed = null;
+		try {
+			ed = new CMSEnvelopedData(Base64.decode(cms));
+		} catch (Base64DecodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "";
+		} catch (CMSException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "";
+		}
+
+		RecipientInformationStore  recipients = ed.getRecipientInfos();
+
+		Collection  c = recipients.getRecipients();
+		
+		Iterator    it = c.iterator();
+
+		if (it.hasNext())
+		{
+			RecipientInformation   recipient = (RecipientInformation)it.next();
+	
+			byte[] recData = null;
+			try {
+				recData = recipient.getContent(new JceKeyTransEnvelopedRecipient(key_).setProvider("BC"));
+			} catch (CMSException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return "";
+			}
+			
+			try {
+				return new String(recData, java.nio.charset.StandardCharsets.UTF_8.name());
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return "";
+			}			
+		}
+		return "";
 	}
 	
-	public String Sign(String msg)
+	public String Sign(String text)
 	{
-		return msg;
+		CMSTypedData msg = new CMSProcessableByteArray(text.getBytes());
+		ArrayList<X509Certificate> certList = new ArrayList<X509Certificate>();
+		certList.add(cert_);
+		Store st = null;
+		try {
+			st = new JcaCertStore(certList);
+		} catch (CertificateEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+		ContentSigner signer;
+		try {
+			signer = new JcaContentSignerBuilder("SHA1WithRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(key_);
+		} catch (OperatorCreationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		try {
+			gen.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().setProvider("BC").build()).build(signer, cert_));
+		} catch (CertificateEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "";
+		} catch (OperatorCreationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "";
+		}
+		try {
+			gen.addCertificates(st);
+		} catch (CMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+		CMSSignedData sig = null;
+		try {
+			sig = gen.generate(msg, true);
+		} catch (CMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			return Base64.encode(sig.getEncoded());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "";
 	}
 	
-	public String Verify(String smime)
+	public String Verify(String cms)
 	{
-		return smime;
+		CMSSignedData sig;
+		try {
+			sig = new CMSSignedData(Base64.decode(cms));
+		} catch (Base64DecodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "";
+		} catch (CMSException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "";
+		}
+		
+		Store                   st = sig.getCertificates();
+		SignerInformationStore  signers = sig.getSignerInfos();
+		Collection              c = signers.getSigners();
+		Iterator                it = c.iterator();
+
+		while (it.hasNext())
+		{
+			SignerInformation   signer = (SignerInformation)it.next();
+			Collection          certCollection = st.getMatches(signer.getSID());
+	
+			Iterator              certIt = certCollection.iterator();
+			X509CertificateHolder cert = (X509CertificateHolder)certIt.next();
+	
+			try {
+				try {
+					if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(cert)))
+					{
+						System.out.println("Yes");
+					}
+				} catch (CertificateException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return "";
+				}
+			} catch (OperatorCreationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return "";
+			} catch (CMSException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return "";
+			}
+		}
+		return "";
 	}
 	
 	public static String MEncrypt(String [] certs, String msg)
