@@ -74,131 +74,19 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
  *
  */
 public class X509Cert {
-	private PrivateKey key_;
-	private X509Certificate cert_;
+	private PrivateKey key_ = null;
+	private X509Certificate cert_ = null;
 
-	public X509Cert(String nick, String email, int bits){
-		/*
-		if (true){
-			StringWriter sw = new StringWriter();
-			PEMWriter out = new PEMWriter(sw);
-			try {
-				out.writeObject(cert);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				out.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			cert_ = (sw.toString());	
-		}
-		
-		if (true){
-			StringWriter sw = new StringWriter();
-			PEMWriter out = new PEMWriter(sw);
-			try {
-				out.writeObject(pair.getPrivate());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				out.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			key_ = (sw.toString());
-		}
-		*/
-  
-	}
-	/*
-	public boolean MakeCertDeprecated(String nick, String email, int bits)
+	public X509Cert()
 	{
-	    KeyPairGenerator kpGen = null;
-		try {
-			kpGen = KeyPairGenerator.getInstance("RSA", "BC");
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    
-	    kpGen.initialize(bits != 0 ? bits : 2048, new SecureRandom());
-	    
-	    // Protect Private Key with a passphrase 
-	    //http://stackoverflow.com/questions/5127379/how-to-generate-a-rsa-keypair-with-a-privatekey-encrypted-with-password
-	    KeyPair pair = kpGen.generateKeyPair();	   
-
-	    X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
-	    
-	    certGen.setSerialNumber(new BigInteger("1"));
-	    
-	    certGen.setIssuerDN(new X500Principal("CN=" + nick + ",EmailAddress=" + email));
-	    
-	    certGen.setNotBefore(new Date(System.currentTimeMillis()));
-	    
-	    certGen.setNotAfter(new Date(System.currentTimeMillis() + 30000*86400000));
-	    
-	    certGen.setSubjectDN(new X500Principal("CN=" + nick + ",EmailAddress=" + email));
-	    
-	    certGen.setPublicKey(pair.getPublic());
-	    
-	    certGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
-	    
-	    certGen.addExtension(X509Extensions.BasicConstraints
-	    		, true
-	    		, new BasicConstraints(false));
-	    
-	    certGen.addExtension(X509Extensions.KeyUsage
-	    		, true
-	    		, new KeyUsage(KeyUsage.digitalSignature 
-	    				| KeyUsage.cRLSign
-	    				| KeyUsage.dataEncipherment
-	    				//| KeyUsage.decipherOnly
-	    				//| KeyUsage.encipherOnly
-	    				| KeyUsage.keyAgreement
-	    				| KeyUsage.keyCertSign
-	    				| KeyUsage.keyEncipherment
-	    				| KeyUsage.nonRepudiation ));
-	    
-	    certGen.addExtension(X509Extensions.ExtendedKeyUsage
-	    		, true
-	    		, new ExtendedKeyUsage( KeyPurposeId.anyExtendedKeyUsage));
-	    
-	    certGen.addExtension(X509Extensions.SubjectAlternativeName
-	    		, false
-	    		, new GeneralNames(new GeneralName(GeneralName.rfc822Name, email)));
-	    
-	    X509Certificate cert = null;
-		try {
-			cert = certGen.generateX509Certificate(pair.getPrivate(), "BC");
-		} catch (InvalidKeyException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (NoSuchProviderException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (SecurityException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (SignatureException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 		
-		return false;
 	}
-	*/
 	
-	public boolean MakeCert(String nick, String email, int bits)
+	public X509Cert(String nick, String email, int bits){
+		  MakeCertificate(nick, email, bits);
+	}
+		
+	public boolean MakeCertificate(String nick, String email, int bits)
 	{
 		KeyPairGenerator kpg = null;
 		try {
@@ -222,13 +110,13 @@ public class X509Cert {
         String issuerDN = "CN=" + nick + ",EmailAddress=" + email;
         String subjectDN = issuerDN; // self-signed
         
-        X509v3CertificateBuilder v3CertGen = new JcaX509v3CertificateBuilder(
-            new X500Name(issuerDN),
-            new BigInteger("1"),
-            new Date(System.currentTimeMillis()),
-            new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24 * (30000/*days*/))),
-            new X500Name(subjectDN),
-            subPub);
+        X509v3CertificateBuilder v3CertGen = 
+        		new JcaX509v3CertificateBuilder(new X500Name(issuerDN),
+									            new BigInteger("1"),
+									            new Date(System.currentTimeMillis()),
+									            new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24 * (30000/*days*/))),
+									            new X500Name(subjectDN),
+									            subPub);
 
         JcaContentSignerBuilder contentSignerBuilder = new JcaContentSignerBuilder("SHA1WithRSA");
 
@@ -244,6 +132,7 @@ public class X509Cert {
 		} catch (CertIOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			return false;
 		}
 
         try {
@@ -254,6 +143,7 @@ public class X509Cert {
 		} catch (CertIOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
 
         try {
@@ -264,6 +154,7 @@ public class X509Cert {
 		} catch (CertIOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
         
         try {
@@ -281,25 +172,29 @@ public class X509Cert {
 		} catch (CertIOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			return false;
 		}
         
         try {
 			v3CertGen.addExtension(Extension.extendedKeyUsage
-					, true
-					, new ExtendedKeyUsage( KeyPurposeId.anyExtendedKeyUsage));
+								, true
+								, new ExtendedKeyUsage( KeyPurposeId.anyExtendedKeyUsage));
 		} catch (CertIOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			return false;
 		}
 
 		try {
-			cert_ = new JcaX509CertificateConverter().setProvider("BC").getCertificate(v3CertGen.build(contentSignerBuilder.build(key_)));
+			cert_ = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(v3CertGen.build(contentSignerBuilder.build(key_)));
 		} catch (CertificateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		} catch (OperatorCreationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
 
         try {
@@ -307,59 +202,40 @@ public class X509Cert {
 		} catch (CertificateExpiredException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		} catch (CertificateNotYetValidException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
         try {
         	cert_.verify(issPub);
 		} catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		} catch (CertificateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		} catch (NoSuchProviderException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		} catch (SignatureException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
         
 		return true;
 	}
 	
-	public boolean Load(String key, String passphrase, String cert)
-	{
-		// Ref:
-		// bcpkix-jdk15on-155/bcpkix-jdk15on-155/org/bouncycastle/openssl/test/WriterTest.java
-    
-        /*
-		StringWriter sw = new StringWriter();
-		PEMWriter out = new PEMWriter(sw);
-		try {
-			out.writeObject(privKey);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
-		try {
-			out.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
-		*/
-		return true;
-	}
-	
-	public X509Certificate LoadCertificate(String certPEMData)
+	public boolean LoadCertificate(String certPEMData)
 	{
 		PEMParser pemParser = new PEMParser(new StringReader(certPEMData));
 		Object o = null;
@@ -368,25 +244,25 @@ public class X509Cert {
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-			return null;
+			return false;
 		}
         if (o == null || !(o instanceof X509CertificateHolder))
         {
-            return null;
+            return false;
         }
         X509CertificateHolder x509CertificateHolder = (X509CertificateHolder) o;
-        X509Certificate cert = null;
 		try {
-			cert = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(x509CertificateHolder);
+			cert_ = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(x509CertificateHolder);
 		} catch (CertificateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return null;
+			return false;
 		}
-        return cert;
+		
+        return true;
 	}
 	
-	public PrivateKey LoadPrivateKey(String keyPEMData, String passphrase)
+	public boolean LoadPrivateKey(String keyPEMData, String passphrase)
 	{
 		PEMParser pr = new PEMParser(new StringReader(keyPEMData));
 		Object o = null;
@@ -395,11 +271,11 @@ public class X509Cert {
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-			return null;
+			return false;
 		}
-		if (o == null || !(o instanceof PEMEncryptedKeyPair) || !(o instanceof PEMKeyPair))
+		if (o == null || (!(o instanceof PEMEncryptedKeyPair) && !(o instanceof PEMKeyPair)))
 		{
-		    return null;
+		    return false;
 		}
 		KeyPair kp = null;
 		try {
@@ -408,22 +284,22 @@ public class X509Cert {
 			}else if (o instanceof PEMKeyPair){
 				kp = new JcaPEMKeyConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getKeyPair(((PEMKeyPair)o));
 			}else{
-				return null;
+				return false;
 			}
 		} catch (PEMException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return null;
+			return false;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return null;
+			return false;
 		}
 		if (kp == null){
-			return null;
+			return false;
 		}	
-		PrivateKey key = kp.getPrivate();	
-		return key;
+		key_ = kp.getPrivate();	
+		return true;
 	}
 	
 	public String Encrypt(String msg)
@@ -454,63 +330,51 @@ public class X509Cert {
 		}
 		return msg;
 	}
-	
-	public void Dump()
+
+	public String GetCertificate()
 	{
-		System.out.println(cert_);
-		System.out.println(key_);
-		//String encKey = this.GetEncryptedKey();
-		//System.out.println(encKey);
-		//this.Load(encKey, passphrase_, cert_);
-		System.out.println(cert_);
-		System.out.println(key_);
-	}
-	
-	public String GetPrivateKey(String passphrase)
-	{
-		/*
-        PEMParser pr = new PEMParser(new StringReader(key_));
-        Object o = null;
-		try {
-			o = pr.readObject();
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-        if (o == null || !(o instanceof PEMKeyPair))
-        {
-            return "";
-        }
-        KeyPair kp = null;
-		try {
-			kp = new JcaPEMKeyConverter().setProvider("BC").getKeyPair((PEMKeyPair)o);
-		} catch (PEMException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		if (kp == null){
-			return "";
-		}
-		
-        PrivateKey privKey = kp.getPrivate();
-        */
-        
-        StringWriter sw = new StringWriter();
+		StringWriter sw = new StringWriter();
         JcaPEMWriter pw = new JcaPEMWriter(sw);
         try {
-			pw.writeObject(new JcaMiscPEMGenerator(key_
-					, new JcePEMEncryptorBuilder("AES-128-ECB").setSecureRandom(new SecureRandom()).build(passphrase.toCharArray())));
+        	pw.writeObject(cert_);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return "";
 		}
         try {
 			pw.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return "";
 		}
-
+        return sw.toString();
+	}
+	
+	public String GetPrivateKey(String passphrase)
+	{  
+        StringWriter sw = new StringWriter();
+        JcaPEMWriter pw = new JcaPEMWriter(sw);
+        try {
+        	if (passphrase != null && !passphrase.isEmpty()){
+        		pw.writeObject(new JcaMiscPEMGenerator(key_
+					, new JcePEMEncryptorBuilder("AES-128-ECB").setSecureRandom(new SecureRandom()).build(passphrase.toCharArray())));
+        	}else{
+        		pw.writeObject(key_);
+        	}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+        try {
+			pw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
         return sw.toString();
 	}
 }
