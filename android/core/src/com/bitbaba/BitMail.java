@@ -37,12 +37,25 @@ public class BitMail {
 			//System.out.println(provider.getName());
 		}
 		
-		/*
+		/*		*/
 		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);
 		System.out.println(xcert.GetCertificate());
 		System.out.println(xcert.GetPrivateKey(""));
 		System.out.println(xcert.GetPrivateKey("secret"));
-		*/
+		
+		X509Cert cert1 = new X509Cert();
+		if(cert1.LoadCertificate(xcert.GetCertificate())){
+			System.out.println(cert1.GetCertificate());
+		}
+		if (cert1.LoadPrivateKey(xcert.GetPrivateKey("secret"), "secret")){
+			System.out.println(cert1.GetPrivateKey(""));
+			System.out.println(cert1.GetPrivateKey("secret"));
+		}
+		if (cert1.LoadPrivateKey(xcert.GetPrivateKey(""), "")){
+			System.out.println(cert1.GetPrivateKey(""));
+			System.out.println(cert1.GetPrivateKey("secret"));
+		}
+
 		X509Cert xcert2 = new X509Cert();
 		
 		String pemCert = "-----BEGIN CERTIFICATE-----\n"
