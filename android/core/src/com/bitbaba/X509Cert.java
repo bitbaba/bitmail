@@ -330,10 +330,21 @@ public class X509Cert {
 		key_ = kp.getPrivate();	
 		return true;
 	}
-	
+	/**
+	 * Encrypt text with Public key in certificate and return `Enveloped data' in PEM format.
+	 * @param text
+	 * @return
+	 */
 	public String Encrypt(String text)
 	{
-		CMSTypedData msg = new CMSProcessableByteArray(text.getBytes());
+		CMSTypedData msg = null;
+		try {
+			msg = new CMSProcessableByteArray(text.getBytes(java.nio.charset.StandardCharsets.UTF_8.name()));
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "";
+		}
 	
 	   	CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
 	
@@ -346,7 +357,7 @@ public class X509Cert {
 	
 	   	CMSEnvelopedData ed = null;
 		try {
-			ed = edGen.generate(msg, new JceCMSContentEncryptorBuilder(CMSAlgorithm.DES_EDE3_CBC).setProvider("BC").build());
+			ed = edGen.generate(msg, new JceCMSContentEncryptorBuilder(CMSAlgorithm.DES_EDE3_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
 		} catch (CMSException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -362,11 +373,16 @@ public class X509Cert {
 		return "";
 	}
 	
-	public String Decrypt(String cms)
+	/**
+	 * Decrypt `Enveloped data' in PEM format to String
+	 * @param pemdata
+	 * @return
+	 */
+	public String Decrypt(String pemdata)
 	{
 		CMSEnvelopedData ed = null;
 		try {
-			ed = new CMSEnvelopedData(Base64.decode(cms));
+			ed = new CMSEnvelopedData(Base64.decode(pemdata));// Base64 decode PEM to DER(asn.1) binary byte array;
 		} catch (Base64DecodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -407,9 +423,21 @@ public class X509Cert {
 		return "";
 	}
 	
+	/**
+	 * Sign a text and return PEM encoded `Signed data'
+	 * @param text
+	 * @return
+	 */
 	public String Sign(String text)
 	{
-		CMSTypedData msg = new CMSProcessableByteArray(text.getBytes());
+		CMSTypedData msg = null;
+		try {
+			msg = new CMSProcessableByteArray(text.getBytes(java.nio.charset.StandardCharsets.UTF_8.name()));
+		} catch (UnsupportedEncodingException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+			return "";
+		}
 		ArrayList<X509Certificate> certList = new ArrayList<X509Certificate>();
 		certList.add(cert_);
 		Store st = null;
@@ -463,11 +491,17 @@ public class X509Cert {
 		return "";
 	}
 	
-	public String Verify(String cms)
+	/**
+	 * Verify PEM encoded `Signed data' and return certificate and message text;
+	 * @param pemdata
+	 * @return
+	 */
+	public String Verify(String pemdata)
 	{
-		CMSSignedData sig;
+		CMSSignedData sig = null;
+
 		try {
-			sig = new CMSSignedData(Base64.decode(cms));
+			sig = new CMSSignedData(Base64.decode(pemdata));
 		} catch (Base64DecodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -478,6 +512,33 @@ public class X509Cert {
 			return "";
 		}
 		
+		System.out.println(sig.isDetachedSignature() ? "Detached Signature" : "Encapsulated Signature");
+		
+		System.out.println("SignedContentTypeOID: " + sig.getSignedContentTypeOID());
+		
+
+		CMSTypedData typed = sig.getSignedContent();
+		ByteArrayOutputStream bofs = new ByteArrayOutputStream();
+		try {
+			typed.write(bofs);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "";
+		} catch (CMSException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "";
+		}
+		String text = null;
+		try {
+			text = bofs.toString(java.nio.charset.StandardCharsets.UTF_8.name());
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		System.out.println(text);
+				
 		Store                   st = sig.getCertificates();
 		SignerInformationStore  signers = sig.getSignerInfos();
 		Collection              c = signers.getSigners();
@@ -486,23 +547,25 @@ public class X509Cert {
 		while (it.hasNext())
 		{
 			SignerInformation   signer = (SignerInformation)it.next();
+			
 			Collection          certCollection = st.getMatches(signer.getSID());
 	
 			Iterator              certIt = certCollection.iterator();
-			X509CertificateHolder cert = (X509CertificateHolder)certIt.next();
-	
+			X509CertificateHolder cert = null;
+			if (certIt.hasNext()){
+				cert = (X509CertificateHolder)certIt.next();
+			}
+
 			try {
-				try {
-					if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(cert)))
-					{
-						System.out.println("Yes");
-					}
-				} catch (CertificateException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					return "";
+				if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(cert)))
+				{
+					System.out.println("Yes");
 				}
 			} catch (OperatorCreationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return "";
+			} catch (CertificateException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return "";
@@ -510,8 +573,11 @@ public class X509Cert {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return "";
-			}
+			}		
+			System.out.println(Base64.encode(signer.getContentDigest()));
+			System.out.println(Base64.encode(signer.getSignature()));
 		}
+		
 		return "";
 	}
 	
