@@ -3,6 +3,8 @@
  */
 package com.bitbaba;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -11,6 +13,8 @@ import java.security.NoSuchProviderException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
 
 /**
  * @author Administrator
@@ -38,18 +42,34 @@ public class BitMail {
 			//System.out.println(provider.getName());
 		}
 		
-		/*		*/
+		/*
 		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);
 		System.out.println(xcert.GetCertificate());
 		System.out.println(xcert.GetPrivateKey(""));
-		System.out.println(xcert.GetPrivateKey("secret"));	
+		System.out.println(xcert.GetPrivateKey("secret"));
 		
-		System.out.println(xcert.Sign("Hello, world"));
-		System.out.println(xcert.Encrypt("Hello, World!"));
+		System.out.println(xcert.Verify(xcert.Decrypt(xcert.Encrypt(xcert.Sign("Hello, world")))));
+		*/
 		
-		System.out.println(xcert.Decrypt(xcert.Encrypt("Hello, World!")));
-		
-		System.out.println(xcert.Verify(xcert.Sign("Hello, world")));
+        MimeBodyPart    msg = new MimeBodyPart();
+        try {
+			msg.setText("Hello world!");
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+			msg.writeTo(bos);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        System.out.println(bos.toString());
 	}
 	
 	public BitMail()

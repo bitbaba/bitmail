@@ -345,15 +345,23 @@ public class X509Cert {
 			e1.printStackTrace();
 			return "";
 		}
-	
+		
+		JceKeyTransRecipientInfoGenerator recipGen = null;
+		
+		try {
+			recipGen = new JceKeyTransRecipientInfoGenerator(cert_);
+		} catch (CertificateEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		if (recipGen != null){
+			recipGen.setProvider(BouncyCastleProvider.PROVIDER_NAME);
+		}
+		
 	   	CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
 	
-		try {
-			edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(cert_).setProvider(BouncyCastleProvider.PROVIDER_NAME));
-		} catch (CertificateEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		edGen.addRecipientInfoGenerator(recipGen);
 	
 	   	CMSEnvelopedData ed = null;
 		try {
@@ -361,6 +369,7 @@ public class X509Cert {
 		} catch (CMSException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return "";
 		}
 	   
 		try {
@@ -402,10 +411,11 @@ public class X509Cert {
 		if (it.hasNext())
 		{
 			RecipientInformation   recipient = (RecipientInformation)it.next();
+			
 	
 			byte[] recData = null;
 			try {
-				recData = recipient.getContent(new JceKeyTransEnvelopedRecipient(key_).setProvider("BC"));
+				recData = recipient.getContent(new JceKeyTransEnvelopedRecipient(key_).setProvider(BouncyCastleProvider.PROVIDER_NAME));
 			} catch (CMSException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -512,11 +522,10 @@ public class X509Cert {
 			return "";
 		}
 		
-		System.out.println(sig.isDetachedSignature() ? "Detached Signature" : "Encapsulated Signature");
+		//System.out.println(sig.isDetachedSignature() ? "Detached Signature" : "Encapsulated Signature");
 		
-		System.out.println("SignedContentTypeOID: " + sig.getSignedContentTypeOID());
+		//System.out.println("SignedContentTypeOID: " + sig.getSignedContentTypeOID());
 		
-
 		CMSTypedData typed = sig.getSignedContent();
 		ByteArrayOutputStream bofs = new ByteArrayOutputStream();
 		try {
@@ -551,15 +560,16 @@ public class X509Cert {
 			Collection          certCollection = st.getMatches(signer.getSID());
 	
 			Iterator              certIt = certCollection.iterator();
+			
 			X509CertificateHolder cert = null;
 			if (certIt.hasNext()){
 				cert = (X509CertificateHolder)certIt.next();
 			}
 
 			try {
-				if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(cert)))
+				if (!signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(cert)))
 				{
-					System.out.println("Yes");
+					return "";
 				}
 			} catch (OperatorCreationException e) {
 				// TODO Auto-generated catch block
@@ -574,8 +584,8 @@ public class X509Cert {
 				e.printStackTrace();
 				return "";
 			}		
-			System.out.println(Base64.encode(signer.getContentDigest()));
-			System.out.println(Base64.encode(signer.getSignature()));
+			//System.out.println(Base64.encode(signer.getContentDigest()));
+			//System.out.println(Base64.encode(signer.getSignature()));
 		}
 		
 		return "";
