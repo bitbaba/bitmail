@@ -126,7 +126,7 @@ updateversion:	miniupnpc.h
 
 INSTALL = install
 	
-install-static:	updateversion $(FILESTOINSTALL)
+install-static:	init updateversion $(FILESTOINSTALL)
 	$(INSTALL) -d $(DESTDIR)$(INSTALLDIRINC)
 	$(INSTALL) -m 644 $(HEADERS) $(DESTDIR)$(INSTALLDIRINC)
 	$(INSTALL) -d $(DESTDIR)$(INSTALLDIRLIB)
