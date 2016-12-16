@@ -565,13 +565,54 @@ public class X509Cert {
 	}
 	
 ////////////////////////////////////////////////////////////////////////////////////////
-	public static String MEncrypt(String [] certs, String msg)
+	public static String MEncrypt(ArrayList<String> certs, String text)
 	{
-		for (int i = 0; i < certs.length; i++){
-			String cert = certs[i];
-			System.out.println(cert);
+		CMSTypedData msg = null;
+		try {
+			msg = new CMSProcessableByteArray(text.getBytes(java.nio.charset.StandardCharsets.UTF_8.name()));
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return "";
 		}
-		return msg;
+				
+	   	CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+		
+		for (String pemCert : certs){
+			X509Certificate cert = DecodeCertificate(pemCert);
+			
+			JceKeyTransRecipientInfoGenerator recipGen = null;			
+			try {
+				recipGen = new JceKeyTransRecipientInfoGenerator(cert);
+			} catch (CertificateEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}			
+			if (recipGen == null){
+				continue;
+			}
+			recipGen.setProvider(BouncyCastleProvider.PROVIDER_NAME);
+			
+			edGen.addRecipientInfoGenerator(recipGen);
+		}
+			
+	   	CMSEnvelopedData ed = null;
+		try {
+			ed = edGen.generate(msg, new JceCMSContentEncryptorBuilder(CMSAlgorithm.DES_EDE3_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
+		} catch (CMSException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+	   
+		try {
+			return Base64.encode(ed.getEncoded());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return "";
 	}
 
 	public static X509Certificate DecodeCertificate(String certPEMData)

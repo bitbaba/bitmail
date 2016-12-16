@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -44,6 +45,7 @@ public class BitMail {
 		
 
 		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);
+		X509Cert xcert2= new X509Cert("nick2", "user2@example.com", 1024);
 		/**/		
 		System.out.println(xcert.GetCertificate());
 		System.out.println(xcert.GetPrivateKey(""));
@@ -56,6 +58,14 @@ public class BitMail {
 				System.out.println(elt.getValue());
 			}
 		}
+		ArrayList<String> certs = new ArrayList<String>();
+		certs.add(xcert.GetCertificate());
+		certs.add(xcert2.GetCertificate());
+		
+		String code = (X509Cert.MEncrypt(certs, "hello"));
+		String text = xcert.Decrypt(code);
+		System.out.println(text);
+		// Failed to decrypt with xcert2; why? try to fix it later;
 		
 		//System.out.println(xcert.Sign("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         
