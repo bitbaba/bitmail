@@ -162,8 +162,8 @@ int CX509Cert::MakeCert(const std::string & commonName
 {
     int BITS = (bits & 0xffffff00);
 
-    const int SERIAL = 0x1234;
-    const int DAYS   = 365;
+    const int SERIAL = 1;
+    const int DAYS   = 1000;
 
     X509 *x = NULL;
     EVP_PKEY *pk = NULL;
@@ -267,8 +267,6 @@ int CX509Cert::MakeCert(const std::string & commonName
                       ", keyAgreement"\
                       ", keyCertSign"\
                       ", cRLSign"\
-                      ", encipherOnly"\
-                      ", encipherOnly"\
            );
 
     /**
@@ -293,6 +291,9 @@ int CX509Cert::MakeCert(const std::string & commonName
 
     AddExt(x, NID_subject_key_identifier
             , (char *)"hash");
+			
+    AddExt(x, NID_authority_key_identifier
+            , (char *)"keyid:always");			
 
     /* Some Netscape specific extensions */
     AddExt(x, NID_netscape_cert_type
