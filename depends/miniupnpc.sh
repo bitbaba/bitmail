@@ -38,7 +38,7 @@ if [ -d "$DESTDIR" ]; then
 		;;
 		MINGW32*)
 			cp -f $DepSrcRoot/miniupnpc.Makefile.mingw $DESTDIR/Makefile.mingw
-			make -f Makefile.mingw INSTALLPREFIX="$OutDir" install-static
+			make -f Makefile.mingw CC=gcc INSTALLPREFIX="$OutDir" install-static
 		;;
 		*)
 			echo "Unknown platform"
