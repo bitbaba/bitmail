@@ -583,7 +583,7 @@ public class X509Cert {
 			
 			JceKeyTransRecipientInfoGenerator recipGen = null;			
 			try {
-				recipGen = new JceKeyTransRecipientInfoGenerator(cert);
+				recipGen = new JceKeyTransRecipientInfoGenerator(cert);				
 			} catch (CertificateEncodingException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
