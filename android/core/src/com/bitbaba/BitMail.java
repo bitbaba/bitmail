@@ -43,10 +43,13 @@ public class BitMail {
 			//System.out.println(provider.getName());
 		}
 		
-
+		EMailClient ec = new EMailClient("123123@qq.com", "123123");
+		ec.Send("123123@qq.com", "Hi");
+		
+/*
 		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);
 		X509Cert xcert2= new X509Cert("nick2", "user2@example.com", 1024);
-		/**/		
+			
 		System.out.println(xcert.GetCertificate());
 		System.out.println(xcert.GetPrivateKey(""));
 		System.out.println(xcert.GetPrivateKey("secret"));
@@ -64,7 +67,7 @@ public class BitMail {
 		
 		String code = (X509Cert.MEncrypt(certs, "hello"));
 		String text = xcert.Decrypt(code);
-		System.out.println(text);
+		System.out.println(text);*/	
 		// Failed to decrypt with xcert2; why? try to fix it later;
 		
 		//System.out.println(xcert.Sign("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
@@ -73,7 +76,7 @@ public class BitMail {
 	
 	public BitMail()
 	{
-		setEmailClient(new EMailClient());
+		//setEmailClient(new EMailClient());
 	}
 	
 	public int LoadProfile()
