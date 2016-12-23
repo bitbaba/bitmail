@@ -18,13 +18,20 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 
+import javax.mail.Authenticator;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Provider;
 import javax.mail.Session;
+import javax.mail.Store;
 import javax.mail.Transport;
+import javax.mail.URLName;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLSocket;
 
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -115,7 +122,7 @@ public class EMailClient {
 			e.printStackTrace();
 		}
 		
-		try {
+		try {			
 			TlsClient client = new MockTlsClient(null);
 			handler.connect(client);
 		} catch (IOException e) {
@@ -154,6 +161,131 @@ public class EMailClient {
 			e.printStackTrace();
 		}
 		
+		return true;
+	}
+
+	public boolean Send(String to, String content)
+	{
+		System.setProperty("javax.net.debug", "all");
+		//System.setProperty("javax.net.debug", "ssl:handshake:verbose");
+		System.setProperty("jdk.tls.client.protocols", "TLSv1");
+		
+
+		Properties properties = new Properties();
+		properties.put("mail.smtp.ssl.enable", "true");
+		properties.put("mail.smtps.host", smtp_);
+		properties.put("mail.smtps.auth", "true");
+		properties.put("mail.smtps.ssl.trust", "*");
+		
+		// use SSL in JSSE instead of default socket factory
+		properties.put("mail.smtps.ssl.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+		// process SSL-only request
+		properties.put("mail.smtps.ssl.socketFactory.fallback", "true");
+		properties.put("mail.smtps.port", SMTP_SSL_DEFAULT_PORT);
+		properties.put("mail.smtps.socketFactory.port", SMTP_SSL_DEFAULT_PORT);
+		Session session = Session.getInstance(properties);
+		
+			
+		MimeMessage message = new MimeMessage(session);
+		try {
+			message.setFrom(new InternetAddress(login_));
+			message.setRecipient(MimeMessage.RecipientType.TO, new InternetAddress(to));
+			message.setSubject("BitMail");
+			message.setSentDate(new Date());
+			message.setText(content);
+			message.saveChanges();
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Transport trans = null;
+		
+		try {
+			trans = session.getTransport("smtps");
+		} catch (NoSuchProviderException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+				// https://blogs.oracle.com/coffeys/entry/jdk_and_use_of_rc4
+				// http://tools.ietf.org/html/rfc5246#appendix-A.3
+			    /*
+				enum { warning(1), fatal(2), (255) } AlertLevel;
+			
+			   	enum {
+			       close_notify(0),
+			       unexpected_message(10),
+			       bad_record_mac(20),
+			       decryption_failed_RESERVED(21),
+			       record_overflow(22),
+			       decompression_failure(30),
+			       handshake_failure(40),
+			       no_certificate_RESERVED(41),
+			       bad_certificate(42),
+			       unsupported_certificate(43),
+			       certificate_revoked(44),
+			       certificate_expired(45),
+			       certificate_unknown(46),
+			       illegal_parameter(47),
+			       unknown_ca(48),
+			       access_denied(49),
+			       decode_error(50),
+			       decrypt_error(51),
+			       export_restriction_RESERVED(60),
+			       protocol_version(70),
+			       insufficient_security(71),
+			       internal_error(80),
+			       user_canceled(90),
+			       no_renegotiation(100),
+			       unsupported_extension(110),           // new 
+			       (255)
+			   } AlertDescription;
+			
+			   struct {
+			       AlertLevel level;
+			       AlertDescription description;
+			   } Alert;
+			   */
+			trans.connect(smtp_, login_, password_);
+			/*
+			*** ClientHello, TLSv1.2
+			RandomCookie:  GMT: 1482309535 bytes = { ... }
+			Session ID:  {}
+			Cipher Suites: [TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDH_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_DSS_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA, TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA, SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_EMPTY_RENEGOTIATION_INFO_SCSV]
+			Compression Methods:  { 0 }
+			Extension elliptic_curves, curve names: {secp256r1, sect163k1, sect163r2, secp192r1, secp224r1, sect233k1, sect233r1, sect283k1, sect283r1, secp384r1, sect409k1, sect409r1, secp521r1, sect571k1, sect571r1, secp160k1, secp160r1, secp160r2, sect163r1, secp192k1, sect193r1, sect193r2, secp224k1, sect239k1, secp256k1}
+			Extension ec_point_formats, formats: [uncompressed]
+			Extension signature_algorithms, signature_algorithms: SHA512withECDSA, SHA512withRSA, SHA384withECDSA, SHA384withRSA, SHA256withECDSA, SHA256withRSA, SHA224withECDSA, SHA224withRSA, SHA1withECDSA, SHA1withRSA, SHA1withDSA
+			Extension server_name, server_name: [type=host_name (0), value=smtp.qq.com]
+			***
+			*/
+			/*
+			sometimes failed: 
+			[Raw read]: length = 2
+			0000: 02 28 .(
+			main, READ: TLSv1.2 Alert, length = 2
+			main, RECV TLSv1.2 ALERT:  fatal, handshake_failure				
+			Note:
+			fatal=0x02 and handshake_failure = 0x28
+			*/
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}		
+		
+		try {
+			Transport.send(message);
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			trans.close();
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return true;
 	}
 	
@@ -248,6 +380,8 @@ class MockTlsClient
     public TlsAuthentication getAuthentication()
         throws IOException
     {
+    	return  null;
+    	/*
         return new TlsAuthentication()
         {
             public void notifyServerCertificate(org.bouncycastle.crypto.tls.Certificate serverCertificate)
@@ -278,6 +412,7 @@ class MockTlsClient
                     SignatureAlgorithm.rsa, "x509-client.pem", "x509-client-key.pem");
             }
         };
+        */
     }
 
     public void notifyHandshakeComplete() throws IOException
@@ -290,6 +425,7 @@ class MockTlsClient
             byte[] newSessionID = newSession.getSessionID();
             String hex = Hex.toHexString(newSessionID);
 
+            /*
             if (this.session != null && Arrays.areEqual(this.session.getSessionID(), newSessionID))
             {
                 System.out.println("Resumed session: " + hex);
@@ -298,14 +434,16 @@ class MockTlsClient
             {
                 System.out.println("Established session: " + hex);
             }
+            */
 
             this.session = newSession;
         }
     }
 }
 
-public class TlsTestUtils
+class TlsTestUtils
 {
+	/*
     static final byte[] rsaCertData = Base64
         .decode("MIICUzCCAf2gAwIBAgIBATANBgkqhkiG9w0BAQQFADCBjzELMAkGA1UEBhMCQVUxKDAmBgNVBAoMH1RoZSBMZWdpb2"
             + "4gb2YgdGhlIEJvdW5jeSBDYXN0bGUxEjAQBgNVBAcMCU1lbGJvdXJuZTERMA8GA1UECAwIVmljdG9yaWExLzAtBgkq"
@@ -328,6 +466,7 @@ public class TlsTestUtils
             + "0lAQH/BAgwBgYEVR0lADAcBgNVHREBAf8EEjAQgQ50ZXN0QHRlc3QudGVzdDANBgkqhkiG9w0BAQQFAANBAJg55PBS"
             + "weg6obRUKF4FF6fCrWFi6oCYSQ99LWcAeupc5BofW5MstFMhCOaEucuGVqunwT5G7/DweazzCIrSzB0=");
 
+	*/
     static String fingerprint(org.bouncycastle.asn1.x509.Certificate c)
         throws IOException
     {

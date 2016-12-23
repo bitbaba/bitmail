@@ -43,8 +43,8 @@ public class BitMail {
 			//System.out.println(provider.getName());
 		}
 		
-		EMailClient ec = new EMailClient("123123@qq.com", "123123");
-		ec.Send("123123@qq.com", "Hi");
+		EMailClient ec = new EMailClient("sdfgsfg@qq.com", "dfgsdfg");
+		ec.Send("dfgsdfg@qq.com", "Hi");
 		
 /*
 		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);
