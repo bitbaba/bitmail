@@ -44,7 +44,7 @@ public class BitMail {
 		}
 		
 		EMailClient ec = new EMailClient("sdfgsfg@qq.com", "dfgsdfg");
-		ec.Send("dfgsdfg@qq.com", "Hi");
+		ec.Connect("smtp.qq.com", 465);
 		
 /*
 		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);

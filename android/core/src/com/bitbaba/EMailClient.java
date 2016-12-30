@@ -3,11 +3,15 @@
  */
 package com.bitbaba;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -38,6 +42,7 @@ import javax.mail.URLName;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSocket;
@@ -48,38 +53,38 @@ import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
-import org.bouncycastle.crypto.tls.AlertDescription;
-import org.bouncycastle.crypto.tls.AlertLevel;
-import org.bouncycastle.crypto.tls.Certificate;
-import org.bouncycastle.crypto.tls.CertificateRequest;
-import org.bouncycastle.crypto.tls.ClientCertificateType;
-import org.bouncycastle.crypto.tls.DefaultTlsAgreementCredentials;
-import org.bouncycastle.crypto.tls.DefaultTlsClient;
-import org.bouncycastle.crypto.tls.DefaultTlsEncryptionCredentials;
-import org.bouncycastle.crypto.tls.DefaultTlsSignerCredentials;
-import org.bouncycastle.crypto.tls.MaxFragmentLength;
-import org.bouncycastle.crypto.tls.ProtocolVersion;
-import org.bouncycastle.crypto.tls.SignatureAlgorithm;
-import org.bouncycastle.crypto.tls.SignatureAndHashAlgorithm;
-import org.bouncycastle.crypto.tls.TlsAgreementCredentials;
-import org.bouncycastle.crypto.tls.TlsAuthentication;
 import org.bouncycastle.crypto.tls.TlsClient;
 import org.bouncycastle.crypto.tls.TlsClientProtocol;
-import org.bouncycastle.crypto.tls.TlsContext;
-import org.bouncycastle.crypto.tls.TlsCredentials;
-import org.bouncycastle.crypto.tls.TlsEncryptionCredentials;
-import org.bouncycastle.crypto.tls.TlsExtensionsUtils;
-import org.bouncycastle.crypto.tls.TlsProtocol;
-import org.bouncycastle.crypto.tls.TlsSession;
-import org.bouncycastle.crypto.tls.TlsSignerCredentials;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.crypto.tls.AlertDescription;
+import org.bouncycastle.crypto.tls.AlertLevel;
+import org.bouncycastle.crypto.tls.Certificate;
+import org.bouncycastle.crypto.tls.CipherSuite;
+import org.bouncycastle.crypto.tls.DefaultTlsClient;
+import org.bouncycastle.crypto.tls.ServerOnlyTlsAuthentication;
+import org.bouncycastle.crypto.tls.TlsAuthentication;
+import org.bouncycastle.crypto.tls.TlsFatalAlert;
+import org.bouncycastle.crypto.tls.TlsKeyExchange;
+
 
 import com.sun.org.apache.xml.internal.security.utils.Base64;
+
+
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.Socket;
+
+import org.bouncycastle.crypto.tls.CertificateRequest;
+import org.bouncycastle.crypto.tls.DefaultTlsClient;
+import org.bouncycastle.crypto.tls.TlsAuthentication;
+import org.bouncycastle.crypto.tls.TlsClientProtocol;
+import org.bouncycastle.crypto.tls.TlsCredentials;
 
 /**
  * @author Administrator
@@ -112,95 +117,88 @@ public class EMailClient {
 		password_ = password;
 	}
 	
-	public boolean Send(String to, String content)
+	public boolean Connect(String host, int port)
 	{
-		System.setProperty("javax.net.debug", "all");
-		//System.setProperty("javax.net.debug", "ssl:handshake:verbose");
-		//System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
+		String vmVersion = System.getProperty("java.specification.version");
+		System.out.println(vmVersion);
 		
-        if (Security.getProvider(BouncyCastleJsseProvider.PROVIDER_NAME) == null)
-        {
-            Security.addProvider(new BouncyCastleJsseProvider());
-        }
-        
-        /* */
-        TrustManagerFactory trustMgrFact = null;
+		Socket s = null;
+		
 		try {
-			trustMgrFact = TrustManagerFactory.getInstance("X509",
-			        BouncyCastleJsseProvider.PROVIDER_NAME);
-		} catch (NoSuchAlgorithmException e3) {
+			s = new Socket(host, port);
+		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
-			e3.printStackTrace();
-		} catch (java.security.NoSuchProviderException e3) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e3.printStackTrace();
+			e.printStackTrace();
 		}
-
-        KeyStore ts = null;
+		
+		TlsClientProtocol protocol = null;
+		
 		try {
-			ts = KeyStore.getInstance("JKS");
-		} catch (KeyStoreException e2) {
+			protocol = new TlsClientProtocol(s.getInputStream(), s.getOutputStream(), new SecureRandom());
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e2.printStackTrace();
+			e.printStackTrace();
 		}
+		
+		MockTlsClient client = new MockTlsClient(null);
+		
         try {
-			ts.load(null, null);
-		} catch (NoSuchAlgorithmException e2) {
+        	protocol.connect(client);
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (CertificateException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
+			e.printStackTrace();
 		}
-        try {
-			trustMgrFact.init(ts);
-		} catch (KeyStoreException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-       
         
-        SSLContext clientContext = null;
+
+        BufferedReader is = new BufferedReader(new InputStreamReader(protocol.getInputStream()));
+        OutputStream os = protocol.getOutputStream();
+
         try {
-			clientContext = SSLContext.getInstance("TLS", BouncyCastleJsseProvider.PROVIDER_NAME);
-		} catch (NoSuchAlgorithmException e1) {
+			//os.write("GET / HTTP/1.1\r\n\r\n".getBytes());
+			os.write("HELO \r\n\r\n".getBytes());
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (java.security.NoSuchProviderException e1) {
+			e.printStackTrace();
+		}
+
+        String resp = "";
+        try {
+        	String line = null;
+			while ((line = is.readLine()) != null)
+			{
+			    resp += line;
+			}
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			e.printStackTrace();
 		}
 
         try {
-			clientContext.init(null, trustMgrFact.getTrustManagers(),
-			        SecureRandom.getInstance("DEFAULT", BouncyCastleProvider.PROVIDER_NAME));
-		} catch (KeyManagementException e1) {
+			is.close();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (NoSuchAlgorithmException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (java.security.NoSuchProviderException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			e.printStackTrace();
 		}
-
+        
+        System.out.println(resp);
+		
+		return false;
+	}
+	
+	public boolean SendMail(String to, String content) 
+	{
 		Properties properties = new Properties();
 		properties.put("mail.smtps.ssl.enable", "true");
 		properties.put("mail.smtps.host", smtp_);
 		properties.put("mail.smtps.auth", "true");
-		properties.put("mail.smtps.ssl.trust", "*");
-		
-		//properties.put("mail.smtps.ssl.socketFactory.class", "javax.net.ssl.SSLSocketFactory");	// use SSL in JSSE instead of default socket factory	
-		properties.put("mail.smtps.ssl.socketFactory", clientContext.getSocketFactory());	// use SSL in JSSE instead of default socket factory	
-		properties.put("mail.smtps.socketFactory.fallback", "true");// process SSL-only request
+		//properties.put("mail.smtps.ssl.trust", "*");		
+		properties.put("mail.smtps.ssl.socketFactory.class", "javax.net.ssl.SSLSocketFactory");	// use SSL in JSSE instead of default socket factory	
+		properties.put("mail.smtps.socketFactory.fallback", "false");// process SSL-only request
 		properties.put("mail.smtps.ssl.socketFactory.port", SMTP_SSL_DEFAULT_PORT);
-		//properties.put("mail.smtps.ssl.ciphersuites", "TLS_RSA_WITH_RC4_128_SHA");
-		Session session = Session.getInstance(properties);
-		
+		Session session = Session.getInstance(properties);		
 			
 		MimeMessage message = new MimeMessage(session);
 		try {
@@ -223,7 +221,7 @@ public class EMailClient {
 			e.printStackTrace();
 		}
 		try {				
-			trans.connect(smtp_, login_, password_);
+			trans.connect(smtp_, SMTP_SSL_DEFAULT_PORT, login_, password_);
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -254,53 +252,4 @@ public class EMailClient {
 	}	
 }
 
-class TSLSocketConnectionFactory extends SSLSocketFactory {  
-    @Override
-    public Socket createSocket(Socket socket, final String host, int port, boolean arg3) throws IOException {
-        if (socket == null) {
-            socket = new Socket();
-        }
-        if (!socket.isConnected()) {
-            socket.connect(new InetSocketAddress(host, port));
-        }
-
-        TlsClientProtocol tlsClientProtocol = new TlsClientProtocol(socket.getInputStream(), socket.getOutputStream(), new SecureRandom());
-        return null;//_createSSLSocket(host, tlsClientProtocol);
-      }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SOCKET FACTORY  METHODS  
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    @Override
-    public String[] getDefaultCipherSuites() {      
-        return null;
-    }
-
-    @Override
-    public String[] getSupportedCipherSuites(){ 
-        return null;
-    }
-
-    @Override
-    public Socket createSocket(String host, int port) throws IOException,UnknownHostException{  
-        return null;
-    }
-
-    @Override
-    public Socket createSocket(String host, int port, InetAddress localHost,
-            int localPort) throws IOException, UnknownHostException {   
-        return null;
-    }
-
-	@Override
-	public Socket createSocket(InetAddress arg0, int arg1) throws IOException {
-		// TODO Auto-generated method stubs
-		return null;
-	}
-
-	@Override
-	public Socket createSocket(InetAddress arg0, int arg1, InetAddress arg2, int arg3) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
-	}    
-}
 
