@@ -32,6 +32,10 @@ import java.util.Vector;
 
 import javax.mail.Address;
 import javax.mail.Authenticator;
+import javax.mail.Flags;
+import javax.mail.Flags.Flag;
+import javax.mail.Folder;
+import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
@@ -43,6 +47,7 @@ import javax.mail.URLName;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.search.FlagTerm;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -117,88 +122,16 @@ public class EMailClient {
 		}
 		password_ = password;
 	}
-	
-	public boolean Connect(String host, int port)
-	{
-		String vmVersion = System.getProperty("java.specification.version");
-		System.out.println(vmVersion);
 		
-		Socket s = null;
-		
-		try {
-			s = new Socket(host, port);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		TlsClientProtocol protocol = null;
-		
-		try {
-			protocol = new TlsClientProtocol(s.getInputStream(), s.getOutputStream(), new SecureRandom());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-				
-		MockTlsClient client = new MockTlsClient(null);
-		
-        try {
-        	protocol.connect(client);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        
-
-        BufferedReader is = new BufferedReader(new InputStreamReader(protocol.getInputStream()));
-        OutputStream os = protocol.getOutputStream();
-
-        try {
-			//os.write("GET / HTTP/1.1\r\n\r\n".getBytes());
-			os.write("HELO \r\n\r\n".getBytes());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-        String resp = "";
-        try {
-        	String line = null;
-			while ((line = is.readLine()) != null)
-			{
-			    resp += line;
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-        try {
-			is.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        
-        System.out.println(resp);
-		
-		return false;
-	}
-	
-	public boolean SendMail(String to, String content) 
+	public boolean Send(String to, String content) 
 	{
 		Properties properties = new Properties();
 		
 		properties.put("mail.smtps.ssl.enable", "true");
 		properties.put("mail.smtps.host", smtp_);
 		properties.put("mail.smtps.auth", "true");
-		//properties.put("mail.smtps.ssl.trust", "*");		
-		properties.put("mail.smtps.ssl.socketFactory.class", "com.bitbaba.TSLSocketConnectionFactory");	// use SSL in JSSE instead of default socket factory	
-		properties.put("mail.smtps.socketFactory.fallback", "false");// process SSL-only request
+		properties.put("mail.smtps.ssl.socketFactory.class", "com.bitbaba.TSLSocketConnectionFactory");		
+		properties.put("mail.smtps.socketFactory.fallback", "false");
 		properties.put("mail.smtps.ssl.socketFactory.port", SMTP_SSL_DEFAULT_PORT);
 
 		Session session = Session.getInstance(properties);		
@@ -244,6 +177,122 @@ public class EMailClient {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return true;
+	}
+	
+	
+	public boolean Receive() 
+	{
+		Properties properties = new Properties();
+		
+		properties.put("mail.imaps.ssl.enable", "true");
+		properties.put("mail.imaps.host", imap_);
+		properties.put("mail.imaps.auth", "true");
+		properties.put("mail.imaps.ssl.socketFactory.class", "com.bitbaba.TSLSocketConnectionFactory");		
+		properties.put("mail.imaps.socketFactory.fallback", "false");
+		properties.put("mail.imaps.ssl.socketFactory.port", IMAP_SSL_DEFAULT_PORT);
+
+		Session session = Session.getInstance(properties);	
+		
+		Store store = null;
+		try {
+			store = session.getStore("imaps");
+		} catch (NoSuchProviderException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}		
+
+		try {				
+			store.connect(imap_, IMAP_SSL_DEFAULT_PORT, login_, password_);			
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}		
+		
+		Folder inbox = null;
+		try {
+			inbox = store.getFolder("INBOX");
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			inbox.open(Folder.READ_WRITE);
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		Message [] messages = null;
+		
+		try {
+			FlagTerm flagTerm = new FlagTerm(new Flags(Flags.Flag.SEEN), false);			
+			messages = inbox.search(flagTerm);
+		} catch (MessagingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		for (int i = 0; i < messages.length; ++i){
+			Message elt = messages[i];
+			System.out.println("Msgno: " + elt.getMessageNumber());
+			try {
+				System.out.println("Subject: " + elt.getSubject());
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				System.out.println("Flags: " + elt.getFlags().toString());
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			continue; 
+			
+			/*
+			try {
+				System.out.println("Subject: " + elt.getSubject());
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				System.out.println("ContentType: " + elt.getContentType());
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				System.out.println("Content: " + elt.getContent());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			*/
+		}
+		
+		try {
+			inbox.close(true);
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		try {
+			store.close();
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+
 		return true;
 	}
 	

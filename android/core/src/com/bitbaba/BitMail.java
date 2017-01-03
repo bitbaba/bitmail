@@ -3,8 +3,11 @@
  */
 package com.bitbaba;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -44,9 +47,33 @@ public class BitMail {
 			//System.out.println(provider.getName());
 		}
 		
-		EMailClient ec = new EMailClient("asdf@qq.com", "adf");
-		//ec.Connect("smtp.qq.com", 465);
-		ec.SendMail("adf@qq.com", "hello" + new Date());
+		String account = null, password = null, recipt = null;
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("Account:");
+		try {
+			account = reader.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Password:");
+		try {
+			password = reader.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Recipt:");
+		try {
+			recipt = reader.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		EMailClient ec = new EMailClient(account, password);
+		ec.Send(recipt, (new Date()).toString());
+		ec.Receive();
 		
 /*
 		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);

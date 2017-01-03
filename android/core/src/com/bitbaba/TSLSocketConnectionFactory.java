@@ -11,6 +11,7 @@ import java.security.SecureRandom;
 import java.util.List;
 
 import javax.net.SocketFactory;
+import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.HandshakeCompletedListener;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
@@ -18,6 +19,8 @@ import javax.net.ssl.SSLSocketFactory;
 import org.bouncycastle.crypto.tls.TlsClient;
 import org.bouncycastle.crypto.tls.TlsClientProtocol;
 
+
+// http://stackoverflow.com/questions/33517476/tls-1-2-java-1-6-bouncycastle
 public class TSLSocketConnectionFactory extends SSLSocketFactory {
 	public TSLSocketConnectionFactory(){
 		System.out.println("TSLSocketConnectionFactory");
@@ -65,7 +68,6 @@ public class TSLSocketConnectionFactory extends SSLSocketFactory {
 			@Override
 			public void addHandshakeCompletedListener(HandshakeCompletedListener listener) {
 				// TODO Auto-generated method stub
-				
 			}
 
 			@Override
