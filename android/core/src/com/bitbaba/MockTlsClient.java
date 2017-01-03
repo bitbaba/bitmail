@@ -61,6 +61,11 @@ class MockTlsClient
         out.println("TLS client received alert: " + AlertLevel.getText(alertLevel)
             + ", " + AlertDescription.getText(alertDescription));
     }
+    
+    public ProtocolVersion getClientVersion()
+    {
+        return ProtocolVersion.TLSv12;
+    }
 
     public int[] getCipherSuites()
     {

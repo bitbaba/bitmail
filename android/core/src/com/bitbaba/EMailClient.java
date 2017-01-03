@@ -30,6 +30,7 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 
+import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
@@ -142,7 +143,7 @@ public class EMailClient {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+				
 		MockTlsClient client = new MockTlsClient(null);
 		
         try {
@@ -191,13 +192,15 @@ public class EMailClient {
 	public boolean SendMail(String to, String content) 
 	{
 		Properties properties = new Properties();
+		
 		properties.put("mail.smtps.ssl.enable", "true");
 		properties.put("mail.smtps.host", smtp_);
 		properties.put("mail.smtps.auth", "true");
 		//properties.put("mail.smtps.ssl.trust", "*");		
-		properties.put("mail.smtps.ssl.socketFactory.class", "javax.net.ssl.SSLSocketFactory");	// use SSL in JSSE instead of default socket factory	
+		properties.put("mail.smtps.ssl.socketFactory.class", "com.bitbaba.TSLSocketConnectionFactory");	// use SSL in JSSE instead of default socket factory	
 		properties.put("mail.smtps.socketFactory.fallback", "false");// process SSL-only request
 		properties.put("mail.smtps.ssl.socketFactory.port", SMTP_SSL_DEFAULT_PORT);
+
 		Session session = Session.getInstance(properties);		
 			
 		MimeMessage message = new MimeMessage(session);
@@ -212,16 +215,17 @@ public class EMailClient {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Transport trans = null;
 		
+		Transport trans = null;
 		try {
 			trans = session.getTransport("smtps");
-		} catch (NoSuchProviderException e) {
+		} catch (NoSuchProviderException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			e1.printStackTrace();
+		}		
+
 		try {				
-			trans.connect(smtp_, SMTP_SSL_DEFAULT_PORT, login_, password_);
+			trans.connect(smtp_, SMTP_SSL_DEFAULT_PORT, login_, password_);			
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -229,7 +233,7 @@ public class EMailClient {
 		}		
 		
 		try {
-			Transport.send(message);
+			trans.sendMessage(message, message.getAllRecipients());	
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

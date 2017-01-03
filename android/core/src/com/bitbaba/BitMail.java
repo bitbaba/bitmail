@@ -10,6 +10,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -43,8 +44,9 @@ public class BitMail {
 			//System.out.println(provider.getName());
 		}
 		
-		EMailClient ec = new EMailClient("sdfgsfg@qq.com", "dfgsdfg");
-		ec.Connect("smtp.qq.com", 465);
+		EMailClient ec = new EMailClient("asdf@qq.com", "adf");
+		//ec.Connect("smtp.qq.com", 465);
+		ec.SendMail("adf@qq.com", "hello" + new Date());
 		
 /*
 		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);
