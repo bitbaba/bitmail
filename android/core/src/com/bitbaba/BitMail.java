@@ -63,6 +63,7 @@ public class BitMail {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		/**/
 		System.out.println("Recipt:");
 		try {
 			recipt = reader.readLine();
@@ -71,8 +72,19 @@ public class BitMail {
 			e.printStackTrace();
 		}
 		
+		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);
+		HashMap<String, String> result = xcert.Verify(xcert.Sign("Hello!"));
+		if (result != null){
+			for (Entry<String, String> elt : result.entrySet()){
+				System.out.println(elt.getKey());
+				System.out.println(elt.getValue());
+			}
+		}
+		
 		EMailClient ec = new EMailClient(account, password);
-		ec.Send(recipt, (new Date()).toString());
+		ec.Send(recipt, xcert.Sign("hello, world"));
+		
+		
 		ec.Receive();
 		
 /*

@@ -90,7 +90,19 @@ import com.sun.org.apache.xml.internal.security.utils.Base64;
 public class X509Cert {
 	private PrivateKey key_ = null;
 	private X509Certificate cert_ = null;
-
+	
+	private final static String MIME_ENV_HEADER = "MIME-Version: 1.0\r\n"
+			+ "Content-Disposition: attachment; filename=\"smime.p7m\"\r\n"
+			+ "Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name=\"smime.p7m\"\r\n"
+			+ "Content-Transfer-Encoding: base64\r\n"
+			+ "\r\n";
+	
+	private final static String MIME_SIG_HEADER = "MIME-Version: 1.0\r\n"
+			+ "Content-Disposition: attachment; filename=\"smime.p7m\"\r\n"
+			+ "Content-Type: application/pkcs7-mime; smime-type=signed-data; name=\"smime.p7m\"\r\n"
+			+ "Content-Transfer-Encoding: base64\r\n"
+			+ "\r\n";
+	
 	public X509Cert()
 	{
 		
@@ -294,7 +306,7 @@ public class X509Cert {
 		}
 	   
 		try {
-			return Base64.encode(ed.getEncoded());
+			return MIME_ENV_HEADER + Base64.encode(ed.getEncoded());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -310,6 +322,12 @@ public class X509Cert {
 	 */
 	public String Decrypt(String pemdata)
 	{
+		if (pemdata.indexOf(MIME_ENV_HEADER) != 0){
+			return "";
+		}
+		
+		pemdata = pemdata.substring(pemdata.indexOf(MIME_ENV_HEADER) + MIME_ENV_HEADER.length());
+		
 		CMSEnvelopedData ed = null;
 		try {
 			ed = new CMSEnvelopedData(Base64.decode(pemdata));// Base64 decode PEM to DER(asn.1) binary byte array;
@@ -423,7 +441,7 @@ public class X509Cert {
 		}
 		
 		try {
-			return Base64.encode(sig.getEncoded());
+			return MIME_SIG_HEADER + Base64.encode(sig.getEncoded());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -439,6 +457,12 @@ public class X509Cert {
 	 */
 	public HashMap<String, String> Verify(String pemdata)
 	{
+		if (pemdata.indexOf(MIME_SIG_HEADER) != 0){
+			return null;
+		}
+		
+		pemdata = pemdata.substring(pemdata.indexOf(MIME_SIG_HEADER) + MIME_SIG_HEADER.length());
+		
 		HashMap<String, String> result = new HashMap<String, String>();
 		
 		CMSSignedData sig = null;
@@ -582,7 +606,7 @@ public class X509Cert {
 		}
 	   
 		try {
-			return Base64.encode(ed.getEncoded());
+			return MIME_ENV_HEADER + Base64.encode(ed.getEncoded());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

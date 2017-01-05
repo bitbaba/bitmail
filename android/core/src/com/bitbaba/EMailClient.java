@@ -16,6 +16,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -32,11 +33,14 @@ import java.util.Vector;
 
 import javax.mail.Address;
 import javax.mail.Authenticator;
+import javax.mail.BodyPart;
+import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Provider;
@@ -46,7 +50,9 @@ import javax.mail.Transport;
 import javax.mail.URLName;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.mail.search.FlagTerm;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
@@ -77,7 +83,7 @@ import org.bouncycastle.crypto.tls.TlsAuthentication;
 import org.bouncycastle.crypto.tls.TlsFatalAlert;
 import org.bouncycastle.crypto.tls.TlsKeyExchange;
 
-
+import com.sun.mail.imap.IMAPMessage;
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 
@@ -109,6 +115,8 @@ public class EMailClient {
 	private String login_ = null;
 	private String password_ = null;
 	
+	private final static String BITMAIL_SUBJECT = "BitMail";
+	
 	/**
 	 * 
 	 * @param login, usually the email address
@@ -136,11 +144,11 @@ public class EMailClient {
 
 		Session session = Session.getInstance(properties);		
 			
-		MimeMessage message = new MimeMessage(session);
+		Message message = new MimeMessage(session);
 		try {
 			message.setFrom(new InternetAddress(login_));
 			message.setRecipient(MimeMessage.RecipientType.TO, new InternetAddress(to));
-			message.setSubject("BitMail");
+			message.setSubject(BITMAIL_SUBJECT);
 			message.setSentDate(new Date());
 			message.setText(content);
 			message.saveChanges();
@@ -208,7 +216,7 @@ public class EMailClient {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
-		}		
+		}
 		
 		Folder inbox = null;
 		try {
@@ -228,6 +236,7 @@ public class EMailClient {
 		Message [] messages = null;
 		
 		try {
+			// HarryWu, server-side search for `unseen' messages. 
 			FlagTerm flagTerm = new FlagTerm(new Flags(Flags.Flag.SEEN), false);			
 			messages = inbox.search(flagTerm);
 		} catch (MessagingException e1) {
@@ -235,8 +244,35 @@ public class EMailClient {
 			e1.printStackTrace();
 		}
 		
+		// HarryWu, do pre-fetch, in a batch call.
+		FetchProfile fp = new FetchProfile();
+		fp.add(FetchProfile.Item.CONTENT_INFO);
+		fp.add(FetchProfile.Item.ENVELOPE);
+		fp.add(FetchProfile.Item.FLAGS);
+		fp.add(FetchProfile.Item.SIZE);
+		
+		System.out.println("Pre-fetch messages");
+		try {
+			inbox.fetch(messages, fp);
+		} catch (MessagingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		// HarryWu, Analyze a message
 		for (int i = 0; i < messages.length; ++i){
-			Message elt = messages[i];
+			Message elt = messages[i];	
+			try {
+				if (elt.isMimeType("text/plain")){
+					System.out.println("Content: " + ((String)elt.getContent()));
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			System.out.println("Msgno: " + elt.getMessageNumber());
 			try {
 				System.out.println("Subject: " + elt.getSubject());
@@ -245,7 +281,7 @@ public class EMailClient {
 				e.printStackTrace();
 			}
 			try {
-				System.out.println("Flags: " + elt.getFlags().toString());
+				System.out.println("ContentType: " + elt.getContentType());
 			} catch (MessagingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
