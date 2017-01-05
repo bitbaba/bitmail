@@ -189,7 +189,7 @@ public class EMailClient {
 	}
 	
 	
-	public boolean Receive() 
+	public String Receive() 
 	{
 		Properties properties = new Properties();
 		
@@ -215,7 +215,7 @@ public class EMailClient {
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return false;
+			return "";
 		}
 		
 		Folder inbox = null;
@@ -266,6 +266,7 @@ public class EMailClient {
 				if (elt.isMimeType("text/plain")){
 					System.out.println("Content: " + ((String)elt.getContent()));
 				}
+				return (String) elt.getContent();				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -329,7 +330,7 @@ public class EMailClient {
 		}
 		
 
-		return true;
+		return "";
 	}
 	
 	public static String GetHostFromEmailAddress(String email)

@@ -47,6 +47,35 @@ public class BitMail {
 			//System.out.println(provider.getName());
 		}
 		
+		/**/	
+		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);
+		X509Cert xcert2= new X509Cert("nick2", "user2@example.com", 1024);
+			
+		/*
+		System.out.println(xcert.GetCertificate());
+		System.out.println(xcert.GetPrivateKey(""));
+		System.out.println(xcert.GetPrivateKey("secret"));
+		
+		HashMap<String, String> result = (xcert.Verify(xcert.Decrypt(xcert.Encrypt(xcert.Sign("Hello, world")))));
+		if (result != null){
+			for (Entry<String, String> elt : result.entrySet()){
+				System.out.println(elt.getKey());
+				System.out.println(elt.getValue());
+			}
+		}
+		*/
+		ArrayList<String> certs = new ArrayList<String>();
+		certs.add(xcert.GetCertificate());
+		certs.add(xcert2.GetCertificate());
+		
+		String code = (X509Cert.MEncrypt(certs, "hello"));
+		String text = xcert2.Decrypt(code);
+		System.out.println(text);
+		// Failed to decrypt with xcert2; why? try to fix it later;
+		
+		//System.out.println(xcert.Sign("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+      
+		/*
 		String account = null, password = null, recipt = null;
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		System.out.println("Account:");
@@ -63,7 +92,7 @@ public class BitMail {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		/**/
+
 		System.out.println("Recipt:");
 		try {
 			recipt = reader.readLine();
@@ -84,35 +113,17 @@ public class BitMail {
 		EMailClient ec = new EMailClient(account, password);
 		ec.Send(recipt, xcert.Sign("hello, world"));
 		
-		
-		ec.Receive();
-		
-/*
-		X509Cert xcert = new X509Cert("nick", "user@example.com", 1024);
-		X509Cert xcert2= new X509Cert("nick2", "user2@example.com", 1024);
-			
-		System.out.println(xcert.GetCertificate());
-		System.out.println(xcert.GetPrivateKey(""));
-		System.out.println(xcert.GetPrivateKey("secret"));
-		
-		HashMap<String, String> result = (xcert.Verify(xcert.Decrypt(xcert.Encrypt(xcert.Sign("Hello, world")))));
+		String msg = ec.Receive();
+		System.out.println(msg);
+
+		result = xcert.Verify(msg);
 		if (result != null){
 			for (Entry<String, String> elt : result.entrySet()){
 				System.out.println(elt.getKey());
 				System.out.println(elt.getValue());
 			}
 		}
-		ArrayList<String> certs = new ArrayList<String>();
-		certs.add(xcert.GetCertificate());
-		certs.add(xcert2.GetCertificate());
-		
-		String code = (X509Cert.MEncrypt(certs, "hello"));
-		String text = xcert.Decrypt(code);
-		System.out.println(text);*/	
-		// Failed to decrypt with xcert2; why? try to fix it later;
-		
-		//System.out.println(xcert.Sign("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-        
+		*/
 	}
 	
 	public BitMail()

@@ -331,6 +331,11 @@ public class X509Cert {
 		CMSEnvelopedData ed = null;
 		try {
 			ed = new CMSEnvelopedData(Base64.decode(pemdata));// Base64 decode PEM to DER(asn.1) binary byte array;
+			System.out.println("Recipt Count: " + ed.getRecipientInfos().size());
+			Collection<RecipientInformation> recipts = ed.getRecipientInfos().getRecipients();
+			for (RecipientInformation elt : recipts){
+				System.out.println(elt.getRID().toString());
+			}
 		} catch (Base64DecodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -352,6 +357,13 @@ public class X509Cert {
 		}
 		
 		RecipientInformation   recipient = (RecipientInformation)it.next();
+		//HarryWu, select the `match' recipient to decrypt;
+
+		if (!it.hasNext()){
+			return "";
+		}
+
+		recipient = (RecipientInformation)it.next();
 			
 		byte[] recData = null;
 		try {
