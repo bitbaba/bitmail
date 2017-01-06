@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.bitbaba;
+package com.bitbaba.core;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,7 +25,6 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -89,6 +88,8 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
+
+import android.util.Base64;
 
 /**
  * @author Administrator
@@ -304,7 +305,7 @@ public class X509Cert {
 		}
 	   
 		try {
-			return MIME_ENV_HEADER + Base64.getMimeEncoder().encodeToString(ed.getEncoded());
+			return MIME_ENV_HEADER + Base64.encodeToString(ed.getEncoded(), Base64.CRLF);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -329,11 +330,11 @@ public class X509Cert {
 		CMSEnvelopedData ed = null;
 
 		try {
-			ed = new CMSEnvelopedData(Base64.getMimeDecoder().decode(pemdata));
-		} catch (CMSException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}// Base64 decode PEM to DER(asn.1) binary byte array;
+			ed = new CMSEnvelopedData(Base64.decode(pemdata, Base64.CRLF));// Base64 decode PEM to DER(asn.1) binary byte array;
+		} catch (CMSException e) {
+			e.printStackTrace();
+			return null;
+		}
 
 		RecipientInformationStore  recipients = ed.getRecipientInfos();
 
@@ -436,7 +437,7 @@ public class X509Cert {
 		}
 		
 		try {
-			return MIME_SIG_HEADER + Base64.getMimeEncoder().encodeToString(sig.getEncoded());
+			return MIME_SIG_HEADER + Base64.encodeToString(sig.getEncoded(), Base64.CRLF);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -463,12 +464,12 @@ public class X509Cert {
 		CMSSignedData sig = null;
 
 		try {
-			sig = new CMSSignedData(Base64.getMimeDecoder().decode(pemdata));
-		} catch (CMSException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
+			sig = new CMSSignedData(Base64.decode(pemdata, Base64.CRLF));
+		} catch (CMSException e) {
+			e.printStackTrace();
+			return  null;
 		}
-		
+
 		CMSTypedData typed = sig.getSignedContent();
 		ByteArrayOutputStream bofs = new ByteArrayOutputStream();
 		try {
@@ -588,7 +589,7 @@ public class X509Cert {
 		}
 	   
 		try {
-			return MIME_ENV_HEADER + Base64.getMimeEncoder().encodeToString(ed.getEncoded());
+			return MIME_ENV_HEADER + Base64.encodeToString(ed.getEncoded(), Base64.CRLF);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

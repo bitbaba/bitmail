@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.bitbaba;
+package com.bitbaba.core;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -137,16 +137,7 @@ public class BitMail {
 		certs.add(cert1.GetCertificate());
 		certs.add(cert2.GetCertificate());
 		
-		//HashMap<String, String> txt = cert1.Verify(cert1.Decrypt(cert1.Encrypt(cert1.Sign("Hello"))));
-		HashMap<String, String> txt = cert1.Verify(cert1.Decrypt(X509Cert.MEncrypt(certs, cert1.Sign("Hello"))));
-		if (txt != null){
-			for (Entry<String, String> elt : txt.entrySet()){
-				System.out.println(elt.getKey());
-				System.out.println(elt.getValue());
-			}
-		}
-		
-		/*
+		/**/
 		String account = null, password = null, recipt = null;
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		System.out.println("Account:");
@@ -190,8 +181,7 @@ public class BitMail {
 					System.out.println(elt.getValue());
 				}
 			}			
-		}
-		*/	
+		}		
 	}
 	
 	public BitMail()
