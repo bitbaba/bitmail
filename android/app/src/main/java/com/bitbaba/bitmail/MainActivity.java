@@ -1,4 +1,4 @@
-package bitbaba.com.bitmail;
+package com.bitbaba.bitmail;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

@@ -4,7 +4,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.1"
     defaultConfig {
-        applicationId "bitbaba.com.bitmail"
+        applicationId "com.bitbaba.bitmail"
         minSdkVersion 12
         targetSdkVersion 25
         versionCode 1

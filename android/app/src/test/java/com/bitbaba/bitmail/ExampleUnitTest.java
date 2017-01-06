@@ -1,4 +1,4 @@
-package bitbaba.com.bitmail;
+package com.bitbaba.bitmail;
 
 import org.junit.Test;
 

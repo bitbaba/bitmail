@@ -1,4 +1,4 @@
-package bitbaba.com.bitmail;
+package com.bitbaba.bitmail;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("bitbaba.com.bitmail", appContext.getPackageName());
+        assertEquals("com.bitbaba.bitmail", appContext.getPackageName());
     }
 }
