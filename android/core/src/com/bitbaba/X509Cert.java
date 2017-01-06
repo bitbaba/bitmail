@@ -68,6 +68,7 @@ import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientId;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA1Digest;
@@ -345,23 +346,9 @@ public class X509Cert {
 		
 		Iterator    it = c.iterator();
 
-		RecipientInformation   recipient = null;
-
 		//HarryWu, select the `match' recipient to decrypt;
-		while(it.hasNext()){
-			recipient = (RecipientInformation)it.next();			
-		}
-		
-		if (recipient == null){
-			return "";
-		}
-		
-		System.out.println("OID: " + Extension.subjectKeyIdentifier.toString());
-		KeyTransRecipientId selector = new KeyTransRecipientId(cert_.getExtensionValue(Extension.subjectKeyIdentifier.toString()));
-		
-		
-		recipient = recipients.get(selector);
-		
+		KeyTransRecipientId selector = new JceKeyTransRecipientId(cert_.getIssuerX500Principal(), cert_.getSerialNumber(), cert_.getExtensionValue(Extension.subjectKeyIdentifier.toString()));
+		RecipientInformation recipient = recipients.get(selector);
 		if (recipient == null){
 			return "";
 		}

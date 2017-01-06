@@ -24,10 +24,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -189,8 +191,10 @@ public class EMailClient {
 	}
 	
 	
-	public String Receive() 
+	public List<String> Receive() 
 	{
+		List<String> results = new ArrayList<String>();
+		
 		Properties properties = new Properties();
 		
 		properties.put("mail.imaps.ssl.enable", "true");
@@ -215,7 +219,7 @@ public class EMailClient {
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return "";
+			return null;
 		}
 		
 		Folder inbox = null;
@@ -226,11 +230,31 @@ public class EMailClient {
 			e.printStackTrace();
 		}
 		
+		if (inbox == null){
+			try {
+				store.close();
+			} catch (MessagingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return null;
+		}
+		
 		try {
 			inbox.open(Folder.READ_WRITE);
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		
+		if (!inbox.isOpen()){
+			try {
+				store.close();
+			} catch (MessagingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return null;
 		}
 		
 		Message [] messages = null;
@@ -244,6 +268,22 @@ public class EMailClient {
 			e1.printStackTrace();
 		}
 		
+		if (messages.length == 0){
+			try {
+				inbox.close(true);
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				store.close();
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+		
 		// HarryWu, do pre-fetch, in a batch call.
 		FetchProfile fp = new FetchProfile();
 		fp.add(FetchProfile.Item.CONTENT_INFO);
@@ -252,66 +292,41 @@ public class EMailClient {
 		fp.add(FetchProfile.Item.SIZE);
 		
 		System.out.println("Pre-fetch messages");
+		
 		try {
 			inbox.fetch(messages, fp);
 		} catch (MessagingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+				
 		// HarryWu, Analyze a message
 		for (int i = 0; i < messages.length; ++i){
-			Message elt = messages[i];	
+			Message elt = messages[i];			
+			System.out.println("[" + i + "] Msgno: " + elt.getMessageNumber());
+			String subject = null;
+			try {
+				subject = (elt.getSubject());
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				continue;
+			}
+			if (subject == null || subject.compareTo(BITMAIL_SUBJECT) != 0){
+				continue;
+			}
 			try {
 				if (elt.isMimeType("text/plain")){
-					System.out.println("Content: " + ((String)elt.getContent()));
-				}
-				return (String) elt.getContent();				
+					results.add((String) elt.getContent());
+					elt.setFlag(Flags.Flag.DELETED, true);
+				}								
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				continue;
 			} catch (MessagingException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			System.out.println("Msgno: " + elt.getMessageNumber());
-			try {
-				System.out.println("Subject: " + elt.getSubject());
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				System.out.println("ContentType: " + elt.getContentType());
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			continue; 
-			
-			/*
-			try {
-				System.out.println("Subject: " + elt.getSubject());
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				System.out.println("ContentType: " + elt.getContentType());
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				System.out.println("Content: " + elt.getContent());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			*/
+				continue;
+			}		
 		}
 		
 		try {
@@ -319,8 +334,7 @@ public class EMailClient {
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
+		}		
 		
 		try {
 			store.close();
@@ -328,9 +342,8 @@ public class EMailClient {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 
-		return "";
+		return results;
 	}
 	
 	public static String GetHostFromEmailAddress(String email)
