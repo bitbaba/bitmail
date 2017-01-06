@@ -29,6 +29,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import javax.security.auth.x500.X500Principal;
+
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -37,6 +40,7 @@ import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -45,6 +49,7 @@ import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.cert.selector.X509CertificateHolderSelector;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
@@ -53,6 +58,8 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSTypedData;
+import org.bouncycastle.cms.KeyTransRecipientId;
+import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
@@ -279,16 +286,7 @@ public class X509Cert {
 		
 		JceKeyTransRecipientInfoGenerator recipGen = null;
 		
-		try {
-			recipGen = new JceKeyTransRecipientInfoGenerator(cert_);
-		} catch (CertificateEncodingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		if (recipGen == null){
-			return "";
-		}
+		recipGen = new JceKeyTransRecipientInfoGenerator(cert_.getExtensionValue(Extension.subjectKeyIdentifier.toString()), cert_.getPublicKey());
 		
 		recipGen.setProvider(BouncyCastleProvider.PROVIDER_NAME);
 		
@@ -331,11 +329,6 @@ public class X509Cert {
 		CMSEnvelopedData ed = null;
 		try {
 			ed = new CMSEnvelopedData(Base64.decode(pemdata));// Base64 decode PEM to DER(asn.1) binary byte array;
-			System.out.println("Recipt Count: " + ed.getRecipientInfos().size());
-			Collection<RecipientInformation> recipts = ed.getRecipientInfos().getRecipients();
-			for (RecipientInformation elt : recipts){
-				System.out.println(elt.getRID().toString());
-			}
 		} catch (Base64DecodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -352,19 +345,27 @@ public class X509Cert {
 		
 		Iterator    it = c.iterator();
 
-		if (!it.hasNext()){
+		RecipientInformation   recipient = null;
+
+		//HarryWu, select the `match' recipient to decrypt;
+		while(it.hasNext()){
+			recipient = (RecipientInformation)it.next();			
+		}
+		
+		if (recipient == null){
 			return "";
 		}
 		
-		RecipientInformation   recipient = (RecipientInformation)it.next();
-		//HarryWu, select the `match' recipient to decrypt;
-
-		if (!it.hasNext()){
+		System.out.println("OID: " + Extension.subjectKeyIdentifier.toString());
+		KeyTransRecipientId selector = new KeyTransRecipientId(cert_.getExtensionValue(Extension.subjectKeyIdentifier.toString()));
+		
+		
+		recipient = recipients.get(selector);
+		
+		if (recipient == null){
 			return "";
 		}
-
-		recipient = (RecipientInformation)it.next();
-			
+		
 		byte[] recData = null;
 		try {
 			recData = recipient.getContent(new JceKeyTransEnvelopedRecipient(key_).setProvider(BouncyCastleProvider.PROVIDER_NAME));
@@ -594,17 +595,8 @@ public class X509Cert {
 			X509Certificate cert = DecodeCertificate(pemCert);
 			
 			JceKeyTransRecipientInfoGenerator recipGen = null;			
-			try {
-				recipGen = new JceKeyTransRecipientInfoGenerator(cert);				
-			} catch (CertificateEncodingException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}			
-			if (recipGen == null){
-				continue;
-			}
+			recipGen = new JceKeyTransRecipientInfoGenerator(cert.getExtensionValue(Extension.subjectKeyIdentifier.toString()), cert.getPublicKey());			
 			recipGen.setProvider(BouncyCastleProvider.PROVIDER_NAME);
-			
 			edGen.addRecipientInfoGenerator(recipGen);
 		}
 			
