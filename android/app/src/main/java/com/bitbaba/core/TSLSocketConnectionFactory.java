@@ -1,5 +1,8 @@
 package com.bitbaba.core;
 
+import org.bouncycastle.crypto.tls.TlsClient;
+import org.bouncycastle.crypto.tls.TlsClientProtocol;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,16 +11,12 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.util.List;
 
 import javax.net.SocketFactory;
-import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.HandshakeCompletedListener;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import org.bouncycastle.crypto.tls.TlsClient;
-import org.bouncycastle.crypto.tls.TlsClientProtocol;
 
 
 // http://stackoverflow.com/questions/33517476/tls-1-2-java-1-6-bouncycastle

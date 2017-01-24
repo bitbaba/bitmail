@@ -32,7 +32,10 @@ import java.util.Iterator;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.EncryptedPrivateKeyInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -72,14 +75,19 @@ import org.bouncycastle.cms.jcajce.JceKeyTransRecipientId;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA1Digest;
+import org.bouncycastle.crypto.engines.DESedeEngine;
+import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMEncryptor;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaMiscPEMGenerator;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPKCS8Generator;
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 import org.bouncycastle.openssl.jcajce.JcePEMEncryptorBuilder;
 import org.bouncycastle.operator.ContentSigner;
@@ -87,6 +95,11 @@ import org.bouncycastle.operator.DigestCalculator;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfoBuilder;
+import org.bouncycastle.pkcs.bc.BcPKCS12PBEOutputEncryptorBuilder;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS8EncryptedPrivateKeyInfoBuilder;
+import org.bouncycastle.pkcs.jcajce.JcePKCSPBEOutputEncryptorBuilder;
 import org.bouncycastle.util.Store;
 
 import android.util.Base64;
@@ -278,7 +291,7 @@ public class X509Cert {
 	{
 		CMSTypedData msg = null;
 		try {
-			msg = new CMSProcessableByteArray(text.getBytes(java.nio.charset.StandardCharsets.UTF_8.name()));
+			msg = new CMSProcessableByteArray(text.getBytes("UTF-8"));
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -359,7 +372,7 @@ public class X509Cert {
 		}
 		
 		try {
-			return new String(recData, java.nio.charset.StandardCharsets.UTF_8.name());
+			return new String(recData, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -376,7 +389,7 @@ public class X509Cert {
 	{
 		CMSTypedData msg = null;
 		try {
-			msg = new CMSProcessableByteArray(text.getBytes(java.nio.charset.StandardCharsets.UTF_8.name()));
+			msg = new CMSProcessableByteArray(text.getBytes("UTF-8"));
 		} catch (UnsupportedEncodingException e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
@@ -486,7 +499,7 @@ public class X509Cert {
 		
 		String text = null;
 		try {
-			text = bofs.toString(java.nio.charset.StandardCharsets.UTF_8.name());
+			text = bofs.toString("UTF-8");
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -561,7 +574,7 @@ public class X509Cert {
 	{
 		CMSTypedData msg = null;
 		try {
-			msg = new CMSProcessableByteArray(text.getBytes(java.nio.charset.StandardCharsets.UTF_8.name()));
+			msg = new CMSProcessableByteArray(text.getBytes("UTF-8"));
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -690,15 +703,29 @@ public class X509Cert {
         JcaPEMWriter pw = new JcaPEMWriter(sw);
         try {
         	if (passphrase != null && !passphrase.isEmpty()){
-        		pw.writeObject(new JcaMiscPEMGenerator(key, new JcePEMEncryptorBuilder("AES-128-ECB").setSecureRandom(new SecureRandom()).build(passphrase.toCharArray())));
-        	}else{
+				PKCS8EncryptedPrivateKeyInfoBuilder builder = new JcaPKCS8EncryptedPrivateKeyInfoBuilder(key);
+				PKCS8EncryptedPrivateKeyInfo priv = null;
+				try {
+					priv = builder.build(new JcePKCSPBEOutputEncryptorBuilder(PKCSObjectIdentifiers.pbeWithSHAAnd3_KeyTripleDES_CBC).setProvider("BC").build(passphrase.toCharArray()));
+				} catch (OperatorCreationException e) {
+					e.printStackTrace();
+				}
+				if (priv != null){
+					pw.writeObject(priv);
+				}
+				// Bug Report: http://bouncy-castle.1462172.n4.nabble.com/Issues-when-migrating-to-1-53-td4657955.html
+				// and: https://github.com/bcgit/bc-java/issues/156
+				// and: https://github.com/kjur/jsrsasign/wiki/Tutorial-for-PKCS5-and-PKCS8-PEM-private-key-formats-differences
+        		//pw.writeObject(key, new JcePEMEncryptorBuilder("DES-EDE3-CBC").setSecureRandom(new SecureRandom()).build(passphrase.toCharArray()));
+			}else{
         		pw.writeObject(key);
         	}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        try {
+
+		try {
 			pw.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
