@@ -17,6 +17,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    productFlavors {
+    }
 }
 
 dependencies {
@@ -31,5 +33,7 @@ dependencies {
     compile files('libs/BouncyCastle/bcpkix-jdk15on-156.jar')
     compile files('libs/BouncyCastle/bcprov-jdk15on-156.jar')
     compile files('libs/BouncyCastle/bctls-jdk15on-156.jar')
-    compile files('libs/Oracle/javax.mail.jar')
+    compile files('libs/Google/activation.jar')
+    compile files('libs/Google/additionnal.jar')
+    compile files('libs/Google/mail.jar')
 }
