@@ -703,20 +703,11 @@ public class X509Cert {
         JcaPEMWriter pw = new JcaPEMWriter(sw);
         try {
         	if (passphrase != null && !passphrase.isEmpty()){
-				PKCS8EncryptedPrivateKeyInfoBuilder builder = new JcaPKCS8EncryptedPrivateKeyInfoBuilder(key);
-				PKCS8EncryptedPrivateKeyInfo priv = null;
-				try {
-					priv = builder.build(new JcePKCSPBEOutputEncryptorBuilder(PKCSObjectIdentifiers.pbeWithSHAAnd3_KeyTripleDES_CBC).setProvider("BC").build(passphrase.toCharArray()));
-				} catch (OperatorCreationException e) {
-					e.printStackTrace();
-				}
-				if (priv != null){
-					pw.writeObject(priv);
-				}
 				// Bug Report: http://bouncy-castle.1462172.n4.nabble.com/Issues-when-migrating-to-1-53-td4657955.html
 				// and: https://github.com/bcgit/bc-java/issues/156
 				// and: https://github.com/kjur/jsrsasign/wiki/Tutorial-for-PKCS5-and-PKCS8-PEM-private-key-formats-differences
-        		//pw.writeObject(key, new JcePEMEncryptorBuilder("DES-EDE3-CBC").setSecureRandom(new SecureRandom()).build(passphrase.toCharArray()));
+				// and now try to degrade to 1.52
+				pw.writeObject(new JcaMiscPEMGenerator(key, new JcePEMEncryptorBuilder("AES-128-ECB").setSecureRandom(new SecureRandom()).build(passphrase.toCharArray())));
 			}else{
         		pw.writeObject(key);
         	}

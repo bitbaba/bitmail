@@ -3,17 +3,12 @@
  */
 package com.bitbaba.core;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
 import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Folder;
@@ -33,9 +28,9 @@ import javax.mail.search.FlagTerm;
  */
 public class EMailClient {
 
-	private static int POP3_SSL_DEFAULT_PORT = 995;
-	private static int SMTP_SSL_DEFAULT_PORT = 465; // or 994
-	private static int IMAP_SSL_DEFAULT_PORT = 993;
+	private static int BITMAIL_POP3_SSL_DEFAULT_PORT = 995;
+	private static int BITMAIL_SMTP_SSL_DEFAULT_PORT = 465; // or 994
+	private static int BITMAIL_IMAP_SSL_DEFAULT_PORT = 993;
 	
 	
 	private String smtp_ = null;
@@ -67,10 +62,9 @@ public class EMailClient {
 		properties.put("mail.smtps.ssl.enable", "true");
 		properties.put("mail.smtps.host", smtp_);
 		properties.put("mail.smtps.auth", "true");
-		//properties.put("mail.smtps.ssl.socketFactory.class", "com.bitbaba.TSLSocketConnectionFactory");
 		properties.put("mail.smtps.ssl.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
 		properties.put("mail.smtps.socketFactory.fallback", "false");
-		properties.put("mail.smtps.ssl.socketFactory.port", SMTP_SSL_DEFAULT_PORT);
+		properties.put("mail.smtps.ssl.socketFactory.port", BITMAIL_SMTP_SSL_DEFAULT_PORT);
 
 		Session session = Session.getInstance(properties);		
 			
@@ -80,9 +74,7 @@ public class EMailClient {
 			message.setRecipient(MimeMessage.RecipientType.TO, new InternetAddress(to));
 			message.setSubject(BITMAIL_SUBJECT);
 			message.setSentDate(new Date());
-			DataHandler handler = new DataHandler(new ByteArrayDataSource(content.getBytes(), "text/plain"));
 			message.setText(content);
-			//message.saveChanges();
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -97,7 +89,7 @@ public class EMailClient {
 		}		
 
 		try {				
-			trans.connect(smtp_, SMTP_SSL_DEFAULT_PORT, login_, password_);
+			trans.connect(smtp_, BITMAIL_SMTP_SSL_DEFAULT_PORT, login_, password_);
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -118,44 +110,6 @@ public class EMailClient {
 		}
 		return true;
 	}
-	public class ByteArrayDataSource implements DataSource {
-		private byte[] data;
-		private String type;
-
-		public ByteArrayDataSource(byte[] data, String type) {
-			super();
-			this.data = data;
-			this.type = type;
-		}
-
-		public ByteArrayDataSource(byte[] data) {
-			super();
-			this.data = data;
-		}
-
-		public void setType(String type) {
-			this.type = type;
-		}
-
-		public String getContentType() {
-			if (type == null)
-				return "application/octet-stream";
-			else
-				return type;
-		}
-
-		public InputStream getInputStream() throws IOException {
-			return new ByteArrayInputStream(data);
-		}
-
-		public String getName() {
-			return "ByteArrayDataSource";
-		}
-
-		public OutputStream getOutputStream() throws IOException {
-			throw new IOException("Not Supported");
-		}
-	}
 
 	public List<String> Receive() 
 	{
@@ -166,9 +120,9 @@ public class EMailClient {
 		properties.put("mail.imaps.ssl.enable", "true");
 		properties.put("mail.imaps.host", imap_);
 		properties.put("mail.imaps.auth", "true");
-		properties.put("mail.imaps.ssl.socketFactory.class", "com.bitbaba.TSLSocketConnectionFactory");		
+		properties.put("mail.imaps.ssl.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
 		properties.put("mail.imaps.socketFactory.fallback", "false");
-		properties.put("mail.imaps.ssl.socketFactory.port", IMAP_SSL_DEFAULT_PORT);
+		properties.put("mail.imaps.ssl.socketFactory.port", BITMAIL_IMAP_SSL_DEFAULT_PORT);
 
 		Session session = Session.getInstance(properties);	
 		
@@ -181,7 +135,7 @@ public class EMailClient {
 		}		
 
 		try {				
-			store.connect(imap_, IMAP_SSL_DEFAULT_PORT, login_, password_);			
+			store.connect(imap_, BITMAIL_IMAP_SSL_DEFAULT_PORT, login_, password_);
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
