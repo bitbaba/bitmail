@@ -127,43 +127,46 @@ public class BitMail {
 		profile_ = new X509Cert("nick", "nick@example.com", 2048);
 		Log.d("BitMail", profile_.GetCertificate());
 
-		X509Cert cert1, cert2;
+		X509Cert alice, bob;
 
 		boolean freshCert = false;
 
 		if (freshCert) {
-			cert1 = new X509Cert("nick1", "nick1@example.com", 1024);
-			cert2 = new X509Cert("nick2", "nick2@example.com", 1024);
+			alice = new X509Cert("nick1", "nick1@example.com", 1024);
+			bob = new X509Cert("nick2", "nick2@example.com", 1024);
 		}else{
-			cert1 = LoadAlice("secret");
-			cert2 = LoadBob(null);
+			alice = LoadAlice("secret");
+			bob = LoadBob(null);
 		}
 
-		System.out.println(cert1.GetCertificate());
-		Log.d("BitMail", cert1.GetPrivateKey(passphrase_));
-		System.out.println(cert2.GetCertificate());
-		Log.d("BitMail", cert2.GetPrivateKey(null));
+		System.out.println(alice.GetCertificate());
+		Log.d("BitMail", alice.GetPrivateKey(passphrase_));
+		System.out.println(bob.GetCertificate());
+		Log.d("BitMail", bob.GetPrivateKey(null));
 
 		/*
 		*/
 		ArrayList<String> certs = new ArrayList<>();
-		certs.add(cert1.GetCertificate());
-		certs.add(cert2.GetCertificate());
+		certs.add(alice.GetCertificate());
+		certs.add(bob.GetCertificate());
 
+		// On alice side: sign, encrypt, and send.
 		String account = "10000@qq.com", password = "10000", recipt = "10000@qq.com";
 		emailClient_ = new EMailClient(account, password);
-		String sig = cert1.Sign("hello, world");
+		String sig = alice.Sign("hello, world");
 		Log.d("BitMail", sig);
-		String enc = cert1.Encrypt(sig);
+		String enc = bob.Encrypt(sig);
 		Log.d("BitMail", enc);
 		emailClient_.Send(recipt, enc);
+
+		// On Bob side: receive, decrypt, and verify.
 		List<String> messages = emailClient_.Receive();
 		if (messages == null || messages.isEmpty()){
 			return ;
 		}
 		for (String msg : messages){
 			System.out.println(msg);
-			HashMap<String, String> result = cert1.Verify(cert1.Decrypt(msg));
+			HashMap<String, String> result = alice.Verify(bob.Decrypt(msg));
 			if (result != null){
 				for (Entry<String, String> elt : result.entrySet()){
 					Log.d("BitMail", elt.getKey());
