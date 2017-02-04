@@ -23,7 +23,8 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectLeakedSqlLiteObjects()
                 .detectLeakedClosableObjects().penaltyLog().penaltyDeath().build());
         try {
-            BitMail.main(null);
+            BitMail bitmail = new BitMail();
+            bitmail.UnitTest();
         } catch (IOException e) {
             e.printStackTrace();
         }
