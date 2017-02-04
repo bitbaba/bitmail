@@ -28,12 +28,11 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:25.0.1'
     testCompile 'junit:junit:4.12'
-    compile files('libs/BouncyCastle/bcmail-jdk15on-156.jar')
-    compile files('libs/BouncyCastle/bcpg-jdk15on-156.jar')
-    compile files('libs/BouncyCastle/bcpkix-jdk15on-156.jar')
-    compile files('libs/BouncyCastle/bcprov-jdk15on-156.jar')
-    compile files('libs/BouncyCastle/bctls-jdk15on-156.jar')
     compile files('libs/Google/activation.jar')
     compile files('libs/Google/additionnal.jar')
     compile files('libs/Google/mail.jar')
+    compile files('libs/bc-1.52/bcmail-jdk15on-1.52.jar')
+    compile files('libs/bc-1.52/bcpg-jdk15on-1.52.jar')
+    compile files('libs/bc-1.52/bcpkix-jdk15on-1.52.jar')
+    compile files('libs/bc-1.52/bcprov-jdk15on-1.52.jar')
 }
