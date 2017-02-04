@@ -151,11 +151,12 @@ public class BitMail {
 		certs.add(bob.GetCertificate());
 
 		// On alice side: sign, encrypt, and send.
-		String account = "10000@qq.com", password = "10000", recipt = "10000@qq.com";
+		String account = "x@qq.com", password = "x", recipt = "x@qq.com";
 		emailClient_ = new EMailClient(account, password);
 		String sig = alice.Sign("hello, world");
 		Log.d("BitMail", sig);
-		String enc = bob.Encrypt(sig);
+		//String enc = bob.Encrypt(sig);
+		String enc = X509Cert.MEncrypt(certs, sig);
 		Log.d("BitMail", enc);
 		emailClient_.Send(recipt, enc);
 
