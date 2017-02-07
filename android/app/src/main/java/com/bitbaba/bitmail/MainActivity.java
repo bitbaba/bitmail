@@ -1,32 +1,54 @@
 package com.bitbaba.bitmail;
 
-import android.os.StrictMode;
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.StrictMode;
 
-import com.bitbaba.core.*;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.ArrayList;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity
+                          //implements ContactFragment.OnListFragmentInteractionListener, MessageFragment.OnListFragmentInteractionListener, SettingFragment.OnListFragmentInteractionListener
+{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /**
+         * Access Network in GUI Activity
+         */
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectDiskReads()
                 .detectDiskWrites().detectNetwork().penaltyLog().build());
+
         StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectLeakedSqlLiteObjects()
                 .detectLeakedClosableObjects().penaltyLog().penaltyDeath().build());
+
+        /**
+         * Setup initial view
+         */
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        ContactsFragment contactsView = new ContactsFragment();
+        transaction.replace(R.id.id_content, contactsView);
+        transaction.commit();
+
+        /**
+         * Simple Unit Test
+         */
+        /*
         try {
-            BitMail bitmail = new BitMail();
-            bitmail.UnitTest();
+            BitMail.GetInstance().UnitTest();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        */
     }
+
+    /*
+    @Override
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+
+    }
+    */
 }

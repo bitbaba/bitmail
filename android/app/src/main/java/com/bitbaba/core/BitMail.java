@@ -19,7 +19,11 @@ public class BitMail {
 
 	private EMailClient emailClient_ = null;
 	private X509Cert    profile_     = null;
+	private String      email_       = null;
 	private String      passphrase_  = null;
+	private String      password_    = null;
+
+	private static final BitMail __gsInstance = new BitMail();
 
 	private X509Cert LoadAlice(String passphrase){
 		String cert = "-----BEGIN CERTIFICATE-----\r\n"
@@ -124,6 +128,8 @@ public class BitMail {
 			Log.d("BitMail", provider.getName());
 		}
 
+		emailClient_ = new EMailClient(email_, password_);
+
 		profile_ = new X509Cert("nick", "nick@example.com", 2048);
 		Log.d("BitMail", profile_.GetCertificate());
 
@@ -151,14 +157,12 @@ public class BitMail {
 		certs.add(bob.GetCertificate());
 
 		// On alice side: sign, encrypt, and send.
-		String account = "x@qq.com", password = "x", recipt = "x@qq.com";
-		emailClient_ = new EMailClient(account, password);
 		String sig = alice.Sign("hello, world");
 		Log.d("BitMail", sig);
 		//String enc = bob.Encrypt(sig);
 		String enc = X509Cert.MEncrypt(certs, sig);
 		Log.d("BitMail", enc);
-		emailClient_.Send(recipt, enc);
+		emailClient_.Send(email_, enc);
 
 		// On Bob side: receive, decrypt, and verify.
 		List<String> messages = emailClient_.Receive();
@@ -177,8 +181,32 @@ public class BitMail {
 		}
 	}
 	
-	public BitMail()
+	private BitMail()
 	{
-		passphrase_ = "secret";
+
+	}
+
+	public static BitMail GetInstance(){
+		return  __gsInstance;
+	}
+
+	public void SetEMail(String email){
+		email_ = email;
+	}
+
+	public void SetPassphrase(String passphrase){
+		passphrase_ = passphrase;
+	}
+
+	public void SetPassword(String password){
+		password_ = password;
+	}
+
+	public void LoadProfile(){
+		return ;
+	}
+
+	public void SaveProfile(){
+		return ;
 	}
 }
