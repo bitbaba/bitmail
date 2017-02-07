@@ -26,8 +26,6 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.0.1'
-    testCompile 'junit:junit:4.12'
     compile files('libs/Google/activation.jar')
     compile files('libs/Google/additionnal.jar')
     compile files('libs/Google/mail.jar')
@@ -35,4 +33,9 @@ dependencies {
     compile files('libs/bc-1.52/bcpg-jdk15on-1.52.jar')
     compile files('libs/bc-1.52/bcpkix-jdk15on-1.52.jar')
     compile files('libs/bc-1.52/bcprov-jdk15on-1.52.jar')
+    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.android.support:design:25.0.1'
+    compile 'com.android.support:support-v4:25.0.1'
+    compile 'com.android.support:recyclerview-v7:25.0.1'
+    testCompile 'junit:junit:4.12'
 }
