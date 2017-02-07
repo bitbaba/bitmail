@@ -33,9 +33,6 @@ dependencies {
     compile files('libs/bc-1.52/bcpg-jdk15on-1.52.jar')
     compile files('libs/bc-1.52/bcpkix-jdk15on-1.52.jar')
     compile files('libs/bc-1.52/bcprov-jdk15on-1.52.jar')
-    compile 'com.android.support:appcompat-v7:25.0.1'
     compile 'com.android.support:design:25.0.1'
-    compile 'com.android.support:support-v4:25.0.1'
-    compile 'com.android.support:recyclerview-v7:25.0.1'
     testCompile 'junit:junit:4.12'
 }
