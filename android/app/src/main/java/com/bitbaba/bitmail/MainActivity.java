@@ -17,6 +17,10 @@ public class MainActivity extends Activity
 
 {
 
+    private ContactsFragment contactsView = new ContactsFragment();
+
+    private SettingsFragment settingsView = new SettingsFragment();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +49,6 @@ public class MainActivity extends Activity
          */
         FragmentManager fm = getFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
-        ContactsFragment contactsView = new ContactsFragment();
         transaction.replace(R.id.id_content, contactsView);
         transaction.commit();
 
@@ -70,11 +73,9 @@ public class MainActivity extends Activity
 
         switch ( btnClicked.getId() ){
             case R.id.id_btn_contacts:{
-                ContactsFragment contactsView = new ContactsFragment();
                 transaction.replace(R.id.id_content, contactsView);
             }break;
             case R.id.id_btn_settings:{
-                SettingsFragment settingsView = new SettingsFragment();
                 transaction.replace(R.id.id_content, settingsView);
             }break;
         }
@@ -88,6 +89,9 @@ public class MainActivity extends Activity
 
         FragmentManager fm = getFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
+        /**
+         * Always create a new chat view;
+         */
         ChatFragment chatView = new ChatFragment();
         transaction.replace(R.id.id_content, chatView);
         transaction.commit();
