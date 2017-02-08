@@ -11,26 +11,43 @@
     android:orientation="vertical"
     tools:context="com.bitbaba.bitmail.MainActivity">
 
-    <fragment
-        android:id="@+id/id_fragment_head"
-        android:name="com.bitbaba.bitmail.HeadFragment"
-        android:layout_width="fill_parent"
-        android:layout_height="50dp" />
-
-    <fragment
-        android:id="@+id/id_fragment_foot"
-        android:name="com.bitbaba.bitmail.FootFragment"
+    <TextView
+        android:text="BitMail Is Running..."
+        android:textAlignment="center"
         android:layout_width="fill_parent"
         android:layout_height="50dp"
-        android:layout_alignParentBottom="true" />
+        android:id="@+id/id_stat"
+        android:layout_alignParentTop="true"/>
 
+    <LinearLayout
+        android:id="@+id/id_tab"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:text="Contacts"
+            android:textAlignment="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_btn_contacts"
+            android:layout_weight="1" />
+
+         <Button
+            android:text="Settings"
+            android:textAlignment="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_btn_settings"
+            android:layout_weight="1" />
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/id_content"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_above="@id/id_fragment_foot"
-        android:layout_below="@id/id_fragment_head"/>
-
+        android:layout_above="@id/id_tab"
+        android:layout_below="@id/id_stat"/>
 
 </RelativeLayout>
