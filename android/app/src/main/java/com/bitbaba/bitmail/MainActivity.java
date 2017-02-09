@@ -5,15 +5,12 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-
-import com.bitbaba.bitmail.dummy.DummyContent;
+import android.widget.TextView;
 
 public class MainActivity extends Activity
                           implements View.OnClickListener
-                          , ContactsFragment.OnListFragmentInteractionListener
+                          , ContactsFragment.OnContactsFragmentListener
 
 {
 
@@ -29,10 +26,10 @@ public class MainActivity extends Activity
         /**
          * Setup click listener
          */
-        Button btnContacts = (Button)findViewById(R.id.id_btn_contacts);
+        TextView btnContacts = (TextView)findViewById(R.id.id_txt_contacts);
         btnContacts.setOnClickListener(this);
 
-        Button btnSettings = (Button)findViewById(R.id.id_btn_settings);
+        TextView btnSettings = (TextView)findViewById(R.id.id_txt_settings);
         btnSettings.setOnClickListener(this);
 
         /**
@@ -69,13 +66,13 @@ public class MainActivity extends Activity
         FragmentManager fm = getFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
 
-        Button btnClicked = (Button)view;
+        TextView txtClicked = (TextView)view;
 
-        switch ( btnClicked.getId() ){
-            case R.id.id_btn_contacts:{
+        switch ( txtClicked.getId() ){
+            case R.id.id_txt_contacts:{
                 transaction.replace(R.id.id_content, contactsView);
             }break;
-            case R.id.id_btn_settings:{
+            case R.id.id_txt_settings:{
                 transaction.replace(R.id.id_content, settingsView);
             }break;
         }
@@ -84,9 +81,7 @@ public class MainActivity extends Activity
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
-        Log.d("BitMail", item.toString());
-
+    public void onContactsFragmentInteraction(String id) {
         FragmentManager fm = getFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         /**

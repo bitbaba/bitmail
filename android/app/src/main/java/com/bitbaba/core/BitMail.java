@@ -23,6 +23,8 @@ public class BitMail {
 	private String      passphrase_  = null;
 	private String      password_    = null;
 
+	private HashMap<String, String> friends_ = new HashMap<String, String>();
+
 	private static final BitMail __gsInstance = new BitMail();
 
 	private X509Cert LoadAlice(String passphrase){

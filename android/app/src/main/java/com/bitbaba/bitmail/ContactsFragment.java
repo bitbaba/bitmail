@@ -11,21 +11,19 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bitbaba.bitmail.dummy.DummyContent;
-import com.bitbaba.bitmail.dummy.DummyContent.DummyItem;
 
 /**
  * A fragment representing a list of Items.
  * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
+ * Activities containing this fragment MUST implement the {@link OnContactsFragmentListener}
  * interface.
  */
 public class ContactsFragment extends Fragment {
 
-    // TODO: Customize parameter argument names
-    private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
     private int mColumnCount = 1;
-    private OnListFragmentInteractionListener mListener;
+
+    private OnContactsFragmentListener mListener;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -34,23 +32,10 @@ public class ContactsFragment extends Fragment {
     public ContactsFragment() {
     }
 
-    // TODO: Customize parameter initialization
-    @SuppressWarnings("unused")
-    public static ContactsFragment newInstance(int columnCount) {
-        ContactsFragment fragment = new ContactsFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
-        }
     }
 
     @Override
@@ -67,7 +52,7 @@ public class ContactsFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyContactsRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            recyclerView.setAdapter(new ContactsViewAdapter(DummyContent.ITEMS, mListener));
         }
         return view;
     }
@@ -76,8 +61,8 @@ public class ContactsFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnListFragmentInteractionListener) {
-            mListener = (OnListFragmentInteractionListener) context;
+        if (context instanceof OnContactsFragmentListener) {
+            mListener = (OnContactsFragmentListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");
@@ -100,8 +85,8 @@ public class ContactsFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnListFragmentInteractionListener {
+    public interface OnContactsFragmentListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onContactsFragmentInteraction(String id);
     }
 }

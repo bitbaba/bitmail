@@ -11,43 +11,42 @@
     android:orientation="vertical"
     tools:context="com.bitbaba.bitmail.MainActivity">
 
-    <TextView
-        android:text="BitMail Is Running..."
-        android:textAlignment="center"
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
-        android:id="@+id/id_stat"
-        android:layout_alignParentTop="true"/>
-
     <LinearLayout
         android:id="@+id/id_tab"
         android:orientation="horizontal"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="50dp"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentTop="true">
 
-        <Button
+        <TextView
             android:text="Contacts"
-            android:textAlignment="center"
+            android:gravity="center_horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/id_btn_contacts"
-            android:layout_weight="1" />
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:id="@+id/id_txt_contacts"/>
 
-         <Button
-            android:text="Settings"
-            android:textAlignment="center"
+        <TextView
+            android:text="BitMail"
+            android:gravity="center_horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/id_btn_settings"
-            android:layout_weight="1" />
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:id="@+id/id_txt_indicator"/>
+
+        <TextView
+            android:text="Settings"
+            android:gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:id="@+id/id_txt_settings"/>
     </LinearLayout>
 
     <FrameLayout
         android:id="@+id/id_content"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_above="@id/id_tab"
-        android:layout_below="@id/id_stat"/>
+        android:layout_below="@id/id_tab"/>
 
 </RelativeLayout>
