@@ -8,6 +8,8 @@ import android.os.StrictMode;
 import android.view.View;
 import android.widget.TextView;
 
+import com.bitbaba.core.BitMail;
+
 public class MainActivity extends Activity
                           implements View.OnClickListener
                           , ContactsFragment.OnContactsFragmentListener
@@ -23,14 +25,7 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /**
-         * Setup click listener
-         */
-        TextView btnContacts = (TextView)findViewById(R.id.id_txt_contacts);
-        btnContacts.setOnClickListener(this);
-
-        TextView btnSettings = (TextView)findViewById(R.id.id_txt_settings);
-        btnSettings.setOnClickListener(this);
+        BitMail.GetInstance().LoadProfile();
 
         /**
          * Access Network in GUI Activity
@@ -42,23 +37,27 @@ public class MainActivity extends Activity
                 .detectLeakedClosableObjects().penaltyLog().penaltyDeath().build());
 
         /**
+         * Setup click listener
+         */
+        TextView btnContacts = (TextView)findViewById(R.id.id_txt_contacts);
+        btnContacts.setOnClickListener(this);
+
+        TextView btnSettings = (TextView)findViewById(R.id.id_txt_settings);
+        btnSettings.setOnClickListener(this);
+
+        /**
          * Setup initial view
          */
         FragmentManager fm = getFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(R.id.id_content, contactsView);
         transaction.commit();
+    }
 
-        /**
-         * Simple Unit Test
-         */
-        /*
-        try {
-            BitMail.GetInstance().UnitTest();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
+    @Override
+    protected void onStop(){
+        BitMail.GetInstance().SaveProfile();
+        super.onStop();
     }
 
     @Override
@@ -78,17 +77,30 @@ public class MainActivity extends Activity
         }
 
         transaction.commit();
+
+        /**
+         * clear indicator
+         */
+        TextView txtIndicator = (TextView)findViewById(R.id.id_txt_indicator);
+        txtIndicator.setText("BitMail");
     }
 
     @Override
-    public void onContactsFragmentInteraction(String id) {
+    public void onContactsFragmentInteraction(String email) {
         FragmentManager fm = getFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction();
         /**
          * Always create a new chat view;
          */
         ChatFragment chatView = new ChatFragment();
+        chatView.SetEmail(email);
         transaction.replace(R.id.id_content, chatView);
         transaction.commit();
+
+        /**
+         * Setup indicator
+         */
+        TextView txtIndicator = (TextView) findViewById(R.id.id_txt_indicator);
+        txtIndicator.setText(email);
     }
 }

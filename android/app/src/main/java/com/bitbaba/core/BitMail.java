@@ -3,8 +3,10 @@
  */
 package com.bitbaba.core;
 
+import android.os.Environment;
 import android.util.Log;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -205,10 +207,38 @@ public class BitMail {
 	}
 
 	public void LoadProfile(){
+		friends_.put("user@example.net", "nickname");
 		return ;
 	}
 
 	public void SaveProfile(){
+		if ( Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED) ){
+			File extStore = Environment.getExternalStorageDirectory();
+			Log.d("BitMail", extStore.getAbsolutePath());
+		}
 		return ;
+	}
+
+	public List<String> GetFriends(){
+		ArrayList<String> list = new ArrayList<>();
+		for (String elt : friends_.keySet()){
+			list.add(elt);
+		}
+		return list;
+	}
+
+	public boolean SendMessage(String recipEmail, String message)
+	{
+		return  true;
+	}
+
+	public boolean SendMessage(List<String> recips, String message)
+	{
+		return  true;
+	}
+
+	public HashMap<String, String> ReceiveMessage()
+	{
+		return null;
 	}
 }

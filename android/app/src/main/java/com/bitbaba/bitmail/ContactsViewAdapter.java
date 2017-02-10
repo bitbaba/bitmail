@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bitbaba.bitmail.ContactsFragment.OnContactsFragmentListener;
-import com.bitbaba.bitmail.dummy.DummyContent.DummyItem;
 
 import java.util.List;
 
@@ -18,10 +17,10 @@ import java.util.List;
  */
 public class ContactsViewAdapter extends RecyclerView.Adapter<ContactsViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    private final List<String> mValues;
     private final OnContactsFragmentListener mListener;
 
-    public ContactsViewAdapter(List<DummyItem> items, OnContactsFragmentListener listener) {
+    public ContactsViewAdapter(List<String> items, OnContactsFragmentListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -36,8 +35,8 @@ public class ContactsViewAdapter extends RecyclerView.Adapter<ContactsViewAdapte
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).id);
-        holder.mContentView.setText(mValues.get(position).content);
+        holder.mIdView.setText("*");
+        holder.mContentView.setText(mValues.get(position));
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,7 +44,7 @@ public class ContactsViewAdapter extends RecyclerView.Adapter<ContactsViewAdapte
                 if (null != mListener) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
-                    mListener.onContactsFragmentInteraction(holder.mItem.toString());
+                    mListener.onContactsFragmentInteraction(holder.mItem);
                 }
             }
         });
@@ -60,7 +59,7 @@ public class ContactsViewAdapter extends RecyclerView.Adapter<ContactsViewAdapte
         public final View mView;
         public final TextView mIdView;
         public final TextView mContentView;
-        public DummyItem mItem;
+        public String mItem;
 
         public ViewHolder(View view) {
             super(view);

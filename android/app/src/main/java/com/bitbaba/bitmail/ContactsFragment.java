@@ -10,7 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.bitbaba.bitmail.dummy.DummyContent;
+import com.bitbaba.core.BitMail;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Items.
@@ -52,7 +54,7 @@ public class ContactsFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new ContactsViewAdapter(DummyContent.ITEMS, mListener));
+            recyclerView.setAdapter(new ContactsViewAdapter(BitMail.GetInstance().GetFriends(), mListener));
         }
         return view;
     }
