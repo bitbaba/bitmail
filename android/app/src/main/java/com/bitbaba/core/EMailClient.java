@@ -54,6 +54,14 @@ public class EMailClient {
 		}
 		password_ = password;
 	}
+
+	public static String GetTxUrl(String email){
+		return "smtps://smtp." + GetHostFromEmailAddress(email);
+	}
+
+	public static String GetRxUrl(String email){
+		return "imaps://imap." + GetHostFromEmailAddress(email);
+	}
 		
 	public boolean Send(String to, String content) 
 	{

@@ -4,11 +4,15 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
+import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.widget.TextView;
 
 import com.bitbaba.core.BitMail;
+
+import java.io.File;
 
 public class MainActivity extends Activity
                           implements View.OnClickListener
@@ -25,7 +29,15 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BitMail.GetInstance().LoadProfile();
+        File file = new File(Environment.getExternalStorageDirectory() + "/" + "bitmail.profile");
+        file.delete();
+        if (!file.exists()){
+            if (BitMail.GetInstance().CreateProfile()) {
+                BitMail.GetInstance().SaveProfile();
+            }
+        }else{
+            BitMail.GetInstance().LoadProfile();
+        }
 
         /**
          * Access Network in GUI Activity
@@ -52,6 +64,11 @@ public class MainActivity extends Activity
         FragmentTransaction transaction = fm.beginTransaction();
         transaction.replace(R.id.id_content, contactsView);
         transaction.commit();
+
+        /**
+         * Unit Test
+         */
+        //BitMail.GetInstance().UnitTest();
     }
 
     @Override
