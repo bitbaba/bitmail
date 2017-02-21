@@ -109,7 +109,7 @@ public class BitMail {
 			return  false;
 		}
 		String nick = email_.split("@")[0];
-		profile_ = new X509Cert(nick, email_, 2048);
+		profile_ =  new X509Cert(nick, email_, 2048);
 
 		/**
 		 * Make some test configuration
@@ -128,7 +128,7 @@ public class BitMail {
 			e.printStackTrace();
 		}
 		JSONArray jaMembers = new JSONArray();
-		jaMembers.put(profile_.GetEmail())
+		jaMembers.put(profile_.GetEmail());
 		try {
 			joGroup.put("members", jaMembers);
 		} catch (JSONException e) {
