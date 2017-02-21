@@ -29,15 +29,17 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        File file = new File(Environment.getExternalStorageDirectory() + "/" + "bitmail.profile");
-        file.delete();
-        if (!file.exists()){
-            if (BitMail.GetInstance().CreateProfile()) {
-                BitMail.GetInstance().SaveProfile();
-            }
-        }else{
+//        File file = new File(Environment.getExternalStorageDirectory() + "/" + "bitmail.profile");
+//        file.delete();
+//        if (!file.exists()){
+//            if (BitMail.GetInstance().CreateProfile()) {
+//                BitMail.GetInstance().SaveProfile();
+//            }
+//        }else{
             BitMail.GetInstance().LoadProfile();
-        }
+//        }
+
+        BitMail.GetInstance().Init();
 
         /**
          * Access Network in GUI Activity

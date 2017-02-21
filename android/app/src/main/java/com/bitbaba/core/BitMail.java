@@ -4,8 +4,6 @@
 package com.bitbaba.core;
 
 import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
-import android.util.JsonReader;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -17,11 +15,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -41,39 +39,6 @@ public class BitMail {
 	 * TODO: try to use a JSONObject to hold all configurations
 	 */
 	JSONObject config_ = new JSONObject();
-
-	/**
-	 * Key: email
-	 * Value: certificate in pem encoding
-	 */
-	private HashMap<String, String> friends_ = new HashMap<String, String>();
-
-	/**
-	 * Messages cache
-	 * element: raw s/mime message
-	 */
-	private ArrayList<String> messages_ = new ArrayList<>();
-
-	/**
-	 * Subscribes
-	 * element: email to identify subscriber
-	 */
-	private ArrayList<String> subscribes_ = new ArrayList<>();
-
-	/**
-	 * Groups
-	 * Key: groupId
-	 * Value: json object contain details of group
-	 *       {
-	 *       	 name    : 'BitMailCore',
-	 *           creator : 'someone@example.net',
-	 *           members : [
-	 *           			'friend1@example.net',
-	 *           			'friend2@example.net'
-	 *           ]
-	 *       }
-	 */
-	private HashMap<String, JSONObject> groups_ = new HashMap<>();
 
 	private static final BitMail __gsInstance = new BitMail();
 
@@ -112,33 +77,37 @@ public class BitMail {
 		profile_ =  new X509Cert(nick, email_, 2048);
 
 		/**
-		 * Make some test configuration
+		 * Populate with test configurations
 		 */
-		friends_.put(profile_.GetEmail(), profile_.GetCertificate());
 
-		JSONObject joGroup = new JSONObject();
-		try {
-			joGroup.put("creator", profile_.GetEmail());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			joGroup.put("name", "BitMailCore");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		JSONArray jaMembers = new JSONArray();
-		jaMembers.put(profile_.GetEmail());
-		try {
-			joGroup.put("members", jaMembers);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		groups_.put(profile_.GetID() + Calendar.getInstance().getTimeInMillis(), joGroup);
-
-		subscribes_.add(profile_.GetEmail());
+		PopulateTestConfiguration();
 
 		return  true;
+	}
+
+	public boolean Init(){
+		if (emailClient_ == null){
+			emailClient_ = new EMailClient(email_, password_);
+		}
+		if (profile_ == null){
+			profile_ = new X509Cert();
+			JSONObject joProfile = null;
+			if (!config_.has("Profile")){
+				return  false;
+			}
+			joProfile = config_.optJSONObject("Profile");
+			if (!joProfile.has("cert")){
+				return  false;
+			}
+			String sCert = joProfile.optString("cert");
+			profile_.LoadCertificate(sCert);
+			if (!joProfile.has("key")){
+				return  false;
+			}
+			String sKey = joProfile.optString("key");
+			profile_.LoadPrivateKey(sKey, passphrase_);
+		}
+		return true;
 	}
 
 	public void LoadProfile(){
@@ -171,231 +140,22 @@ public class BitMail {
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-		Log.d("BitMail", res);
-
-		JSONObject jroot = null;
-		try {
-			jroot = new JSONObject(res);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		if (jroot.has("Profile")){
-			JSONObject joProfile = null;
-			try {
-				joProfile = jroot.getJSONObject("Profile");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (jroot.has("friends")){
-			JSONObject joFriends = null;
-			try {
-				joFriends = jroot.getJSONObject("friends");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (jroot.has("groups")){
-			JSONObject joGroups = null;
-			try {
-				joGroups = jroot.getJSONObject("groups");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (jroot.has("subscribes")){
-			JSONObject joSubscribes = null;
-			try {
-				joSubscribes = jroot.getJSONObject("subscribes");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (jroot.has("proxy")){
-			JSONObject joProxy = null;
-			try {
-				joProxy = jroot.getJSONObject("proxy");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (jroot.has("rx")){
-			JSONObject joRx = null;
-			try {
-				joRx = jroot.getJSONObject("rx");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (jroot.has("tx")){
-			JSONObject joTx = null;
-			try {
-				joTx = jroot.getJSONObject("tx");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
 		try {
 			fis.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		Log.d("BitMail", res);
+
+		try {
+			config_ = new JSONObject(res);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void SaveProfile() {
-		JSONObject jroot = new JSONObject();
-		// Profile
-		JSONObject jprofile = new JSONObject();
-		try {
-			JSONObject jbrad = new JSONObject();
-			try {
-				jbrad.put("port", 10086);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			jprofile.put("brad", jbrad);
-			jprofile.put("cert", profile_.GetCertificate());
-			jprofile.put("email", email_);
-			jprofile.put("key", profile_.GetPrivateKey(passphrase_));
-			jprofile.put("nick", profile_.GetNick());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			jroot.put("Profile", jprofile);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		// Friends
-		JSONObject jfriends = new JSONObject();
-		for (Entry<String, String> elt : friends_.entrySet()){
-			JSONObject jfriend = new JSONObject();
-			try {
-				jfriend.put("cert", elt.getValue());
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			try {
-				jfriends.put(elt.getKey(), jfriend);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-		try {
-			jroot.put("friends", jfriends);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		// Groups
-		JSONObject joGroups = new JSONObject();
-		for (Entry<String, JSONObject> elt : groups_.entrySet()){
-			try {
-				joGroups.put(elt.getKey(), elt.getValue());
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-		try {
-			jroot.put("groups", joGroups);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		// Proxy
-		JSONObject joProxy = new JSONObject();
-		try {
-			joProxy.put("ip", "127.0.0.1");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			joProxy.put("port", 1080);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			joProxy.put("user", "");
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			joProxy.put("password", profile_.Encrypt("secret"));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			jroot.put("proxy", joProxy);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		// Subscribes
-		JSONArray jaSubscribes = new JSONArray();
-		for (String elt : subscribes_){
-			jaSubscribes.put(elt);
-		}
-		try {
-			jroot.put("subscribes", jaSubscribes);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		// rx
-		JSONObject joRx = new JSONObject();
-		try {
-			joRx.put("login", email_);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			joRx.put("password", profile_.Encrypt(password_));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			joRx.put("url", EMailClient.GetRxUrl(email_));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			jroot.put("rx", joRx);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
-		// tx
-		JSONObject joTx = new JSONObject();
-		try {
-			joTx.put("login", email_);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			joTx.put("password", profile_.Encrypt(password_));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			joTx.put("url", EMailClient.GetTxUrl(email_));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		try {
-			jroot.put("tx", joTx);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-
 		File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "bitmail.profile");
 
 		FileOutputStream fos = null;
@@ -406,7 +166,7 @@ public class BitMail {
 		}
 
 		try {
-			fos.write(jroot.toString().getBytes());
+			fos.write(config_.toString().getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -421,26 +181,66 @@ public class BitMail {
 	}
 
 	public List<String> GetFriends(){
+		JSONObject joFriends = config_.optJSONObject("friends");
 		ArrayList<String> list = new ArrayList<>();
-		for (String elt : friends_.keySet()){
-			list.add(elt);
+		Iterator<String> itKeys = joFriends.keys();
+		while(itKeys.hasNext()){
+			String key = itKeys.next();
+			list.add(key);
+			// Dump it
+			JSONObject joFriend = joFriends.optJSONObject(key);
+			Log.d("BitMail", key + " : " + joFriend.optString("cert"));
 		}
 		return list;
 	}
 
 	public boolean SendMessage(String recipEmail, String message)
 	{
-		return  true;
-	}
+		X509Cert xcert = new X509Cert();
+		if (!config_.has("friends")){
+			return false;
+		}
+		JSONObject joFriends = config_.optJSONObject("friends");
+		if (!joFriends.has(recipEmail)){
+			return false;
+		}
+		JSONObject joRecip = joFriends.optJSONObject(recipEmail);
+		if (!joRecip.has("cert")){
+			return false;
+		}
+		String sCertInPem = joRecip.optString("cert");
 
-	public boolean SendMessage(List<String> recips, String message)
-	{
+		if (sCertInPem.isEmpty()){
+			return  false;
+		}
+
+		xcert.LoadCertificate(sCertInPem);
+
+		emailClient_.Send(recipEmail, xcert.Encrypt(profile_.Sign(message)));
+
 		return  true;
 	}
 
 	public void ReceiveMessage()
 	{
+		JSONArray jaMsg = null;
+		if (config_.has("msg")){
+			jaMsg = config_.optJSONArray("msg");
+		}else{
+			jaMsg = new JSONArray();
+		}
 
+		List<String> results = emailClient_.Receive();
+
+		for (String elt : results){
+			jaMsg.put(elt);
+		}
+
+		try {
+			config_.put("msg", jaMsg);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 
 
@@ -526,6 +326,216 @@ public class BitMail {
 		xcert.LoadPrivateKey(key, passphrase);
 
 		return  xcert;
+	}
+
+	private void PopulateTestConfiguration(){
+		do { // Profile
+			JSONObject joProfile = new JSONObject();
+			do {
+				JSONObject joBrad = new JSONObject();
+				try {
+					joBrad.put("port", 10086);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joProfile.put("brad", joBrad);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			} while (false);
+
+			do {
+				try {
+					joProfile.put("cert", profile_.GetCertificate());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			} while (false);
+
+			do {
+				try {
+					joProfile.put("email", profile_.GetEmail());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}while(false);
+
+			do {
+				try {
+					joProfile.put("key", profile_.GetPrivateKey(passphrase_));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}while(false);
+
+			do {
+				try {
+					joProfile.put("nick", profile_.GetNick());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}while (false);
+
+			try {
+				config_.put("Profile", joProfile);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}while(false);
+
+		do {// Friends
+			JSONObject joFriends = new JSONObject();
+			do {
+				JSONObject joFriend = new JSONObject();
+				try {
+					joFriend.put("cert", profile_.GetCertificate());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joFriends.put(profile_.GetEmail(), joFriend);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}while(false);
+			try {
+				config_.put("friends", joFriends);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}while(false);
+
+		do {// Groups
+			JSONObject joGroups = new JSONObject();
+			do {
+				JSONObject joGroup = new JSONObject();
+				try {
+					joGroup.put("name", "BitMailCore");
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joGroup.put("creator", profile_.GetEmail());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				JSONArray jaMembers = new JSONArray();
+				do {
+					jaMembers.put(profile_.GetEmail());
+				}while(false);
+				try {
+					joGroup.put("members", jaMembers);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joGroups.put(profile_.GetID() + "." + Calendar.getInstance().getTimeInMillis(), joGroup);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}while(false);
+			try {
+				config_.put("groups", joGroups);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}while(false);
+
+		do { // Subscribes
+			JSONArray jaSubscribes = new JSONArray();
+			do {
+				jaSubscribes.put(profile_.GetEmail());
+			}while(false);
+			try {
+				config_.put("subscribes", jaSubscribes);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}while(false);
+
+		do {// Proxy
+			JSONObject joProxy = new JSONObject();
+			do {
+				try {
+					joProxy.put("ip", "127.0.0.1");
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joProxy.put("port", 1080);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joProxy.put("user", profile_.GetNick());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joProxy.put("password", profile_.Encrypt("secret"));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}while(false);
+			try {
+				config_.put("proxy", joProxy);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}while(false);
+
+		do {// Tx
+			JSONObject joTx = new JSONObject();
+			do {
+				try {
+					joTx.put("login", profile_.GetEmail());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joTx.put("url", EMailClient.GetTxUrl(profile_.GetEmail()));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joTx.put("password", profile_.Encrypt(password_));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}while(false);
+			try {
+				config_.put("tx", joTx);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}while(false);
+
+		do {// Rx
+			JSONObject joRx = new JSONObject();
+			do {
+				try {
+					joRx.put("login", profile_.GetEmail());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joRx.put("url", EMailClient.GetRxUrl(profile_.GetEmail()));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				try {
+					joRx.put("password", profile_.Encrypt(password_));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}while(false);
+			try {
+				config_.put("rx", joRx);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}while(false);
 	}
 
 	public void UnitTest() {

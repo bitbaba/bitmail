@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.bitbaba.core.BitMail;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -43,10 +45,15 @@ public class ChatFragment extends Fragment implements View.OnClickListener
     @Override
     public void onClick(View view) {
         Button btnSend = (Button) view;
+        // disable before send
         btnSend.setEnabled(false);
         EditText editMessage = (EditText) mView.findViewById(R.id.id_edit_message);
-        Log.d("BitMail", editMessage.getText().toString());
+        String txtMsg = editMessage.getText().toString();
+        Log.d("BitMail", txtMsg);
+        BitMail.GetInstance().SendMessage(friendEmail_, txtMsg);
+        // clear after sent
         editMessage.setText("");
+        // enable after sent
         btnSend.setEnabled(true);
     }
 }
