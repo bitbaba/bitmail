@@ -5,9 +5,49 @@
     tools:context="com.bitbaba.bitmail.SettingsFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Settings(or Configurations)" />
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:hint="email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_setting_email" />
+        <TextView
+            android:hint="nick"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_setting_nick" />
+        <TextView
+            android:hint="tx"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_setting_tx" />
+        <TextView
+            android:hint="rx"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_setting_rx" />
+        <TextView
+            android:hint="id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_setting_id" />
+
+        <CheckBox
+            android:text="Block if no signature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_check_blockNoSig" />
+
+        <CheckBox
+            android:text="Block if strangers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_check_blockStranger" />
+
+    </LinearLayout>
 </FrameLayout>

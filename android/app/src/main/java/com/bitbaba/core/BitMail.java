@@ -27,18 +27,26 @@ import java.util.Map.Entry;
  * @author Administrator
  *
  */
-public class BitMail {
+public class BitMail /**/implements Runnable {
 
-	private EMailClient emailClient_ = null;
-	private X509Cert    profile_     = null;
-	private String      email_       = null;
-	private String      passphrase_  = null;
-	private String      password_    = null;
+	private EMailClient emailClient_  = null;
+	private X509Cert    profile_      = null;
+	private String      email_        = null;
+	private String      passphrase_   = null;
+	private String      password_     = null;
+	private boolean     stopFetch_    = false;
+	private boolean     blockNoSig_   = false;
+	private boolean     blockStranger_= false;
 
 	/**
 	 * TODO: try to use a JSONObject to hold all configurations
 	 */
 	JSONObject config_ = new JSONObject();
+
+	/**
+	 * Messages cache
+	 */
+	JSONArray msgcache_ = new JSONArray();
 
 	private static final BitMail __gsInstance = new BitMail();
 
@@ -53,6 +61,26 @@ public class BitMail {
 
 	public void SetEMail(String email){
 		email_ = email;
+	}
+
+	public String GetEMail(){
+		return  email_;
+	}
+
+	public String GetNick(){
+		return profile_.GetNick();
+	}
+
+	public String GetID() {
+		return  profile_.GetID();
+	}
+
+	public String GetTx(){
+		return  emailClient_.GetTxUrl(email_);
+	}
+
+	public String GetRx(){
+		return  emailClient_.GetRxUrl(email_);
 	}
 
 	public void SetPassphrase(String passphrase){
@@ -76,11 +104,16 @@ public class BitMail {
 		String nick = email_.split("@")[0];
 		profile_ =  new X509Cert(nick, email_, 2048);
 
+		Log.d("BitMail", "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+		Log.d("BitMail", profile_.GetCertificate());
+		Log.d("BitMail", "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+		Log.d("BitMail", profile_.GetPrivateKey(passphrase_));
+
 		/**
 		 * Populate with test configurations
 		 */
 
-		PopulateTestConfiguration();
+		PopulateInitConfiguration();
 
 		return  true;
 	}
@@ -100,24 +133,43 @@ public class BitMail {
 				return  false;
 			}
 			String sCert = joProfile.optString("cert");
+			System.out.println(sCert);
 			profile_.LoadCertificate(sCert);
 			if (!joProfile.has("key")){
 				return  false;
 			}
 			String sKey = joProfile.optString("key");
+			System.out.println(sKey);
 			profile_.LoadPrivateKey(sKey, passphrase_);
+
+			Log.d("BitMail", "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+			Log.d("BitMail", profile_.GetCertificate());
+			Log.d("BitMail", "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+			Log.d("BitMail", profile_.GetPrivateKey(passphrase_));
 		}
 		return true;
 	}
 
-	public void LoadProfile(){
-		File file = new File(Environment.getExternalStorageDirectory() + "/" + "bitmail.profile");
+	public void StopFetch(){
+		stopFetch_ = true;
+	}
+
+	private String GetProfileFileName(){
+		return  Environment.getExternalStorageDirectory() + "/" + "bitmail-"+email_.toLowerCase()+".profile";
+	}
+
+	public boolean LoadProfile(){
+		File file = new File(GetProfileFileName());
+		if (!file.exists()){
+			return  false;
+		}
 
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(file);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			return  false;
 		}
 
 		int length = 0;
@@ -125,6 +177,7 @@ public class BitMail {
 			length = fis.available();
 		} catch (IOException e) {
 			e.printStackTrace();
+			return  false;
 		}
 
 		byte [] buffer = new byte[length];
@@ -132,6 +185,7 @@ public class BitMail {
 			fis.read(buffer);
 		} catch (IOException e) {
 			e.printStackTrace();
+			return  false;
 		}
 
 		String res = null;
@@ -139,26 +193,37 @@ public class BitMail {
 			res = new String(buffer, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
+			return  false;
 		}
 		try {
 			fis.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+			return  false;
 		}
 
 		Log.d("BitMail", res);
 
 		try {
 			config_ = new JSONObject(res);
+			if (config_.has("Profile")){
+				JSONObject joProfile = config_.optJSONObject("Profile");
+				if (joProfile.has("cert") && joProfile.has("key") ){
+					return  true;
+				}
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
+			return  false;
 		}
+		return  false;
 	}
 
 	public void SaveProfile() {
-		File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "bitmail.profile");
+		File file = new File(GetProfileFileName());
 
 		FileOutputStream fos = null;
+
 		try {
 			fos = new FileOutputStream(file);
 		} catch (FileNotFoundException e) {
@@ -166,6 +231,19 @@ public class BitMail {
 		}
 
 		try {
+			// Refresh private key
+			JSONObject joProfile = config_.optJSONObject("Profile");
+			try {
+				joProfile.put("key", profile_.GetPrivateKey(passphrase_));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			try {
+				config_.put("Profile", joProfile);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+
 			fos.write(config_.toString().getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -216,33 +294,60 @@ public class BitMail {
 
 		xcert.LoadCertificate(sCertInPem);
 
-		emailClient_.Send(recipEmail, xcert.Encrypt(profile_.Sign(message)));
+		String sig = profile_.Sign(message);
+
+		synchronized (this) {
+			msgcache_.put(sig);
+		}
+
+		emailClient_.Send(recipEmail, xcert.Encrypt(sig));
 
 		return  true;
 	}
 
-	public void ReceiveMessage()
+	private void ReceiveMessage()
 	{
-		JSONArray jaMsg = null;
-		if (config_.has("msg")){
-			jaMsg = config_.optJSONArray("msg");
-		}else{
-			jaMsg = new JSONArray();
-		}
-
 		List<String> results = emailClient_.Receive();
 
-		for (String elt : results){
-			jaMsg.put(elt);
+		if (results == null || results.size() == 0){
+			return;
 		}
 
-		try {
-			config_.put("msg", jaMsg);
-		} catch (JSONException e) {
-			e.printStackTrace();
+		synchronized (this) {
+			for (String elt : results) {
+				msgcache_.put(elt);
+			}
 		}
 	}
 
+	public List<String> GetMessage(String email){
+		List<String> msgs = new ArrayList<>();
+		synchronized (this) {
+			for (int i = 0; i < msgcache_.length(); i++) {
+				String msg = msgcache_.optString(i);
+				String decrypted = profile_.Decrypt(msg);
+				HashMap<String, String> verified = X509Cert.Verify(decrypted);
+				for (Entry<String, String> elt : verified.entrySet()){
+					if (elt.getKey().compareTo("msg") == 0){
+						msgs.add(elt.getValue());
+						Log.d("BitMail", elt.getValue());
+					}
+					if (elt.getKey().compareTo("cert") == 0){
+						Log.d("BitMail", elt.getValue());
+					}
+				}
+			}
+		}
+		return  msgs;
+	}
+
+	public void BlockIfNoSig(boolean flag){
+		blockNoSig_ = flag;
+	}
+
+	public void BlockIfStranger(boolean flag){
+		blockStranger_ = flag;
+	}
 
 	private X509Cert LoadAlice(String passphrase){
 		String cert = "-----BEGIN CERTIFICATE-----\r\n"
@@ -328,7 +433,7 @@ public class BitMail {
 		return  xcert;
 	}
 
-	private void PopulateTestConfiguration(){
+	private void PopulateInitConfiguration(){
 		do { // Profile
 			JSONObject joProfile = new JSONObject();
 			do {
@@ -617,4 +722,30 @@ public class BitMail {
 			}
 		}
 	}
+
+	@Override
+	public void run() {
+		while (!stopFetch_){
+			Log.d("BitMail", "Fetching messages......");
+			ReceiveMessage();
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+/*	@Override
+	public void run() {
+		while (true){
+			Log.d("BitMail", "Fetching messages...");
+			ReceiveMessage();
+			try {
+				Thread.sleep(6000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}*/
 }

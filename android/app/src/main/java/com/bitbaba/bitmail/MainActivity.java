@@ -7,8 +7,11 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bitbaba.core.BitMail;
 
@@ -28,19 +31,6 @@ public class MainActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-//        File file = new File(Environment.getExternalStorageDirectory() + "/" + "bitmail.profile");
-//        file.delete();
-//        if (!file.exists()){
-//            if (BitMail.GetInstance().CreateProfile()) {
-//                BitMail.GetInstance().SaveProfile();
-//            }
-//        }else{
-            BitMail.GetInstance().LoadProfile();
-//        }
-
-        BitMail.GetInstance().Init();
-
         /**
          * Access Network in GUI Activity
          */
@@ -49,6 +39,25 @@ public class MainActivity extends Activity
 
         StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectLeakedSqlLiteObjects()
                 .detectLeakedClosableObjects().penaltyLog().penaltyDeath().build());
+
+
+        if (BitMail.GetInstance().LoadProfile()){
+            Toast toast = Toast.makeText(getApplicationContext(), "Profile(" + BitMail.GetInstance().GetEMail() + ") Loaded", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+
+        }else{
+            if (BitMail.GetInstance().CreateProfile()) {
+                Log.d("BitMail", "Create new profile");
+            }
+            Toast toast = Toast.makeText(getApplicationContext(), "Create new Profile(" + BitMail.GetInstance().GetEMail() + ") Loaded", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+        }
+
+        if (BitMail.GetInstance().Init()){
+            BitMail.GetInstance().SaveProfile();
+        }
 
         /**
          * Setup click listener
@@ -70,11 +79,12 @@ public class MainActivity extends Activity
         /**
          * Unit Test
          */
-        //BitMail.GetInstance().UnitTest();
+       // new Thread(BitMail.GetInstance()).start();
     }
 
     @Override
     protected void onStop(){
+        BitMail.GetInstance().StopFetch();
         BitMail.GetInstance().SaveProfile();
         super.onStop();
     }

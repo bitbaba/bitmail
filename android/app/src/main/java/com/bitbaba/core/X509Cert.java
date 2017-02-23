@@ -321,7 +321,8 @@ public class X509Cert {
 	 */
 	public String Decrypt(String pemdata) {
 		if (pemdata.indexOf(MIME_ENV_HEADER) != 0) {
-			return "";
+			// if it's not a s/mime message, return the raw original message
+			return pemdata;
 		}
 
 		pemdata = pemdata.substring(pemdata.indexOf(MIME_ENV_HEADER) + MIME_ENV_HEADER.length());
@@ -558,7 +559,11 @@ public class X509Cert {
 	 */
 	public static HashMap<String, String> Verify(String pemdata) {
 		if (pemdata.indexOf(MIME_SIG_HEADER) != 0) {
-			return null;
+			// if it's not a s/mime, return the raw original message.
+			HashMap<String, String> raw = new HashMap<>();
+			raw.put("cert", "");
+			raw.put("msg", pemdata);
+			return raw;
 		}
 
 		pemdata = pemdata.substring(pemdata.indexOf(MIME_SIG_HEADER) + MIME_SIG_HEADER.length());
@@ -733,7 +738,7 @@ public class X509Cert {
 				// and: https://github.com/bcgit/bc-java/issues/156
 				// and: https://github.com/kjur/jsrsasign/wiki/Tutorial-for-PKCS5-and-PKCS8-PEM-private-key-formats-differences
 				// and now try to degrade to 1.52
-				pw.writeObject(new JcaMiscPEMGenerator(key, new JcePEMEncryptorBuilder("AES-128-ECB").setSecureRandom(new SecureRandom()).build(passphrase.toCharArray())));
+				pw.writeObject(new JcaMiscPEMGenerator(key, new JcePEMEncryptorBuilder("DES-EDE3-CBC").setSecureRandom(new SecureRandom()).build(passphrase.toCharArray())));
 			}else{
         		pw.writeObject(key);
         	}
