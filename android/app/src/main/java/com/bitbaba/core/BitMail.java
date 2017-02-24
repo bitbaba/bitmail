@@ -35,7 +35,6 @@ public class BitMail /**/implements Runnable {
 	private String      passphrase_   = null;
 	private String      password_     = null;
 	private boolean     stopFetch_    = false;
-	private boolean     blockNoSig_   = false;
 	private boolean     blockStranger_= false;
 
 	/**
@@ -104,11 +103,6 @@ public class BitMail /**/implements Runnable {
 		String nick = email_.split("@")[0];
 		profile_ =  new X509Cert(nick, email_, 2048);
 
-		Log.d("BitMail", "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-		Log.d("BitMail", profile_.GetCertificate());
-		Log.d("BitMail", "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-		Log.d("BitMail", profile_.GetPrivateKey(passphrase_));
-
 		/**
 		 * Populate with test configurations
 		 */
@@ -141,11 +135,6 @@ public class BitMail /**/implements Runnable {
 			String sKey = joProfile.optString("key");
 			System.out.println(sKey);
 			profile_.LoadPrivateKey(sKey, passphrase_);
-
-			Log.d("BitMail", "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-			Log.d("BitMail", profile_.GetCertificate());
-			Log.d("BitMail", "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-			Log.d("BitMail", profile_.GetPrivateKey(passphrase_));
 		}
 		return true;
 	}
@@ -259,7 +248,46 @@ public class BitMail /**/implements Runnable {
 	}
 
 	public List<String> GetFriends(){
+		// Get friends list from `config_'
 		JSONObject joFriends = config_.optJSONObject("friends");
+
+		// Extract sender from `msgcache_'
+		List<String> results = new ArrayList<>();
+		synchronized (this){
+			for (int i = 0; i < msgcache_.length(); i++){
+				results.add(msgcache_.optString(i));
+			}
+		}
+
+		for (String elt: results){
+			HashMap<String, String> dec = X509Cert.Verify(profile_.Decrypt(elt));
+			for (Entry<String, String> it : dec.entrySet()){
+				if (it.getKey().compareTo("cert") == 0){
+					String cert = it.getValue();
+					X509Cert xcert = new X509Cert();
+					if (xcert.LoadCertificate(cert)){
+						String e = xcert.GetEmail();
+						try {
+							if (!joFriends.has(e)) {
+								JSONObject joFriend = new JSONObject();
+								joFriend.put("cert", cert);
+								joFriends.put(e, joFriend);
+							}
+						} catch (JSONException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+		// Write back
+		try {
+			config_.put("friends", joFriends);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		// Get friends list
 		ArrayList<String> list = new ArrayList<>();
 		Iterator<String> itKeys = joFriends.keys();
 		while(itKeys.hasNext()){
@@ -274,33 +302,33 @@ public class BitMail /**/implements Runnable {
 
 	public boolean SendMessage(String recipEmail, String message)
 	{
-		X509Cert xcert = new X509Cert();
-		if (!config_.has("friends")){
-			return false;
-		}
-		JSONObject joFriends = config_.optJSONObject("friends");
-		if (!joFriends.has(recipEmail)){
-			return false;
-		}
-		JSONObject joRecip = joFriends.optJSONObject(recipEmail);
-		if (!joRecip.has("cert")){
-			return false;
-		}
-		String sCertInPem = joRecip.optString("cert");
-
-		if (sCertInPem.isEmpty()){
-			return  false;
-		}
-
-		xcert.LoadCertificate(sCertInPem);
-
 		String sig = profile_.Sign(message);
-
 		synchronized (this) {
 			msgcache_.put(sig);
 		}
 
-		emailClient_.Send(recipEmail, xcert.Encrypt(sig));
+		String enc = null;
+
+		X509Cert xcert = new X509Cert();
+		if (config_.has("friends")) {
+			JSONObject joFriends = config_.optJSONObject("friends");
+			if (joFriends.has(recipEmail)) {
+				JSONObject joRecip = joFriends.optJSONObject(recipEmail);
+				if (joRecip.has("cert")){
+					String sCertInPem = joRecip.optString("cert");
+					if (!sCertInPem.isEmpty()){
+						if (xcert.LoadCertificate(sCertInPem)){
+							ArrayList<String> certs = new ArrayList<>();
+							certs.add(sCertInPem);
+							enc = X509Cert.MEncrypt(certs, sig);
+							//enc = xcert.Encrypt(sig);
+						}
+					}
+				}
+			}
+		}
+
+		emailClient_.Send(recipEmail, (enc != null && !enc.isEmpty()) ? enc : sig);
 
 		return  true;
 	}
@@ -339,10 +367,6 @@ public class BitMail /**/implements Runnable {
 			}
 		}
 		return  msgs;
-	}
-
-	public void BlockIfNoSig(boolean flag){
-		blockNoSig_ = flag;
 	}
 
 	public void BlockIfStranger(boolean flag){

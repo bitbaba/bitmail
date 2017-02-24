@@ -40,8 +40,6 @@ public class SettingsFragment extends Fragment  implements CompoundButton.OnChec
         tvRx.setText(BitMail.GetInstance().GetRx());
         TextView tvId = (TextView)mView.findViewById(R.id.id_setting_id);
         tvId.setText(BitMail.GetInstance().GetID());
-        CheckBox checkNoSig = (CheckBox) mView.findViewById(R.id.id_check_blockNoSig);
-        checkNoSig.setOnCheckedChangeListener(this);
         CheckBox checkStranger = (CheckBox) mView.findViewById(R.id.id_check_blockStranger);
         checkStranger.setOnCheckedChangeListener(this);
         return  mView;
@@ -50,10 +48,6 @@ public class SettingsFragment extends Fragment  implements CompoundButton.OnChec
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
         switch ( compoundButton.getId()){
-            case R.id.id_check_blockNoSig:{
-                Log.d("BitMail", "block if no signature");
-                BitMail.GetInstance().BlockIfNoSig(b);
-            }break;
             case R.id.id_check_blockStranger:{
                 Log.d("BitMail", "block if strangers");
                 BitMail.GetInstance().BlockIfStranger(b);

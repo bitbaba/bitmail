@@ -84,6 +84,7 @@ public class ChatFragment extends Fragment implements View.OnClickListener
         editMessage_ = (EditText) mView.findViewById(R.id.id_edit_message);
         String txtMsg = editMessage_.getText().toString();
         if (txtMsg.isEmpty()){
+            //BitMail.GetInstance().ReceiveMessage();
             PopulateMessages();
             return;
         }

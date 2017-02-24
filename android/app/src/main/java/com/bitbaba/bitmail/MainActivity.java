@@ -79,7 +79,7 @@ public class MainActivity extends Activity
         /**
          * Unit Test
          */
-       // new Thread(BitMail.GetInstance()).start();
+       new Thread(BitMail.GetInstance()).start();
     }
 
     @Override

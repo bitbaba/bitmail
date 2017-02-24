@@ -3,17 +3,23 @@
  */
 package com.bitbaba.core;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.mail.BodyPart;
 import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
@@ -189,8 +195,9 @@ public class EMailClient {
 		
 		try {
 			// HarryWu, server-side search for `unseen' messages. 
-			FlagTerm flagTerm = new FlagTerm(new Flags(Flags.Flag.SEEN), false);			
-			messages = inbox.search(flagTerm);
+			FlagTerm flagTerm = new FlagTerm(new Flags(Flags.Flag.SEEN), false);
+			//messages = inbox.search(flagTerm);
+			messages = inbox.getMessages();
 		} catch (MessagingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -219,7 +226,7 @@ public class EMailClient {
 		fp.add(FetchProfile.Item.FLAGS);
 
 		System.out.println("Pre-fetch messages");
-		
+
 		try {
 			inbox.fetch(messages, fp);
 		} catch (MessagingException e1) {
@@ -230,30 +237,42 @@ public class EMailClient {
 		// HarryWu, Analyze a message
 		for (int i = 0; i < messages.length; ++i){
 			Message elt = messages[i];			
-			System.out.println("[" + i + "] Msgno: " + elt.getMessageNumber());
-			String subject = null;
+			System.out.println("[" + i + "] MsgNo: " + elt.getMessageNumber());
+
 			try {
-				subject = (elt.getSubject());
+				if (elt.getFlags() != null && !elt.isSet(Flags.Flag.SEEN)) {
+                    String subject = null;
+                    try {
+                        subject = (elt.getSubject());
+                    } catch (MessagingException e) {
+                        e.printStackTrace();
+                    }
+                    if (subject != null && !subject.isEmpty() && subject.compareTo(BITMAIL_SUBJECT) == 0){
+                        if (elt.isMimeType("text/plain")){
+                            String content = (String) elt.getContent();
+                            if (X509Cert.IsBitMail(content)) {
+                                results.add(content);
+                            }
+                        }else if (elt.isMimeType("application/octet-stream")){
+							InputStream istrem = elt.getInputStream();
+							BufferedReader reader = new BufferedReader(new InputStreamReader( istrem));
+							String line = null; String alllines = "";
+							while(null != (line = reader.readLine())){
+								alllines += line;
+								alllines += "\r\n";
+							}
+							if (!alllines.isEmpty()) {
+								results.add(alllines);
+							}
+						}
+                    }
+                }
+				elt.setFlag(Flags.Flag.DELETED, true);
 			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				continue;
-			}
-			if (subject == null || subject.compareTo(BITMAIL_SUBJECT) != 0){
-				continue;
-			}
-			try {
-				if (elt.isMimeType("text/plain")){
-					results.add((String) elt.getContent());
-					elt.setFlag(Flags.Flag.DELETED, true);
-				}								
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
-				continue;
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				continue;
-			}		
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		try {

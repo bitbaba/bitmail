@@ -38,12 +38,6 @@
             android:id="@+id/id_setting_id" />
 
         <CheckBox
-            android:text="Block if no signature"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/id_check_blockNoSig" />
-
-        <CheckBox
             android:text="Block if strangers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

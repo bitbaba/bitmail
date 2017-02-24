@@ -286,7 +286,12 @@ public class X509Cert {
 
 		JceKeyTransRecipientInfoGenerator recipGen = null;
 
-		recipGen = new JceKeyTransRecipientInfoGenerator(cert_.getExtensionValue(Extension.subjectKeyIdentifier.toString()), cert_.getPublicKey());
+		//recipGen = new JceKeyTransRecipientInfoGenerator(cert_.getExtensionValue(Extension.subjectKeyIdentifier.toString()), cert_.getPublicKey());
+		try {
+			recipGen = new JceKeyTransRecipientInfoGenerator(cert_);
+		} catch (CertificateEncodingException e) {
+			e.printStackTrace();
+		}
 
 		recipGen.setProvider(BouncyCastleProvider.PROVIDER_NAME);
 
@@ -526,7 +531,12 @@ public class X509Cert {
 			X509Certificate cert = DecodeCertificate(pemCert);
 			
 			JceKeyTransRecipientInfoGenerator recipGen = null;			
-			recipGen = new JceKeyTransRecipientInfoGenerator(cert.getExtensionValue(Extension.subjectKeyIdentifier.toString()), cert.getPublicKey());			
+			//recipGen = new JceKeyTransRecipientInfoGenerator(cert.getExtensionValue(Extension.subjectKeyIdentifier.toString()), cert.getPublicKey());
+			try {
+				recipGen = new JceKeyTransRecipientInfoGenerator(cert);
+			} catch (CertificateEncodingException e) {
+				e.printStackTrace();
+			}
 			recipGen.setProvider(BouncyCastleProvider.PROVIDER_NAME);
 			edGen.addRecipientInfoGenerator(recipGen);
 		}
@@ -640,6 +650,13 @@ public class X509Cert {
 		}
 
 		return null;
+	}
+
+	public static boolean IsBitMail(String msg){
+		if (msg.indexOf(MIME_ENV_HEADER) != 0 && msg.indexOf(MIME_SIG_HEADER) != 0 ) {
+			return false;
+		}
+		return  true;
 	}
 
 	public static X509Certificate DecodeCertificate(String certPEMData)
