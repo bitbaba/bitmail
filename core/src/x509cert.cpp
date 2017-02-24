@@ -802,8 +802,15 @@ std::string CX509Cert::Decrypt(const std::string & msg)
         goto err;
 
     /* Decrypt S/MIME message */
-    if (!CMS_decrypt(cms, rkey, rcert, NULL, out, 0))
+    if (!CMS_decrypt(cms, rkey, rcert, NULL, out, 0)){
+        {
+            char errbuf [256] = "";
+            unsigned long en = ERR_get_error();
+            ERR_error_string(en, errbuf);
+            std::string xerrstr = errbuf;
+        }
         goto err;
+    }
     else{
         BUF_MEM * bufptr = NULL;
         BIO_get_mem_ptr(out, &bufptr);

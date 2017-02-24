@@ -1236,10 +1236,10 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
 
     std::string sMimeBody;
 
-    if (std::string::npos == mimemsg.find("MIME-Version:")){
+    if (std::string::npos == mimemsg.rfind("MIME-Version:")){
         return bmNoMimeBody;
     }else{
-        sMimeBody = mimemsg.substr(mimemsg.find("MIME-Version:"));
+        sMimeBody = mimemsg.substr(mimemsg.rfind("MIME-Version:"));
     }
 
     /**
