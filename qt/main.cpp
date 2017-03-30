@@ -61,7 +61,6 @@
 #include "main.h"
 #include "lock.h"
 
-
 static
 FILE * gLoggerHandle = NULL;
 int main(int argc, char *argv[])

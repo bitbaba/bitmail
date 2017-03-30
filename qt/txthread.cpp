@@ -1,5 +1,6 @@
 #include "txthread.h"
 #include <QDebug>
+#include <QJsonDocument>
 #include <bitmailcore/bitmail.h>
 
 static
@@ -19,23 +20,17 @@ TxThread::~TxThread()
 }
 
 void TxThread::onSendMessage(const QString & from
-                             , const QStringList & recip
+                             , const QString & to
                              , const QString & content)
 {
-    BMMessage bmMsg;
-    if (!bmMsg.Load(content)){
-        qDebug() << "Invalid BMMessage format";
-        return ;
-    }
-    RTXMessage txMsg;
-    txMsg.rtx(true);
-    txMsg.from(from);
-    txMsg.recip(recip);
-    txMsg.content(bmMsg);
-    txMsg.cert("");
-    txMsg.certid("");
+    (void)from;
+    QJsonDocument doc;
+    QJsonObject obj;
+    obj["to"] = to;
+    obj["msg"] = content;
+    doc.setObject(obj);
     if (m_txq.writable(25/*milliseconds*/)){
-        m_txq.push(txMsg);
+        m_txq.push(doc.toJson());
     }else{
         qDebug() << "Tx Queue Overflow, missing message.";
     }
@@ -45,20 +40,14 @@ void TxThread::run()
 {    
     while(!m_fStopFlag){
         if (m_txq.readable(6*1000)){
-            RTXMessage rtxMsg = m_txq.pop();
-            QStringList qslTo = rtxMsg.recip();
+            QJsonObject obj = QJsonDocument::fromJson(m_txq.pop().toUtf8()).object();
+            QString to = obj["to"].toString();
+            QString msg = obj["msg"].toString();
             std::vector<std::string> vecTo;
-            for (QStringList::iterator it = qslTo.begin(); it != qslTo.end(); it++){
-                vecTo.push_back(it->toStdString());
-            }
-            BMMessage bmMsg;
-            if (!bmMsg.Load(rtxMsg.content())){
-                qDebug() << "Invalid BMMessage format";
-                continue;
-            }
+            vecTo.push_back(to.toStdString());
             if (m_bitmail){
                 m_bitmail->SendMsg(vecTo
-                                   , bmMsg.Serialize().toStdString()
+                                   , msg.toStdString()
                                    , TxProgressHandler
                                    , this);
             }

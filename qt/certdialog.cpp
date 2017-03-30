@@ -72,13 +72,5 @@ QString CertDialog::CertDialog::GetCertID() const
 
 void CertDialog::on_btnSubscribe_clicked()
 {
-    QString qsSub = GetEmail();
-    if (m_bitmail->Subscribed(qsSub.toStdString())){
-        return ;
-    }
-    m_bitmail->Subscribe(qsSub.toStdString());
-
-    emit newSubscribe(qsSub);
-
     return ;
 }

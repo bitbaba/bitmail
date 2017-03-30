@@ -26,12 +26,12 @@ signals:
 
 public slots:
     void onSendMessage(const QString & from
-                       , const QStringList & recip
+                       , const QString & to
                        , const QString & content);
 
 private:
     BitMail * m_bitmail;
-    MsgQueue<RTXMessage> m_txq;
+    MsgQueue<QString> m_txq;
     bool m_fStopFlag;
 };
 

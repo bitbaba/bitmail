@@ -30,7 +30,6 @@ SOURCES       = main.cpp \
                 logindialog.cpp \
                 txthread.cpp \
                 rxthread.cpp \
-                msgqueue.cpp \
                 certdialog.cpp \
                 shutdowndialog.cpp \
                 invitedialog.cpp \

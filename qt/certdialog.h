@@ -37,9 +37,6 @@ private slots:
 
     void on_btnSubscribe_clicked();
 
-signals:
-    void newSubscribe(const QString & sub);
-
 private:
     Ui::CertDialog *ui;
     BitMail   *m_bitmail;
