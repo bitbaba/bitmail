@@ -45,8 +45,12 @@
     </message>
     <message>
         <location filename="../assistantdialog.ui" line="151"/>
+        <source>CertFP:</source>
+        <translation>证书指纹:</translation>
+    </message>
+    <message>
         <source>CertID:</source>
-        <translation>证书ID:</translation>
+        <translation type="vanished">证书ID:</translation>
     </message>
     <message>
         <location filename="../assistantdialog.ui" line="188"/>
@@ -64,7 +68,7 @@
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="../assistantdialog.cpp" line="36"/>
+        <location filename="../assistantdialog.cpp" line="35"/>
         <source>All</source>
         <translation>所有</translation>
     </message>
@@ -125,8 +129,12 @@
     </message>
     <message>
         <location filename="../certdialog.ui" line="94"/>
+        <source>CertFP:</source>
+        <translation>证书指纹:</translation>
+    </message>
+    <message>
         <source>CertID:</source>
-        <translation>证书ID:</translation>
+        <translation type="vanished">证书ID:</translation>
     </message>
     <message>
         <location filename="../certdialog.ui" line="116"/>
@@ -137,6 +145,10 @@
         <location filename="../certdialog.ui" line="157"/>
         <source>QrCode</source>
         <translation>二维码</translation>
+    </message>
+    <message>
+        <source>FingerPrint:</source>
+        <translation type="vanished">证书指纹:</translation>
     </message>
 </context>
 <context>
@@ -203,264 +215,228 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../mainwindow.cpp" line="94"/>
+        <location filename="../mainwindow.cpp" line="81"/>
         <source>BitMail</source>
         <translation>比特信</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="120"/>
+        <location filename="../mainwindow.cpp" line="107"/>
         <source>Contact</source>
         <translation>通信录</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="127"/>
+        <location filename="../mainwindow.cpp" line="114"/>
         <source>Friends</source>
         <translation>朋友</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="135"/>
-        <location filename="../mainwindow.cpp" line="481"/>
         <source>Groups</source>
-        <translation>群组</translation>
+        <translation type="vanished">群组</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="143"/>
         <source>Subscribes</source>
-        <translation>订阅</translation>
+        <translation type="vanished">订阅</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="176"/>
+        <location filename="../mainwindow.cpp" line="147"/>
         <source>Send</source>
         <translation>发送</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="177"/>
+        <location filename="../mainwindow.cpp" line="148"/>
         <source>Ctrl+Enter</source>
         <translation>Ctrl+Enter</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="382"/>
+        <location filename="../mainwindow.cpp" line="300"/>
         <source>&amp;Configure</source>
         <translation>&amp;配置</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="383"/>
+        <location filename="../mainwindow.cpp" line="301"/>
         <source>Configure current account</source>
         <translation>配置当前帐号</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="387"/>
-        <location filename="../mainwindow.cpp" line="425"/>
+        <location filename="../mainwindow.cpp" line="306"/>
+        <location filename="../mainwindow.cpp" line="312"/>
         <source>&amp;Invite</source>
         <translation>&amp;邀请</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="388"/>
+        <location filename="../mainwindow.cpp" line="307"/>
         <source>Invite a new friend by send a request message.</source>
         <translation>通过发送一个请求来邀请好友。</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="392"/>
         <source>&amp;NewGroup</source>
-        <translation>&amp;新建群组</translation>
+        <translation type="vanished">&amp;新建群组</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="393"/>
         <source>Create a new Group</source>
-        <translation>创建一个新的群组</translation>
+        <translation type="vanished">创建一个新的群组</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="397"/>
         <source>&amp;Snapshot</source>
-        <translation>&amp;截屏</translation>
+        <translation type="vanished">&amp;截屏</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="398"/>
         <source>Snapshot</source>
-        <translation>截屏</translation>
+        <translation type="vanished">截屏</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="399"/>
         <source>&amp;File</source>
-        <translation>&amp;文件</translation>
+        <translation type="vanished">&amp;文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="400"/>
         <source>File</source>
-        <translation>文件</translation>
+        <translation type="vanished">文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="401"/>
         <source>&amp;Emoji</source>
-        <translation>&amp;表情</translation>
+        <translation type="vanished">&amp;表情</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="402"/>
         <source>Emoji</source>
-        <translation>表情</translation>
+        <translation type="vanished">表情</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="403"/>
         <source>&amp;Sound</source>
-        <translation>&amp;声音</translation>
+        <translation type="vanished">&amp;声音</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="404"/>
         <source>Sound</source>
-        <translation>声音</translation>
+        <translation type="vanished">声音</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="405"/>
         <source>&amp;Video</source>
-        <translation>&amp;视频</translation>
+        <translation type="vanished">&amp;视频</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="406"/>
         <source>Video</source>
-        <translation>视频</translation>
+        <translation type="vanished">视频</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="407"/>
         <source>&amp;Live</source>
-        <translation>&amp;直播</translation>
+        <translation type="vanished">&amp;直播</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="408"/>
         <source>Live</source>
-        <translation>直播</translation>
+        <translation type="vanished">直播</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="409"/>
         <source>&amp;Pay</source>
-        <translation>&amp;支付</translation>
+        <translation type="vanished">&amp;支付</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="410"/>
         <source>Pay by Bitcoin</source>
-        <translation>支付比特币</translation>
+        <translation type="vanished">支付比特币</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="414"/>
         <source>&amp;BitCoinWallet</source>
-        <translation>&amp;比特币钱包</translation>
+        <translation type="vanished">&amp;比特币钱包</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="415"/>
         <source>Configure Bitcoin wallet</source>
-        <translation>配置比特币钱包</translation>
+        <translation type="vanished">配置比特币钱包</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="419"/>
         <source>&amp;rss</source>
-        <translation>&amp;发布</translation>
+        <translation type="vanished">&amp;发布</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="420"/>
-        <location filename="../mainwindow.cpp" line="484"/>
         <source>RSS</source>
-        <translation>发布</translation>
+        <translation type="vanished">发布</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="426"/>
+        <location filename="../mainwindow.cpp" line="313"/>
         <source>Invite</source>
         <translation>邀请</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="431"/>
         <source>&amp;Import</source>
-        <translation>&amp;导入</translation>
+        <translation type="vanished">&amp;导入</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="432"/>
         <source>Import</source>
-        <translation>导入</translation>
+        <translation type="vanished">导入</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="437"/>
-        <location filename="../mainwindow.cpp" line="443"/>
+        <location filename="../mainwindow.cpp" line="318"/>
         <source>&amp;Remove</source>
         <translation>&amp;删除</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="438"/>
+        <location filename="../mainwindow.cpp" line="319"/>
         <source>Remove</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="444"/>
         <source>RemoveGroup</source>
-        <translation>删除群组</translation>
+        <translation type="vanished">删除群组</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="449"/>
         <source>&amp;Add</source>
-        <translation>&amp;添加</translation>
+        <translation type="vanished">&amp;添加</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="450"/>
         <source>AddGroup</source>
-        <translation>添加群组</translation>
+        <translation type="vanished">添加群组</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="455"/>
         <source>&amp;Startup</source>
-        <translation>&amp;开始</translation>
+        <translation type="vanished">&amp;开始</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="456"/>
         <source>Startup</source>
-        <translation>开始</translation>
+        <translation type="vanished">开始</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="462"/>
+        <location filename="../mainwindow.cpp" line="324"/>
         <source>&amp;Network</source>
         <translation>&amp;网络</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="463"/>
+        <location filename="../mainwindow.cpp" line="325"/>
         <source>Network</source>
         <translation>网络</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="471"/>
+        <location filename="../mainwindow.cpp" line="332"/>
         <source>Profile</source>
         <translation>配置</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="478"/>
+        <location filename="../mainwindow.cpp" line="336"/>
         <source>Buddies</source>
         <translation>朋友</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="487"/>
         <source>Wallet</source>
-        <translation>钱包</translation>
+        <translation type="vanished">钱包</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="492"/>
+        <location filename="../mainwindow.cpp" line="339"/>
         <source>Chat</source>
         <translation>聊天</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="506"/>
+        <location filename="../mainwindow.cpp" line="345"/>
         <source>Ready</source>
         <translation>就绪</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="823"/>
         <source>...</source>
-        <translation>...</translation>
+        <translation type="vanished">...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="916"/>
+        <location filename="../mainwindow.cpp" line="434"/>
         <source>No active network</source>
         <translation>没有可用的网络</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1157"/>
-        <location filename="../mainwindow.cpp" line="1181"/>
-        <location filename="../mainwindow.cpp" line="1197"/>
-        <location filename="../mainwindow.cpp" line="1308"/>
+        <location filename="../mainwindow.cpp" line="539"/>
+        <location filename="../mainwindow.cpp" line="633"/>
         <source>Strangers</source>
         <translation>陌生人</translation>
     </message>
@@ -483,9 +459,13 @@
         <translation>添加</translation>
     </message>
     <message>
-        <location filename="../messagedialog.ui" line="105"/>
         <source>CertID:</source>
-        <translation>证书ID：</translation>
+        <translation type="vanished">证书ID：</translation>
+    </message>
+    <message>
+        <location filename="../messagedialog.ui" line="105"/>
+        <source>CertFP:</source>
+        <translation>证书指纹:</translation>
     </message>
     <message>
         <location filename="../messagedialog.ui" line="119"/>
@@ -623,39 +603,32 @@
 <context>
     <name>NewGroupDialog</name>
     <message>
-        <location filename="../newgroupdialog.ui" line="38"/>
         <source>Group</source>
-        <translation>群组</translation>
+        <translation type="vanished">群组</translation>
     </message>
     <message>
-        <location filename="../newgroupdialog.ui" line="69"/>
         <source>GroupName:</source>
-        <translation>群组名称：</translation>
+        <translation type="vanished">群组名称：</translation>
     </message>
     <message>
-        <location filename="../newgroupdialog.ui" line="76"/>
         <source>Members:</source>
-        <translation>成员：</translation>
+        <translation type="vanished">成员：</translation>
     </message>
     <message>
-        <location filename="../newgroupdialog.ui" line="91"/>
         <source>Add</source>
-        <translation>添加</translation>
+        <translation type="vanished">添加</translation>
     </message>
     <message>
-        <location filename="../newgroupdialog.ui" line="100"/>
         <source>GroupId:</source>
-        <translation>群组ID：</translation>
+        <translation type="vanished">群组ID：</translation>
     </message>
     <message>
-        <location filename="../newgroupdialog.ui" line="110"/>
         <source>Creator:</source>
-        <translation>创建人：</translation>
+        <translation type="vanished">创建人：</translation>
     </message>
     <message>
-        <location filename="../newgroupdialog.ui" line="129"/>
         <source>Added Members(double-click to remove)</source>
-        <translation>添加成员（双击删除）</translation>
+        <translation type="vanished">添加成员（双击删除）</translation>
     </message>
 </context>
 <context>
@@ -708,73 +681,59 @@
 <context>
     <name>PayDialog</name>
     <message>
-        <location filename="../paydialog.ui" line="44"/>
         <source>Pay</source>
-        <translation>支付</translation>
+        <translation type="vanished">支付</translation>
     </message>
     <message>
-        <location filename="../paydialog.ui" line="56"/>
         <source>To ()</source>
-        <translation>付款给（）</translation>
+        <translation type="vanished">付款给（）</translation>
     </message>
     <message>
-        <location filename="../paydialog.ui" line="74"/>
         <source>Address:</source>
-        <translation>收款地址：</translation>
+        <translation type="vanished">收款地址：</translation>
     </message>
     <message>
-        <location filename="../paydialog.ui" line="81"/>
         <source>Amount:</source>
-        <translation>金额：</translation>
+        <translation type="vanished">金额：</translation>
     </message>
     <message>
-        <location filename="../paydialog.ui" line="115"/>
-        <location filename="../paydialog.ui" line="210"/>
         <source>mBTC</source>
-        <translation>mBTC</translation>
+        <translation type="vanished">mBTC</translation>
     </message>
     <message>
-        <location filename="../paydialog.ui" line="124"/>
         <source>Fee:</source>
-        <translation>费用：</translation>
+        <translation type="vanished">费用：</translation>
     </message>
     <message>
-        <location filename="../paydialog.ui" line="157"/>
         <source>+</source>
-        <translation>+</translation>
+        <translation type="vanished">+</translation>
     </message>
     <message>
-        <location filename="../paydialog.ui" line="160"/>
         <source>%%</source>
-        <translation>%%</translation>
+        <translation type="vanished">%%</translation>
     </message>
     <message>
-        <location filename="../paydialog.cpp" line="14"/>
         <source>To</source>
-        <translation>付款给 </translation>
+        <translation type="vanished">付款给 </translation>
     </message>
 </context>
 <context>
     <name>RssDialog</name>
     <message>
-        <location filename="../rssdialog.ui" line="14"/>
         <source>Publish</source>
-        <translation>发布</translation>
+        <translation type="vanished">发布</translation>
     </message>
     <message>
-        <location filename="../rssdialog.ui" line="45"/>
         <source>Public</source>
-        <translation>公开</translation>
+        <translation type="vanished">公开</translation>
     </message>
     <message>
-        <location filename="../rssdialog.ui" line="52"/>
         <source>Private</source>
-        <translation>私有</translation>
+        <translation type="vanished">私有</translation>
     </message>
     <message>
-        <location filename="../rssdialog.ui" line="59"/>
         <source>Group</source>
-        <translation>群组</translation>
+        <translation type="vanished">群组</translation>
     </message>
 </context>
 <context>
@@ -793,77 +752,60 @@
 <context>
     <name>walletDialog</name>
     <message>
-        <location filename="../walletdialog.ui" line="14"/>
         <source>Wallet</source>
-        <translation>钱包</translation>
+        <translation type="vanished">钱包</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="42"/>
         <source>Payment Wallet</source>
-        <translation>支付钱包</translation>
+        <translation type="vanished">支付钱包</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="57"/>
         <source>Bank:</source>
-        <translation>银行：</translation>
+        <translation type="vanished">银行：</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="67"/>
         <source>Account:</source>
-        <translation>帐号：</translation>
+        <translation type="vanished">帐号：</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="77"/>
         <source>Token:</source>
-        <translation>令牌：</translation>
+        <translation type="vanished">令牌：</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="93"/>
-        <location filename="../walletdialog.ui" line="185"/>
         <source>Query</source>
-        <translation>查询</translation>
+        <translation type="vanished">查询</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="102"/>
-        <location filename="../walletdialog.ui" line="194"/>
         <source>Balance:</source>
-        <translation>余额：</translation>
+        <translation type="vanished">余额：</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="118"/>
-        <location filename="../walletdialog.ui" line="206"/>
         <source>(mBTC)</source>
-        <translation>（mBTC）</translation>
+        <translation type="vanished">（mBTC）</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="125"/>
         <source>Charge...</source>
-        <translation>充值...</translation>
+        <translation type="vanished">充值...</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="144"/>
         <source>Reserve Wallet</source>
-        <translation>储备钱包</translation>
+        <translation type="vanished">储备钱包</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="159"/>
         <source>Chain:</source>
-        <translation>区块连：</translation>
+        <translation type="vanished">区块连：</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="169"/>
         <source>Phrase:</source>
-        <translation>密钥：</translation>
+        <translation type="vanished">密钥：</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="213"/>
         <source> Import...</source>
-        <translation>导入...</translation>
+        <translation type="vanished">导入...</translation>
     </message>
     <message>
-        <location filename="../walletdialog.ui" line="234"/>
         <source>Details:</source>
-        <translation>细节：</translation>
+        <translation type="vanished">细节：</translation>
     </message>
 </context>
 </TS>

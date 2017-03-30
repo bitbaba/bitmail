@@ -148,7 +148,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="lbCertId">
        <property name="text">
-        <string>CertID:</string>
+        <string>CertFP:</string>
        </property>
       </widget>
      </item>

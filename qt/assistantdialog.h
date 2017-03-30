@@ -80,8 +80,6 @@ private:
     QPushButton *m_btnSign;
 
     QClipboard  *m_clip;
-signals:
-    void addFriend(const QString & email);
 };
 
 #endif // ASSISTANTDIALOG_H

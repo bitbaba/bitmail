@@ -23,7 +23,6 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
     m_btnSign = findChild<QPushButton*>("btnSign");
     m_btnAddFriend = findChild<QPushButton*>("btnAddFriend");
     m_cbbFriends = findChild<QComboBox*>("cbbFriends");
-
     m_leNick = findChild<QLineEdit*>("leNick");
     m_leEmail = findChild<QLineEdit*>("leEmail");
     m_leCertId = findChild<QLineEdit*>("leCertId");
@@ -55,9 +54,12 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
                                   , QVariant(QString::fromStdString(*it)));
         }
     }while(0);
-    // Listen clipboards
-    m_clip = QApplication::clipboard();
-    connect(m_clip, SIGNAL(dataChanged()), this, SLOT(onClipDataChanged()));
+
+    if (0){
+        // Listen clipboards
+        m_clip = QApplication::clipboard();
+        connect(m_clip, SIGNAL(dataChanged()), this, SLOT(onClipDataChanged()));
+    }
 }
 
 AssistantDialog::~AssistantDialog()
@@ -185,8 +187,6 @@ void AssistantDialog::on_btnAddFriend_clicked()
     m_cbbFriends->addItem(QIcon(":/images/head.png")
                           , nick()
                           , QVariant(qsFrom));
-
-    emit addFriend(email());
 }
 
 void AssistantDialog::on_btnClearInput_clicked()
@@ -197,9 +197,12 @@ void AssistantDialog::on_btnClearInput_clicked()
 void AssistantDialog::on_txtInput_textChanged()
 {
     clearOutput();
-    const QString MIME_TAG = "MIME-Version: 1.0";
+
     QString qsInput = input();
-    if (qsInput.indexOf(MIME_TAG) == 0){
+
+    if (qsInput.contains("Mime-Version:", Qt::CaseInsensitive)
+        || qsInput.contains("Content-Type:", Qt::CaseInsensitive))
+    {
         m_btnSign->setEnabled(false);
         m_cbbFriends->setEnabled(false);
         m_btnEncrypt->setEnabled(false);
@@ -210,8 +213,6 @@ void AssistantDialog::on_txtInput_textChanged()
         m_cbbFriends->setEnabled(true);
         m_btnEncrypt->setEnabled(true);
         m_btnDecrypt->setEnabled(false);
-        // Default is Encrypting.
-        // Not Signing
         on_btnEncrypt_clicked();
     }
 }

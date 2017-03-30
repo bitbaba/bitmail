@@ -64,17 +64,12 @@
 #define TAG_PEER ("#")
 #define KEY_STRANGER ("?")
 
-//! [1]
 MainWindow::MainWindow(BitMail * bitmail)
     : m_bitmail(bitmail)
     , m_rxth(NULL)
     , m_txth(NULL)
     , m_shutdownDialog(NULL)
-//! [1] //! [2]
 {
-    /**
-      * Icon
-      */
 #if defined(MACOSX)
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
@@ -170,19 +165,13 @@ MainWindow::MainWindow(BitMail * bitmail)
     setCentralWidget(wrap);
 
     // Add signals
-    connect(textEdit->document(), SIGNAL(contentsChanged()), this, SLOT(documentWasModified()));
+    connect(btree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(onTreeCurrentBuddy(QTreeWidgetItem*,QTreeWidgetItem*)));
 
-    connect(btree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*))
-            , this, SLOT(onTreeCurrentBuddy(QTreeWidgetItem*,QTreeWidgetItem*)));
+    connect(btree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(onTreeBuddyDoubleClicked(QTreeWidgetItem*,int)));
 
-    connect(btree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int))
-            , this, SLOT(onTreeBuddyDoubleClicked(QTreeWidgetItem*,int)));
+    connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
 
-    connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*))
-            , this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
-
-    connect(btnSend, SIGNAL(clicked())
-            , this, SLOT(onSendBtnClicked()));
+    connect(btnSend, SIGNAL(clicked()), this, SLOT(onSendBtnClicked()));
 }
 //! [2]
 MainWindow::~MainWindow()

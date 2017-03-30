@@ -45,7 +45,7 @@
     </message>
     <message>
         <location filename="../assistantdialog.ui" line="151"/>
-        <source>CertID:</source>
+        <source>CertFP:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -64,7 +64,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../assistantdialog.cpp" line="36"/>
+        <location filename="../assistantdialog.cpp" line="35"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
@@ -125,7 +125,7 @@
     </message>
     <message>
         <location filename="../certdialog.ui" line="94"/>
-        <source>CertID:</source>
+        <source>CertFP:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -190,7 +190,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../logindialog.cpp" line="20"/>
+        <location filename="../logindialog.cpp" line="14"/>
+        <source>Ok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logindialog.cpp" line="22"/>
         <source>BitMail Qt Client</source>
         <translation type="unfinished"></translation>
     </message>
@@ -198,264 +203,104 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../mainwindow.cpp" line="94"/>
+        <location filename="../mainwindow.cpp" line="81"/>
         <source>BitMail</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="120"/>
+        <location filename="../mainwindow.cpp" line="107"/>
         <source>Contact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="127"/>
+        <location filename="../mainwindow.cpp" line="114"/>
         <source>Friends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="135"/>
-        <location filename="../mainwindow.cpp" line="481"/>
-        <source>Groups</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="143"/>
-        <source>Subscribes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="176"/>
+        <location filename="../mainwindow.cpp" line="147"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="177"/>
+        <location filename="../mainwindow.cpp" line="148"/>
         <source>Ctrl+Enter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="382"/>
+        <location filename="../mainwindow.cpp" line="300"/>
         <source>&amp;Configure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="383"/>
+        <location filename="../mainwindow.cpp" line="301"/>
         <source>Configure current account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="387"/>
-        <location filename="../mainwindow.cpp" line="425"/>
+        <location filename="../mainwindow.cpp" line="306"/>
+        <location filename="../mainwindow.cpp" line="312"/>
         <source>&amp;Invite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="388"/>
+        <location filename="../mainwindow.cpp" line="307"/>
         <source>Invite a new friend by send a request message.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="392"/>
-        <source>&amp;NewGroup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="393"/>
-        <source>Create a new Group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="397"/>
-        <source>&amp;Snapshot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="398"/>
-        <source>Snapshot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="399"/>
-        <source>&amp;File</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="400"/>
-        <source>File</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="401"/>
-        <source>&amp;Emoji</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="402"/>
-        <source>Emoji</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="403"/>
-        <source>&amp;Sound</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="404"/>
-        <source>Sound</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="405"/>
-        <source>&amp;Video</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="406"/>
-        <source>Video</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="407"/>
-        <source>&amp;Live</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="408"/>
-        <source>Live</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="409"/>
-        <source>&amp;Pay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="410"/>
-        <source>Pay by Bitcoin</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="414"/>
-        <source>&amp;BitCoinWallet</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="415"/>
-        <source>Configure Bitcoin wallet</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="419"/>
-        <source>&amp;rss</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="420"/>
-        <location filename="../mainwindow.cpp" line="484"/>
-        <source>RSS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="426"/>
+        <location filename="../mainwindow.cpp" line="313"/>
         <source>Invite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="431"/>
-        <source>&amp;Import</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="432"/>
-        <source>Import</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="437"/>
-        <location filename="../mainwindow.cpp" line="443"/>
+        <location filename="../mainwindow.cpp" line="318"/>
         <source>&amp;Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="438"/>
+        <location filename="../mainwindow.cpp" line="319"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="444"/>
-        <source>RemoveGroup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="449"/>
-        <source>&amp;Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="450"/>
-        <source>AddGroup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="455"/>
-        <source>&amp;Startup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="456"/>
-        <source>Startup</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="462"/>
+        <location filename="../mainwindow.cpp" line="324"/>
         <source>&amp;Network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="463"/>
+        <location filename="../mainwindow.cpp" line="325"/>
         <source>Network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="471"/>
+        <location filename="../mainwindow.cpp" line="332"/>
         <source>Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="478"/>
+        <location filename="../mainwindow.cpp" line="336"/>
         <source>Buddies</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="487"/>
-        <source>Wallet</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="492"/>
+        <location filename="../mainwindow.cpp" line="339"/>
         <source>Chat</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="506"/>
+        <location filename="../mainwindow.cpp" line="345"/>
         <source>Ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="823"/>
-        <source>...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="916"/>
+        <location filename="../mainwindow.cpp" line="434"/>
         <source>No active network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1157"/>
-        <location filename="../mainwindow.cpp" line="1181"/>
-        <location filename="../mainwindow.cpp" line="1197"/>
-        <location filename="../mainwindow.cpp" line="1308"/>
+        <location filename="../mainwindow.cpp" line="539"/>
+        <location filename="../mainwindow.cpp" line="633"/>
         <source>Strangers</source>
         <translation type="unfinished"></translation>
     </message>
@@ -479,7 +324,7 @@
     </message>
     <message>
         <location filename="../messagedialog.ui" line="105"/>
-        <source>CertID:</source>
+        <source>CertFP:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -616,44 +461,6 @@
     </message>
 </context>
 <context>
-    <name>NewGroupDialog</name>
-    <message>
-        <location filename="../newgroupdialog.ui" line="38"/>
-        <source>Group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="69"/>
-        <source>GroupName:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="76"/>
-        <source>Members:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="91"/>
-        <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="100"/>
-        <source>GroupId:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="110"/>
-        <source>Creator:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="129"/>
-        <source>Added Members(double-click to remove)</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>OptionDialog</name>
     <message>
         <location filename="../optiondialog.ui" line="38"/>
@@ -682,7 +489,7 @@
     </message>
     <message>
         <location filename="../optiondialog.ui" line="122"/>
-        <source>Bits</source>
+        <source>Bits:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -697,78 +504,6 @@
     </message>
 </context>
 <context>
-    <name>PayDialog</name>
-    <message>
-        <location filename="../paydialog.ui" line="44"/>
-        <source>Pay</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../paydialog.ui" line="56"/>
-        <source>To ()</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../paydialog.ui" line="74"/>
-        <source>Address:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../paydialog.ui" line="81"/>
-        <source>Amount:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../paydialog.ui" line="115"/>
-        <location filename="../paydialog.ui" line="210"/>
-        <source>mBTC</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../paydialog.ui" line="124"/>
-        <source>Fee:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../paydialog.ui" line="157"/>
-        <source>+</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../paydialog.ui" line="160"/>
-        <source>%%</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../paydialog.cpp" line="14"/>
-        <source>To</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>RssDialog</name>
-    <message>
-        <location filename="../rssdialog.ui" line="14"/>
-        <source>Publish</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../rssdialog.ui" line="45"/>
-        <source>Public</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../rssdialog.ui" line="52"/>
-        <source>Private</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../rssdialog.ui" line="59"/>
-        <source>Group</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>ShutdownDialog</name>
     <message>
         <location filename="../shutdowndialog.ui" line="38"/>
@@ -778,82 +513,6 @@
     <message>
         <location filename="../shutdowndialog.ui" line="74"/>
         <source>Shutting down ...</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>walletDialog</name>
-    <message>
-        <location filename="../walletdialog.ui" line="14"/>
-        <source>Wallet</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="42"/>
-        <source>Payment Wallet</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="57"/>
-        <source>Bank:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="67"/>
-        <source>Account:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="77"/>
-        <source>Token:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="93"/>
-        <location filename="../walletdialog.ui" line="185"/>
-        <source>Query</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="102"/>
-        <location filename="../walletdialog.ui" line="194"/>
-        <source>Balance:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="118"/>
-        <location filename="../walletdialog.ui" line="206"/>
-        <source>(mBTC)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="125"/>
-        <source>Charge...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="144"/>
-        <source>Reserve Wallet</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="159"/>
-        <source>Chain:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="169"/>
-        <source>Phrase:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="213"/>
-        <source> Import...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../walletdialog.ui" line="234"/>
-        <source>Details:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
