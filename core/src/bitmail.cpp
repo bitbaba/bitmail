@@ -1201,10 +1201,8 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
             return bmInvalidParam;
         }
     }else if (h->bmef == bmefSystem){
-        // TODO: not implemented.
         return 0;
     }else if (h->bmef == bmefMessage){
-        // process it as following.
     }else{
         return bmInvalidParam;
     }
@@ -1213,40 +1211,12 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     
     std::string mimemsg = bmeMsg->msg;
     
-    //std::cout<<mimemsg<<std::endl;
-    
-    /**
-    <...balabala...>
-
-    To: <bob@aol.com>
-    From: <alice@aol.com>
-    Subject: BitMail
-
-    <...balabala...>
-
-    MIME-Version: 1.0
-    Content-Disposition: attachment; filename="smime.p7m"
-    Content-Type: application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m"
-    Content-Transfer-Encoding: base64
-
-    MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/M
-    ...
-    MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/MIMEBODY/M
-    */
-
-    std::string sMimeBody;
-
-    if (std::string::npos == mimemsg.rfind("MIME-Version:")){
-        return bmNoMimeBody;
-    }else{
-        sMimeBody = mimemsg.substr(mimemsg.rfind("MIME-Version:"));
-    }
+    std::string sMimeBody = mimemsg;
 
     /**
     * Crypto filter
     */
     if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){
-        // Envelopped data
         sMimeBody = self->m_profile->Decrypt(sMimeBody);
         if (sMimeBody.empty()){
             return bmDecryptFail;
@@ -1264,15 +1234,6 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
         }else{
             return bmInvalidCert;
         }
-    }
-
-    if (bmeMsg->src == bmesBrac && bmeMsg->client != NULL){
-    	Brac * brac = (Brac*)bmeMsg->client;
-    	brac->email(buddyCert.GetEmail());
-    }
-    if (bmeMsg->src == bmesEmail && bmeMsg->client != NULL){
-    	CMailClient * mc = (CMailClient*)bmeMsg->client;
-    	// Nothing todo now;
     }
 
     if (self && self->m_onMessageEvent){

@@ -242,8 +242,11 @@ int CX509Cert::MakeCert(const std::string & commonName
      */
     X509_set_issuer_name(x, name);
 
-    /* Add various extensions: standard extensions */
-    AddExt(x, NID_basic_constraints, (char *)"critical,CA:TRUE");
+    /* Add various extensions: standard extensions
+    *  , can be prefix-ed by 'critical,'
+    */
+    AddExt(x, NID_basic_constraints, (char *)"CA:TRUE");
+	
     /**
      * @brief add_ext(NID_key_usage)
      * RFC3280: [https://tools.ietf.org/html/rfc3280#section-4.2.1.3]
@@ -259,15 +262,12 @@ int CX509Cert::MakeCert(const std::string & commonName
      *     encipherOnly            (7),
      *     decipherOnly            (8) }
      */
-    AddExt(x, NID_key_usage
-            , (char *)"critical" \
-                      ", digitalSignature"\
-                      ", nonRepudiation"\
-                      ", dataEncipherment"\
-                      ", keyAgreement"\
-                      ", keyCertSign"\
-                      ", cRLSign"\
-           );
+    AddExt(x, NID_key_usage, (char *)"digitalSignature"\
+                                  ", nonRepudiation"\
+                                  ", dataEncipherment"\
+                                  ", keyAgreement"\
+                                  ", keyCertSign"\
+                                  ", cRLSign");
 
     /**
      * @brief add_ext(NID_ext_key_usage)
@@ -284,8 +284,7 @@ int CX509Cert::MakeCert(const std::string & commonName
      *     id-kp-timeStamping           OBJECT IDENTIFIER ::= { id-kp 8 }
      *     id-kp-OCSPSigning            OBJECT IDENTIFIER ::= { id-kp 9 }
      */
-    AddExt(x, NID_ext_key_usage
-            //, (char *)"emailProtection"
+    AddExt(x, NID_ext_key_usage            
             , (char *)"anyExtendedKeyUsage"
            );
 
@@ -297,10 +296,16 @@ int CX509Cert::MakeCert(const std::string & commonName
 
     /* Some Netscape specific extensions */
     AddExt(x, NID_netscape_cert_type
-            , (char *)"sslCA");
+            , (char *)"emailCA, email, sslCA");
+
+    AddExt(x, NID_subject_alt_name
+            , (char *)(std::string("email:") + email).c_str());
+
+    AddExt(x, NID_issuer_alt_name
+            , (char *)"DNS:bitmail.bitbaba.com");
 
     AddExt(x, NID_netscape_comment
-            , (char *)"example comment extension");
+            , (char *)"DNS:bitmail.bitbaba.com");
 
     #ifdef CUSTOM_EXT
     /* Maybe even add our own extension based on existing */
@@ -506,14 +511,10 @@ std::string CX509Cert::Sign(const std::string & msg)
     X509 *scert = NULL;
     EVP_PKEY *skey = NULL;
     CMS_ContentInfo *cms = NULL;
-    int ret = 1;
+    int ret = 1, flags = 0;
 
-    /*
-     * For simple S/MIME signing use PKCS7_DETACHED. On OpenSSL 0.9.9 only:
-     * for streaming detached set PKCS7_DETACHED|PKCS7_STREAM for streaming
-     * non-detached set PKCS7_STREAM
-     */
-    int flags = CMS_STREAM ;
+    cacerts = sk_X509_new_null();
+    sk_X509_push(cacerts, GetCert());
 
     scert = GetCert();
 
@@ -522,14 +523,21 @@ std::string CX509Cert::Sign(const std::string & msg)
     if (!scert || !skey)
         goto err;
 
-    /* Sign content */
+    /* Sign content, MUST be detached, otherwise, it dose not work on mobile phone */
+
+    /*
+     * For simple S/MIME signing use PKCS7_DETACHED. On OpenSSL 0.9.9 only:
+     * for streaming detached set PKCS7_DETACHED|PKCS7_STREAM for streaming
+     * non-detached set PKCS7_STREAM
+     */
+    flags = (CMS_STREAM |CMS_NOSMIMECAP | CMS_CRLFEOL | CMS_TEXT | CMS_DETACHED );
     cms = CMS_sign(scert, skey, NULL, in, flags);
 
     if (!cms)
         goto err;
 
-    if (!(flags & CMS_STREAM));
-        //BIO_reset(in);
+    if (!(flags & CMS_STREAM))
+        BIO_reset(in);
 
     /* Write out S/MIME message */
     if (!SMIME_write_CMS(out, cms, in, flags))

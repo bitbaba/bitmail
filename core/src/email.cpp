@@ -190,8 +190,8 @@ std::string CMailClient::GetProxyPassword() const
 }
 
 int CMailClient::SendMsg( const std::string & from
-						, const std::vector<std::string> & to
-						, const std::string & encSignedMail
+                        , const std::vector<std::string> & to
+                        , const std::string & encSignedMail
                         , RTxProgressCB cb, void * userp)
 {
     if (cb ){
@@ -199,10 +199,17 @@ int CMailClient::SendMsg( const std::string & from
         txinfo<< "Try to Send Message";
         cb(RTS_Start, txinfo.str().c_str(), userp);
     }
+
+    if (!m_tx){
+        m_tx = curl_easy_init();
+    }
+
+    CURL * curl = (CURL * ) m_tx;
+    CURLcode res = CURLE_OK;
+    struct curl_slist *recipients = NULL;
+    struct TxCallback_t txcb;
+
     std::stringstream sstrmMail;
-    /**
-     * <To> Field
-     */
     sstrmMail << "To: ";
     for (std::vector<std::string>::const_iterator it = to.begin(); ;){
         sstrmMail << "<" << *it << ">";
@@ -227,33 +234,13 @@ int CMailClient::SendMsg( const std::string & from
               << "\r\n";
 
     /**
-     * <HeadTail>
+     *<MimeBody>
      */
-    sstrmMail << "\r\n";
+    sstrmMail << encSignedMail;
 
-    /**
-     * <MimeBody> Field
-     */
-    sstrmMail << encSignedMail
-              << "\r\n";
-
-    /**
-     * <MimeBodyTail>
-     */
-    sstrmMail << "\r\n";
-
-    if (!m_tx){
-        m_tx = curl_easy_init();
-    }
-
-    CURL * curl = (CURL * ) m_tx;
-    CURLcode res = CURLE_OK;
-    struct curl_slist *recipients = NULL;
-    struct TxCallback_t txcb;
-
-    std::string strsrc = sstrmMail.str();
-    txcb.src = (void*)strsrc.data();
-    txcb.length = strsrc.length();
+    std::string strMailBody = sstrmMail.str();
+    txcb.src = (void*)strMailBody.data();
+    txcb.length = strMailBody.length();
     txcb.offset = 0;
     txcb.self = this;
 
