@@ -513,9 +513,6 @@ std::string CX509Cert::Sign(const std::string & msg)
     CMS_ContentInfo *cms = NULL;
     int ret = 1, flags = 0;
 
-    cacerts = sk_X509_new_null();
-    sk_X509_push(cacerts, GetCert());
-
     scert = GetCert();
 
     skey = GetPrivateKey();
