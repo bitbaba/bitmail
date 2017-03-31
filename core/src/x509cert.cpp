@@ -502,7 +502,7 @@ int CX509Cert::SetPassphrase(const std::string & passphrase)
 
 std::string CX509Cert::Sign(const std::string & msg)
 {
-    BIO * in = BIO_new_mem_buf((void*)msg.c_str(), msg.length());
+    BIO * in = BIO_new_mem_buf((void*)msg.data(), msg.length());
     if (!in) return "";
 
     BIO* out = BIO_new(BIO_s_mem());// sink to memory.
@@ -527,7 +527,13 @@ std::string CX509Cert::Sign(const std::string & msg)
      * for streaming detached set PKCS7_DETACHED|PKCS7_STREAM for streaming
      * non-detached set PKCS7_STREAM
      */
-    flags = (CMS_STREAM |CMS_NOSMIMECAP | CMS_CRLFEOL | CMS_TEXT | CMS_DETACHED );
+    /**
+     * if we try to compose mime data by ourself, use the `CMS_BINARY' flag instead of
+     * the flag `CMS_TEXT'.
+     * and remeber to use `CMS_DETACHED' flag always.
+     * NO need for CMS_TEXT, and CMS_BINARY, Just left them two absent.
+     */
+    flags = (CMS_STREAM |CMS_NOSMIMECAP | CMS_CRLFEOL | CMS_DETACHED );
     cms = CMS_sign(scert, skey, NULL, in, flags);
 
     if (!cms)

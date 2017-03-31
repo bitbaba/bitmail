@@ -7,7 +7,8 @@ libbitmailcore_la_SOURCES= \
     x509cert.cpp \
     email.cpp \
 	brad.cpp \
-	rpc.cpp 
+	rpc.cpp \
+    multipart.cpp 
 
 libbitmailcore_la_CXXFLAGS  = -DCURL_STATICLIB -DMINIUPNP_STATICLIB
 libbitmailcore_la_LDFLAGS   = -no-undefined -export-all-symbols -compat-implib #-out-implib libbitmailcore.dll.a
