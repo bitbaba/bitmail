@@ -55,12 +55,11 @@
 
 #include <stdio.h>
 #include <ctype.h>
-#include "cryptlib.h"
+# include <openssl/err.h>
 #include <openssl/rand.h>
 #include <openssl/x509.h>
 #include <openssl/asn1.h>
 #include <openssl/asn1t.h>
-#include "asn1_locl.h"
 
 /*
  * Generalised MIME like utilities for streaming ASN1. Although many have a
@@ -105,8 +104,8 @@ static void mime_param_free(MIME_PARAM *param);
 static int mime_bound_check(char *line, int linelen, char *bound, int blen);
 static int multi_split(BIO *bio, char *bound, STACK_OF(BIO) **ret);
 static int strip_eol(char *linebuf, int *plen);
-static MIME_HEADER *mime_hdr_find(STACK_OF(MIME_HEADER) *hdrs, char *name);
-static MIME_PARAM *mime_param_find(MIME_HEADER *hdr, char *name);
+static MIME_HEADER *mime_hdr_find(STACK_OF(MIME_HEADER) *hdrs, const char *name);
+static MIME_PARAM *mime_param_find(MIME_HEADER *hdr, const char *name);
 static void mime_hdr_free(MIME_HEADER *hdr);
 
 #define MAX_SMLEN 1024
@@ -180,20 +179,7 @@ int PEM_write_bio_ASN1_stream(BIO *out, ASN1_VALUE *val, BIO *in, int flags,
 
 static ASN1_VALUE *b64_read_asn1(BIO *bio, const ASN1_ITEM *it)
 {
-    BIO *b64;
-    ASN1_VALUE *val;
-    if (!(b64 = BIO_new(BIO_f_base64()))) {
-        ASN1err(ASN1_F_B64_READ_ASN1, ERR_R_MALLOC_FAILURE);
-        return 0;
-    }
-    bio = BIO_push(b64, bio);
-    val = ASN1_item_d2i_bio(it, bio, NULL);
-    if (!val)
-        ASN1err(ASN1_F_B64_READ_ASN1, ASN1_R_DECODE_ERROR);
-    (void)BIO_flush(bio);
-    bio = BIO_pop(bio);
-    BIO_free(b64);
-    return val;
+    return 0;
 }
 
 /* Generate the MIME "micalg" parameter from RFC3851, RFC4490 */
@@ -364,51 +350,7 @@ int SMIME_write_ASN1(BIO *bio, ASN1_VALUE *val, BIO *data, int flags,
 static int asn1_output_data(BIO *out, BIO *data, ASN1_VALUE *val, int flags,
                             const ASN1_ITEM *it)
 {
-    BIO *tmpbio;
-    const ASN1_AUX *aux = it->funcs;
-    ASN1_STREAM_ARG sarg;
-    int rv = 1;
-
-    /*
-     * If data is not deteched or resigning then the output BIO is already
-     * set up to finalise when it is written through.
-     */
-    if (!(flags & SMIME_DETACHED) || (flags & PKCS7_REUSE_DIGEST)) {
-        SMIME_crlf_copy(data, out, flags);
-        return 1;
-    }
-
-    if (!aux || !aux->asn1_cb) {
-        ASN1err(ASN1_F_ASN1_OUTPUT_DATA, ASN1_R_STREAMING_NOT_SUPPORTED);
-        return 0;
-    }
-
-    sarg.out = out;
-    sarg.ndef_bio = NULL;
-    sarg.boundary = NULL;
-
-    /* Let ASN1 code prepend any needed BIOs */
-
-    if (aux->asn1_cb(ASN1_OP_DETACHED_PRE, &val, it, &sarg) <= 0)
-        return 0;
-
-    /* Copy data across, passing through filter BIOs for processing */
-    SMIME_crlf_copy(data, sarg.ndef_bio, flags);
-
-    /* Finalize structure */
-    if (aux->asn1_cb(ASN1_OP_DETACHED_POST, &val, it, &sarg) <= 0)
-        rv = 0;
-
-    /* Now remove any digests prepended to the BIO */
-
-    while (sarg.ndef_bio != out) {
-        tmpbio = BIO_pop(sarg.ndef_bio);
-        BIO_free(sarg.ndef_bio);
-        sarg.ndef_bio = tmpbio;
-    }
-
-    return rv;
-
+	return 0;
 }
 
 /*
@@ -889,22 +831,22 @@ static int mime_param_cmp(const MIME_PARAM *const *a,
 
 /* Find a header with a given name (if possible) */
 
-static MIME_HEADER *mime_hdr_find(STACK_OF(MIME_HEADER) *hdrs, char *name)
+static MIME_HEADER *mime_hdr_find(STACK_OF(MIME_HEADER) *hdrs, const char *name)
 {
     MIME_HEADER htmp;
     int idx;
-    htmp.name = name;
+    htmp.name = (char *)name;
     idx = sk_MIME_HEADER_find(hdrs, &htmp);
     if (idx < 0)
         return NULL;
     return sk_MIME_HEADER_value(hdrs, idx);
 }
 
-static MIME_PARAM *mime_param_find(MIME_HEADER *hdr, char *name)
+static MIME_PARAM *mime_param_find(MIME_HEADER *hdr, const char *name)
 {
     MIME_PARAM param;
     int idx;
-    param.param_name = name;
+    param.param_name = (char *)name;
     idx = sk_MIME_PARAM_find(hdr->params, &param);
     if (idx < 0)
         return NULL;
