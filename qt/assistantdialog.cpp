@@ -203,15 +203,15 @@ void AssistantDialog::on_txtInput_textChanged()
     if (qsInput.contains("Mime-Version:", Qt::CaseInsensitive)
         || qsInput.contains("Content-Type:", Qt::CaseInsensitive))
     {
-        m_btnSign->setEnabled(false);
-        m_cbbFriends->setEnabled(false);
-        m_btnEncrypt->setEnabled(false);
-        m_btnDecrypt->setEnabled(true);
+        //m_btnSign->setEnabled(false);
+        //m_cbbFriends->setEnabled(false);
+        //m_btnEncrypt->setEnabled(false);
+        //m_btnDecrypt->setEnabled(true);
         on_btnDecrypt_clicked();
     }else{
-        m_btnSign->setEnabled(true);
-        m_cbbFriends->setEnabled(true);
-        m_btnEncrypt->setEnabled(true);
+        //m_btnSign->setEnabled(true);
+        //m_cbbFriends->setEnabled(true);
+        //m_btnEncrypt->setEnabled(true);
         m_btnDecrypt->setEnabled(false);
         on_btnEncrypt_clicked();
     }
