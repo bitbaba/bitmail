@@ -94,11 +94,15 @@ MainWindow::MainWindow(BitMail * bitmail)
     createToolBars();
     createStatusBar();
 
+    /** audio recorder **/
+    audioRecorder = new QAudioRecorder();
+    connect(audioRecorder, SIGNAL(durationChanged(qint64)), this, SLOT(onDurationChanged(qint64)));
+
     /** Form */
     QVBoxLayout *leftLayout = new QVBoxLayout;
     QHBoxLayout *mainLayout = new QHBoxLayout;
-    QVBoxLayout * rightLayout = new QVBoxLayout;
-    QHBoxLayout * btnLayout = new QHBoxLayout;
+    QVBoxLayout *rightLayout = new QVBoxLayout;
+    QHBoxLayout *btnLayout = new QHBoxLayout;
 
     btree = new QTreeWidget;
     btree->setIconSize(QSize(48,48));
@@ -313,6 +317,12 @@ void MainWindow::createActions()
         fileAct->setStatusTip(tr("Send File"));
         connect(fileAct, SIGNAL(triggered()), this, SLOT(onFileAct()));
     }while(0);
+
+    do{
+        audioAct = new QAction(QIcon(":/images/sound.png"), tr("&Audio"), this);
+        audioAct->setStatusTip(tr("Send audio"));
+        connect(audioAct, SIGNAL(triggered()), this, SLOT(onAudioAct()));
+    }while(0);
 }
 
 void MainWindow::createToolBars()
@@ -327,6 +337,7 @@ void MainWindow::createToolBars()
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->setIconSize(QSize(24,24));
     chatToolbar->addAction(fileAct);
+    chatToolbar->addAction(audioAct);
 }
 
 void MainWindow::createStatusBar()
@@ -407,7 +418,6 @@ void MainWindow::onRemoveAct()
     elt->parent()->removeChild(elt);
 }
 
-
 void MainWindow::onFileAct()
 {
     if (m_txth == NULL){
@@ -416,6 +426,10 @@ void MainWindow::onFileAct()
     }
 
     QStringList paths = QFileDialog::getOpenFileNames(this);
+    if (!paths.size()){
+        return ;
+    }
+
     QVariantList vparts;
     for (QStringList::const_iterator it = paths.constBegin(); it != paths.constEnd(); ++it){
         vparts.append(QVariant::fromValue(QFileInfo(*it)));
@@ -437,6 +451,49 @@ void MainWindow::onFileAct()
     enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
 
     populateMessages(qsTo);
+}
+
+void MainWindow::onAudioAct()
+{
+    if (m_txth == NULL){
+        statusBar()->showMessage(tr("No active network"));
+        return ;
+    }
+    QString audioFilePath = BMQTApplication::GetTempHome() + "/1" + ".amr";
+    QAudioEncoderSettings audioSettings;
+    audioSettings.setCodec("audio/amr");
+    audioSettings.setQuality(QMultimedia::HighQuality);
+    audioRecorder->setEncodingSettings(audioSettings);
+    audioRecorder->setOutputLocation(QUrl::fromLocalFile("test.amr"));
+    audioRecorder->record();
+}
+
+void MainWindow::onDurationChanged(qint64 duration)
+{
+    if (duration >= 2000){
+        audioRecorder->stop();
+
+        QString audioFilePath = audioRecorder->outputLocation().toLocalFile();
+
+        QString qsMsg = BMQTApplication::toMimeAttachment(audioFilePath);
+
+        QString qsTo = getCurrentReceipt();
+        if (qsTo.isEmpty()){
+            return ;
+        }
+
+        QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
+        QString qsCertId = QString::fromStdString(m_bitmail->GetID());
+        QString qsCert = QString::fromStdString(m_bitmail->GetCert());
+
+        emit readyToSend(qsFrom, qsTo, qsMsg);
+
+        enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
+
+        populateMessages(qsTo);
+    }else{
+        statusBar()->showMessage(tr("Recorded %1 sec").arg(duration / 1000));
+    }
 }
 
 void MainWindow::onBtnInviteClicked()

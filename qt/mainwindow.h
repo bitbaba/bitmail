@@ -60,6 +60,7 @@ class QListWidgetItem;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QProcess;
+class QAudioRecorder;
 
 QT_END_NAMESPACE
 class BitMail;
@@ -110,8 +111,10 @@ public slots:
     void onRemoveAct();
     void onNetAct();
     void onFileAct();
+    void onAudioAct();
 
     void onAddFriend(const QString & email);
+    void onDurationChanged(qint64);
 private:    
     QString getCurrentReceipt();
 
@@ -132,6 +135,7 @@ private:
     void enqueueMsg(const QString & k, bool tx, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert);
     QStringList dequeueMsg(const QString &key);
 private:
+    QAudioRecorder *audioRecorder;
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;
     QTreeWidgetItem * nodeFriends;
@@ -149,6 +153,7 @@ private:
     QAction *removeAct;
     QAction *netAct;
     QAction *fileAct;
+    QAction *audioAct;
 
 private:
     BitMail *m_bitmail;

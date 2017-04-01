@@ -12,6 +12,7 @@ namespace BMQTApplication {
     QString GetAppHome();
     QString GetProfileHome();
     QString GetDataHome();
+    QString GetTempHome();
     QString GetLogHome();
     QString GetLocaleHome();
     QString GetLanIp();
@@ -59,17 +60,9 @@ namespace BMQTApplication {
     /**
      * @brief toMimeAttachment, general purpose routine to process attachement
      * @param path
-     * @param disposition, such as `inline' or `attachement'
      * @return
      */
-    QString toMimeAttachment(const QString & path, const QString & disposition);
-
-    /**
-     * @brief toMixed, compose a Http MultiPart with some HttpPart(s)
-     * @param parts, serialized string by above toMimeTextPlain, etc.
-     * @return
-     */
-    QString toMixed(const QStringList & parts);
+    QString toMimeAttachment(const QString & path);
 
     /**
      * @brief toMixed, compose mixed MultiHttpPart from QVariantList
@@ -79,7 +72,14 @@ namespace BMQTApplication {
     QString toMixed(const QVariantList & parts);
 
     /**
-     * TODO: how to display the decrypted/verified data in format: multipart/mixed
+     * @brief toMixed, compose a Http MultiPart with some HttpPart(s)
+     * @param parts, serialized string by above toMimeTextPlain, etc.
+     * @return
+     */
+    QString toMixed(const QStringList & parts);
+
+    /**
+     * TODO: multipart/mixed parsing and renderring
      *
      */
 }

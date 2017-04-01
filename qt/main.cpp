@@ -199,25 +199,61 @@ namespace BMQTApplication {
         qsProfileHome += "bitmail";
         qsProfileHome += "/";
         qsProfileHome += "profile";
+        QDir qdir(qsProfileHome);
+        if (!qdir.exists()){
+            qdir.mkpath(qsProfileHome);
+        }
         return qsProfileHome;
     }
     QString GetDataHome()
     {
-        QString qsProfileHome = QDir::homePath();
-        qsProfileHome += "/";
-        qsProfileHome += "bitmail";
-        qsProfileHome += "/";
-        qsProfileHome += "data";
-        return qsProfileHome;
+        QString qsDataHome = QDir::homePath();
+        qsDataHome += "/";
+        qsDataHome += "bitmail";
+        qsDataHome += "/";
+        qsDataHome += "data";
+        QDir qdir(qsDataHome);
+        if (!qdir.exists()){
+            qdir.mkpath(qsDataHome);
+        }
+        return qsDataHome;
+    }
+    QString GetTempHome()
+    {
+        QString qsTempHome = QDir::homePath();
+        qsTempHome += "/";
+        qsTempHome += "bitmail";
+        qsTempHome += "/";
+        qsTempHome += "temp";
+        QDir qdir(qsTempHome);
+        if (!qdir.exists()){
+            qdir.mkpath(qsTempHome);
+        }
+        return qsTempHome;
     }
     QString GetLogHome()
     {
-        QString qsProfileHome = QDir::homePath();
-        qsProfileHome += "/";
-        qsProfileHome += "bitmail";
-        qsProfileHome += "/";
-        qsProfileHome += "log";
-        return qsProfileHome;
+        QString qsLogHome = QDir::homePath();
+        qsLogHome += "/";
+        qsLogHome += "bitmail";
+        qsLogHome += "/";
+        qsLogHome += "log";
+        QDir qdir(qsLogHome);
+        if (!qdir.exists()){
+            qdir.mkpath(qsLogHome);
+        }
+        return qsLogHome;
+    }
+    QString GetLocaleHome()
+    {
+        QString qsLocaleHome = GetAppHome();
+        qsLocaleHome += "/";
+        qsLocaleHome += "locale";
+        QDir qdir(qsLocaleHome);
+        if (!qdir.exists()){
+            qdir.mkpath(qsLocaleHome);
+        }
+        return qsLocaleHome;
     }
     QString GetLanIp()
     {
@@ -235,14 +271,6 @@ namespace BMQTApplication {
             }
         }
         return lanaddr;
-    }
-
-    QString GetLocaleHome()
-    {
-        QString qsLocaleHome = GetAppHome();
-        qsLocaleHome += "/";
-        qsLocaleHome += "locale";
-        return qsLocaleHome;
     }
     QStringList GetProfiles()
     {
@@ -672,34 +700,35 @@ namespace BMQTApplication {
     {
         const char * format = "PNG";
 
-        QString imagePath = BMQTApplication::GetDataHome() + "/" + QUuid::createUuid().toString().remove('{').remove('}') + "." + format;
+        QString imagePath = BMQTApplication::GetTempHome() + "/" + QUuid::createUuid().toString().remove('{').remove('}') + "." + format;
         img.save(imagePath, format);
 
-        QFileInfo finfo(imagePath);
+        QString mime = toMimeAttachment(imagePath);
 
-        QFile imageFile(imagePath);
-        if (!imageFile.open(QIODevice::ReadOnly)){
-            return "";
-        }
-        QString hash = QString::fromStdString( QCryptographicHash::hash(imageFile.readAll(), QCryptographicHash::Sha256).toHex().toStdString() );
-        imageFile.close();
+        QFile(imagePath).remove();
 
-        QString uniqPath = BMQTApplication::GetDataHome() + "/" + hash + "." + finfo.completeSuffix();
-        if (!QFile(uniqPath).exists()){
-            if (!imageFile.rename(uniqPath)){
-                qDebug() << "Failed to rename to " << uniqPath;
-            }
-        }else{
-            if (!imageFile.remove()){
-                qDebug() << "Failed to remove file: " << imagePath;
-            }
-        }
-
-        return toMimeAttachment(uniqPath, "inline");
+        return mime;
     }
 
-    QString toMimeAttachment(const QString & path, const QString & disposition)
+    QString toMimeAttachment(const QString & orig_path)
     {
+        QFile origFile(orig_path);
+        QFileInfo origFileInfo(orig_path);
+        if (!origFile.open(QIODevice::ReadOnly)){
+            return "";
+        }
+        QString hash = QString::fromStdString( QCryptographicHash::hash(origFile.readAll(), QCryptographicHash::Sha256).toHex().toStdString() );
+        origFile.close();
+
+        QString path = BMQTApplication::GetDataHome() + "/" + hash + "." + origFileInfo.completeSuffix();
+        QFile file(path);
+        QFileInfo finfo(path);
+
+        origFile.copy(path);
+        if (!origFile.exists() || !origFile.size()){
+            return "";
+        }
+
         // Ref: http://www.faqs.org/rfcs/rfc1873.html
         // http://www.faqs.org/rfcs/rfc822.html [6]
         /* http://www.faqs.org/rfcs/rfc2111.html
@@ -726,12 +755,6 @@ namespace BMQTApplication {
         QMimeDatabase db;
         QString mimeType = db.mimeTypeForFile(path).name();
 
-        QFileInfo finfo(path);
-
-        QFile file(path);
-
-        QString mime = "Content-Type: " + mimeType + "; name=" + finfo.fileName() + "\r\n";
-        mime += "Content-Disposition: " + disposition + "; filename=" + finfo.fileName() + "\r\n";
         /* http://www.faqs.org/rfcs/rfc2111.html
         Both message-id and content-id are required to be globally unique.
         That is, no two different messages will ever have the same Message-ID
@@ -740,24 +763,55 @@ namespace BMQTApplication {
         a time and date stamp along with the local host's domain name, e.g.,
         950124.162336@XIson.com.
         */
+
         /* a weak impl. here wihtout conforming the suggestions,
-         * use Hash of content as left part of @, and uniq host as right part
-         * */
-        mime += "Content-ID: <" + finfo.fileName() + "@bitmail.bitbaba.com>\r\n";
+         * use Hash of content as left part of @, and left the left part void.
+        */
+
+        /**
+         * @brief if 'Content-ID:' in use, the mobile phone client will promot user
+         * to `tap to download'.
+         * So, if direct display is needed, remove the header `Content-ID:'
+         */
+        QString mime = "Content-Type: " + mimeType + "; name=" + finfo.fileName() + "\r\n";
+        mime += "Content-Disposition: inline; filename=" + finfo.fileName() + "\r\n";
+        if (false){
+            mime += "Content-ID: <" + finfo.fileName() + ">\r\n";
+        }
         mime += "Content-Transfer-Encoding: base64\r\n";
         mime += "\r\n";
-
         if (!file.open(QIODevice::ReadOnly)){
             return "";
         }
-
         mime += QString::fromStdString(BitMail::toBase64(file.readAll().toStdString()));
-
         mime += "\r\n";
-
         file.close();
 
         return mime;
+    }
+
+    /**
+     * @brief toMixed, compose mixed MultiHttpPart from QVariantList
+     * @param parts, a list of QVariant
+     * @return
+     */
+    QString toMixed(const QVariantList & vparts)
+    {
+        QStringList parts;
+
+        for (QVariantList::const_iterator it = vparts.constBegin(); it != vparts.constEnd(); ++it){
+            QVariant v = *it;
+            QString vtype = QString::fromStdString(v.typeName());
+            if (vtype == "QString"){
+                parts.append( toMimeTextPlain( v.toString() ) );
+            }else if (vtype == "QImage" /*|| vtype == "QIcon" || vtype == "QPixmap" || vtype == "QBitmap"*/){
+                parts.append( toMimeImage( qvariant_cast<QImage>(v) ) );
+            }else if (vtype == "QFileInfo"){
+                QFileInfo finfo = qvariant_cast<QFileInfo>(v);
+                parts.append( toMimeAttachment(finfo.absoluteFilePath()) );
+            }
+        }
+        return toMixed(parts);
     }
 
     /**
@@ -791,30 +845,6 @@ namespace BMQTApplication {
         mime += "\r\n\r\n";
 
         return mime;
-    }
-
-    /**
-     * @brief toMixed, compose mixed MultiHttpPart from QVariantList
-     * @param parts, a list of QVariant
-     * @return
-     */
-    QString toMixed(const QVariantList & vparts)
-    {
-        QStringList parts;
-
-        for (QVariantList::const_iterator it = vparts.constBegin(); it != vparts.constEnd(); ++it){
-            QVariant v = *it;
-            QString vtype = QString::fromStdString(v.typeName());
-            if (vtype == "QString"){
-                parts.append( toMimeTextPlain( v.toString() ) );
-            }else if (vtype == "QImage" /*|| vtype == "QIcon" || vtype == "QPixmap" || vtype == "QBitmap"*/){
-                parts.append( toMimeImage( qvariant_cast<QImage>(v) ) );
-            }else if (vtype == "QFileInfo"){
-                QFileInfo finfo = qvariant_cast<QFileInfo>(v);
-                parts.append( toMimeAttachment(finfo.absoluteFilePath(), "attachement") );
-            }
-        }
-        return toMixed(parts);
     }
 
 }
