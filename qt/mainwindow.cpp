@@ -47,6 +47,8 @@
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QNetworkInterface>
 #include <QUrl>
+#include <QtMultimedia/QAudioRecorder>
+
 #include <bitmailcore/bitmail.h>
 #include "mainwindow.h"
 //! [0]
@@ -107,8 +109,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     columns.append(tr("Contact"));
     btree->setHeaderLabels(columns);
     btree->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(btree, SIGNAL(customContextMenuRequested(QPoint))
-            , this, SLOT(onCtxMenu(QPoint)));
+    connect(btree, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onCtxMenu(QPoint)));
 
     if (1){
         nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")), NT_Friends);
@@ -164,14 +165,11 @@ MainWindow::MainWindow(BitMail * bitmail)
     wrap->setLayout(mainLayout);
     setCentralWidget(wrap);
 
-    // Add signals
+    // Bind signals
     connect(btree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(onTreeCurrentBuddy(QTreeWidgetItem*,QTreeWidgetItem*)));
-
     connect(btree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(onTreeBuddyDoubleClicked(QTreeWidgetItem*,int)));
-
     connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
-
-    connect(btnSend, SIGNAL(clicked()), this, SLOT(onSendBtnClicked()));
+    connect(btnSend, SIGNAL(clicked()), this, SLOT(onBtnSendClicked()));
 }
 //! [2]
 MainWindow::~MainWindow()
@@ -180,29 +178,21 @@ MainWindow::~MainWindow()
 
 void MainWindow::configNetwork()
 {
-    onNetConfig();
+    onNetAct();
 }
 
 void MainWindow::startupNetwork()
 {
     m_rxth = new RxThread(m_bitmail);
-    connect(m_rxth, SIGNAL(gotMessage(QString, QString, QString,QString))
-            , this, SLOT(onNewMessage(QString, QString, QString,QString)));
-
+    connect(m_rxth, SIGNAL(gotMessage(QString, QString, QString,QString)), this, SLOT(onNewMessage(QString, QString, QString,QString)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
-
     connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
-
     m_rxth->start();
 
     m_txth = new TxThread(m_bitmail);
-    connect(this, SIGNAL(readyToSend(QString,QString,QString))
-            , m_txth, SLOT(onSendMessage(QString,QString,QString)));
-
+    connect(this, SIGNAL(readyToSend(QString,QString,QString)), m_txth, SLOT(onSendMessage(QString,QString,QString)));
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
-
     connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
-
     m_txth->start();
 }
 
@@ -243,9 +233,7 @@ void MainWindow::onTxDone()
     }
 }
 
-//! [3]
 void MainWindow::closeEvent(QCloseEvent *event)
-//! [3] //! [4]
 {
     shutdownNetwork();
     /**
@@ -299,31 +287,31 @@ void MainWindow::createActions()
     do {
         configAct = new QAction(QIcon(":/images/config.png"), tr("&Configure"), this);
         configAct->setStatusTip(tr("Configure current account"));
-        connect(configAct, SIGNAL(triggered()), this, SLOT(onConfigBtnClicked()));
+        connect(configAct, SIGNAL(triggered()), this, SLOT(onBtnConfigClicked()));
+    }while(0);
+
+    do{
+        netAct = new QAction(QIcon(":/images/network.png"), tr("&Network"), this);
+        netAct->setStatusTip(tr("Network"));
+        connect(netAct, SIGNAL(triggered()), this, SLOT(onNetAct()));
     }while(0);
 
     do {
         inviteAct = new QAction(QIcon(":/images/invite.png"), tr("&Invite"), this);
-        inviteAct->setStatusTip(tr("Invite a new friend by send a request message."));
-        connect(inviteAct, SIGNAL(triggered()), this, SLOT(onInviteBtnClicked()));
+        inviteAct->setStatusTip(tr("Invite by sending your signature"));
+        connect(inviteAct, SIGNAL(triggered()), this, SLOT(onBtnInviteClicked()));
+    }while(0);
+
+    do{        
+        removeAct = new QAction(QIcon(":/images/remove.png"), tr("&Remove"), this);
+        removeAct->setStatusTip(tr("Remove"));
+        connect(removeAct, SIGNAL(triggered()), this, SLOT(onRemoveAct()));
     }while(0);
 
     do{
-        actInvite = new QAction(QIcon(":/images/invite.png"), tr("&Invite"), this);
-        actInvite->setStatusTip(tr("Invite"));
-        connect(actInvite, SIGNAL(triggered()), this, SLOT(onActInvite()));
-    }while(0);
-
-    do{
-        actRemove = new QAction(QIcon(":/images/remove.png"), tr("&Remove"), this);
-        actRemove->setStatusTip(tr("Remove"));
-        connect(actRemove, SIGNAL(triggered()), this, SLOT(onActRemove()));
-    }while(0);
-
-    do{
-        actNetConfig = new QAction(QIcon(":/images/network.png"), tr("&Network"), this);
-        actNetConfig->setStatusTip(tr("Network"));
-        connect(actNetConfig, SIGNAL(triggered()), this, SLOT(onNetConfig()));
+        fileAct = new QAction(QIcon(":/images/file.png"), tr("&File"), this);
+        fileAct->setStatusTip(tr("Send File"));
+        connect(fileAct, SIGNAL(triggered()), this, SLOT(onFileAct()));
     }while(0);
 }
 
@@ -331,13 +319,14 @@ void MainWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("Profile"));
     fileToolBar->addAction(configAct);
-    fileToolBar->addAction(actNetConfig);
+    fileToolBar->addAction(netAct);
 
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(inviteAct);
 
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->setIconSize(QSize(24,24));
+    chatToolbar->addAction(fileAct);
 }
 
 void MainWindow::createStatusBar()
@@ -346,7 +335,7 @@ void MainWindow::createStatusBar()
 }
 
 
-void MainWindow::onConfigBtnClicked()
+void MainWindow::onBtnConfigClicked()
 {
     OptionDialog optDialog(false, this);
     optDialog.SetEmail(QString::fromStdString(m_bitmail->GetEmail()));
@@ -360,7 +349,7 @@ void MainWindow::onConfigBtnClicked()
     m_bitmail->SetPassphrase(qsPassphrase.toStdString());
 }
 
-void MainWindow::onNetConfig()
+void MainWindow::onNetAct()
 {
     NetOptionDialog optDialog(this);
     optDialog.SetSmtpUrl(QString::fromStdString(m_bitmail->GetTxUrl()));
@@ -412,7 +401,45 @@ void MainWindow::onNetConfig()
     return ;
 }
 
-void MainWindow::onInviteBtnClicked()
+void MainWindow::onRemoveAct()
+{
+    QTreeWidgetItem * elt = btree->currentItem();
+    elt->parent()->removeChild(elt);
+}
+
+
+void MainWindow::onFileAct()
+{
+    if (m_txth == NULL){
+        statusBar()->showMessage(tr("No active network"));
+        return ;
+    }
+
+    QStringList paths = QFileDialog::getOpenFileNames(this);
+    QVariantList vparts;
+    for (QStringList::const_iterator it = paths.constBegin(); it != paths.constEnd(); ++it){
+        vparts.append(QVariant::fromValue(QFileInfo(*it)));
+    }
+
+    QString qsMsg = BMQTApplication::toMixed(vparts);
+
+    QString qsTo = getCurrentReceipt();
+    if (qsTo.isEmpty()){
+        return ;
+    }
+
+    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
+    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
+    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
+
+    emit readyToSend(qsFrom, qsTo, qsMsg);
+
+    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
+
+    populateMessages(qsTo);
+}
+
+void MainWindow::onBtnInviteClicked()
 {
     InviteDialog inviteDialog(this);
     if (QDialog::Accepted != inviteDialog.exec()){
@@ -421,14 +448,14 @@ void MainWindow::onInviteBtnClicked()
 
     QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
     QString qsTo = inviteDialog.GetEmail();
-    QString qsWhisper = inviteDialog.GetWhisper();
+    QString qsWhisper = BMQTApplication::toMimeTextPlain( inviteDialog.GetWhisper() );
 
     emit readyToSend(qsFrom , qsTo, qsWhisper);
 
     return ;
 }
 
-void MainWindow::onSendBtnClicked()
+void MainWindow::onBtnSendClicked()
 {
     if (m_txth == NULL){
         statusBar()->showMessage(tr("No active network"));
@@ -441,11 +468,43 @@ void MainWindow::onSendBtnClicked()
     // toUtf8() use UTF8 codec
     // QTextCodec::codecForLocale() guess the MOST suitable codec for current locale,
     // if application has not set codec for locale by setCodecForLocale;
-    QString qsMsg = textEdit->toPlainText();
+    QString qsMsgPlain = textEdit->toPlainText();
     textEdit->clear();
-    if (qsMsg.isEmpty()){
+    if (qsMsgPlain.isEmpty()){
         return ;
     }
+
+#if 1
+    QString qsMsg = BMQTApplication::toMimeTextPlain(qsMsgPlain);
+#endif
+
+#if 0
+    QString qsMsg = BMQTApplication::toMimeTextHtml(qsMsgPlain);
+#endif
+
+#if 0
+    QStringList parts;
+    parts.append( BMQTApplication::toMimeTextPlain(qsMsgPlain) );
+    parts.append( BMQTApplication::toMimeImage(QImage(":/images/head.png")) );
+    QString qsMsg = BMQTApplication::toMixed(parts);
+#endif
+
+#if 0
+    QVariantList vparts;
+    vparts.append(QImage(":/images/head.png"));
+    vparts.append("Hello! BitMail.");
+    vparts.append(QVariant::fromValue(QFileInfo("D:/Users/harry/bitmail/data/c12f0b637784d65e424463c29d0cc7b50d7860f7ada6968db0f405bee663ba0a.PNG")));
+    vparts.append(QVariant::fromValue(QFileInfo("D:/Users/harry/bitmail/data/1.amr")));
+    QString qsMsg = BMQTApplication::toMixed(vparts);
+#endif
+
+#if 0
+    QStringList parts;
+    parts.append( BMQTApplication::toMimeTextHtml(qsMsgPlain) );
+    parts.append( BMQTApplication::toMimeImage(QImage(":/images/head.png")) );
+    QString qsMsg = BMQTApplication::toMixed(parts);
+#endif
+
 
     QString qsTo = getCurrentReceipt();
     if (qsTo.isEmpty()){
@@ -557,7 +616,7 @@ void MainWindow::populateMessages(const QString & k)
         QJsonObject msgObj = (QJsonDocument::fromJson(tmp.toUtf8()).object());
         QListWidgetItem * msgElt = new QListWidgetItem();
         msgElt->setIcon(QIcon(":/images/bubble.png"));
-        msgElt->setText(msgObj["msg"].toString());
+        msgElt->setText(msgObj["msg"].toString().mid(0, 128));
         msgElt->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
         msgElt->setBackgroundColor(msgObj["tx"].toBool() ? Qt::lightGray : Qt::green);
         msgElt->setData(Qt::UserRole, msgObj);
@@ -658,22 +717,3 @@ void MainWindow::onAddFriend(const QString &email)
     populateFriendLeaf(nodeFriends, email, qsNick, NT_Friend);
 }
 
-void MainWindow::onActInvite()
-{
-    onInviteBtnClicked();
-}
-
-void MainWindow::onActRemove()
-{
-    QTreeWidgetItem * elt = btree->currentItem();
-    elt->parent()->removeChild(elt);
-}
-
-void MainWindow::onActNetwork(bool fChecked)
-{
-    if (fChecked){
-        startupNetwork();
-    }else{
-        shutdownNetwork();
-    }
-}

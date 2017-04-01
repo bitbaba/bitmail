@@ -52,7 +52,7 @@ QString MessageDialog::GetCertID() const
 
 void MessageDialog::SetMessage(const QString & qsMessage)
 {
-    m_ptxtMessage->setHtml(qsMessage);
+    m_ptxtMessage->setText(qsMessage);
 }
 
 QString MessageDialog::GetMessage() const

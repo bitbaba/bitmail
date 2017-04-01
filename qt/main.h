@@ -3,6 +3,8 @@
 
 #include <QString>
 #include <QStringList>
+#include <QVariant>
+#include <QVariantList>
 
 class BitMail;
 
@@ -23,6 +25,63 @@ namespace BMQTApplication {
     void FlushLogger();
     bool CloseLogger();
     void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+
+    /**
+     * @brief toMimeTextPlain, convert UTF-8 ByteArray to Part with header as following:
+     * Content-Type: text/plain; charset=utf-8
+     * Content-Transfer-Encoding: base64
+     *
+     * @param s
+     * @return mime encoded text/plain
+     */
+    QString toMimeTextPlain(const QString & s);
+
+    /**
+     * @brief toMimeTextHtml, convert UTF-8 ByteArray to Part with header as following:
+     * Content-Type: text/html; charset=utf-8
+     * Content-Transfer-Encoding: base64
+     *
+     * @param s
+     * @return mime encoded text/html
+     */
+    QString toMimeTextHtml(const QString & s);
+
+    /**
+     * @brief toMimeImage, convert image to Part with header as following:
+     * Content-Type: image/png; name=image1.png
+     * Content-Disposition: inline; filename=image1.PNG
+     * Content-Transfer-Encoding: base64
+     * @param img
+     * @return
+     */
+    QString toMimeImage(const QImage & img);
+
+    /**
+     * @brief toMimeAttachment, general purpose routine to process attachement
+     * @param path
+     * @param disposition, such as `inline' or `attachement'
+     * @return
+     */
+    QString toMimeAttachment(const QString & path, const QString & disposition);
+
+    /**
+     * @brief toMixed, compose a Http MultiPart with some HttpPart(s)
+     * @param parts, serialized string by above toMimeTextPlain, etc.
+     * @return
+     */
+    QString toMixed(const QStringList & parts);
+
+    /**
+     * @brief toMixed, compose mixed MultiHttpPart from QVariantList
+     * @param parts, a list of QVariant
+     * @return
+     */
+    QString toMixed(const QVariantList & parts);
+
+    /**
+     * TODO: how to display the decrypted/verified data in format: multipart/mixed
+     *
+     */
 }
 
 #endif // MAIN_H

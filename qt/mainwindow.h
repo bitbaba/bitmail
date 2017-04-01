@@ -93,27 +93,25 @@ public:
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 public slots:
-    void onSendBtnClicked();
-    void onConfigBtnClicked();
-    void onNetConfig();
+    void onBtnSendClicked();
+    void onBtnConfigClicked();
+    void onBtnInviteClicked();
+
     void onNewMessage(const QString & from, const QString & msg, const QString & certid, const QString & cert);
     void onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous);
+    void onTreeBuddyDoubleClicked(QTreeWidgetItem * actItem,int col);
+    void onMessageDoubleClicked(QListWidgetItem * actItem);
 
     void onRxDone();
     void onRxProgress(const QString & info);
     void onTxDone();
     void onTxProgress(const QString & info);
 
-    void onTreeBuddyDoubleClicked(QTreeWidgetItem * actItem,int col);
-    void onInviteBtnClicked();
-    void onMessageDoubleClicked(QListWidgetItem * actItem);
+    void onRemoveAct();
+    void onNetAct();
+    void onFileAct();
+
     void onAddFriend(const QString & email);
-
-    // Context Menu slots
-    void onActInvite();
-    void onActRemove();
-    void onActNetwork(bool fChecked);
-
 private:    
     QString getCurrentReceipt();
 
@@ -123,6 +121,8 @@ private:
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
 
+    void ViewCert(const QString & e);
+
     void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick,  nodeType nt);
     void populateFriendTree(QTreeWidgetItem * node);
     void populateMessages(const QString & k);
@@ -131,8 +131,6 @@ private:
 
     void enqueueMsg(const QString & k, bool tx, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert);
     QStringList dequeueMsg(const QString &key);
-
-    void ViewCert(const QString & e);
 private:
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;
@@ -145,14 +143,13 @@ private:
     QToolBar *chatToolbar;
     QToolBar *netToolbar;
     QPushButton * btnSend;
+
     QAction *configAct;
     QAction *inviteAct;
+    QAction *removeAct;
+    QAction *netAct;
+    QAction *fileAct;
 
-    // Context Menu Actions
-    QAction *actInvite;
-    QAction *actRemove;
-
-    QAction *actNetConfig;
 private:
     BitMail *m_bitmail;
 
@@ -170,6 +167,14 @@ signals:
                      , const QString & msg);
 };
 
+
+enum MPType {
+    MPT_undef = 0,
+    MPT_textplain = 1,
+    MPT_image = 2,
+};
+
+extern std::string MP_Compose(MPType t, const std::string & data);
 
 //! [0]
 #endif

@@ -53,6 +53,12 @@
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QNetworkInterface>
+#include <QMimeData>
+#include <QUuid>
+#include <QCryptographicHash>
+#include <QMimeDatabase>
+#include <QMimeType>
+
 #include "optiondialog.h"
 #include "logindialog.h"
 #include "mainwindow.h"
@@ -119,6 +125,7 @@ int main(int argc, char *argv[])
         app.installTranslator(&appTranslator);
     }
 
+
     // Get Account Profile
     QString qsEmail, qsPassphrase;
     bool fAssistant = false;
@@ -179,7 +186,7 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-//! [0]
+
 namespace BMQTApplication {
     QString GetAppHome()
     {
@@ -618,5 +625,197 @@ namespace BMQTApplication {
         }
         FlushLogger();
     }
+
+    /**
+     * @brief toMimeTextPlain, convert UTF-8 ByteArray to Part with header as following:
+     * Content-Type: text/plain; charset=utf-8
+     * Content-Transfer-Encoding: base64
+     *
+     * @param s
+     * @return mime encoded text/plain
+     */
+    QString toMimeTextPlain(const QString &s)
+    {
+        QString mime = "Content-Type: text/plain; charset=utf-8\r\n";
+        mime += "Content-Transfer-Encoding: base64\r\n";
+        mime += "\r\n";
+        mime += QString::fromStdString(BitMail::toBase64(s.toStdString()));
+        return mime;
+    }
+
+    /**
+     * @brief toMimeTextHtml, convert UTF-8 ByteArray to Part with header as following:
+     * Content-Type: text/html; charset=utf-8
+     * Content-Transfer-Encoding: base64
+     *
+     * @param s
+     * @return mime encoded text/html
+     */
+    QString toMimeTextHtml(const QString & s)
+    {
+        QString mime = "Content-Type: text/html; charset=utf-8\r\n";
+        mime += "Content-Transfer-Encoding: base64\r\n";
+        mime += "\r\n";
+        mime += QString::fromStdString(BitMail::toBase64(s.toStdString()));
+        return mime;
+    }
+
+    /**
+     * @brief toMimeImage, convert image to Part with header as following:
+     * Content-Type: image/png; name=image1.png
+     * Content-Disposition: inline; filename=image1.PNG
+     * Content-Transfer-Encoding: base64
+     * @param img
+     * @return
+     */
+    QString toMimeImage(const QImage &img)
+    {
+        const char * format = "PNG";
+
+        QString imagePath = BMQTApplication::GetDataHome() + "/" + QUuid::createUuid().toString().remove('{').remove('}') + "." + format;
+        img.save(imagePath, format);
+
+        QFileInfo finfo(imagePath);
+
+        QFile imageFile(imagePath);
+        if (!imageFile.open(QIODevice::ReadOnly)){
+            return "";
+        }
+        QString hash = QString::fromStdString( QCryptographicHash::hash(imageFile.readAll(), QCryptographicHash::Sha256).toHex().toStdString() );
+        imageFile.close();
+
+        QString uniqPath = BMQTApplication::GetDataHome() + "/" + hash + "." + finfo.completeSuffix();
+        if (!QFile(uniqPath).exists()){
+            if (!imageFile.rename(uniqPath)){
+                qDebug() << "Failed to rename to " << uniqPath;
+            }
+        }else{
+            if (!imageFile.remove()){
+                qDebug() << "Failed to remove file: " << imagePath;
+            }
+        }
+
+        return toMimeAttachment(uniqPath, "inline");
+    }
+
+    QString toMimeAttachment(const QString & path, const QString & disposition)
+    {
+        // Ref: http://www.faqs.org/rfcs/rfc1873.html
+        // http://www.faqs.org/rfcs/rfc822.html [6]
+        /* http://www.faqs.org/rfcs/rfc2111.html
+        The URLs take the form
+
+        content-id    = url-addr-spec
+
+        message-id    = url-addr-spec
+
+        url-addr-spec = addr-spec  ; URL encoding of RFC 822 addr-spec
+
+        cid-url       = "cid" ":" content-id
+
+        mid-url       = "mid" ":" message-id [ "/" content-id ]
+
+        Note: in Internet mail messages, the addr-spec in a Content-ID
+        [MIME] or Message-ID [822] header are enclosed in angle brackets
+        (<>).  Since addr-spec in a Message-ID or Content-ID might contain
+        characters not allowed within a URL; any such character (including
+        "/", which is reserved within the "mid" scheme) must be hex-
+        encoded using the %hh escape mechanism in [URL].
+        */
+
+        QMimeDatabase db;
+        QString mimeType = db.mimeTypeForFile(path).name();
+
+        QFileInfo finfo(path);
+
+        QFile file(path);
+
+        QString mime = "Content-Type: " + mimeType + "; name=" + finfo.fileName() + "\r\n";
+        mime += "Content-Disposition: " + disposition + "; filename=" + finfo.fileName() + "\r\n";
+        /* http://www.faqs.org/rfcs/rfc2111.html
+        Both message-id and content-id are required to be globally unique.
+        That is, no two different messages will ever have the same Message-ID
+        addr-spec; no different body parts will ever have the same Content-ID
+        addr-spec.  A common technique used by many message systems is to use
+        a time and date stamp along with the local host's domain name, e.g.,
+        950124.162336@XIson.com.
+        */
+        /* a weak impl. here wihtout conforming the suggestions,
+         * use Hash of content as left part of @, and uniq host as right part
+         * */
+        mime += "Content-ID: <" + finfo.fileName() + "@bitmail.bitbaba.com>\r\n";
+        mime += "Content-Transfer-Encoding: base64\r\n";
+        mime += "\r\n";
+
+        if (!file.open(QIODevice::ReadOnly)){
+            return "";
+        }
+
+        mime += QString::fromStdString(BitMail::toBase64(file.readAll().toStdString()));
+
+        mime += "\r\n";
+
+        file.close();
+
+        return mime;
+    }
+
+    /**
+     * @brief toMixed, compose a Http MultiPart with some HttpPart(s)
+     * Content-Type: multipart/mixed; boundary=Apple-Mail-8188CA7B-642E-466C-B5A3-76C788466E6E
+     * Content-Transfer-Encoding: 7bit
+     * @param parts, serialized string by above toMimeTextPlain, etc.
+     * @return
+     */
+    QString toMixed(const QStringList & parts)
+    {
+        // Ref: https://www.ietf.org/rfc/rfc2046.txt [5.1.1]
+
+        QString boundary = QString("BitMail-Boundary-") + QUuid::createUuid().toString().remove('{').remove('}');
+
+        QString mime = "Content-Type: multipart/mixed; boundary=" + boundary + "\r\n";
+        mime += "Content-Transfer-Encoding: 7bit\r\n";
+        mime += "\r\n";
+
+        for (QStringList::const_iterator it = parts.constBegin(); it != parts.constEnd(); ++it){
+            mime += "--";
+            mime += boundary;
+            mime += "\r\n";
+            mime += *it;
+            mime += "\r\n";
+        }
+
+        mime += "--";
+        mime += boundary;
+        mime += "--";
+        mime += "\r\n\r\n";
+
+        return mime;
+    }
+
+    /**
+     * @brief toMixed, compose mixed MultiHttpPart from QVariantList
+     * @param parts, a list of QVariant
+     * @return
+     */
+    QString toMixed(const QVariantList & vparts)
+    {
+        QStringList parts;
+
+        for (QVariantList::const_iterator it = vparts.constBegin(); it != vparts.constEnd(); ++it){
+            QVariant v = *it;
+            QString vtype = QString::fromStdString(v.typeName());
+            if (vtype == "QString"){
+                parts.append( toMimeTextPlain( v.toString() ) );
+            }else if (vtype == "QImage" /*|| vtype == "QIcon" || vtype == "QPixmap" || vtype == "QBitmap"*/){
+                parts.append( toMimeImage( qvariant_cast<QImage>(v) ) );
+            }else if (vtype == "QFileInfo"){
+                QFileInfo finfo = qvariant_cast<QFileInfo>(v);
+                parts.append( toMimeAttachment(finfo.absoluteFilePath(), "attachement") );
+            }
+        }
+        return toMixed(parts);
+    }
+
 }
 
