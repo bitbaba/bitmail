@@ -7,6 +7,7 @@
 # include <bitmailcore/x509cert.h>
 # include <bitmailcore/brad.h>
 # include <bitmailcore/rpc.h>
+# include <bitmailcore/multipart.h>
 
 # include <curl/curl.h>
 # include <openssl/cms.h>
@@ -613,6 +614,16 @@ std::string BitMail::Encrypt(const std::string & text) const
 std::string BitMail::Decrypt(const std::string & code) const
 {
     return m_profile->Decrypt(code);
+}
+
+std::string BitMail::toBase64(const std::string & s)
+{
+    return CX509Cert::b64enc(s);
+}
+
+std::string BitMail::fromBase64(const std::string & s)
+{
+    return CX509Cert::b64dec(s);
 }
 
 std::string BitMail::EncMsg(const std::vector<std::string> & friends

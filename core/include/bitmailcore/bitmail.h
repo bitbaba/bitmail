@@ -176,6 +176,11 @@ public:
 
     std::string GetRxPassword() const;
 
+    // Base64 codecs
+    static std::string toBase64(const std::string & s);
+
+    static std::string fromBase64(const std::string & s);
+
     // RTx Routines
     int SendMsg(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
 
@@ -234,23 +239,23 @@ public:
     // Brad APIs
     bool SetBradPort(const std::string & lan, unsigned short port);
 
-	bool StartupBrad();
+    bool StartupBrad();
 
-	std::string GetBradExtUrl() const;
+    std::string GetBradExtUrl() const;
 
     bool SetFriendBradExtUrl(const std::string & email, const std::string & exturl);
 
     std::string GetFriendBradExtUrl(const std::string & email) const;
 
-	unsigned short GetBradPort() const;
+    unsigned short GetBradPort() const;
 
-	int  ListenBrad(unsigned int timeoutMs);
+    int  ListenBrad(unsigned int timeoutMs);
 
-	bool PollBracs(unsigned int timeoutMs);
+    bool PollBracs(unsigned int timeoutMs);
 
-	void RefreshBracs(unsigned int keepalive);
+    void RefreshBracs(unsigned int keepalive);
 
-	void ShutdownBrad();
+    void ShutdownBrad();
 
     // Friends
     int AddFriend(const std::string & email, const std::string & certpem);
@@ -300,11 +305,11 @@ public:
     int GetSubscribes(std::vector<std::string> & subscribes);
 
 private:
-	void AddBrac(Brac * brac);
+    void AddBrac(Brac * brac);
 
-	Brac * GetBrac(const std::string & email);
+    Brac * GetBrac(const std::string & email);
 
-	bool MapBradExtPort();
+    bool MapBradExtPort();
 
 protected:
 
