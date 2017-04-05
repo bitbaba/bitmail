@@ -155,7 +155,7 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     btnSend = new QPushButton(tr("Send"));
     btnSend->setToolTip(tr("Ctrl+Enter"));
-    btnSend->setFixedWidth(64);
+    //btnSend->setFixedWidth(64);
     btnSend->setFixedHeight(32);
     btnSend->setEnabled(false);
     btnSend->setShortcut(QKeySequence("Ctrl+Return"));
@@ -163,7 +163,7 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     btnSendQr = new QPushButton(tr("QrImage"));
     btnSendQr->setToolTip(tr("Ctrl+Shift+Enter"));
-    btnSendQr->setFixedWidth(64);
+    //btnSendQr->setFixedWidth(64);
     btnSendQr->setFixedHeight(32);
     btnSendQr->setEnabled(false);
     btnSendQr->setShortcut(QKeySequence("Ctrl+Shift+Return"));
@@ -526,7 +526,7 @@ void MainWindow::onDurationChanged(qint64 duration)
         enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
         populateMessages(qsTo);
     }else{
-        m_arDlg->ShowStatus(QString("Recorded %1.%2 sec").arg(duration / 1000).arg(duration % 1000));
+        m_arDlg->ShowStatus(tr("Recorded") + QString("%1.%2").arg(duration / 1000).arg(duration % 1000) + tr("seconds"));
     }
 }
 
