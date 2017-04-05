@@ -30,6 +30,8 @@ public:
     void SetCertID(const QString & cid);
     QString GetCertID() const;
 
+    void qrImage(const QPixmap & p);
+
 private slots:
     void on_buttonBox_accepted();
 

@@ -151,6 +151,8 @@ MainWindow::MainWindow(BitMail * bitmail)
     textEdit->setFont(font);
     textEdit->setFocus();
 
+    btnLayout->setAlignment(Qt::AlignLeft);
+
     btnSend = new QPushButton(tr("Send"));
     btnSend->setToolTip(tr("Ctrl+Enter"));
     btnSend->setFixedWidth(64);
@@ -158,7 +160,15 @@ MainWindow::MainWindow(BitMail * bitmail)
     btnSend->setEnabled(false);
     btnSend->setShortcut(QKeySequence("Ctrl+Return"));
     btnLayout->addWidget(btnSend);
-    btnLayout->setAlignment(btnSend, Qt::AlignLeft);
+
+    btnSendQr = new QPushButton(tr("QrImage"));
+    btnSendQr->setToolTip(tr("Ctrl+Shift+Enter"));
+    btnSendQr->setFixedWidth(64);
+    btnSendQr->setFixedHeight(32);
+    btnSendQr->setEnabled(false);
+    btnSendQr->setShortcut(QKeySequence("Ctrl+Shift+Return"));
+    btnLayout->addWidget(btnSendQr);
+
     rightLayout->addWidget(sessLabel);
     rightLayout->addWidget(msgView);
     rightLayout->addWidget(chatToolbar);
@@ -176,8 +186,9 @@ MainWindow::MainWindow(BitMail * bitmail)
     connect(btree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(onTreeBuddyDoubleClicked(QTreeWidgetItem*,int)));
     connect(msgView, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onMessageDoubleClicked(QListWidgetItem*)));
     connect(btnSend, SIGNAL(clicked()), this, SLOT(onBtnSendClicked()));
+    connect(btnSendQr, SIGNAL(clicked()), this, SLOT(onBtnSendQrClicked()));
 }
-//! [2]
+
 MainWindow::~MainWindow()
 {
 }
@@ -283,6 +294,10 @@ void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
     certDialog.SetEmail(qsEmail);
     certDialog.SetNick(qsNick);
     certDialog.SetCertID(qsCertID);
+
+    QPixmap qrImage = BMQTApplication::toQrImage(QString("bitmail:%1#%2").arg(qsEmail).arg(qsCertID));
+    certDialog.qrImage(qrImage);
+
     if (QDialog::Rejected == certDialog.exec()){
         return ;
     }
@@ -325,6 +340,18 @@ void MainWindow::createActions()
         audioAct->setStatusTip(tr("Send audio"));
         connect(audioAct, SIGNAL(triggered()), this, SLOT(onAudioAct()));
     }while(0);
+
+    do{
+        emojiAct = new QAction(QIcon(":/images/emoj.png"), tr("&Emoji"), this);
+        emojiAct->setStatusTip(tr("Send emoji"));
+        connect(emojiAct, SIGNAL(triggered()), this, SLOT(onEmojiAct()));
+    }while(0);
+
+    do{
+        snapAct = new QAction(QIcon(":/images/snap.png"), tr("&Snapshot"), this);
+        snapAct->setStatusTip(tr("Send snapshot"));
+        connect(snapAct, SIGNAL(triggered()), this, SLOT(onSnapAct()));
+    }while(0);
 }
 
 void MainWindow::createToolBars()
@@ -338,8 +365,10 @@ void MainWindow::createToolBars()
 
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->setIconSize(QSize(24,24));
-    chatToolbar->addAction(fileAct);
+    chatToolbar->addAction(emojiAct);
     chatToolbar->addAction(audioAct);
+    chatToolbar->addAction(snapAct);
+    chatToolbar->addAction(fileAct);
 }
 
 void MainWindow::createStatusBar()
@@ -501,6 +530,62 @@ void MainWindow::onDurationChanged(qint64 duration)
     }
 }
 
+void MainWindow::onEmojiAct()
+{
+    QString emojiFile = QFileDialog::getOpenFileName(this, tr("select a emoji to send"), BMQTApplication::GetEmojiHome(), "Emoji Files (*.png *.jpg *.bmp)");
+    QString qsMsg = BMQTApplication::toMimeAttachment(emojiFile);
+    QString qsTo = getCurrentReceipt();
+    if (qsTo.isEmpty()){
+        return ;
+    }
+    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
+    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
+    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
+    emit readyToSend(qsFrom, qsTo, qsMsg);
+    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
+    populateMessages(qsTo);
+    return ;
+}
+
+void MainWindow::onSnapAct()
+{
+    // minimize parent
+    this->hide();
+
+    QTimer::singleShot(1000, this, &MainWindow::shootScreen);
+}
+
+void MainWindow::shootScreen()
+{
+    QApplication::beep();
+
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (const QWindow *window = windowHandle())
+        screen = window->screen();
+    if (!screen)
+        return;
+
+    // grab
+    QPixmap originalPixmap = screen->grabWindow(0);
+    // TODO: model a edit window to select in a pixmap
+
+    // show window
+    this->showNormal();
+
+    QString qsMsg = BMQTApplication::toMimeImage(originalPixmap.toImage());
+    QString qsTo = getCurrentReceipt();
+    if (qsTo.isEmpty()){
+        return ;
+    }
+    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
+    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
+    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
+    emit readyToSend(qsFrom, qsTo, qsMsg);
+    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
+    populateMessages(qsTo);
+    return ;
+}
+
 void MainWindow::onBtnInviteClicked()
 {
     InviteDialog inviteDialog(this);
@@ -589,6 +674,48 @@ void MainWindow::onBtnSendClicked()
     // jump to <value>(little-endien) in a NEW memory window, note: NEW
 }
 
+void MainWindow::onBtnSendQrClicked()
+{
+    if (m_txth == NULL){
+        statusBar()->showMessage(tr("No active network"));
+        return ;
+    }
+    // If you have not setup a QTextCodec for QString & C-String(ANSI-MB)
+    // toLatin1() ignore any codec;
+    // toLocal8Bit use QTextCodec::codecForLocale(),
+    // toAscii() use QTextCodec::setCodecForCStrings()
+    // toUtf8() use UTF8 codec
+    // QTextCodec::codecForLocale() guess the MOST suitable codec for current locale,
+    // if application has not set codec for locale by setCodecForLocale;
+    QString qsMsgPlain = textEdit->toPlainText();
+    textEdit->clear();
+    if (qsMsgPlain.isEmpty()){
+        return ;
+    }
+
+    QString qsMsg = BMQTApplication::toMimeImage(BMQTApplication::toQrImage(qsMsgPlain).toImage());
+
+    QString qsTo = getCurrentReceipt();
+    if (qsTo.isEmpty()){
+        return ;
+    }
+
+    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
+    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
+    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
+
+    emit readyToSend(qsFrom, qsTo, qsMsg);
+
+    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
+
+    populateMessages(qsTo);
+
+    // There are bugs in Qt-Creator's memory view utlity;
+    // open <address> in memory window,
+    // select the value of the <address>,
+    // jump to <value>(little-endien) in a NEW memory window, note: NEW
+}
+
 /**
  * @Note: lesson about signal/slot paramters match
  * 1) emit signal(MsgType), slot(MsgType) will not called, if MsgType is a custom enumerate type.
@@ -634,6 +761,7 @@ QStringList MainWindow::dequeueMsg(const QString &k)
 void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * /*previous*/)
 {
     btnSend->setEnabled(false);
+    btnSendQr->setEnabled(false);
     sessLabel->setText("");
 
     if (current == NULL){
@@ -661,6 +789,7 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
     }else{
         sessLabel->setText(QString::fromStdString(m_bitmail->GetFriendNick(qsKey.toStdString())));
         btnSend->setEnabled(true);
+        btnSendQr->setEnabled(true);
     }
 
     populateMessages(qsKey);

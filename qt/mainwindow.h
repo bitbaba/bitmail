@@ -96,6 +96,7 @@ protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 public slots:
     void onBtnSendClicked();
+    void onBtnSendQrClicked();
     void onBtnConfigClicked();
     void onBtnInviteClicked();
 
@@ -113,9 +114,12 @@ public slots:
     void onNetAct();
     void onFileAct();
     void onAudioAct();
+    void onEmojiAct();
+    void onSnapAct();
 
     void onAddFriend(const QString & email);
     void onDurationChanged(qint64);
+    void shootScreen();
 private:    
     QString getCurrentReceipt();
 
@@ -148,6 +152,7 @@ private:
     QToolBar *chatToolbar;
     QToolBar *netToolbar;
     QPushButton * btnSend;
+    QPushButton * btnSendQr;
 
     QAction *configAct;
     QAction *inviteAct;
@@ -155,6 +160,8 @@ private:
     QAction *netAct;
     QAction *fileAct;
     QAction *audioAct;
+    QAction *emojiAct;
+    QAction *snapAct;
 
 private:
     BitMail *m_bitmail;

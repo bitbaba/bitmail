@@ -58,12 +58,14 @@
 #include <QCryptographicHash>
 #include <QMimeDatabase>
 #include <QMimeType>
+#include <QPainter>
 
 #include "optiondialog.h"
 #include "logindialog.h"
 #include "mainwindow.h"
 #include "assistantdialog.h"
 #include <bitmailcore/bitmail.h>
+#include <qrencode.h>
 #include "main.h"
 #include "lock.h"
 
@@ -254,6 +256,17 @@ namespace BMQTApplication {
             qdir.mkpath(qsLocaleHome);
         }
         return qsLocaleHome;
+    }
+    QString GetEmojiHome()
+    {
+        QString qsEmojiHome = GetAppHome();
+        qsEmojiHome += "/";
+        qsEmojiHome += "emoji";
+        QDir qdir(qsEmojiHome);
+        if (!qdir.exists()){
+            qdir.mkpath(qsEmojiHome);
+        }
+        return qsEmojiHome;
     }
     QString GetLanIp()
     {
@@ -652,6 +665,36 @@ namespace BMQTApplication {
             abort();
         }
         FlushLogger();
+    }
+
+    /**
+     * @brief toQrImage, convert a string to qr-encoded image
+     * @param s
+     * @return QImage
+     */
+    QPixmap toQrImage(const QString & s)
+    {
+        QRcode * qrcode = ::QRcode_encodeString(s.toStdString().c_str(), 0/*auto-choose-minimum*/, QR_ECLEVEL_L, QR_MODE_8, 1);
+        const int SCALE = 3;
+        QImage image(qrcode->width * SCALE, qrcode->width * SCALE, QImage::Format_Mono);
+        QPainter painter(&image);
+        QColor bgrdWhite(Qt::white);
+        painter.setBrush(bgrdWhite);
+        painter.setPen(Qt::NoPen);
+        painter.drawRect(0, 0, image.width(), image.height());
+        QColor fgrdBlack(Qt::black);
+        painter.setBrush(fgrdBlack);
+        for (int row = 0; row < qrcode->width; row++){
+            for (int col = 0; col < qrcode->width; col++){
+                unsigned char dot = qrcode->data[row * qrcode->width + col];
+                if (dot & 0x01){
+                    QRect rect(col * SCALE, row * SCALE, SCALE, SCALE);
+                    painter.drawRect(rect);
+                }
+            }
+        }
+        ::QRcode_free(qrcode);
+        return QPixmap::fromImage(image);
     }
 
     /**

@@ -1,5 +1,6 @@
 #include "certdialog.h"
 #include "ui_certdialog.h"
+#include "main.h"
 
 #include <QLineEdit>
 #include <QLabel>
@@ -68,6 +69,12 @@ void CertDialog::CertDialog::SetCertID(const QString & cid)
 QString CertDialog::CertDialog::GetCertID() const
 {
     return m_leCertID->text();
+}
+
+void CertDialog::qrImage(const QPixmap &p)
+{
+    m_lbQrCode->setScaledContents(true);
+    m_lbQrCode->setPixmap(p);
 }
 
 void CertDialog::on_btnSubscribe_clicked()

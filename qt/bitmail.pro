@@ -93,6 +93,8 @@ win32: LIBS += -L$$PWD/../out/lib/ -lmicrohttpd
 INCLUDEPATH += $$PWD/../out/include
 DEPENDPATH += $$PWD/../out/include
 
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/microhttpd.lib
+else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libmicrohttpd.a
 
 win32: LIBS += -L$$PWD/../out/lib/ -lminiupnpc
 
@@ -103,8 +105,14 @@ win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/miniupnpc.lib
 else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libminiupnpc.a
 
 
-win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/microhttpd.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libmicrohttpd.a
+win32: LIBS += -L$$PWD/../out/lib/ -lqrencode
+
+INCLUDEPATH += $$PWD/../out/include
+DEPENDPATH += $$PWD/../out/include
+
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/qrencode.lib
+else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libqrencode.a
+
 
 win32: LIBS += -lws2_32 -lgdi32 -liphlpapi
 
