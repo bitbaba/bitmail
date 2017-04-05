@@ -61,6 +61,7 @@
 #include "certdialog.h"
 #include "invitedialog.h"
 #include "messagedialog.h"
+#include "ardialog.h"
 #include "main.h"
 
 #define TAG_PEER ("#")
@@ -71,6 +72,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     , m_rxth(NULL)
     , m_txth(NULL)
     , m_shutdownDialog(NULL)
+    , m_arDlg(NULL)
 {
 #if defined(MACOSX)
     setUnifiedTitleAndToolBarOnMac(true);
@@ -459,40 +461,43 @@ void MainWindow::onAudioAct()
         statusBar()->showMessage(tr("No active network"));
         return ;
     }
-    QString audioFilePath = BMQTApplication::GetTempHome() + "/1" + ".amr";
+    QString tempAudio = BMQTApplication::GetTempHome() + "/" +QUuid::createUuid().toString().remove("{").remove("}");
     QAudioEncoderSettings audioSettings;
     audioSettings.setCodec("audio/amr");
-    audioSettings.setQuality(QMultimedia::HighQuality);
+    audioSettings.setQuality(QMultimedia::VeryLowQuality);
     audioRecorder->setEncodingSettings(audioSettings);
-    audioRecorder->setOutputLocation(QUrl::fromLocalFile("test.amr"));
+    audioRecorder->setOutputLocation(QUrl::fromLocalFile(tempAudio));
     audioRecorder->record();
+    if (!m_arDlg){
+        m_arDlg = new arDialog(this);
+    }
+    if (m_arDlg){
+        m_arDlg->exec();
+    }
 }
 
 void MainWindow::onDurationChanged(qint64 duration)
 {
-    if (duration >= 2000){
+    if (duration >= 3000){
+        if (m_arDlg){
+            m_arDlg->done(0);
+        }
         audioRecorder->stop();
-
         QString audioFilePath = audioRecorder->outputLocation().toLocalFile();
 
         QString qsMsg = BMQTApplication::toMimeAttachment(audioFilePath);
-
         QString qsTo = getCurrentReceipt();
         if (qsTo.isEmpty()){
             return ;
         }
-
         QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
         QString qsCertId = QString::fromStdString(m_bitmail->GetID());
         QString qsCert = QString::fromStdString(m_bitmail->GetCert());
-
         emit readyToSend(qsFrom, qsTo, qsMsg);
-
         enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
-
         populateMessages(qsTo);
     }else{
-        statusBar()->showMessage(tr("Recorded %1 sec").arg(duration / 1000));
+        m_arDlg->ShowStatus(QString("Recorded %1.%2 sec").arg(duration / 1000).arg(duration % 1000));
     }
 }
 

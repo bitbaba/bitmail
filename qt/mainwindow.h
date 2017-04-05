@@ -68,6 +68,7 @@ class RxThread;
 class TxThread;
 class BradThread;
 class ShutdownDialog;
+class arDialog;
 
 enum nodeType{
     NT_Undef = 0,
@@ -162,6 +163,7 @@ private:
     TxThread *m_txth;
 
     ShutdownDialog *m_shutdownDialog;
+    arDialog * m_arDlg;
 
     // histroy messages queue
     std::map<QString, QStringList> m_peermsgQ;

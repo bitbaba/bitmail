@@ -22,7 +22,8 @@ HEADERS       = mainwindow.h \
                 messagedialog.h \
                 netoptdialog.h \
                 assistantdialog.h \
-                lock.h
+                lock.h \
+    ardialog.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
@@ -36,7 +37,8 @@ SOURCES       = main.cpp \
                 messagedialog.cpp \
                 netoptdialog.cpp \
                 assistantdialog.cpp \
-                lock.cpp
+                lock.cpp \
+    ardialog.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
@@ -52,6 +54,7 @@ FORMS += \
     messagedialog.ui \
     netoptdialog.ui \
     assistantdialog.ui \
+    ardialog.ui
 
 win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore
 
