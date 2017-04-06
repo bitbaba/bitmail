@@ -92,6 +92,17 @@ namespace BMQTApplication {
      * TODO: multipart/mixed parsing and renderring
      *
      */
+    QStringList fromMixed(const QString & mparts);
+
+    QString fromMimeTextPlain(const QString & part);
+
+    QString fromMimeTextHtml(const QString & part);
+
+    QString fromMimeAttachemnt(const QString & part);
+
+    QImage fromMimeImage(const QString & part);
+
+    QVariantList fromMime(const QString & mime);
 }
 
 #endif // MAIN_H

@@ -890,5 +890,158 @@ namespace BMQTApplication {
         return mime;
     }
 
+    QStringList fromMixed(const QString & mparts)
+    {
+        QStringList qslParts;
+
+        std::vector<std::string> parts;
+        BitMail::splitMultiparts(mparts.toStdString(), parts);
+
+        for (std::vector<std::string>::const_iterator it = parts.cbegin(); it != parts.cend(); ++it){
+            std::string part = (*it);
+            if (false){
+                qDebug() << QString::fromStdString(BitMail::partType(part));
+                qDebug() << QString::fromStdString(BitMail::partEncoding(part));
+                qDebug() << QString::fromStdString(BitMail::partParam(part, "content-type", "charset"));
+                qDebug() << QString::fromStdString(BitMail::partParam(part, "content-type", "name"));
+                qDebug() << QString::fromStdString(BitMail::partParam(part, "content-disposition", "filename"));
+                qDebug() << QString::fromStdString(BitMail::partContent(part));
+            }
+            qslParts.append(QString::fromStdString(part));
+        }
+        return qslParts;
+    }
+
+    QString fromMimeTextPlain(const QString & qsPart)
+    {
+        QString qsText;
+
+        std::string part = qsPart.toStdString();
+
+        QString qsCharset  = QString::fromStdString(BitMail::partParam(part, "content-type", "charset"));
+
+        QString qsEncoding = QString::fromStdString(BitMail::partEncoding(part));
+
+        std::string content = BitMail::partContent(part);
+
+        if (qsEncoding == "7bit"){ // latin1
+            qsText = QString::fromStdString(content);
+        }else if (qsEncoding == "base64"){
+            content = BitMail::fromBase64(content + "\r\n");
+            qsText = QTextCodec::codecForName(qsCharset.toStdString().c_str())->toUnicode(content.data(), content.length());
+        }else if (qsEncoding == "quoted-printable"){
+            // ASCII TABLE segment: 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F
+            const int hexVal[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12, 13, 14, 15};
+            QByteArray temp;
+            QString input = QString::fromStdString(content);
+            for (int i = 0; i < input.length(); ++i)
+            {
+                if (input.at(i).toLatin1() == '=')
+                {
+                    char ch = (hexVal[input.at(++i).toLatin1() - '0'] << 4);
+                    ch += hexVal[input.at(++i).toLatin1() - '0'];
+                    temp.append( ch );
+                }
+                else
+                {
+                    temp.append(input.at(i).toLatin1());
+                }
+            }
+            qsText = QTextCodec::codecForName(qsCharset.toStdString().c_str())->toUnicode(temp);
+        }else{
+            qDebug() << "Unsupported text decoding";
+        }
+        return qsText;
+    }
+
+    QString fromMimeTextHtml(const QString & qsPart)
+    {
+        return fromMimeTextPlain(qsPart);
+    }
+
+    QString fromMimeAttachemnt(const QString & qsPart)
+    {
+        QString filepath;
+
+        std::string part = qsPart.toStdString();
+
+        QString qsAttachBaseName  = QString::fromStdString(BitMail::partParam(part, "content-disposition", "filename"));
+        if (qsAttachBaseName.isEmpty()){
+            qDebug() << "compatible issue";
+            return filepath;
+        }
+
+        QString qsEncoding = QString::fromStdString(BitMail::partEncoding(part));
+        if (qsEncoding.compare("base64", Qt::CaseInsensitive)){
+            qDebug() << "unsupported encoding except base64.";
+            return filepath;
+        }
+
+        std::string content = BitMail::fromBase64(BitMail::partContent(part));
+
+        QString hash = QString::fromStdString( QCryptographicHash::hash(QByteArray::fromStdString(content), QCryptographicHash::Sha256).toHex().toStdString() );
+        filepath = BMQTApplication::GetDataHome() + "/" + hash + "." + QFileInfo(qsAttachBaseName).completeSuffix();
+
+        QFile fout(filepath);
+        if (fout.exists()){
+            fout.remove();
+        }
+
+        if (fout.open(QIODevice::WriteOnly)){
+            fout.write(content.data(), content.length());
+            fout.close();
+        }
+
+        return filepath;
+    }
+
+    QImage fromMimeImage(const QString & part)
+    {
+        QString filePath = fromMimeAttachemnt(part);
+        QImage image(filePath);
+        return image;
+    }
+
+    QVariantList fromMime(const QString & qsMsg)
+    {
+        QVariantList varlist;
+
+        QString qsMsgType = QString::fromStdString(BitMail::partType(qsMsg.toStdString()));
+
+        if (qsMsgType.startsWith("text/")){
+            varlist.append( BMQTApplication::fromMimeTextPlain(qsMsg) );
+        }
+        else if (qsMsgType.startsWith("image/")){
+            QImage image = BMQTApplication::fromMimeImage(qsMsg);
+            varlist.append(image);
+        }
+        else if (qsMsgType.startsWith("multipart/")){
+            QStringList qslParts = BMQTApplication::fromMixed(qsMsg);
+            for (QStringList::const_iterator it = qslParts.constBegin(); it != qslParts.constEnd(); ++it)
+            {
+                QString qsPart = *it;
+
+                QString qsPartType = QString::fromStdString(BitMail::partType(qsPart.toStdString()));
+
+                if (qsPartType.startsWith("text/")){
+                    varlist.append( BMQTApplication::fromMimeTextPlain(qsPart) );
+                }else if (qsPartType.startsWith("image/")){
+                    QImage image = BMQTApplication::fromMimeImage(qsPart);
+                    varlist.append(image);
+                }else if (qsPartType.startsWith("multipart/")){
+                    qDebug() << "No nested parsing yet.";
+                }else{
+                    QString filePath = BMQTApplication::fromMimeAttachemnt(qsPart);
+                    varlist.append(QVariant::fromValue(QFileInfo(filePath)));
+                }
+            }
+        }
+        else{
+            QString filePath = BMQTApplication::fromMimeAttachemnt(qsMsg);
+            varlist.append(QVariant::fromValue(QFileInfo(filePath)));
+        }
+
+        return varlist;
+    }
 }
 

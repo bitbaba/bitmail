@@ -48,7 +48,9 @@
 #include <QtNetwork/QNetworkInterface>
 #include <QUrl>
 #include <QtMultimedia/QAudioRecorder>
+#include <QFileIconProvider>
 
+#include <iostream>
 #include <bitmailcore/bitmail.h>
 #include "mainwindow.h"
 //! [0]
@@ -595,9 +597,19 @@ void MainWindow::onBtnInviteClicked()
 
     QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
     QString qsTo = inviteDialog.GetEmail();
-    QString qsWhisper = BMQTApplication::toMimeTextPlain( inviteDialog.GetWhisper() );
+    QString qsWhisper = inviteDialog.GetWhisper();
+    QStringList attachments = inviteDialog.attachments();
 
-    emit readyToSend(qsFrom , qsTo, qsWhisper);
+    QStringList parts;
+    parts.append( BMQTApplication::toMimeTextPlain( qsWhisper ));
+    for(QStringList::const_iterator it = attachments.constBegin(); it != attachments.constEnd(); ++it){
+        parts.append( BMQTApplication::toMimeAttachment(*it) );
+    }
+    QString qsMsg = BMQTApplication::toMixed(parts);
+
+    emit readyToSend(qsFrom , qsTo, qsMsg);
+
+    enqueueMsg(QString(KEY_STRANGER), true, qsFrom, qsTo, qsMsg, QString::fromStdString(m_bitmail->GetID()), QString::fromStdString(m_bitmail->GetCert()));
 
     return ;
 }
@@ -730,7 +742,10 @@ void MainWindow::onNewMessage(const QString & from
 
     enqueueMsg(from, false, from, qsTo, content, certid, cert);
 
-    populateMessages(from);
+    if ((from == this->getCurrentReceipt() && !from.isEmpty())
+        || (!m_bitmail->IsFriend(from.toStdString(), cert.toStdString()) && QString(KEY_STRANGER) == this->getCurrentReceipt()) ){
+        populateMessages(from);
+    }
 }
 
 void MainWindow::enqueueMsg(const QString & k
@@ -807,11 +822,47 @@ void MainWindow::populateMessages(const QString & k)
         QJsonObject msgObj = (QJsonDocument::fromJson(tmp.toUtf8()).object());
         QListWidgetItem * msgElt = new QListWidgetItem();
         msgElt->setIcon(QIcon(":/images/bubble.png"));
-        msgElt->setText(msgObj["msg"].toString().mid(0, 128));
+        QString qsMsg = msgObj["msg"].toString();
+
+        QVariantList varlist = BMQTApplication::fromMime(qsMsg);
+
+        //msgElt->setText(qsMsg.mid(0, 128));
+
         msgElt->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
         msgElt->setBackgroundColor(msgObj["tx"].toBool() ? Qt::lightGray : Qt::green);
         msgElt->setData(Qt::UserRole, msgObj);
+
+        //http://stackoverflow.com/questions/948444/qlistview-qlistwidget-with-custom-items-and-custom-item-widgets
+        //http://www.qtcentre.org/threads/27777-Customize-QListWidgetItem-how-to
+
+        QWidget* w = new QWidget;
+        QVBoxLayout* v = new QVBoxLayout( w );
+        for (QVariantList::const_iterator it = varlist.constBegin(); it != varlist.constEnd(); ++it){
+            QVariant var = *it;
+            QLabel * lblElt = new QLabel(w);
+            lblElt->setScaledContents(true);
+            if (QString::fromStdString(var.typeName()) == "QImage"){
+                lblElt->setFixedSize(60, 60);
+                QImage qImage = qvariant_cast<QImage>(var);
+                lblElt->setPixmap(QPixmap::fromImage(qImage));
+            }else if (QString::fromStdString(var.typeName()) == "QString"){
+                lblElt->setText(var.toString());
+            }else if (QString::fromStdString(var.typeName()) == "QFileInfo"){
+                QFileInfo fileInfo = qvariant_cast<QFileInfo>(var);
+                //lblElt->setText(QString("<%1>").arg(fileInfo.fileName()));
+                lblElt->setPixmap((QFileIconProvider().icon(fileInfo).pixmap(QSize(32,32))));
+            }else{
+                qDebug() << "unknown type name";
+            }
+            v->addWidget( lblElt );
+        }
+        v->setSizeConstraint( QLayout::SetFixedSize );
+
+        msgElt->setSizeHint(w->sizeHint());
+
         msgView->addItem(msgElt);
+        msgView->setItemWidget(msgElt, w);
+
         msgView->scrollToBottom();
     }
 }
