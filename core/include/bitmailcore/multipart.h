@@ -36,8 +36,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <string>
 
-std::string MultiPart_ComposeTextPlain(const std::string & s);
+int multipart_split(const std::string & mparts, std::vector<std::string> & parts);
 
-std::string MultiPart_DecomposeTextPlain(const std::string & s);
+std::string multipart_partType(const std::string & in);
+
+std::string multipart_partParam(const std::string & in, const std::string & header, const std::string & pName/*in lower case*/);
+
+std::string multipart_partContent(const std::string & in);
+
+std::string multipart_partEncoding(const std::string & in);
 
 #endif

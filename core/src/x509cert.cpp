@@ -302,10 +302,10 @@ int CX509Cert::MakeCert(const std::string & commonName
             , (char *)(std::string("email:") + email).c_str());
 
     AddExt(x, NID_issuer_alt_name
-            , (char *)"DNS:bitmail.bitbaba.com");
+            , (char *)(std::string("email:") + email).c_str());
 
     AddExt(x, NID_netscape_comment
-            , (char *)"DNS:bitmail.bitbaba.com");
+            , (char *)(std::string("email:") + email).c_str());
 
     #ifdef CUSTOM_EXT
     /* Maybe even add our own extension based on existing */
@@ -1032,6 +1032,9 @@ std::string CX509Cert::b64enc(const std::string & str)
 
 std::string CX509Cert::b64dec(const std::string & b64str)
 {
+    /**
+     * @TODO: if no tail with CRLF, this will fail?
+     */
     BIO * in = BIO_new_mem_buf((void*)b64str.c_str(), b64str.length());
     if (!in) return "";
 

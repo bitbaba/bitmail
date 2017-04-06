@@ -61,6 +61,7 @@
 #include <openssl/asn1t.h>
 #include <string>
 #include <sstream>
+#include <vector>
 
 /*
  * Generalised MIME like utilities for streaming ASN1. Although many have a
@@ -132,26 +133,176 @@ static int  multi_split(BIO *bio, char *bound, STACK_OF(BIO) **ret);
 #define MAX_SMLEN 1024
 #define mime_debug(x)           /* x */
 
-std::string MultiPart_ComposeTextPlain(const std::string & data)
+int multipart_split(const std::string & in, std::vector<std::string> & out)
 {
-    std::stringstream sstrm;
-    sstrm << "Content-Type: text/plain; charset=UTF-8\r\n"
-          << "Content-Transfer-Encoding: base64\r\n"
-          << "\r\n"
-          << "5L2g5aW9";
-    /*
-    for (unsigned int i = 0; i < data.length(); i ++){
-        sstrm << "=" << TOHEX(data.at(i));
+    STACK_OF(MIME_HEADER) *headers = NULL;
+    STACK_OF(BIO) *parts = NULL;
+    MIME_HEADER *hdr;
+    MIME_PARAM *prm;
+	int ret;
+	
+	BIO * bio = BIO_new_mem_buf((void*)in.data(), in.length());
+	
+	if (!(headers = mime_parse_hdr(bio))) {
+	    BIO_free(bio);
+        return 1;
     }
-    */
-    return sstrm.str();
+
+    if (!(hdr = mime_hdr_find(headers, "content-type")) || !hdr->value) {
+        sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+		BIO_free(bio);
+        return 1;
+    }
+
+    if (!strcmp(hdr->value, "multipart/mixed")) {
+        /* Split into multiple parts */
+        prm = mime_param_find(hdr, "boundary");
+        if (!prm || !prm->param_value) {
+            sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+			BIO_free(bio);
+            return 1;
+        }
+        
+		ret = multi_split(bio, prm->param_value, &parts);
+		
+        if (!ret || (sk_BIO_num(parts) == 0)) {
+            sk_BIO_pop_free(parts, BIO_vfree);
+			BIO_free(bio);
+            return 1;
+        }
+
+        /* Parse the signature piece */
+		for (int i = 0; i < sk_BIO_num(parts); i ++){
+			BIO * piece = sk_BIO_value(parts, i);
+			BUF_MEM * bufptr = NULL;
+			BIO_get_mem_ptr(piece, &bufptr);
+			std::string s = "";
+			s.append((char *)bufptr->data, bufptr->length);
+			out.push_back(s);
+		}
+
+		sk_BIO_pop_free(parts, BIO_vfree);
+    }
+	
+	sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+	BIO_free(bio);
+	
+	return 0;
 }
 
-std::string MultiPart_DecomposeTextPlain(const std::string & s)
+std::string multipart_partType(const std::string & in)
 {
-	return s;
+	STACK_OF(MIME_HEADER) *headers = NULL;
+    STACK_OF(BIO) *parts = NULL;
+    MIME_HEADER *hdr;
+	
+	BIO * bio = BIO_new_mem_buf((void*)in.data(), in.length());
+	
+	if (!(headers = mime_parse_hdr(bio))) {
+	    BIO_free(bio);
+        return "";
+    }
+
+    if (!(hdr = mime_hdr_find(headers, "content-type")) || !hdr->value) {
+        sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+		BIO_free(bio);
+        return "";
+    }
+
+	std::string sType = hdr->value;
+	sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+	BIO_free(bio);
+		
+	return sType;
 }
 
+std::string multipart_partParam(const std::string & in, const std::string & header, const std::string & pName/*in lower case*/)
+{
+	STACK_OF(MIME_HEADER) *headers = NULL;
+    STACK_OF(BIO) *parts = NULL;
+    MIME_HEADER *hdr;
+    MIME_PARAM *prm;
+	
+	BIO * bio = BIO_new_mem_buf((void*)in.data(), in.length());
+	
+	if (!(headers = mime_parse_hdr(bio))) {
+	    BIO_free(bio);
+        return "";
+    }
+
+    if (!(hdr = mime_hdr_find(headers, header.c_str())) || !hdr->value) {
+        sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+		BIO_free(bio);
+        return "";
+    }
+
+	prm = mime_param_find(hdr, pName.c_str());
+	if (!prm || !prm->param_value) {
+		sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+		BIO_free(bio);
+		return "";
+	}
+	
+        std::string pVal = prm->param_value;
+	
+	sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+	BIO_free(bio);
+		
+	return pVal;
+}
+
+std::string multipart_partContent(const std::string & in)
+{
+    char iobuf[4096];
+    int len;
+	STACK_OF(MIME_HEADER) *headers = NULL;
+	
+	BIO * bio = BIO_new_mem_buf((void*)in.data(), in.length());
+	
+	/* consume header*/
+	if (!(headers = mime_parse_hdr(bio))) {
+	    BIO_free(bio);
+        return "";
+    }	
+	sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+
+	/* eat body */
+	std::string out;
+	while ((len = BIO_read(bio, iobuf, sizeof(iobuf))) > 0){
+		out.append(iobuf, len);
+	}
+	
+	BIO_free(bio);
+	
+	return out;
+}
+
+std::string multipart_partEncoding(const std::string & in)
+{
+	STACK_OF(MIME_HEADER) *headers = NULL;
+    STACK_OF(BIO) *parts = NULL;
+    MIME_HEADER *hdr;
+	
+	BIO * bio = BIO_new_mem_buf((void*)in.data(), in.length());
+	
+	if (!(headers = mime_parse_hdr(bio))) {
+	    BIO_free(bio);
+        return "";
+    }
+
+    if (!(hdr = mime_hdr_find(headers, "content-transfer-encoding")) || !hdr->value) {
+        sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+		BIO_free(bio);
+        return "";
+    }
+
+	std::string sEncoding = hdr->value;
+	
+	sk_MIME_HEADER_pop_free(headers, mime_hdr_free);
+	BIO_free(bio);
+		
+	return sEncoding;
+}
 
 /*
  * Split a multipart/XXX message body into component parts: result is

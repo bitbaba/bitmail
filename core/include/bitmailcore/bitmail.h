@@ -176,6 +176,17 @@ public:
 
     std::string GetRxPassword() const;
 
+	// Mulitpart
+	static int splitMultiparts(const std::string & in, std::vector<std::string> & out);
+	
+	static std::string partType(const std::string & in);
+	
+	static std::string partParam(const std::string & in, const std::string & header, const std::string & pName);
+	
+	static std::string partContent(const std::string & in);
+	
+	static std::string partEncoding(const std::string & in);
+	
     // Base64 codecs
     static std::string toBase64(const std::string & s);
 

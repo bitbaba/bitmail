@@ -616,6 +616,31 @@ std::string BitMail::Decrypt(const std::string & code) const
     return m_profile->Decrypt(code);
 }
 
+int BitMail::splitMultiparts(const std::string & in, std::vector<std::string> & out)
+{
+	return multipart_split(in, out);
+}
+
+std::string BitMail::partType(const std::string & in)
+{
+	return multipart_partType(in);
+}
+
+std::string BitMail::partParam(const std::string & in, const std::string & header, const std::string & pName)
+{
+	return multipart_partParam(in, header, pName);
+}
+
+std::string BitMail::partContent(const std::string & in)
+{
+	return multipart_partContent(in);
+}
+
+std::string BitMail::partEncoding(const std::string & in)
+{
+	return multipart_partEncoding(in);
+}
+
 std::string BitMail::toBase64(const std::string & s)
 {
     return CX509Cert::b64enc(s);
