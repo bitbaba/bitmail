@@ -203,7 +203,7 @@ void MainWindow::configNetwork()
 void MainWindow::startupNetwork()
 {
     m_rxth = new RxThread(m_bitmail);
-    connect(m_rxth, SIGNAL(gotMessage(QString, QString, QString,QString)), this, SLOT(onNewMessage(QString, QString, QString,QString)));
+    connect(m_rxth, SIGNAL(gotMessage(QString, QStringList, QString, QString,QString)), this, SLOT(onNewMessage(QString, QStringList, QString, QString,QString)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
     connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
     m_rxth->start();
@@ -603,7 +603,10 @@ void MainWindow::onBtnInviteClicked()
     QStringList parts;
     parts.append( BMQTApplication::toMimeTextPlain( qsWhisper ));
     for(QStringList::const_iterator it = attachments.constBegin(); it != attachments.constEnd(); ++it){
-        parts.append( BMQTApplication::toMimeAttachment(*it) );
+        QString filePath = *it;
+        if (!filePath.isEmpty() && QFileInfo(filePath).exists()){
+            parts.append( BMQTApplication::toMimeAttachment(*it) );
+        }
     }
     QString qsMsg = BMQTApplication::toMixed(parts);
 
@@ -734,11 +737,14 @@ void MainWindow::onBtnSendQrClicked()
  * 2) in the case1, Q_DECLARE_METATYPE(MsgType) & aRegisterMetaType<MsgType>(), will make case1 to work.
  */
 void MainWindow::onNewMessage(const QString & from
+                              , const QStringList & receips
                               , const QString & content
                               , const QString & certid
                               , const QString & cert)
 {   
     QString qsTo = QString::fromStdString(m_bitmail->GetEmail());
+
+    qDebug() << "All receips: " << receips.join(";");
 
     enqueueMsg(from, false, from, qsTo, content, certid, cert);
 

@@ -100,7 +100,7 @@ public slots:
     void onBtnConfigClicked();
     void onBtnInviteClicked();
 
-    void onNewMessage(const QString & from, const QString & msg, const QString & certid, const QString & cert);
+    void onNewMessage(const QString & from, const QStringList & receips, const QString & msg, const QString & certid, const QString & cert);
     void onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous);
     void onTreeBuddyDoubleClicked(QTreeWidgetItem * actItem,int col);
     void onMessageDoubleClicked(QListWidgetItem * actItem);
