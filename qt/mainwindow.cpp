@@ -49,6 +49,7 @@
 #include <QUrl>
 #include <QtMultimedia/QAudioRecorder>
 #include <QFileIconProvider>
+#include <QSystemTrayIcon>
 
 #include <iostream>
 #include <bitmailcore/bitmail.h>
@@ -748,10 +749,20 @@ void MainWindow::onNewMessage(const QString & from
 
     enqueueMsg(from, false, from, qsTo, content, certid, cert);
 
-    if ((from == this->getCurrentReceipt() && !from.isEmpty())
-        || (!m_bitmail->IsFriend(from.toStdString(), cert.toStdString()) && QString(KEY_STRANGER) == this->getCurrentReceipt()) ){
+    if ((from == this->getCurrentReceipt() && !from.isEmpty())){
         populateMessages(from);
     }
+
+    if (!m_bitmail->IsFriend(from.toStdString(), cert.toStdString()) )
+    {
+        enqueueMsg(KEY_STRANGER, false, from, qsTo, content, certid, cert);
+
+        if (QString(KEY_STRANGER) == this->getCurrentReceipt()){
+            populateMessages(KEY_STRANGER);
+        }
+    }
+
+    this->activateWindow();
 }
 
 void MainWindow::enqueueMsg(const QString & k
