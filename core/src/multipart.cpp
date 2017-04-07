@@ -154,7 +154,8 @@ int multipart_split(const std::string & in, std::vector<std::string> & out)
         return 1;
     }
 
-    if (!strcmp(hdr->value, "multipart/mixed")) {
+    /** Fix: match multipart/mixed, mulitpart/alternative, etc**/
+    if (!strncmp(hdr->value, "multipart/", 10)) {
         /* Split into multiple parts */
         prm = mime_param_find(hdr, "boundary");
         if (!prm || !prm->param_value) {
