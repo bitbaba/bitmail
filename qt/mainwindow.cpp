@@ -863,7 +863,7 @@ void MainWindow::populateMessages(const QString & k)
                 QImage qImage = qvariant_cast<QImage>(var);
                 lblElt->setPixmap(QPixmap::fromImage(qImage));
             }else if (QString::fromStdString(var.typeName()) == "QString"){
-                lblElt->setText(var.toString());
+                lblElt->setText(var.toString().mid(0, 140));
             }else if (QString::fromStdString(var.typeName()) == "QFileInfo"){
                 QFileInfo fileInfo = qvariant_cast<QFileInfo>(var);
                 //lblElt->setText(QString("<%1>").arg(fileInfo.fileName()));

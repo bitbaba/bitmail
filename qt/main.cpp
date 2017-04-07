@@ -1029,6 +1029,7 @@ namespace BMQTApplication {
                     QImage image = BMQTApplication::fromMimeImage(qsPart);
                     varlist.append(image);
                 }else if (qsPartType.startsWith("multipart/")){
+                    // TODO: nested recursive parsing.
                     qDebug() << "No nested parsing yet.";
                 }else{
                     QString filePath = BMQTApplication::fromMimeAttachemnt(qsPart);
