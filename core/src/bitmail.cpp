@@ -1273,7 +1273,9 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     }
 
     if (self && self->m_onMessageEvent){
+        // TODO: parse all receips from header `To'.
         self->m_onMessageEvent(buddyCert.GetEmail().c_str()
+                                , (self->GetEmail() + ";" + self->GetEmail()).c_str()
                                 , sMimeBody.data()
                                 , sMimeBody.length()
                                 , buddyCert.GetID().c_str()

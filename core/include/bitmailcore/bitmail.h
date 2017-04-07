@@ -48,15 +48,15 @@ enum BMError{
     bmAlreadyExist   =     26,
     bmExpungeFail    =     27,
     bmFlagFail       =     28,
-	bmGrpExist       =     29,
-	bmNoGrp          =     30,
-	bmMemberExist    =     31,
-	bmNoMember       =     32,
-	bmSubExist       =     33,
-	bmNoSub          =     34,
-	bmWaitFail       =     35,
-	bmWaitTimeout    =     36,
-	bmNetworkError   =     37,
+    bmGrpExist       =     29,
+    bmNoGrp          =     30,
+    bmMemberExist    =     31,
+    bmNoMember       =     32,
+    bmSubExist       =     33,
+    bmNoSub          =     34,
+    bmWaitFail       =     35,
+    bmWaitTimeout    =     36,
+    bmNetworkError   =     37,
 };
 
 enum RTxState{
@@ -68,7 +68,7 @@ enum RTxState{
 
 typedef int (* PollEventCB)(unsigned int count, void * p);
 
-typedef int (* MessageEventCB)(const char * from, const char * msg, unsigned int msglen, const char * certid, const char * cert, void * p);
+typedef int (* MessageEventCB)(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, void * p);
 
 typedef int (* RTxProgressCB)(RTxState, const char * info, void * userptr);
 

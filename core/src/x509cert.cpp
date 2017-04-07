@@ -205,6 +205,7 @@ int CX509Cert::MakeCert(const std::string & commonName
      * the return value for errors...
      */
 
+    /** E **/
     if (X509_NAME_add_entry_by_txt(name, "emailAddress",
                                MBSTRING_ASC
                                , (const unsigned char *)email.c_str()
@@ -221,6 +222,7 @@ int CX509Cert::MakeCert(const std::string & commonName
         c = c;
     }
 
+    /** CN **/
     if (X509_NAME_add_entry_by_txt(name, "commonName",
                                MBSTRING_UTF8
                                , (const unsigned char *)commonName.c_str()
@@ -231,6 +233,40 @@ int CX509Cert::MakeCert(const std::string & commonName
     {
         char szCommonName [100] = "";
         int rc = X509_NAME_get_text_by_NID(name, NID_commonName, szCommonName, sizeof(szCommonName));
+        (void )rc;
+        rc = rc;
+        char c = *szCommonName;
+        c = c;
+    }
+
+    /** O **/
+    if (X509_NAME_add_entry_by_txt(name, "organizationName",
+                               MBSTRING_UTF8
+                               , (const unsigned char *)"Bitbaba corporation"
+                               , -1 // by strlen(email.c_str())
+                               , -1 // loc, location
+                               , 0))// set
+
+    {
+        char szCommonName [100] = "";
+        int rc = X509_NAME_get_text_by_NID(name, NID_organizationName, szCommonName, sizeof(szCommonName));
+        (void )rc;
+        rc = rc;
+        char c = *szCommonName;
+        c = c;
+    }
+
+    /** OU **/
+    if (X509_NAME_add_entry_by_txt(name, "organizationalUnitName",
+                               MBSTRING_UTF8
+                               , (const unsigned char *)"bitmail department of Bitbaba corporation"
+                               , -1 // by strlen(email.c_str())
+                               , -1 // loc, location
+                               , 0))// set
+
+    {
+        char szCommonName [100] = "";
+        int rc = X509_NAME_get_text_by_NID(name, NID_organizationalUnitName, szCommonName, sizeof(szCommonName));
         (void )rc;
         rc = rc;
         char c = *szCommonName;
