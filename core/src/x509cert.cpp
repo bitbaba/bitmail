@@ -376,6 +376,19 @@ int CX509Cert::MakeCert(const std::string & commonName
         pk = NULL;
     }
 
+    /** Note: diff between 'Builtin object token' vs 'Software security device'
+     * https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/Tools/certutil
+     * https://security.stackexchange.com/questions/144312/mozilla-firefox-builtin-object-token-vs-software-security-device/144454
+     * (1) Builtin Object Tokens are root certificates in the default Network Security Services (NSS) database as installed on the user's PC when the user installed the software (e.g., Firefox) that uses them.
+     * (2) A BuiltIn Object Token will continue to be [a Builtin Object Token], even if the user changes the trust bits.
+     * (3) A Software Security Device can hold all kinds of certificates, not just root certificates.
+     * (4) For the Authorities list in the Certificate Manager, the certs that are labeled "Software Security Device" are root and intermediate certs that have been imported (e.g. not in the default list). The intermediate certs are often automatically imported, such as when you visit a website with an SSL cert signed by an intermediate CA.
+     *
+     * https://dxr.mozilla.org/mozilla/source/security/nss/cmd/certutil/certutil.c
+     * http://certificate.fyicenter.com/389_Mozilla_CertUtil_Download_Mozilla_certutil_Tool_for_Window.html
+     * ftp://ftp.mozilla.org/pub/mozilla.org/security/nss/releases
+     */
+
     return (1);
 }
 
