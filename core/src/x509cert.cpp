@@ -387,6 +387,7 @@ int CX509Cert::MakeCert(const std::string & commonName
      * https://dxr.mozilla.org/mozilla/source/security/nss/cmd/certutil/certutil.c
      * http://certificate.fyicenter.com/389_Mozilla_CertUtil_Download_Mozilla_certutil_Tool_for_Window.html
      * ftp://ftp.mozilla.org/pub/mozilla.org/security/nss/releases
+     * https://www.mozilla.org/en-US/about/governance/policies/security-group/certs/policy/
      */
 
     return (1);
