@@ -61,6 +61,11 @@ class QTreeWidget;
 class QTreeWidgetItem;
 class QProcess;
 class QAudioRecorder;
+class QCamera;
+class QCameraViewfinder;
+class QCameraImageCapture;
+class QMediaRecorder;
+
 
 QT_END_NAMESPACE
 class BitMail;
@@ -116,10 +121,17 @@ public slots:
     void onAudioAct();
     void onEmojiAct();
     void onSnapAct();
+    void onPhotoAct();
+    void onVideoAct();
 
     void onAddFriend(const QString & email);
     void onDurationChanged(qint64);
     void shootScreen();
+    void shootPhoto();
+    void shootVideo();
+    void onCameraCaptureSaved(int id, const QString & filepath);
+    void onVideoDurationChanged(qint64);
+
 private:    
     QString getCurrentReceipt();
 
@@ -141,6 +153,11 @@ private:
     QStringList dequeueMsg(const QString &key);
 private:
     QAudioRecorder *audioRecorder;
+    QCamera * camera;
+    QCameraViewfinder * viewfinder;
+    QCameraImageCapture * imageCapture;
+    QMediaRecorder * vrec;
+
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;
     QTreeWidgetItem * nodeFriends;
@@ -162,6 +179,8 @@ private:
     QAction *audioAct;
     QAction *emojiAct;
     QAction *snapAct;
+    QAction *photoAct;
+    QAction *videoAct;
 
 private:
     BitMail *m_bitmail;

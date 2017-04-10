@@ -24,5 +24,6 @@
         <file>images/shutdown.png</file>
         <file>images/network.png</file>
         <file>images/newgroup.png</file>
+        <file>images/camera.png</file>
     </qresource>
 </RCC>

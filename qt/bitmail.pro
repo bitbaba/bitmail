@@ -1,4 +1,4 @@
-QT += widgets network multimedia
+QT += widgets network multimedia multimediawidgets
 
 CODECFORTR = utf-8
 TRANSLATIONS = locale/bitmail_en.ts \

@@ -45,11 +45,6 @@ public:
     void SetImapPassword(const QString & p);
     QString GetImapPassword() const;
 
-    void BradPort(unsigned short port);
-    unsigned short BradPort() const;
-
-    void BradExtUrl(const QString & exturl);
-
     void SetProxyIP(const QString & ip);
     QString GetProxyIP() const;
 
@@ -67,9 +62,6 @@ private:
     QLineEdit *m_leImapUrl;
     QLineEdit *m_leLogin;
     QLineEdit *m_lePassword;
-
-    QLineEdit *m_leBradPort;
-    QLineEdit *m_leBradExtUrl;
 
     QLineEdit *m_leProxyIP;
     QLineEdit *m_leProxyPort;

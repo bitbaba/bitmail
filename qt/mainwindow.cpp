@@ -50,6 +50,10 @@
 #include <QtMultimedia/QAudioRecorder>
 #include <QFileIconProvider>
 #include <QSystemTrayIcon>
+#include <QCamera>
+#include <QCameraViewFinder>
+#include <QCameraImageCapture>
+#include <QMediaRecorder>
 
 #include <iostream>
 #include <bitmailcore/bitmail.h>
@@ -71,7 +75,11 @@
 #define KEY_STRANGER ("?")
 
 MainWindow::MainWindow(BitMail * bitmail)
-    : m_bitmail(bitmail)
+    : camera(NULL)
+    , viewfinder(NULL)
+    , imageCapture(NULL)
+    , vrec(NULL)
+    , m_bitmail(bitmail)
     , m_rxth(NULL)
     , m_txth(NULL)
     , m_shutdownDialog(NULL)
@@ -355,6 +363,19 @@ void MainWindow::createActions()
         snapAct->setStatusTip(tr("Send snapshot"));
         connect(snapAct, SIGNAL(triggered()), this, SLOT(onSnapAct()));
     }while(0);
+
+    do{
+        photoAct = new QAction(QIcon(":/images/camera.png"), tr("&Photo"), this);
+        photoAct->setStatusTip(tr("Send photo"));
+        connect(photoAct, SIGNAL(triggered()), this, SLOT(onPhotoAct()));
+    }while(0);
+
+    do{
+        videoAct = new QAction(QIcon(":/images/video.png"), tr("&Video"), this);
+        videoAct->setStatusTip(tr("Send video"));
+        videoAct->setEnabled(false);
+        connect(videoAct, SIGNAL(triggered()), this, SLOT(onVideoAct()));
+    }while(0);
 }
 
 void MainWindow::createToolBars()
@@ -369,9 +390,11 @@ void MainWindow::createToolBars()
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->setIconSize(QSize(24,24));
     chatToolbar->addAction(emojiAct);
-    chatToolbar->addAction(audioAct);
     chatToolbar->addAction(snapAct);
     chatToolbar->addAction(fileAct);
+    chatToolbar->addAction(audioAct);
+    chatToolbar->addAction(photoAct);
+    chatToolbar->addAction(videoAct);
 }
 
 void MainWindow::createStatusBar()
@@ -405,9 +428,6 @@ void MainWindow::onNetAct()
     optDialog.SetImapLogin(QString::fromStdString(m_bitmail->GetRxLogin()));
     optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
 
-    optDialog.BradPort(m_bitmail->GetBradPort());
-    optDialog.BradExtUrl(QString::fromStdString(m_bitmail->GetBradExtUrl()));
-
     optDialog.SetProxyIP(QString::fromStdString(m_bitmail->GetProxyIp()));
     optDialog.SetProxyPort(m_bitmail->GetProxyPort());
     optDialog.SetProxyLogin(QString::fromStdString(m_bitmail->GetProxyUser()));
@@ -437,10 +457,6 @@ void MainWindow::onNetAct()
         m_bitmail->SetProxyPort(optDialog.GetProxyPort());
         m_bitmail->SetProxyUser(optDialog.GetProxyLogin().toStdString());
         m_bitmail->SetProxyPassword(optDialog.GetProxyPassword().toStdString());
-    }while(0);
-
-    do {
-        m_bitmail->SetBradPort(BMQTApplication::GetLanIp().toStdString(), optDialog.BradPort());
     }while(0);
 
     return ;
@@ -587,6 +603,128 @@ void MainWindow::shootScreen()
     enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
     populateMessages(qsTo);
     return ;
+}
+
+void MainWindow::onPhotoAct()
+{
+    // http://stackoverflow.com/questions/22452432/qt-recording-video-using-qmediarecorder-not-working
+    // http://doc.qt.io/qt-5/qtmultimedia-windows.html
+    // http://kibsoft.ru/
+    return ;
+    //TODO: use external app. to capture.
+    if (camera == NULL){
+        camera = new QCamera;
+    }
+    if (viewfinder == NULL){
+        viewfinder = new QCameraViewfinder;
+    }
+
+    if (imageCapture == NULL){
+        imageCapture = new QCameraImageCapture(camera);
+    }
+
+    camera->setViewfinder(viewfinder);
+    viewfinder->show();
+
+    camera->setCaptureMode(QCamera::CaptureStillImage);
+    if (camera->state() != QCamera::ActiveState){
+        qDebug() << "Start camera";
+        camera->start(); // to start the viewfinder
+    }
+
+    qDebug() << "Start to shoot photo";
+    QTimer::singleShot(1000, this, &MainWindow::shootPhoto);
+}
+
+void MainWindow::shootPhoto()
+{
+    if (imageCapture){
+        qDebug() << "Shoot photo!";
+        QString loc = BMQTApplication::GetTempHome() + "/" + QUuid::createUuid().toString().remove("{").remove("}");
+        imageCapture->capture(loc);
+        connect(imageCapture, SIGNAL(imageSaved(int,QString)), this, SLOT(onCameraCaptureSaved(int,QString)));
+    }
+    //qDebug() << "Stop camera";
+    //camera->stop();
+}
+
+void MainWindow::onCameraCaptureSaved(int id, const QString & filepath)
+{
+    qDebug() << "Photo captured: id=" << id << ", FilePath=" << filepath;
+
+    if (!QFile(filepath).exists()){
+        return ;
+    }
+
+    QString qsMsg = BMQTApplication::toMimeImage(QImage(filepath));
+
+    QString qsTo = getCurrentReceipt();
+    if (qsTo.isEmpty()){
+        return ;
+    }
+    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
+    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
+    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
+    emit readyToSend(qsFrom, qsTo, qsMsg);
+
+    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
+
+    populateMessages(qsTo);
+}
+
+void MainWindow::onVideoAct()
+{
+    //TODO: use external app. to capture.
+    if (camera == NULL){
+        camera = new QCamera;
+    }
+    if (viewfinder == NULL){
+        viewfinder = new QCameraViewfinder;
+    }
+
+    if (vrec == NULL){
+        vrec = new QMediaRecorder(camera);
+        connect(vrec, SIGNAL(durationChanged(qint64)), this, SLOT(onVideoDurationChanged(qint64)));
+    }
+
+    camera->setViewfinder(viewfinder);
+    viewfinder->show();
+
+    camera->setCaptureMode(QCamera::CaptureVideo);
+
+    if (camera->state() != QCamera::ActiveState){
+        qDebug() << "Start camera";
+        camera->start(); // to start the viewfinder
+    }
+
+    qDebug() << "Start to shoot video";
+    QTimer::singleShot(1000, this, &MainWindow::shootVideo);
+}
+
+void MainWindow::shootVideo()
+{
+    qDebug() << "shootVideo";
+    if (camera->state() == QCamera::ActiveState){
+        qDebug() << "Start to record video";
+        QString tempVideo = BMQTApplication::GetTempHome() + "/" +QUuid::createUuid().toString().remove("{").remove("}");
+        QVideoEncoderSettings vsetting;
+        vsetting.setCodec("video/mpeg2");
+        vsetting.setResolution(640, 480);
+        vrec->setVideoSettings(vsetting);
+        vrec->setOutputLocation(QUrl::fromLocalFile(tempVideo));
+        vrec->record();
+    }
+}
+
+void MainWindow::onVideoDurationChanged(qint64 duration)
+{
+    if (duration > 2000){
+        qDebug() << "Stop video record";
+        vrec->stop();
+    }else{
+        qDebug() << "video recording... " << duration ;
+    }
+
 }
 
 void MainWindow::onBtnInviteClicked()
@@ -794,6 +932,7 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
 {
     btnSend->setEnabled(false);
     btnSendQr->setEnabled(false);
+    chatToolbar->setEnabled(false);
     sessLabel->setText("");
 
     if (current == NULL){
@@ -821,6 +960,7 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
     }else{
         sessLabel->setText(QString::fromStdString(m_bitmail->GetFriendNick(qsKey.toStdString())));
         btnSend->setEnabled(true);
+        chatToolbar->setEnabled(true);
         btnSendQr->setEnabled(true);
     }
 
@@ -859,15 +999,17 @@ void MainWindow::populateMessages(const QString & k)
             QLabel * lblElt = new QLabel(w);
             lblElt->setScaledContents(true);
             if (QString::fromStdString(var.typeName()) == "QImage"){
-                lblElt->setFixedSize(60, 60);
                 QImage qImage = qvariant_cast<QImage>(var);
+                lblElt->setFixedSize(64, 64);
                 lblElt->setPixmap(QPixmap::fromImage(qImage));
             }else if (QString::fromStdString(var.typeName()) == "QString"){
-                lblElt->setText(var.toString().mid(0, 140));
+                lblElt->setFixedWidth(msgView->width());
+                lblElt->setWordWrap(true);
+                lblElt->setText(var.toString().mid(0, 512));
             }else if (QString::fromStdString(var.typeName()) == "QFileInfo"){
                 QFileInfo fileInfo = qvariant_cast<QFileInfo>(var);
                 //lblElt->setText(QString("<%1>").arg(fileInfo.fileName()));
-                lblElt->setPixmap((QFileIconProvider().icon(fileInfo).pixmap(QSize(32,32))));
+                lblElt->setPixmap((QFileIconProvider().icon(fileInfo).pixmap(QSize(64,64))));
             }else{
                 qDebug() << "unknown type name";
             }

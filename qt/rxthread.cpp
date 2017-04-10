@@ -31,26 +31,17 @@ void RxThread::run()
     m_bitmail->OnMessageEvent(MessageEventHandler, this);
 
     while(!m_fStopFlag){
-        // check brac events
-        qDebug() << "RxThread: Poll brac connections";
-        if(!m_bitmail->PollBracs(m_checkInterval)){
-            qDebug() << "RxThread: Failed to poll brac";
-            // Sleep for `checkInterval'
-            qDebug() << "RxThread: Wait for inbox event";
-            m_inboxPoll.tryAcquire(1, m_checkInterval);
-        }
+        qDebug() << "RxThread: Waiting for inbox poll event";
+        m_inboxPoll.tryAcquire(1, m_checkInterval);
+        qDebug() << "RxThread: Timeout of inbox poll event";
 
-        // Refresh brac connections, in 5 minutes
-        m_bitmail->RefreshBracs(300);
-
-        qDebug() << "RxThread: check timeout of inbox";
         qint64 now = QDateTime::currentMSecsSinceEpoch();
+
         if (lastCheck + m_checkInterval < now){
-            qDebug() << "RxThread: check inbox";
+            qDebug() << "RxThread: check inbox directly!";
             m_bitmail->CheckInbox(RxProgressHandler, this);
             lastCheck = now;
-        }
-        qDebug() << "RxThread: next loop";
+        }        
     }
 
     m_bitmail->Expunge();

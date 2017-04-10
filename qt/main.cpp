@@ -341,12 +341,8 @@ namespace BMQTApplication {
         QJsonObject joProfile;
         QJsonObject joTx;
         QJsonObject joRx;
-        QJsonObject joBrad;
         QJsonObject joBuddies;
         QJsonObject joGroups;
-        (void)joGroups;
-        QJsonArray jaSubscribes;
-        (void)jaSubscribes;
         QJsonObject joProxy;
         if (joRoot.contains("Profile")){
             joProfile = joRoot["Profile"].toObject();
@@ -365,12 +361,6 @@ namespace BMQTApplication {
             QString qsKey;
             if (joProfile.contains("key")){
                 qsKey = joProfile["key"].toString();
-            }
-            // Brad
-            if (joProfile.contains("brad")){
-                joBrad = joProfile["brad"].toObject();
-                unsigned short port = joBrad["port"].toInt();
-                bm->SetBradPort(BMQTApplication::GetLanIp().toStdString(), port);
             }
             if (bmOk != bm->LoadProfile(passphrase.toStdString()
                             , qsKey.toStdString()
@@ -421,13 +411,6 @@ namespace BMQTApplication {
                         bm->AddFriend(qsEmail.toStdString(), qsCert.toStdString());
                     }
                 }
-                if (joValue.contains("brad")){
-                    QJsonObject joFriendBrad = joValue["brad"].toObject();
-                    if (joFriendBrad.contains("extUrl")){
-                        QString qsFriendBradExtUrl = joFriendBrad["extUrl"].toString();
-                        bm->SetFriendBradExtUrl(qsEmail.toStdString(), qsFriendBradExtUrl.toStdString());
-                    }
-                }
             }
         }
 
@@ -463,17 +446,6 @@ namespace BMQTApplication {
             }
         }while(0);
 
-        do{
-            if (!joRoot.contains("subscribes")){
-                break;
-            }
-            jaSubscribes = joRoot["subscribes"].toArray();
-            for (int i = 0; i < jaSubscribes.size(); i++){
-                QString qsSub = jaSubscribes.at(i).toString();
-                bm->Subscribe(qsSub.toStdString());
-            }
-        }while(0);
-
         if (joRoot.contains("proxy")){
             joProxy = joRoot["proxy"].toObject();
             do {
@@ -506,21 +478,14 @@ namespace BMQTApplication {
         QJsonObject joProfile;
         QJsonObject joTx;
         QJsonObject joRx;
-        QJsonObject joBrad;
         QJsonObject joBuddies;
         QJsonObject joGroups;     // Group chatting
-        (void) joGroups;
-        QJsonArray jaSubscribes; // Subscribing
-        (void) jaSubscribes;
         QJsonObject joProxy;
-        // Brad
-        joBrad["port"] = (int) bm->GetBradPort();
         // Profile
         joProfile["email"] = QString::fromStdString(bm->GetEmail());
         joProfile["nick"] = QString::fromStdString(bm->GetNick());
         joProfile["key"] = QString::fromStdString(bm->GetKey());
         joProfile["cert"] = QString::fromStdString(bm->GetCert());
-        joProfile["brad"] = joBrad;
         // Tx
         joTx["url"] = QString::fromStdString(bm->GetTxUrl());
         joTx["login"] = QString::fromStdString(bm->GetTxLogin());
@@ -536,11 +501,6 @@ namespace BMQTApplication {
             std::string sBuddyCertPem = bm->GetFriendCert(*it);
             QJsonObject joBuddy;
             joBuddy["cert"]  = QString::fromStdString(sBuddyCertPem);
-            if (false){ // no need to save friend's brad
-                QJsonObject joFriendBrad;
-                joFriendBrad["extUrl"] = QString::fromStdString(bm->GetFriendBradExtUrl(*it));
-                joBuddy["brad"] = joFriendBrad;
-            }
             QString qsEmail = QString::fromStdString(*it);
             joBuddies.insert(qsEmail, joBuddy);
         }
@@ -574,14 +534,6 @@ namespace BMQTApplication {
 
             joGroups.insert(QString::fromStdString(sGroupId), joGroup);
         }
-        // Subscribes
-        std::vector<std::string> vecSubscribes;
-        bm->GetSubscribes(vecSubscribes);
-        for (std::vector<std::string>::const_iterator it = vecSubscribes.begin()
-             ; it != vecSubscribes.end()
-             ; ++it){
-            jaSubscribes.append(QString::fromStdString(*it));
-        }
         // proxy
         do {
             joProxy["ip"] = QString::fromStdString( bm->GetProxyIp());
@@ -597,7 +549,6 @@ namespace BMQTApplication {
         joRoot["friends"] = joBuddies;
         joRoot["proxy"] = joProxy;
         joRoot["groups"] = joGroups;
-        joRoot["subscribes"] = jaSubscribes;
         QJsonDocument jdoc(joRoot);
         QFile file(qsProfile);
         if (!file.open(QFile::WriteOnly | QFile::Text)) {
@@ -1029,8 +980,7 @@ namespace BMQTApplication {
                     QImage image = BMQTApplication::fromMimeImage(qsPart);
                     varlist.append(image);
                 }else if (qsPartType.startsWith("multipart/")){
-                    // TODO: nested recursive parsing.
-                    qDebug() << "No nested parsing yet.";
+                    varlist += fromMime(qsPart);
                 }else{
                     QString filePath = BMQTApplication::fromMimeAttachemnt(qsPart);
                     varlist.append(QVariant::fromValue(QFileInfo(filePath)));
