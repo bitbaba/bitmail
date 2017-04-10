@@ -6,7 +6,6 @@ libbitmailcore_la_SOURCES= \
     bitmail.cpp \
     x509cert.cpp \
     email.cpp \
-	brad.cpp \
 	rpc.cpp \
     multipart.cpp 
 

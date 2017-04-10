@@ -116,11 +116,6 @@ public:
     unsigned int GetVersion() const;
 
 public:
-    // Event Callback
-    int OnPollEvent( PollEventCB cb, void * userp);
-    
-    int OnMessageEvent( MessageEventCB cb, void * userp);
-
     // Network
     int InitNetwork(const std::string & txurl
                     , const std::string & txuser
@@ -150,8 +145,6 @@ public:
 
     std::string GetProxyPassword() const;
 
-    /*UPNP feature should be external utility, e.g. forked from bittorrent*/
-
     int SetTxUrl(const std::string & u);
 
     std::string GetTxUrl() const;
@@ -176,16 +169,16 @@ public:
 
     std::string GetRxPassword() const;
 
-	// Mulitpart
-	static int splitMultiparts(const std::string & in, std::vector<std::string> & out);
-	
-	static std::string partType(const std::string & in);
-	
-	static std::string partParam(const std::string & in, const std::string & header, const std::string & pName);
-	
-	static std::string partContent(const std::string & in);
-	
-	static std::string partEncoding(const std::string & in);
+    // Mulitpart
+    static int splitMultiparts(const std::string & in, std::vector<std::string> & out);
+
+    static std::string partType(const std::string & in);
+
+    static std::string partParam(const std::string & in, const std::string & header, const std::string & pName);
+
+    static std::string partContent(const std::string & in);
+
+    static std::string partEncoding(const std::string & in);
 	
     // Base64 codecs
     static std::string toBase64(const std::string & s);
@@ -194,6 +187,10 @@ public:
 
     // RTx Routines
     int SendMsg(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
+
+    int OnPollEvent( PollEventCB cb, void * userp);
+
+    int OnMessageEvent( MessageEventCB cb, void * userp);
 
     std::string EncMsg(const std::vector<std::string> & friends, const std::string & msg, bool fSignOnly);
 
@@ -247,27 +244,6 @@ public:
 
     std::string GetFriendID(const std::string & email) const;
 
-    // Brad APIs
-    bool SetBradPort(const std::string & lan, unsigned short port);
-
-    bool StartupBrad();
-
-    std::string GetBradExtUrl() const;
-
-    bool SetFriendBradExtUrl(const std::string & email, const std::string & exturl);
-
-    std::string GetFriendBradExtUrl(const std::string & email) const;
-
-    unsigned short GetBradPort() const;
-
-    int  ListenBrad(unsigned int timeoutMs);
-
-    bool PollBracs(unsigned int timeoutMs);
-
-    void RefreshBracs(unsigned int keepalive);
-
-    void ShutdownBrad();
-
     // Friends
     int AddFriend(const std::string & email, const std::string & certpem);
 
@@ -306,22 +282,6 @@ public:
 
     int ClearGroupMembers(const std::string & gid);
 
-    // Subscribes
-    int Subscribe(const std::string & sub);
-
-    int Unsubscribe(const std::string & sub);
-
-    bool Subscribed(const std::string & sub) const;
-
-    int GetSubscribes(std::vector<std::string> & subscribes);
-
-private:
-    void AddBrac(Brac * brac);
-
-    Brac * GetBrac(const std::string & email);
-
-    bool MapBradExtPort();
-
 protected:
 
     PollEventCB          m_onPollEvent;
@@ -346,29 +306,11 @@ protected:
     // GroupCreators, Key: GroupID, Value: Creator
     std::map<std::string, std::string> m_groupCreators;
 
-    // Subscribes: vector of subscribed email
-    std::vector<std::string> m_subscribes;
-
-    // Friends brad config
-    std::map<std::string, std::string> m_brads;
-
-    // Bra daemon config
-    std::string          m_bradLan;
-    unsigned short       m_bradPort;
-    std::string          m_bradExtUrl;
-
-    // Bra Connections
-    Brad *               m_brad;
-    std::vector<Brac * > m_bracs;
-
-
-
     // Lock
     ILock * m_lock1;
     ILock * m_lock2;
     ILock * m_lock3;
     ILock * m_lock4;
-    ILock * m_bracLock;
     ILockFactory * m_lockCraft;
 
     // Custom network
@@ -381,8 +323,6 @@ public:
 
 protected:
     static int EmailHandler(BMEventHead * h, void * userp);
-
-    static int InboundHander(int sockfd, void * userp);
 };
 
 
