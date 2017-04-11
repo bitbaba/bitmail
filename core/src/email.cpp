@@ -210,7 +210,7 @@ int CMailClient::SendMsg( const std::string & from
     struct TxCallback_t txcb;
 
     std::stringstream sstrmMail;
-    sstrmMail << "To: BitMail CoreTeam:";
+    sstrmMail << "To: BitMail CoreTeam: \r\n    ";
     for (std::vector<std::string>::const_iterator it = to.begin(); ;){
         sstrmMail << "<" << *it << ">";
         ++it;

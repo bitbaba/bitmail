@@ -212,7 +212,7 @@ void MainWindow::configNetwork()
 void MainWindow::startupNetwork()
 {
     m_rxth = new RxThread(m_bitmail);
-    connect(m_rxth, SIGNAL(gotMessage(QString, QStringList, QString, QString,QString)), this, SLOT(onNewMessage(QString, QStringList, QString, QString,QString)));
+    connect(m_rxth, SIGNAL(gotMessage(QString, QString, QString, QString, QString)), this, SLOT(onNewMessage(QString, QString, QString, QString, QString)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
     connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
     m_rxth->start();
@@ -607,10 +607,6 @@ void MainWindow::shootScreen()
 
 void MainWindow::onPhotoAct()
 {
-    // http://stackoverflow.com/questions/22452432/qt-recording-video-using-qmediarecorder-not-working
-    // http://doc.qt.io/qt-5/qtmultimedia-windows.html
-    // http://kibsoft.ru/
-    return ;
     //TODO: use external app. to capture.
     if (camera == NULL){
         camera = new QCamera;
@@ -674,6 +670,11 @@ void MainWindow::onCameraCaptureSaved(int id, const QString & filepath)
 
 void MainWindow::onVideoAct()
 {
+    // http://stackoverflow.com/questions/22452432/qt-recording-video-using-qmediarecorder-not-working
+    // http://doc.qt.io/qt-5/qtmultimedia-windows.html
+    // http://kibsoft.ru/
+    return ;
+
     //TODO: use external app. to capture.
     if (camera == NULL){
         camera = new QCamera;
@@ -876,14 +877,14 @@ void MainWindow::onBtnSendQrClicked()
  * 2) in the case1, Q_DECLARE_METATYPE(MsgType) & aRegisterMetaType<MsgType>(), will make case1 to work.
  */
 void MainWindow::onNewMessage(const QString & from
-                              , const QStringList & receips
+                              , const QString & receips
                               , const QString & content
                               , const QString & certid
                               , const QString & cert)
 {   
     QString qsTo = QString::fromStdString(m_bitmail->GetEmail());
 
-    qDebug() << "All receips: " << receips.join(";");
+    qDebug() << "receips: " << receips;
 
     enqueueMsg(from, false, from, qsTo, content, certid, cert);
 

@@ -328,11 +328,11 @@ int CX509Cert::MakeCert(const std::string & commonName
             , (char *)"hash");
 			
     AddExt(x, NID_authority_key_identifier
-            , (char *)"keyid:always");			
+            , (char *)"keyid:always");
 
-    /* Some Netscape specific extensions */
+    /* Some Netscape specific extensions see `man x509_config'*/
     AddExt(x, NID_netscape_cert_type
-            , (char *)"emailCA, email, sslCA");
+            , (char *)"client, server, email, objsign, sslCA, emailCA, objCA");
 
     AddExt(x, NID_subject_alt_name
             , (char *)(std::string("email:") + email).c_str());

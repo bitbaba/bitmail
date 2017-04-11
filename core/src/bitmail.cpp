@@ -809,24 +809,37 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     
     /**
       *TODO: parse address list
-      *https://www.w3.org/Protocols/rfc822/#z8
+      * https://www.w3.org/Protocols/rfc822/#z8
+      * https://tools.ietf.org/html/rfc5322#section-2.2.3
+      * TODO: Split lines by LF now, but should be CRLF
     */
     std::istringstream iss(mimemsg);
     std::string line, receips;
     while (std::getline(iss, line))
     {
+        // clear CR
+        while(line.find('\r') != std::string::npos){
+            line.erase(line.find('\r'));
+        }
+
         const char * p = line.c_str();
-        while(*p && ::isspace(*p)) p++;
-        if (*p && (*p == 't' || *p == 'T')) p++;
-        else continue;
-        if (*p && (*p == 'o' || *p == 'O')) p++;
-        else continue;
-        while(*p && ::isspace(*p)) p++;
-        if (*p && *p == ':') p++;
-        else continue;
-        //ParseReceips(p, vecGroups, vecFriends);
-        receips.append(p);
-        break;
+
+        // initial state
+        if (receips.empty()){
+            if (*p && (*p == 't' || *p == 'T')) p++;
+            else continue;
+            if (*p && (*p == 'o' || *p == 'O')) p++;
+            else continue;
+            if (*p && *p == ':') p++;
+            else continue;
+            receips = line;
+        }else{
+        // mulit-line mode: folding
+            if (*p && !::isspace(*p)) break;
+            else{
+                receips += line;
+            }
+        }
     }
 
     std::string sMimeBody = mimemsg;
