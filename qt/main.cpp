@@ -59,6 +59,7 @@
 #include <QMimeDatabase>
 #include <QMimeType>
 #include <QPainter>
+#include <QMessageBox>
 
 #include "optiondialog.h"
 #include "logindialog.h"
@@ -157,6 +158,7 @@ int main(int argc, char *argv[])
     BitMail * bitmail = new BitMail(new BMLockFactory());
     if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
         qDebug() << "Failed to Load Profile, bye!";
+        QMessageBox::warning(NULL, QString("Login"), QString("Failed to load profile!"));
         return 0;
     }
 
