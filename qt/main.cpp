@@ -344,7 +344,7 @@ namespace BMQTApplication {
         QJsonObject joTx;
         QJsonObject joRx;
         QJsonObject joBuddies;
-        QJsonObject joGroups;
+        QJsonArray jaGroups;
         QJsonObject joProxy;
         if (joRoot.contains("Profile")){
             joProfile = joRoot["Profile"].toObject();
@@ -420,31 +420,16 @@ namespace BMQTApplication {
             if (!joRoot.contains("groups")){
                 break;
             }
-            joGroups = joRoot["groups"].toObject();
-            for (QJsonObject::const_iterator it = joGroups.constBegin()
-                 ; it != joGroups.constEnd()
-                 ; it ++){
-                QString qsGroupId = it.key();
-                QJsonObject joGroup = it.value().toObject();
-                QString qsGroupName = "";
-                if (joGroup.contains("name")){
-                    qsGroupName = joGroup["name"].toString();
-                }
-                bm->AddGroup(qsGroupId.toStdString(), qsGroupName.toStdString());
-
-                QString qsGroupCreator;
-                if (joGroup.contains("creator")){
-                    qsGroupCreator = joGroup["creator"].toString();
-                }
-                bm->SetGroupCreator(qsGroupId.toStdString(), qsGroupCreator.toStdString());
-
-                if (joGroup.contains("members")){
-                    QJsonArray jaMembers = joGroup["members"].toArray();
-                    for (int i = 0; i < jaMembers.size(); i++){
-                        QString qsMember = jaMembers.at(i).toString();
-                        bm->AddGroupMember(qsGroupId.toStdString(), qsMember.toStdString());
-                    }
-                }
+            jaGroups = joRoot["groups"].toArray();
+            for (QJsonArray::const_iterator it = jaGroups.constBegin()
+                 ; it != jaGroups.constEnd()
+                 ; it ++)
+            {
+                QString memberlist = (*it).toString();
+                memberlist.toLower();
+                QStringList qslMembers = memberlist.split(";");
+                qSort(qslMembers.begin(), qslMembers.end());
+                bm->AddGroup(qslMembers.join(";").toStdString());
             }
         }while(0);
 
@@ -481,7 +466,7 @@ namespace BMQTApplication {
         QJsonObject joTx;
         QJsonObject joRx;
         QJsonObject joBuddies;
-        QJsonObject joGroups;     // Group chatting
+        QJsonArray jaGroups;     // Group chatting
         QJsonObject joProxy;
         // Profile
         joProfile["email"] = QString::fromStdString(bm->GetEmail());
@@ -511,30 +496,9 @@ namespace BMQTApplication {
         bm->GetGroups(vecGroups);
         for (std::vector<std::string>::const_iterator it = vecGroups.begin()
              ; it != vecGroups.end()
-             ; ++it){
-            QJsonObject joGroup;
-
-            const std::string sGroupId = *it;
-            std::string sGroupName;
-            if (bmOk != bm->GetGroupName(sGroupId, sGroupName)){
-                continue;
-            }
-            joGroup["name"] = QString::fromStdString(sGroupName);
-
-            joGroup["creator"] = QString::fromStdString(bm->GetGroupCreator(sGroupId));
-
-            std::vector<std::string> vecMembers;
-            bm->GetGroupMembers(sGroupId, vecMembers);
-            QJsonArray jaMembers;
-            for (std::vector<std::string>::const_iterator it_member = vecMembers.begin()
-                 ; it_member != vecMembers.end()
-                 ; ++it_member){
-                const std::string sMember = *it_member;
-                jaMembers.append(((QString::fromStdString(sMember))));
-            }
-            joGroup["members"] = jaMembers;
-
-            joGroups.insert(QString::fromStdString(sGroupId), joGroup);
+             ; ++it)
+        {
+            jaGroups.append(QString::fromStdString(*it));
         }
         // proxy
         do {
@@ -550,7 +514,7 @@ namespace BMQTApplication {
         joRoot["rx"] = joRx;
         joRoot["friends"] = joBuddies;
         joRoot["proxy"] = joProxy;
-        joRoot["groups"] = joGroups;
+        joRoot["groups"] = jaGroups;
         QJsonDocument jdoc(joRoot);
         QFile file(qsProfile);
         if (!file.open(QFile::WriteOnly | QFile::Text)) {

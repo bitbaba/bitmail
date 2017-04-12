@@ -71,8 +71,8 @@
 #include "ardialog.h"
 #include "main.h"
 
-#define TAG_PEER ("#")
-#define KEY_STRANGER ("?")
+#define TagFriend  ("$")
+#define TagGoup    ("#")
 
 MainWindow::MainWindow(BitMail * bitmail)
     : camera(NULL)
@@ -129,11 +129,19 @@ MainWindow::MainWindow(BitMail * bitmail)
     connect(btree, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onCtxMenu(QPoint)));
 
     if (1){
-        nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")), NT_Friends);
+        nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")));
         nodeFriends->setIcon(0, QIcon(":/images/head.png"));
         nodeFriends->setData(0, Qt::UserRole, "Cat::Friends");
         populateFriendTree(nodeFriends);
         btree->addTopLevelItem(nodeFriends);
+    }
+
+    if (2){
+        nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")));
+        nodeGroups->setIcon(0, QIcon(":/images/group.png"));
+        nodeGroups->setData(0, Qt::UserRole, "Cat::Groups");
+        populateGroupTree(nodeGroups);
+        btree->addTopLevelItem(nodeGroups);
     }
 
     leftLayout->addWidget(btree);
@@ -295,7 +303,7 @@ void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
     QStringList qslData = qvData.toStringList();
     QString qsEmail = qslData.at(1);
 
-    if (qsEmail.isEmpty() || qsEmail == KEY_STRANGER){
+    if (qsEmail.isEmpty()){
         return ;
     }
 
@@ -752,7 +760,7 @@ void MainWindow::onBtnInviteClicked()
 
     emit readyToSend(qsFrom , qsTo, qsMsg);
 
-    enqueueMsg(QString(KEY_STRANGER), true, qsFrom, qsTo, qsMsg, QString::fromStdString(m_bitmail->GetID()), QString::fromStdString(m_bitmail->GetCert()));
+    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, QString::fromStdString(m_bitmail->GetID()), QString::fromStdString(m_bitmail->GetCert()));
 
     return ;
 }
@@ -776,37 +784,7 @@ void MainWindow::onBtnSendClicked()
         return ;
     }
 
-#if 1
     QString qsMsg = BMQTApplication::toMimeTextPlain(qsMsgPlain);
-#endif
-
-#if 0
-    QString qsMsg = BMQTApplication::toMimeTextHtml(qsMsgPlain);
-#endif
-
-#if 0
-    QStringList parts;
-    parts.append( BMQTApplication::toMimeTextPlain(qsMsgPlain) );
-    parts.append( BMQTApplication::toMimeImage(QImage(":/images/head.png")) );
-    QString qsMsg = BMQTApplication::toMixed(parts);
-#endif
-
-#if 0
-    QVariantList vparts;
-    vparts.append(QImage(":/images/head.png"));
-    vparts.append("Hello! BitMail.");
-    vparts.append(QVariant::fromValue(QFileInfo("D:/Users/harry/bitmail/data/c12f0b637784d65e424463c29d0cc7b50d7860f7ada6968db0f405bee663ba0a.PNG")));
-    vparts.append(QVariant::fromValue(QFileInfo("D:/Users/harry/bitmail/data/1.amr")));
-    QString qsMsg = BMQTApplication::toMixed(vparts);
-#endif
-
-#if 0
-    QStringList parts;
-    parts.append( BMQTApplication::toMimeTextHtml(qsMsgPlain) );
-    parts.append( BMQTApplication::toMimeImage(QImage(":/images/head.png")) );
-    QString qsMsg = BMQTApplication::toMixed(parts);
-#endif
-
 
     QString qsTo = getCurrentReceipt();
     if (qsTo.isEmpty()){
@@ -892,15 +870,6 @@ void MainWindow::onNewMessage(const QString & from
         populateMessages(from);
     }
 
-    if (!m_bitmail->IsFriend(from.toStdString(), cert.toStdString()) )
-    {
-        enqueueMsg(KEY_STRANGER, false, from, qsTo, content, certid, cert);
-
-        if (QString(KEY_STRANGER) == this->getCurrentReceipt()){
-            populateMessages(KEY_STRANGER);
-        }
-    }
-
     this->activateWindow();
 }
 
@@ -956,9 +925,7 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
     QString qsKey = qslData.at(1);
 
     /*Setup session label header*/
-    if (qsKey == KEY_STRANGER){
-        sessLabel->setText(tr("Strangers"));
-    }else{
+    {
         sessLabel->setText(QString::fromStdString(m_bitmail->GetFriendNick(qsKey.toStdString())));
         btnSend->setEnabled(true);
         chatToolbar->setEnabled(true);
@@ -980,6 +947,7 @@ void MainWindow::populateMessages(const QString & k)
         QJsonObject msgObj = (QJsonDocument::fromJson(tmp.toUtf8()).object());
         QListWidgetItem * msgElt = new QListWidgetItem();
         msgElt->setIcon(QIcon(":/images/bubble.png"));
+
         QString qsMsg = msgObj["msg"].toString();
 
         QVariantList varlist = BMQTApplication::fromMime(qsMsg);
@@ -997,24 +965,52 @@ void MainWindow::populateMessages(const QString & k)
         QVBoxLayout* v = new QVBoxLayout( w );
         for (QVariantList::const_iterator it = varlist.constBegin(); it != varlist.constEnd(); ++it){
             QVariant var = *it;
-            QLabel * lblElt = new QLabel(w);
-            lblElt->setScaledContents(true);
+            QWidget * vElt = NULL;//new QLabel(w);
             if (QString::fromStdString(var.typeName()) == "QImage"){
                 QImage qImage = qvariant_cast<QImage>(var);
-                lblElt->setFixedSize(64, 64);
-                lblElt->setPixmap(QPixmap::fromImage(qImage));
+                QLabel * tmp = new QLabel(w);
+                tmp->setScaledContents(true);
+                tmp->setFixedSize(64, 64);
+                tmp->setPixmap(QPixmap::fromImage(qImage));
+                vElt = tmp;
             }else if (QString::fromStdString(var.typeName()) == "QString"){
-                lblElt->setFixedWidth(msgView->width());
-                lblElt->setWordWrap(true);
-                lblElt->setText(var.toString().mid(0, 512));
+                if (0){
+                    QTextEdit * tmp = new QTextEdit(w);
+                    //QLabel * tmp = new QLabel(w);
+                    //QTextBrowser * tmp = new QTextBrowser(w);
+                    //tmp->setScaledContents(true);
+                    tmp->setReadOnly(true);
+                    tmp->setTextBackgroundColor(msgElt->backgroundColor());
+                    tmp->setFrameStyle(QFrame::NoFrame);
+                    tmp->setFixedWidth(msgView->width());
+                    //tmp->setWordWrap(true);
+                    tmp->setWordWrapMode(QTextOption::WordWrap);
+                    tmp->setAlignment(Qt::AlignRight);
+                    tmp->setHtml(var.toString());
+                    vElt = tmp;
+                }
+                if (1){
+                    QLabel * tmp = new QLabel(w);
+                    tmp->setScaledContents(true);
+                    tmp->setFixedWidth(msgView->width());
+                    tmp->setWordWrap(true);
+                    tmp->setText(var.toString());
+                    vElt = tmp;
+                }
             }else if (QString::fromStdString(var.typeName()) == "QFileInfo"){
                 QFileInfo fileInfo = qvariant_cast<QFileInfo>(var);
+                QLabel * tmp = new QLabel(w);
+                tmp->setScaledContents(true);
                 //lblElt->setText(QString("<%1>").arg(fileInfo.fileName()));
-                lblElt->setPixmap((QFileIconProvider().icon(fileInfo).pixmap(QSize(64,64))));
+                tmp->setPixmap((QFileIconProvider().icon(fileInfo).pixmap(QSize(64,64))));
+                vElt = tmp;
             }else{
                 qDebug() << "unknown type name";
+                QLabel * tmp = new QLabel(w);
+                tmp->setScaledContents(true);
+                vElt = tmp;
             }
-            v->addWidget( lblElt );
+            v->addWidget( vElt );
         }
         v->setSizeConstraint( QLayout::SetFixedSize );
 
@@ -1077,7 +1073,6 @@ QString MainWindow::getCurrentReceipt()
     return qslData.at(1);
 }
 
-
 void MainWindow::populateFriendTree(QTreeWidgetItem * node)
 {
     // Add buddies
@@ -1088,34 +1083,55 @@ void MainWindow::populateFriendTree(QTreeWidgetItem * node)
     {
         std::string sBuddyNick = m_bitmail->GetFriendNick(*it);
         QString qsNick = QString::fromStdString(sBuddyNick);
-        populateFriendLeaf(node, QString::fromStdString(*it), qsNick, NT_Friend);
+        populateFriendLeaf(node, QString::fromStdString(*it), qsNick);
     }
-    // add stranger node
-    populateFriendLeaf(node, KEY_STRANGER, tr("Strangers"), NT_Stranger);
     return ;
 }
 
-void MainWindow::populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick, nodeType nt)
+void MainWindow::populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick)
 {
     QStringList qslBuddy;
     qslBuddy.append(nick);
-    QTreeWidgetItem *buddy = new QTreeWidgetItem(node, qslBuddy, nt);
-    if (email == KEY_STRANGER){
-        buddy->setIcon(0, QIcon(":/images/stranger.png"));
-    }else{
-        buddy->setIcon(0, QIcon(":/images/head.png"));
-    }
+    QTreeWidgetItem *buddy = new QTreeWidgetItem(node, qslBuddy, 0);
+    buddy->setIcon(0, QIcon(":/images/head.png"));
     QStringList qslData;
-    qslData.append(TAG_PEER);
+    qslData.append(TagFriend);
     qslData.append(email);
     buddy->setData(0, Qt::UserRole, QVariant(qslData));
     node->addChild(buddy);
     return ;
 }
 
+void MainWindow::populateGroupTree(QTreeWidgetItem * node)
+{
+    // Add groups
+    std::vector<std::string> vecGroups;
+    m_bitmail->GetGroups(vecGroups);
+    for (std::vector<std::string>::const_iterator it = vecGroups.begin()
+         ; it != vecGroups.end(); ++it)
+    {
+        QString qsGroup = QString::fromStdString(*it);
+        populateGroupLeaf(node, qsGroup, qsGroup.mid(0, 10));
+    }
+    return ;
+}
+
+void MainWindow::populateGroupLeaf(QTreeWidgetItem * node, const QString & qsGroup, const QString &nick)
+{
+    QStringList qslBuddy;
+    qslBuddy.append(nick);
+    QTreeWidgetItem *buddy = new QTreeWidgetItem(node, qslBuddy, 0);
+    buddy->setIcon(0, QIcon(":/images/group.png"));
+    QStringList qslData;
+    qslData.append(TagGoup);
+    qslData.append(qsGroup);
+    buddy->setData(0, Qt::UserRole, QVariant(qslData));
+    node->addChild(buddy);
+}
+
 void MainWindow::onAddFriend(const QString &email)
 {
     QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
-    populateFriendLeaf(nodeFriends, email, qsNick, NT_Friend);
+    populateFriendLeaf(nodeFriends, email, qsNick);
 }
 

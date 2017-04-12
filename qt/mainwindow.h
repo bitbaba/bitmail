@@ -71,22 +71,9 @@ QT_END_NAMESPACE
 class BitMail;
 class RxThread;
 class TxThread;
-class BradThread;
 class ShutdownDialog;
 class arDialog;
 
-enum nodeType{
-    NT_Undef = 0,
-    NT_Friends,
-    NT_Friend,
-    NT_Stranger,
-    NT_Groups,
-    NT_Group,
-    NT_StrangerGroup,
-    NT_Subscribes,
-    NT_Subscribe,
-    NT_StrangerSub,
-};
 
 //! [0]
 class MainWindow : public QMainWindow
@@ -143,8 +130,12 @@ private:
 
     void ViewCert(const QString & e);
 
-    void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick,  nodeType nt);
+    void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick);
     void populateFriendTree(QTreeWidgetItem * node);
+
+    void populateGroupLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick);
+    void populateGroupTree(QTreeWidgetItem * node);
+
     void populateMessages(const QString & k);
 
     void shutdownNetwork();
@@ -161,6 +152,7 @@ private:
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;
     QTreeWidgetItem * nodeFriends;
+    QTreeWidgetItem * nodeGroups;
 
     QLabel * sessLabel;
     QListWidget *msgView;
@@ -199,15 +191,6 @@ signals:
                      , const QString & to
                      , const QString & msg);
 };
-
-
-enum MPType {
-    MPT_undef = 0,
-    MPT_textplain = 1,
-    MPT_image = 2,
-};
-
-extern std::string MP_Compose(MPType t, const std::string & data);
 
 //! [0]
 #endif

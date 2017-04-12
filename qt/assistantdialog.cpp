@@ -35,14 +35,13 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
                               , tr("All")
                               , QVariant(QString("*")));
 
-        std::vector<std::string> vecGroupIds;
-        m_bitmail->GetGroups(vecGroupIds);
-        for (unsigned int i = 0; i < vecGroupIds.size(); ++i){
-            std::string sGroupName;
-            m_bitmail->GetGroupName(vecGroupIds[i], sGroupName);
+        std::vector<std::string> vecMemberLists;
+        m_bitmail->GetGroups(vecMemberLists);
+        for (unsigned int i = 0; i < vecMemberLists.size(); ++i){
+            std::string qsMemberList = vecMemberLists[i];
             m_cbbFriends->addItem(QIcon(":/images/group.png")
-                                  , QString::fromStdString(sGroupName)
-                                  , QVariant(QString("#") + QString::fromStdString(vecGroupIds[i])));
+                                  , QString::fromStdString(qsMemberList).mid(0, 20)
+                                  , QVariant(QString("#") + QString::fromStdString(qsMemberList)));
         }
         std::vector<std::string> vecFriends;
         m_bitmail->GetFriends(vecFriends);
@@ -131,8 +130,12 @@ void AssistantDialog::on_btnEncrypt_clicked()
         if (cPrefix == '*'){       // ---- All
             m_bitmail->GetFriends(vecFriends);
         }else if (cPrefix == '#'){ // ---- Group
-            QString sGroupId = qsData.mid(1);
-            m_bitmail->GetGroupMembers(sGroupId.toStdString(), vecFriends);
+            QStringList qslMemberList = qsData.mid(1).split(";");
+            for (QStringList::const_iterator it = qslMemberList.cbegin(); it != qslMemberList.cend(); ++it)
+            {
+                QString f = *it;
+                vecFriends.push_back(f.toStdString());
+            }
         }else{                     // ---- Peer
             vecFriends.push_back(qsData.toStdString());
         }
