@@ -70,14 +70,14 @@ QString MessageDialog::GetCert() const
     return m_ptxtCert->toPlainText();
 }
 
-QString MessageDialog::groupId() const
+QString MessageDialog::group() const
 {
     return m_leGroupId->text();
 }
 
-void MessageDialog::groupId(const QString &qsGroupId)
+void MessageDialog::group(const QString & groupmembers)
 {
-    m_leGroupId->setText(qsGroupId);
+    m_leGroupId->setText(groupmembers);
 }
 
 void MessageDialog::on_buttonBox_accepted()
@@ -126,10 +126,18 @@ void MessageDialog::on_btnMakeFriend_clicked()
         return ;
     }
 
-    emit signalAddFriend(qsFrom);
+    emit friendsChanged();
 }
 
-void MessageDialog::on_btnViewGroup_clicked()
+/**
+ * @brief MessageDialog::on_btnJoinGroup_clicked
+ * Qt has a feature, the standard function signature:
+ * such as on_DUMMYID_clicked() is bound with DUMMYID,
+ * autumatically.
+ */
+void MessageDialog::on_btnJoinGroup_clicked()
 {
-    emit signalViewGroup(groupId());
+    m_bitmail->AddGroup(group().toStdString());
+
+    emit groupsChanged();
 }

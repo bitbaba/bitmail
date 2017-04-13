@@ -1,4 +1,5 @@
 #include "txthread.h"
+#include "main.h"
 #include <QDebug>
 #include <QJsonDocument>
 #include <bitmailcore/bitmail.h>
@@ -20,13 +21,13 @@ TxThread::~TxThread()
 }
 
 void TxThread::onSendMessage(const QString & from
-                             , const QString & to
+                             , const QStringList & to
                              , const QString & content)
 {
     (void)from;
     QJsonDocument doc;
     QJsonObject obj;
-    obj["to"] = to;
+    obj["to"] = to.join("|");
     obj["msg"] = content;
     doc.setObject(obj);
     if (m_txq.writable(25/*milliseconds*/)){
@@ -39,20 +40,19 @@ void TxThread::onSendMessage(const QString & from
 void TxThread::run()
 {    
     while(!m_fStopFlag){
-        if (m_txq.readable(6*1000)){
-            QJsonObject obj = QJsonDocument::fromJson(m_txq.pop().toUtf8()).object();
-            QString to = obj["to"].toString();
-            QString msg = obj["msg"].toString();
-            std::vector<std::string> vecTo;
-            vecTo.push_back(to.toStdString());
-            if (m_bitmail){
-                m_bitmail->SendMsg(vecTo
-                                   , msg.toStdString()
-                                   , TxProgressHandler
-                                   , this);
-            }
 
+        if (!m_txq.readable(6*1000)) continue ;
+
+        QJsonObject obj = QJsonDocument::fromJson(m_txq.pop().toUtf8()).object();
+        QStringList to = obj["to"].toString().split("|");
+        QString msg = obj["msg"].toString();
+
+        std::vector<std::string> vecTo = BMQTApplication::toStdStringList(to);
+
+        if (m_bitmail){
+            m_bitmail->SendMsg(vecTo, msg.toStdString(), TxProgressHandler, this);
         }
+
     }
 
     emit done();

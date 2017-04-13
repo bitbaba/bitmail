@@ -60,7 +60,7 @@
     </property>
     <property name="font">
      <font>
-      <family>Fixedsys</family>
+      <family>Arial</family>
       <pointsize>10</pointsize>
      </font>
     </property>
@@ -159,7 +159,7 @@
        </property>
        <property name="font">
         <font>
-         <family>Fixedsys</family>
+         <family>Arial</family>
          <pointsize>10</pointsize>
          <weight>75</weight>
          <bold>true</bold>
@@ -224,7 +224,7 @@
     </property>
     <property name="font">
      <font>
-      <family>Fixedsys</family>
+      <family>Arial</family>
       <pointsize>6</pointsize>
       <weight>50</weight>
       <bold>false</bold>
@@ -251,7 +251,7 @@
     </property>
     <property name="font">
      <font>
-      <family>Fixedsys</family>
+      <family>Arial</family>
       <pointsize>6</pointsize>
       <weight>50</weight>
       <bold>false</bold>

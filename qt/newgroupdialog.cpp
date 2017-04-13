@@ -16,9 +16,6 @@ NewGroupDialog::NewGroupDialog(BitMail * bm, QWidget *parent) :
 
     setWindowIcon(QIcon(":/images/bitmail.png"));
 
-    m_leCreator = findChild<QLineEdit*>("leCreator");
-    m_leCreator->setReadOnly(true);
-
     m_leGroupId = findChild<QLineEdit*>("leGroupId");
     m_leGroupId->setReadOnly(true);
 
@@ -63,28 +60,16 @@ void NewGroupDialog::on_listAddedMembers_itemDoubleClicked(QListWidgetItem *item
     m_listAddedMembers->takeItem(m_listAddedMembers->row(item));
 }
 
-QString NewGroupDialog::creator() const
-{
-    return m_leCreator->text();
-}
-void NewGroupDialog::creator(const QString & c)
-{
-    m_leCreator->setText(c);
-}
-
 QString NewGroupDialog::groupId() const
 {
     return m_leGroupId->text();
-}
-void NewGroupDialog::groupId(const QString & gid)
-{
-    m_leGroupId->setText(gid);
 }
 
 QString NewGroupDialog::groupName()const
 {
     return m_leGroupName->text();
 }
+
 void NewGroupDialog::groupName(const QString & gn)
 {
     m_leGroupName->setText(gn);
@@ -99,10 +84,12 @@ QStringList NewGroupDialog::groupMembers() const
     }
     return qsl;
 }
+
 void NewGroupDialog::groupMembers(const QStringList & members)
 {
     for (QStringList::const_iterator it = members.begin(); it != members.end(); it++)
     {
+        if (it->isEmpty()) continue;
         m_listAddedMembers->addItem(new QListWidgetItem(QIcon(":/images/head.png"), *it));
     }
 }

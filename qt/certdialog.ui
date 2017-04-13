@@ -70,13 +70,6 @@
         <item>
          <widget class="QLineEdit" name="leEmail"/>
         </item>
-        <item>
-         <widget class="QPushButton" name="btnSubscribe">
-          <property name="text">
-           <string>Subscribe</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
       <item row="2" column="0">
@@ -100,8 +93,10 @@
        <widget class="QLineEdit" name="leCertID">
         <property name="font">
          <font>
-          <family>Fixedsys</family>
-          <pointsize>4</pointsize>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
          </font>
         </property>
        </widget>

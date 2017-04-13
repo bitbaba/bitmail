@@ -103,6 +103,11 @@ namespace BMQTApplication {
     QImage fromMimeImage(const QString & part);
 
     QVariantList fromMime(const QString & mime);
+
+    // Utilities
+    QStringList toQStringList(const std::vector<std::string> & vec);
+
+    std::vector<std::string> toStdStringList(const QStringList & qsl);
 }
 
 #endif // MAIN_H

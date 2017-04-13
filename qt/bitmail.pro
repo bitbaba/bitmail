@@ -22,6 +22,7 @@ HEADERS       = mainwindow.h \
                 messagedialog.h \
                 netoptdialog.h \
                 assistantdialog.h \
+                newgroupdialog.h \
                 lock.h \
     ardialog.h
 
@@ -37,6 +38,7 @@ SOURCES       = main.cpp \
                 messagedialog.cpp \
                 netoptdialog.cpp \
                 assistantdialog.cpp \
+                newgroupdialog.cpp \
                 lock.cpp \
     ardialog.cpp
 #! [0]
@@ -54,6 +56,7 @@ FORMS += \
     messagedialog.ui \
     netoptdialog.ui \
     assistantdialog.ui \
+    newgroupdialog.ui \
     ardialog.ui
 
 win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore

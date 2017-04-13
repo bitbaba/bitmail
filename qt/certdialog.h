@@ -37,8 +37,6 @@ private slots:
 
     void on_buttonBox_rejected();
 
-    void on_btnSubscribe_clicked();
-
 private:
     Ui::CertDialog *ui;
     BitMail   *m_bitmail;

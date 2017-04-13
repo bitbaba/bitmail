@@ -39,8 +39,8 @@ public:
 
     void EnableMakeFriend(bool fEnable);
 
-    void groupId(const QString & qsGroupId);
-    QString groupId() const;
+    void group(const QString & groupmembers);
+    QString group() const;
 
 private slots:
     void on_buttonBox_accepted();
@@ -49,11 +49,12 @@ private slots:
 
     void on_btnMakeFriend_clicked();
 
-    void on_btnViewGroup_clicked();
+    void on_btnJoinGroup_clicked();
 
 signals:
-    void signalAddFriend(const QString & email);
-    void signalViewGroup(const QString & gid);
+    void friendsChanged();
+
+    void groupsChanged();
 
 private:
     Ui::MessageDialog *ui;

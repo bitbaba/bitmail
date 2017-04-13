@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
     }else{
         qInstallMessageHandler(BMQTApplication::myMessageOutput);
     }
+
     qDebug() << "BitMail logger works.";
     // About locale
     // http://doc.qt.io/qt-4.8/qlocale.html
@@ -128,7 +129,6 @@ int main(int argc, char *argv[])
         app.installTranslator(&appTranslator);
     }
 
-
     // Get Account Profile
     QString qsEmail, qsPassphrase;
     bool fAssistant = false;
@@ -156,6 +156,7 @@ int main(int argc, char *argv[])
     };
 
     BitMail * bitmail = new BitMail(new BMLockFactory());
+
     if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
         qDebug() << "Failed to Load Profile, bye!";
         QMessageBox::warning(NULL, QString("Login"), QString("Failed to load profile!"));
@@ -426,10 +427,7 @@ namespace BMQTApplication {
                  ; it ++)
             {
                 QString memberlist = (*it).toString();
-                memberlist.toLower();
-                QStringList qslMembers = memberlist.split(";");
-                qSort(qslMembers.begin(), qslMembers.end());
-                bm->AddGroup(qslMembers.join(";").toStdString());
+                bm->AddGroup(memberlist.toStdString());
             }
         }while(0);
 
@@ -959,6 +957,24 @@ namespace BMQTApplication {
         }
 
         return varlist;
+    }
+
+    QStringList toQStringList(const std::vector<std::string> & vec)
+    {
+        QStringList qsl;
+        for(std::vector<std::string>::const_iterator it = vec.begin(); it != vec.end(); ++it){
+            qsl.append(QString::fromStdString(*it));
+        }
+        return qsl;
+    }
+
+    std::vector<std::string> toStdStringList(const QStringList & qsl)
+    {
+        std::vector<std::string> v;
+        for(QStringList::const_iterator it = qsl.cbegin(); it != qsl.cend(); ++it){
+            v.push_back(it->toStdString());
+        }
+        return v;
     }
 }
 

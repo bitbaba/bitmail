@@ -111,7 +111,6 @@ public slots:
     void onPhotoAct();
     void onVideoAct();
 
-    void onAddFriend(const QString & email);
     void onDurationChanged(qint64);
     void shootScreen();
     void shootPhoto();
@@ -119,8 +118,11 @@ public slots:
     void onCameraCaptureSaved(int id, const QString & filepath);
     void onVideoDurationChanged(qint64);
 
+    void populateFriendTree();
+    void populateGroupTree();
+
 private:    
-    QString getCurrentReceipt();
+    QString currentSessionKey();
 
     void createActions();
     void createToolBars();
@@ -130,11 +132,7 @@ private:
 
     void ViewCert(const QString & e);
 
-    void populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick);
-    void populateFriendTree(QTreeWidgetItem * node);
-
-    void populateGroupLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick);
-    void populateGroupTree(QTreeWidgetItem * node);
+    void populateLeaf(const QString & sessKey);
 
     void populateMessages(const QString & k);
 
@@ -142,6 +140,8 @@ private:
 
     void enqueueMsg(const QString & k, bool tx, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert);
     QStringList dequeueMsg(const QString &key);
+
+    void Send(const QString & msg);
 private:
     QAudioRecorder *audioRecorder;
     QCamera * camera;
@@ -188,7 +188,7 @@ private:
 
 signals:
     void readyToSend(  const QString & from
-                     , const QString & to
+                     , const QStringList & to
                      , const QString & msg);
 };
 

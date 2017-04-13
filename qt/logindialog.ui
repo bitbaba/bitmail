@@ -36,7 +36,7 @@
   </property>
   <property name="font">
    <font>
-    <family>Fixedsys</family>
+    <family>Arial</family>
     <weight>50</weight>
     <bold>false</bold>
    </font>

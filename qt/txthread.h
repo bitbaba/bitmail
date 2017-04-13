@@ -26,7 +26,7 @@ signals:
 
 public slots:
     void onSendMessage(const QString & from
-                       , const QString & to
+                       , const QStringList & to
                        , const QString & content);
 
 private:

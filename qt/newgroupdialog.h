@@ -22,9 +22,6 @@ public:
     explicit NewGroupDialog(BitMail * bm, QWidget *parent = 0);
     ~NewGroupDialog();
 
-    QString creator() const;
-    void creator(const QString & c);
-
     QString groupId() const;
     void groupId(const QString & gid);
 

@@ -69,10 +69,8 @@
 #include "invitedialog.h"
 #include "messagedialog.h"
 #include "ardialog.h"
+#include "newgroupdialog.h"
 #include "main.h"
-
-#define TagFriend  ("$")
-#define TagGoup    ("#")
 
 MainWindow::MainWindow(BitMail * bitmail)
     : camera(NULL)
@@ -125,23 +123,19 @@ MainWindow::MainWindow(BitMail * bitmail)
     QStringList columns;
     columns.append(tr("Contact"));
     btree->setHeaderLabels(columns);
-    btree->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(btree, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(onCtxMenu(QPoint)));
 
     if (1){
         nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")));
         nodeFriends->setIcon(0, QIcon(":/images/head.png"));
-        nodeFriends->setData(0, Qt::UserRole, "Cat::Friends");
-        populateFriendTree(nodeFriends);
         btree->addTopLevelItem(nodeFriends);
+        populateFriendTree();
     }
 
     if (2){
         nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")));
         nodeGroups->setIcon(0, QIcon(":/images/group.png"));
-        nodeGroups->setData(0, Qt::UserRole, "Cat::Groups");
-        populateGroupTree(nodeGroups);
         btree->addTopLevelItem(nodeGroups);
+        populateGroupTree();
     }
 
     leftLayout->addWidget(btree);
@@ -149,9 +143,9 @@ MainWindow::MainWindow(BitMail * bitmail)
     mainLayout->addLayout(leftLayout);
 
     sessLabel = new QLabel;
-    sessLabel->setMaximumHeight(20);
+    sessLabel->setMaximumHeight(32);
+    sessLabel->setMinimumHeight(32);
     sessLabel->setAlignment(Qt::AlignCenter);
-    sessLabel->setFont(QFont("FixedSys", 8));
     QPalette pa;
     pa.setColor(QPalette::WindowText,Qt::red);
     sessLabel->setPalette(pa);
@@ -226,7 +220,7 @@ void MainWindow::startupNetwork()
     m_rxth->start();
 
     m_txth = new TxThread(m_bitmail);
-    connect(this, SIGNAL(readyToSend(QString,QString,QString)), m_txth, SLOT(onSendMessage(QString,QString,QString)));
+    connect(this, SIGNAL(readyToSend(QString,QStringList,QString)), m_txth, SLOT(onSendMessage(QString,QStringList,QString)));
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
     connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
     m_txth->start();
@@ -286,39 +280,43 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
 {
     // Process leaf nodes
-    if (actItem == NULL){
+    if (actItem == NULL || col != 0){
         return ;
     }
-    if (col != 0){
-        return ;
-    }
+
     QVariant qvData = actItem->data(0, Qt::UserRole);
-    if (!qvData.isValid()|| qvData.isNull()){
-        return ;
-    }
-    QString qvDataTypeName = qvData.typeName();
-    if (qvDataTypeName != "QStringList"){
-        return ;
-    }
-    QStringList qslData = qvData.toStringList();
-    QString qsEmail = qslData.at(1);
-
-    if (qsEmail.isEmpty()){
+    if (!qvData.isValid()
+        || qvData.isNull()
+        || QString::fromStdString(qvData.typeName()) != "QString")
+    {
         return ;
     }
 
-    QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(qsEmail.toStdString()));
-    QString qsCertID = QString::fromStdString(m_bitmail->GetFriendID(qsEmail.toStdString()));
-    CertDialog certDialog(m_bitmail, this);    
-    certDialog.SetEmail(qsEmail);
-    certDialog.SetNick(qsNick);
-    certDialog.SetCertID(qsCertID);
+    QString sessKey = qvData.toString();
 
-    QPixmap qrImage = BMQTApplication::toQrImage(QString("bitmail:%1#%2").arg(qsEmail).arg(qsCertID));
-    certDialog.qrImage(qrImage);
+    QStringList receips = BMQTApplication::toQStringList(BitMail::fromSessionKey(sessKey.toStdString()));
 
-    if (QDialog::Rejected == certDialog.exec()){
-        return ;
+    if (receips.size() == 1){
+        QString qsEmail = receips.at(0);
+        QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(qsEmail.toStdString()));
+        QString qsCertID = QString::fromStdString(m_bitmail->GetFriendID(qsEmail.toStdString()));
+        CertDialog certDialog(m_bitmail, this);
+        certDialog.SetEmail(qsEmail);
+        certDialog.SetNick(qsNick);
+        certDialog.SetCertID(qsCertID);
+
+        QPixmap qrImage = BMQTApplication::toQrImage(QString("bitmail:%1#%2").arg(qsEmail).arg(qsCertID));
+        certDialog.qrImage(qrImage);
+
+        if (QDialog::Rejected == certDialog.exec()){
+            return ;
+        }
+    }else if (receips.size() >= 2){
+        NewGroupDialog dlg(m_bitmail);
+        dlg.groupMembers(receips);
+        if (dlg.exec() != QDialog::Accepted){
+            return ;
+        }
     }
 }
 
@@ -495,20 +493,7 @@ void MainWindow::onFileAct()
 
     QString qsMsg = BMQTApplication::toMixed(vparts);
 
-    QString qsTo = getCurrentReceipt();
-    if (qsTo.isEmpty()){
-        return ;
-    }
-
-    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
-    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
-
-    emit readyToSend(qsFrom, qsTo, qsMsg);
-
-    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
-
-    populateMessages(qsTo);
+    Send(qsMsg);
 }
 
 void MainWindow::onAudioAct()
@@ -542,16 +527,9 @@ void MainWindow::onDurationChanged(qint64 duration)
         QString audioFilePath = audioRecorder->outputLocation().toLocalFile();
 
         QString qsMsg = BMQTApplication::toMimeAttachment(audioFilePath);
-        QString qsTo = getCurrentReceipt();
-        if (qsTo.isEmpty()){
-            return ;
-        }
-        QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-        QString qsCertId = QString::fromStdString(m_bitmail->GetID());
-        QString qsCert = QString::fromStdString(m_bitmail->GetCert());
-        emit readyToSend(qsFrom, qsTo, qsMsg);
-        enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
-        populateMessages(qsTo);
+
+        Send(qsMsg);
+
     }else{
         m_arDlg->ShowStatus(tr("Recorded") + QString("%1.%2").arg(duration / 1000).arg(duration % 1000) + tr("seconds"));
     }
@@ -561,17 +539,7 @@ void MainWindow::onEmojiAct()
 {
     QString emojiFile = QFileDialog::getOpenFileName(this, tr("select a emoji to send"), BMQTApplication::GetEmojiHome(), "Emoji Files (*.png *.jpg *.bmp)");
     QString qsMsg = BMQTApplication::toMimeAttachment(emojiFile);
-    QString qsTo = getCurrentReceipt();
-    if (qsTo.isEmpty()){
-        return ;
-    }
-    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
-    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
-    emit readyToSend(qsFrom, qsTo, qsMsg);
-    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
-    populateMessages(qsTo);
-    return ;
+    Send(qsMsg);
 }
 
 void MainWindow::onSnapAct()
@@ -600,17 +568,8 @@ void MainWindow::shootScreen()
     this->showNormal();
 
     QString qsMsg = BMQTApplication::toMimeImage(originalPixmap.toImage());
-    QString qsTo = getCurrentReceipt();
-    if (qsTo.isEmpty()){
-        return ;
-    }
-    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
-    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
-    emit readyToSend(qsFrom, qsTo, qsMsg);
-    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
-    populateMessages(qsTo);
-    return ;
+
+    Send(qsMsg);
 }
 
 void MainWindow::onPhotoAct()
@@ -662,18 +621,7 @@ void MainWindow::onCameraCaptureSaved(int id, const QString & filepath)
 
     QString qsMsg = BMQTApplication::toMimeImage(QImage(filepath));
 
-    QString qsTo = getCurrentReceipt();
-    if (qsTo.isEmpty()){
-        return ;
-    }
-    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
-    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
-    emit readyToSend(qsFrom, qsTo, qsMsg);
-
-    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
-
-    populateMessages(qsTo);
+    Send(qsMsg);
 }
 
 void MainWindow::onVideoAct()
@@ -742,12 +690,8 @@ void MainWindow::onBtnInviteClicked()
     if (QDialog::Accepted != inviteDialog.exec()){
         return ;
     }
-
-    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-    QString qsTo = inviteDialog.GetEmail();
     QString qsWhisper = inviteDialog.GetWhisper();
     QStringList attachments = inviteDialog.attachments();
-
     QStringList parts;
     parts.append( BMQTApplication::toMimeTextPlain( qsWhisper ));
     for(QStringList::const_iterator it = attachments.constBegin(); it != attachments.constEnd(); ++it){
@@ -758,9 +702,7 @@ void MainWindow::onBtnInviteClicked()
     }
     QString qsMsg = BMQTApplication::toMixed(parts);
 
-    emit readyToSend(qsFrom , qsTo, qsMsg);
-
-    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, QString::fromStdString(m_bitmail->GetID()), QString::fromStdString(m_bitmail->GetCert()));
+    Send(qsMsg);
 
     return ;
 }
@@ -771,13 +713,6 @@ void MainWindow::onBtnSendClicked()
         statusBar()->showMessage(tr("No active network"));
         return ;
     }
-    // If you have not setup a QTextCodec for QString & C-String(ANSI-MB)
-    // toLatin1() ignore any codec;
-    // toLocal8Bit use QTextCodec::codecForLocale(),
-    // toAscii() use QTextCodec::setCodecForCStrings()
-    // toUtf8() use UTF8 codec
-    // QTextCodec::codecForLocale() guess the MOST suitable codec for current locale,
-    // if application has not set codec for locale by setCodecForLocale;
     QString qsMsgPlain = textEdit->toPlainText();
     textEdit->clear();
     if (qsMsgPlain.isEmpty()){
@@ -786,25 +721,7 @@ void MainWindow::onBtnSendClicked()
 
     QString qsMsg = BMQTApplication::toMimeTextPlain(qsMsgPlain);
 
-    QString qsTo = getCurrentReceipt();
-    if (qsTo.isEmpty()){
-        return ;
-    }
-
-    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
-    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
-
-    emit readyToSend(qsFrom, qsTo, qsMsg);
-
-    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
-
-    populateMessages(qsTo);
-
-    // There are bugs in Qt-Creator's memory view utlity;
-    // open <address> in memory window,
-    // select the value of the <address>,
-    // jump to <value>(little-endien) in a NEW memory window, note: NEW
+    Send(qsMsg);
 }
 
 void MainWindow::onBtnSendQrClicked()
@@ -813,13 +730,6 @@ void MainWindow::onBtnSendQrClicked()
         statusBar()->showMessage(tr("No active network"));
         return ;
     }
-    // If you have not setup a QTextCodec for QString & C-String(ANSI-MB)
-    // toLatin1() ignore any codec;
-    // toLocal8Bit use QTextCodec::codecForLocale(),
-    // toAscii() use QTextCodec::setCodecForCStrings()
-    // toUtf8() use UTF8 codec
-    // QTextCodec::codecForLocale() guess the MOST suitable codec for current locale,
-    // if application has not set codec for locale by setCodecForLocale;
     QString qsMsgPlain = textEdit->toPlainText();
     textEdit->clear();
     if (qsMsgPlain.isEmpty()){
@@ -828,25 +738,7 @@ void MainWindow::onBtnSendQrClicked()
 
     QString qsMsg = BMQTApplication::toMimeImage(BMQTApplication::toQrImage(qsMsgPlain).toImage());
 
-    QString qsTo = getCurrentReceipt();
-    if (qsTo.isEmpty()){
-        return ;
-    }
-
-    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
-    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
-    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
-
-    emit readyToSend(qsFrom, qsTo, qsMsg);
-
-    enqueueMsg(qsTo, true, qsFrom, qsTo, qsMsg, qsCertId, qsCert);
-
-    populateMessages(qsTo);
-
-    // There are bugs in Qt-Creator's memory view utlity;
-    // open <address> in memory window,
-    // select the value of the <address>,
-    // jump to <value>(little-endien) in a NEW memory window, note: NEW
+    Send(qsMsg);
 }
 
 /**
@@ -855,19 +747,25 @@ void MainWindow::onBtnSendQrClicked()
  * 2) in the case1, Q_DECLARE_METATYPE(MsgType) & aRegisterMetaType<MsgType>(), will make case1 to work.
  */
 void MainWindow::onNewMessage(const QString & from
-                              , const QString & receips
+                              , const QString & qsTo /*receips*/
                               , const QString & content
                               , const QString & certid
                               , const QString & cert)
 {   
-    QString qsTo = QString::fromStdString(m_bitmail->GetEmail());
+    qDebug() << "receips: " << qsTo;
 
-    qDebug() << "receips: " << receips;
+    std::vector<std::string> vec_receips = BitMail::decodeReceips(qsTo.toStdString());
 
-    enqueueMsg(from, false, from, qsTo, content, certid, cert);
+    QString sessionKey = QString::fromStdString(BitMail::toSessionKey(vec_receips));
 
-    if ((from == this->getCurrentReceipt() && !from.isEmpty())){
-        populateMessages(from);
+    //populateFriendLeaf(sessionKey, from);
+    //populateGroupLeaf(sessionKey, QString::fromStdString(group));
+
+    QString receips = QString::fromStdString(BitMail::serializeReceips(vec_receips));
+    enqueueMsg(sessionKey, false, from, receips, content, certid, cert);
+
+    if (!sessionKey.isEmpty() && sessionKey == this->currentSessionKey()){
+        populateMessages(sessionKey);
     }
 
     this->activateWindow();
@@ -898,6 +796,29 @@ QStringList MainWindow::dequeueMsg(const QString &k)
     return m_peermsgQ[k];
 }
 
+void MainWindow::Send(const QString & qsMsg)
+{
+    QString sessionKey = currentSessionKey();
+    if (sessionKey.isEmpty()){
+        return ;
+    }
+
+    std::vector<std::string> vec_receips = BitMail::fromSessionKey(sessionKey.toStdString());
+    if (vec_receips.empty()){
+        return ;
+    }
+
+    QString qsFrom = QString::fromStdString(m_bitmail->GetEmail());
+    QString qsCertId = QString::fromStdString(m_bitmail->GetID());
+    QString qsCert = QString::fromStdString(m_bitmail->GetCert());
+
+    emit readyToSend(qsFrom, BMQTApplication::toQStringList(vec_receips), qsMsg);
+
+    enqueueMsg(sessionKey, true, qsFrom, QString::fromStdString( BitMail::serializeReceips(vec_receips) ), qsMsg, qsCertId, qsCert);
+
+    populateMessages(sessionKey);
+}
+
 void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * /*previous*/)
 {
     btnSend->setEnabled(false);
@@ -910,29 +831,22 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
     }
 
     QVariant qvData = current->data(0, Qt::UserRole);
-    if (qvData.isNull()){
-        return ;
-    }
-    if (!qvData.isValid()){
-        return ;
-    }
-    if (QString::fromStdString(qvData.typeName()) != "QStringList" ){
+    if (qvData.isNull()
+        ||!qvData.isValid()
+        ||QString::fromStdString(qvData.typeName()) != "QString")
+    {
         return ;
     }
 
-    QStringList qslData = qvData.toStringList();
-
-    QString qsKey = qslData.at(1);
+    QString sessKey = qvData.toString();
 
     /*Setup session label header*/
-    {
-        sessLabel->setText(QString::fromStdString(m_bitmail->GetFriendNick(qsKey.toStdString())));
-        btnSend->setEnabled(true);
-        chatToolbar->setEnabled(true);
-        btnSendQr->setEnabled(true);
-    }
+    sessLabel->setText(sessKey);
+    btnSend->setEnabled(true);
+    chatToolbar->setEnabled(true);
+    btnSendQr->setEnabled(true);
 
-    populateMessages(qsKey);
+    populateMessages(sessKey);
 
     return ;
 }
@@ -942,6 +856,7 @@ void MainWindow::populateMessages(const QString & k)
     msgView->clear();
 
     QStringList rtxList = dequeueMsg(k);
+
     for (int i = 0; i < rtxList.length(); ++i){
         QString tmp = rtxList.at(i);
         QJsonObject msgObj = (QJsonDocument::fromJson(tmp.toUtf8()).object());
@@ -952,15 +867,12 @@ void MainWindow::populateMessages(const QString & k)
 
         QVariantList varlist = BMQTApplication::fromMime(qsMsg);
 
-        //msgElt->setText(qsMsg.mid(0, 128));
-
         msgElt->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
         msgElt->setBackgroundColor(msgObj["tx"].toBool() ? Qt::lightGray : Qt::green);
         msgElt->setData(Qt::UserRole, msgObj);
 
         //http://stackoverflow.com/questions/948444/qlistview-qlistwidget-with-custom-items-and-custom-item-widgets
         //http://www.qtcentre.org/threads/27777-Customize-QListWidgetItem-how-to
-
         QWidget* w = new QWidget;
         QVBoxLayout* v = new QVBoxLayout( w );
         for (QVariantList::const_iterator it = varlist.constBegin(); it != varlist.constEnd(); ++it){
@@ -976,14 +888,10 @@ void MainWindow::populateMessages(const QString & k)
             }else if (QString::fromStdString(var.typeName()) == "QString"){
                 if (0){
                     QTextEdit * tmp = new QTextEdit(w);
-                    //QLabel * tmp = new QLabel(w);
-                    //QTextBrowser * tmp = new QTextBrowser(w);
-                    //tmp->setScaledContents(true);
                     tmp->setReadOnly(true);
                     tmp->setTextBackgroundColor(msgElt->backgroundColor());
                     tmp->setFrameStyle(QFrame::NoFrame);
                     tmp->setFixedWidth(msgView->width());
-                    //tmp->setWordWrap(true);
                     tmp->setWordWrapMode(QTextOption::WordWrap);
                     tmp->setAlignment(Qt::AlignRight);
                     tmp->setHtml(var.toString());
@@ -1001,7 +909,6 @@ void MainWindow::populateMessages(const QString & k)
                 QFileInfo fileInfo = qvariant_cast<QFileInfo>(var);
                 QLabel * tmp = new QLabel(w);
                 tmp->setScaledContents(true);
-                //lblElt->setText(QString("<%1>").arg(fileInfo.fileName()));
                 tmp->setPixmap((QFileIconProvider().icon(fileInfo).pixmap(QSize(64,64))));
                 vElt = tmp;
             }else{
@@ -1043,95 +950,98 @@ void MainWindow::onMessageDoubleClicked(QListWidgetItem * actItem)
     messageDialog.SetMessage(msgObj["msg"].toString());
     messageDialog.SetCertID(msgObj["certid"].toString());
     messageDialog.SetCert(msgObj["cert"].toString());
+    messageDialog.group(msgObj["to"].toString());
 
-    connect(&messageDialog, SIGNAL(signalAddFriend(QString))
-            , this, SLOT(onAddFriend(QString)));
+    connect(&messageDialog, SIGNAL(friendsChanged()), this, SLOT(populateFriendTree()));
+    connect(&messageDialog, SIGNAL(groupsChanged()), this, SLOT(populateGroupTree()));
 
     messageDialog.exec();
 
     return ;
 }
 
-QString MainWindow::getCurrentReceipt()
+QString MainWindow::currentSessionKey()
 {
     if (btree->currentItem() == NULL){
         return "";
     }
 
     QVariant qvData = btree->currentItem()->data(0, Qt::UserRole);
-    if (!qvData.isValid() || qvData.isNull()){
+    if (!qvData.isValid()
+        || qvData.isNull()
+        || QString::fromStdString(qvData.typeName()) != "QString"){
         return "";
     }
 
-    QString qsVDataTyep = qvData.typeName();
-    if (qsVDataTyep != "QStringList"){
-        return "";
-    }
+    QString sessKey = qvData.toString();
 
-    QStringList qslData = qvData.toStringList();
-
-    return qslData.at(1);
+    return sessKey;
 }
 
-void MainWindow::populateFriendTree(QTreeWidgetItem * node)
+void MainWindow::populateFriendTree()
 {
+    // clear all firstly
+    while(nodeFriends->childCount()){
+        QTreeWidgetItem * item = nodeFriends->child(0);
+        nodeFriends->removeChild(item);
+    }
     // Add buddies
     std::vector<std::string> vecEmails;
     m_bitmail->GetFriends(vecEmails);
     for (std::vector<std::string>::const_iterator it = vecEmails.begin()
          ; it != vecEmails.end(); ++it)
     {
-        std::string sBuddyNick = m_bitmail->GetFriendNick(*it);
-        QString qsNick = QString::fromStdString(sBuddyNick);
-        populateFriendLeaf(node, QString::fromStdString(*it), qsNick);
+        QString sessKey = QString::fromStdString( BitMail::toSessionKey(*it) );
+        populateLeaf(sessKey);
     }
     return ;
 }
 
-void MainWindow::populateFriendLeaf(QTreeWidgetItem * node, const QString &email, const QString &nick)
-{
-    QStringList qslBuddy;
-    qslBuddy.append(nick);
-    QTreeWidgetItem *buddy = new QTreeWidgetItem(node, qslBuddy, 0);
-    buddy->setIcon(0, QIcon(":/images/head.png"));
-    QStringList qslData;
-    qslData.append(TagFriend);
-    qslData.append(email);
-    buddy->setData(0, Qt::UserRole, QVariant(qslData));
-    node->addChild(buddy);
-    return ;
-}
 
-void MainWindow::populateGroupTree(QTreeWidgetItem * node)
+void MainWindow::populateGroupTree()
 {
+    // clear all firstly
+    while(nodeGroups->childCount()){
+        QTreeWidgetItem * item = nodeGroups->child(0);
+        nodeGroups->removeChild(item);
+    }
     // Add groups
     std::vector<std::string> vecGroups;
     m_bitmail->GetGroups(vecGroups);
     for (std::vector<std::string>::const_iterator it = vecGroups.begin()
          ; it != vecGroups.end(); ++it)
     {
-        QString qsGroup = QString::fromStdString(*it);
-        populateGroupLeaf(node, qsGroup, qsGroup.mid(0, 10));
+        QString sessKey = QString::fromStdString( BitMail::toSessionKey( BitMail::decodeReceips(*it) ) );
+        populateLeaf(sessKey);
     }
     return ;
 }
 
-void MainWindow::populateGroupLeaf(QTreeWidgetItem * node, const QString & qsGroup, const QString &nick)
+void MainWindow::populateLeaf(const QString & sessKey)
 {
-    QStringList qslBuddy;
-    qslBuddy.append(nick);
-    QTreeWidgetItem *buddy = new QTreeWidgetItem(node, qslBuddy, 0);
-    buddy->setIcon(0, QIcon(":/images/group.png"));
-    QStringList qslData;
-    qslData.append(TagGoup);
-    qslData.append(qsGroup);
-    buddy->setData(0, Qt::UserRole, QVariant(qslData));
+    QString nick;
+    std::vector<std::string> vec_receips = BitMail::fromSessionKey(sessKey.toStdString());
+    for (std::vector<std::string>::const_iterator it = vec_receips.begin();
+         it != vec_receips.end();
+         ++it){
+        nick += QString::fromStdString(m_bitmail->GetFriendNick(*it));
+        nick += QString::fromStdString("\n");
+    }
+    QStringList qslText;
+    qslText.append(nick);
+
+    QTreeWidgetItem * node = (vec_receips.size() > 1) ? nodeGroups : nodeFriends;
+
+    QTreeWidgetItem *buddy = new QTreeWidgetItem(node, qslText, 0);
+
+    //TODO: logo synthesize
+    if (vec_receips.size() > 1){
+        buddy->setIcon(0, QIcon(":/images/group.png"));
+    }else{
+        buddy->setIcon(0, QIcon(":/images/head.png"));
+    }
+    buddy->setData(0, Qt::UserRole, sessKey);
+
     node->addChild(buddy);
+    return ;
 }
-
-void MainWindow::onAddFriend(const QString &email)
-{
-    QString qsNick = QString::fromStdString(m_bitmail->GetFriendNick(email.toStdString()));
-    populateFriendLeaf(nodeFriends, email, qsNick);
-}
-

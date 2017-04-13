@@ -85,6 +85,12 @@
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QLineEdit" name="leFrom">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
@@ -108,6 +114,14 @@
       </item>
       <item row="2" column="1">
        <widget class="QLineEdit" name="leCertID">
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
         <property name="readOnly">
          <bool>true</bool>
         </property>
@@ -116,19 +130,26 @@
       <item row="3" column="0">
        <widget class="QLabel" name="lblGroupId">
         <property name="text">
-         <string>GroupId:</string>
+         <string>Group:</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_6">
         <item>
-         <widget class="QLineEdit" name="leGroupId"/>
+         <widget class="QLineEdit" name="leGroupId">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+         </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="btnViewGroup">
+         <widget class="QPushButton" name="btnJoinGroup">
           <property name="text">
-           <string>View...</string>
+           <string>Join</string>
           </property>
          </widget>
         </item>
@@ -205,8 +226,8 @@
        </property>
        <property name="font">
         <font>
-         <family>Fixedsys</family>
-         <pointsize>6</pointsize>
+         <family>Arial</family>
+         <pointsize>10</pointsize>
         </font>
        </property>
        <property name="readOnly">

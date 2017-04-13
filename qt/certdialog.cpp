@@ -76,8 +76,3 @@ void CertDialog::qrImage(const QPixmap &p)
     m_lbQrCode->setScaledContents(true);
     m_lbQrCode->setPixmap(p);
 }
-
-void CertDialog::on_btnSubscribe_clicked()
-{
-    return ;
-}
