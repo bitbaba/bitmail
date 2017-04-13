@@ -280,6 +280,16 @@ public:
 
    static std::vector<std::string> fromSessionKey(const std::string & sessKey);
 
+   static bool isGroupSession(const std::string & sessKey);
+
+   std::string sessionName(const std::string & sessKey) const;
+
+   void sessionName(const std::string & sessKey, const std::string & sessName);
+
+   std::string sessionLogo(const std::string & sessKey) const;
+
+   void sessionLogo(const std::string & sessKey, const std::string & sessLogo);
+
 protected:
 
     PollEventCB          m_onPollEvent;
@@ -297,6 +307,15 @@ protected:
     
     // Groups, Key: GroupID, Value: vector of friends' email
     std::set<std::string> m_groups;
+
+    // Sessions, local storage for all sessions.
+    // Key: sessionKey
+    // Value: session Names
+    std::map<std::string, std::string> m_sessNames;
+
+    // Key: session Key
+    // Value: session logo image encoded in base64
+    std::map<std::string, std::string> m_sessLogos;
 
     // Lock
     ILock * m_lock1;

@@ -687,7 +687,9 @@ std::string BitMail::serializeReceips(const std::vector<std::string> & vec_recei
 {
     std::string receips;
     for (std::vector<std::string>::const_iterator it = vec_receips.begin(); it != vec_receips.end(); ++it){
-        receips += *it;
+        std::string email = *it;
+        std::transform(email.begin(), email.end(), email.begin(), ::tolower);
+        receips += email;
         receips += ";";
     }
     return receips;
@@ -710,6 +712,50 @@ std::vector<std::string> BitMail::fromSessionKey(const std::string & sessKey)
 {
     return decodeReceips( fromBase64(sessKey) );
 }
+
+bool BitMail::isGroupSession(const std::string & sessKey)
+{
+    return fromSessionKey(sessKey).size() > 1;
+}
+
+std::string BitMail::sessionName(const std::string & sessKey) const
+{
+    // First user configuration locally
+    if (m_sessNames.find(sessKey) != m_sessNames.end()){
+        return m_sessNames.find(sessKey)->second;
+    }
+    // fallback to nick from certificate
+    std::string sessName = "";
+    std::vector<std::string> vec_receips = fromSessionKey(sessKey);
+    for (std::vector<std::string>::const_iterator it = vec_receips.begin(); it != vec_receips.end(); ){
+        std::string nick = this->GetFriendNick(*it++);
+        sessName += nick;
+        if (it == vec_receips.end() )break;
+        sessName += ",";
+    }
+    // really fail
+    return sessName;
+}
+
+void BitMail::sessionName(const std::string & sessKey, const std::string & sessName)
+{
+    m_sessNames[sessKey] = sessName;
+    return ;
+}
+
+std::string BitMail::sessionLogo(const std::string & sessKey) const
+{
+    if (m_sessLogos.find(sessKey) != m_sessLogos.end()){
+        return m_sessLogos.find(sessKey)->second;
+    }
+    return "";
+}
+
+void BitMail::sessionLogo(const std::string & sessKey, const std::string & sessLogo)
+{
+    m_sessLogos [sessKey] = sessLogo;
+}
+
 
 // Mime parser
 int BitMail::EmailHandler(BMEventHead * h, void * userp)
