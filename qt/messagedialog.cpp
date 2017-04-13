@@ -112,9 +112,9 @@ void MessageDialog::on_btnMakeFriend_clicked()
         QString qsPrevCertID = QString::fromStdString(m_bitmail->GetFriendID(qsFrom.toStdString()));
         int ret = QMessageBox::question(this
                                         , tr("Add Friend")
-                                        , tr("Replace with this certificate?\r\n")
-                                        + tr("Old: [") + qsPrevCertID + QString("]\r\n")
-                                        + tr("New: [") + qsCertID + QString("]\r\n")
+                                        , tr("Replace with this certificate?")      + QString("\r\n")
+                                        + tr("Old:") + QString(" [") + qsPrevCertID + QString("]\r\n")
+                                        + tr("New:") + QString(" [") + qsCertID     + QString("]\r\n")
                                         , QMessageBox::Yes | QMessageBox::No);
         if (ret != QMessageBox::Yes){
             return ;

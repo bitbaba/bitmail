@@ -92,7 +92,7 @@
         <location filename="../assistantdialog.cpp" line="176"/>
         <source>Replace with this certificate?
 </source>
-        <translation>使用当前证书替换之前的?</translation>
+        <translation type="unfinished">使用当前证书替换之前的?</translation>
     </message>
     <message>
         <location filename="../assistantdialog.cpp" line="177"/>
@@ -180,7 +180,7 @@
     <message>
         <location filename="../invitedialog.ui" line="113"/>
         <source>Choose...</source>
-        <translation>选择:</translation>
+        <translation>选择...</translation>
     </message>
     <message>
         <location filename="../invitedialog.cpp" line="56"/>
@@ -553,7 +553,7 @@
     <message>
         <location filename="../messagedialog.ui" line="152"/>
         <source>Join</source>
-        <translation>加入:</translation>
+        <translation>加入</translation>
     </message>
     <message>
         <source>CertID:</source>
@@ -600,19 +600,31 @@
     </message>
     <message>
         <location filename="../messagedialog.cpp" line="115"/>
-        <source>Replace with this certificate?
-</source>
-        <translation>使用当前证书替换之前的?</translation>
+        <source>Replace with this certificate?</source>
+        <translation>证书替换?</translation>
     </message>
     <message>
         <location filename="../messagedialog.cpp" line="116"/>
-        <source>Old: [</source>
-        <translation>旧的：[</translation>
+        <source>Old:</source>
+        <translation>原有的:</translation>
     </message>
     <message>
         <location filename="../messagedialog.cpp" line="117"/>
+        <source>New:</source>
+        <translation>新来的:</translation>
+    </message>
+    <message>
+        <source>Replace with this certificate?
+</source>
+        <translation type="vanished">使用当前证书替换之前的?</translation>
+    </message>
+    <message>
+        <source>Old: [</source>
+        <translation type="vanished">旧的：[</translation>
+    </message>
+    <message>
         <source>New: [</source>
-        <translation>新的: [</translation>
+        <translation type="vanished">新的: [</translation>
     </message>
     <message>
         <location filename="../messagedialog.cpp" line="125"/>

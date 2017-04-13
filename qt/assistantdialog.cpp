@@ -17,45 +17,42 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
 #endif
     setWindowIcon(QIcon(":/images/bitmail.png"));
 
-    m_txtInput = findChild<QTextEdit*>("txtInput");
-    m_btnEncrypt = findChild<QPushButton*>("btnEncrypt");
-    m_btnDecrypt = findChild<QPushButton*>("btnDecrypt");
-    m_btnSign = findChild<QPushButton*>("btnSign");
+    m_txtInput     = findChild<QTextEdit*>  ("txtInput"    );
+    m_btnEncrypt   = findChild<QPushButton*>("btnEncrypt"  );
+    m_btnDecrypt   = findChild<QPushButton*>("btnDecrypt"  );
+    m_btnSign      = findChild<QPushButton*>("btnSign"     );
     m_btnAddFriend = findChild<QPushButton*>("btnAddFriend");
-    m_cbbFriends = findChild<QComboBox*>("cbbFriends");
-    m_leNick = findChild<QLineEdit*>("leNick");
-    m_leEmail = findChild<QLineEdit*>("leEmail");
-    m_leCertId = findChild<QLineEdit*>("leCertId");
-    m_txtCert = findChild<QTextEdit*>("txtCert");
-    m_txtOutput = findChild<QTextEdit*>("txtOutput");
+    m_cbbFriends   = findChild<QComboBox*>  ("cbbFriends"  );
+    m_leNick       = findChild<QLineEdit*>  ("leNick"      );
+    m_leEmail      = findChild<QLineEdit*>  ("leEmail"     );
+    m_leCertId     = findChild<QLineEdit*>  ("leCertId"    );
+    m_txtCert      = findChild<QTextEdit*>  ("txtCert"     );
+    m_txtOutput    = findChild<QTextEdit*>  ("txtOutput"   );
 
-    // Populate friend list
-    do {
+    std::vector<std::string> friends;
+    m_bitmail->GetFriends(friends);
+    for (std::vector<std::string>::const_iterator it = friends.begin(); it != friends.end(); ++it)
+    {
+        std::string email = (*it);
+        std::string sessKey = BitMail::toSessionKey(email);
+        m_cbbFriends->addItem(QIcon(":/images/head.png")
+                              , QString::fromStdString(m_bitmail->sessionName(sessKey))
+                              , QVariant(QString::fromStdString(sessKey)));
+    }
+
+    std::vector<std::string> groups;
+    m_bitmail->GetGroups(groups);
+    for (unsigned int i = 0; i < groups.size(); ++i)
+    {
+        std::string group = groups[i];
+        std::vector<std::string> vec_receips = BitMail::decodeReceips(group);
+        std::string sessKey = BitMail::toSessionKey(vec_receips);
         m_cbbFriends->addItem(QIcon(":/images/group.png")
-                              , tr("All")
-                              , QVariant(QString("*")));
+                              , QString::fromStdString(m_bitmail->sessionName(sessKey))
+                              , QVariant(QString::fromStdString(sessKey)));
+    }
 
-        std::vector<std::string> vecMemberLists;
-        m_bitmail->GetGroups(vecMemberLists);
-        for (unsigned int i = 0; i < vecMemberLists.size(); ++i){
-            std::string qsMemberList = vecMemberLists[i];
-            m_cbbFriends->addItem(QIcon(":/images/group.png")
-                                  , QString::fromStdString(qsMemberList).mid(0, 20)
-                                  , QVariant(QString("#") + QString::fromStdString(qsMemberList)));
-        }
-        std::vector<std::string> vecFriends;
-        m_bitmail->GetFriends(vecFriends);
-        for (std::vector<std::string>::const_iterator it = vecFriends.begin();
-              it != vecFriends.end(); ++it){
-            std::string sNick=m_bitmail->GetFriendNick(*it);
-            m_cbbFriends->addItem(QIcon(":/images/head.png")
-                                  , QString::fromStdString(sNick)
-                                  , QVariant(QString::fromStdString(*it)));
-        }
-    }while(0);
-
-    if (0){
-        // Listen clipboards
+    if (0){// Listen clipboard
         m_clip = QApplication::clipboard();
         connect(m_clip, SIGNAL(dataChanged()), this, SLOT(onClipDataChanged()));
     }
@@ -123,25 +120,11 @@ void AssistantDialog::output(const QString & o)
 void AssistantDialog::on_btnEncrypt_clicked()
 {
     clearOutput();
-    std::vector<std::string> vecFriends;
-    do {
-        QString qsData = m_cbbFriends->currentData().toString();
-        QChar cPrefix = qsData.at(0);
-        if (cPrefix == '*'){       // ---- All
-            m_bitmail->GetFriends(vecFriends);
-        }else if (cPrefix == '#'){ // ---- Group
-            QStringList qslMemberList = qsData.mid(1).split(";");
-            for (QStringList::const_iterator it = qslMemberList.cbegin(); it != qslMemberList.cend(); ++it)
-            {
-                QString f = *it;
-                vecFriends.push_back(f.toStdString());
-            }
-        }else{                     // ---- Peer
-            vecFriends.push_back(qsData.toStdString());
-        }
-    }while(0);
+    std::vector<std::string> friends;
+    QString sessKey = m_cbbFriends->currentData().toString();
+    friends = BitMail::fromSessionKey(sessKey.toStdString());
     std::string msg = input().toStdString();
-    output(QString::fromStdString(m_bitmail->EncMsg(vecFriends, msg, false)));
+    output(QString::fromStdString(m_bitmail->EncMsg(friends, msg, false)));
 }
 
 void AssistantDialog::on_btnDecrypt_clicked()
@@ -160,36 +143,17 @@ void AssistantDialog::on_btnAddFriend_clicked()
 {
     QString qsFrom = email();
     QString qsCert = cert();
-    QString qsCertID = certid();
-
-    if (m_bitmail->HasFriend(qsFrom.toStdString())){
-        if (m_bitmail->IsFriend(qsFrom.toStdString(), qsCert.toStdString())){
-            QMessageBox::information(this
-                                     , tr("Friend")
-                                     , tr("You are already friends.")
-                                     , QMessageBox::Ok);
-            return ;
-        }
-        QString qsPrevCertID = QString::fromStdString(m_bitmail->GetFriendID(qsFrom.toStdString()));
-        int ret = QMessageBox::question(this
-                                        , tr("Add Friend")
-                                        , tr("Replace with this certificate?\r\n")
-                                        + tr("Old: [") + qsPrevCertID + QString("]\r\n")
-                                        + tr("New: [") + qsCertID + QString("]\r\n")
-                                        , QMessageBox::Yes | QMessageBox::No);
-        if (ret != QMessageBox::Yes){
-            return ;
-        }
-    }
 
     if (bmOk != m_bitmail->AddFriend(qsFrom.toStdString(), qsCert.toStdString())){
         QMessageBox::warning(this, tr("Add Friend"), tr("Failed to add friend"), QMessageBox::Ok);
         return ;
     }
 
+    std::string sessKey = BitMail::toSessionKey(qsFrom.toStdString());
+
     m_cbbFriends->addItem(QIcon(":/images/head.png")
-                          , nick()
-                          , QVariant(qsFrom));
+                          , QString::fromStdString(m_bitmail->sessionName(sessKey))
+                          , QVariant(QString::fromStdString(sessKey)));
 }
 
 void AssistantDialog::on_btnClearInput_clicked()
@@ -206,15 +170,8 @@ void AssistantDialog::on_txtInput_textChanged()
     if (qsInput.contains("Mime-Version:", Qt::CaseInsensitive)
         || qsInput.contains("Content-Type:", Qt::CaseInsensitive))
     {
-        //m_btnSign->setEnabled(false);
-        //m_cbbFriends->setEnabled(false);
-        //m_btnEncrypt->setEnabled(false);
-        //m_btnDecrypt->setEnabled(true);
         on_btnDecrypt_clicked();
     }else{
-        //m_btnSign->setEnabled(true);
-        //m_cbbFriends->setEnabled(true);
-        //m_btnEncrypt->setEnabled(true);
         m_btnDecrypt->setEnabled(false);
         on_btnEncrypt_clicked();
     }

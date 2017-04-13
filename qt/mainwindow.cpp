@@ -756,10 +756,15 @@ void MainWindow::onNewMessage(const QString & from
 
     std::vector<std::string> vec_receips = BitMail::decodeReceips(qsTo.toStdString());
 
-    QString sessionKey = QString::fromStdString(BitMail::toSessionKey(vec_receips));
+    QString sessionKey = QString::fromStdString(BitMail::toSessionKey(from.toStdString()));
 
-    //populateFriendLeaf(sessionKey, from);
-    //populateGroupLeaf(sessionKey, QString::fromStdString(group));
+    if (vec_receips.size() > 1){
+        sessionKey = QString::fromStdString(BitMail::toSessionKey(vec_receips));
+    }
+
+    if (!hasLeaf(nodeFriends, sessionKey) && !hasLeaf(nodeGroups, sessionKey)){
+        populateLeaf(sessionKey);
+    }
 
     QString receips = QString::fromStdString(BitMail::serializeReceips(vec_receips));
     enqueueMsg(sessionKey, false, from, receips, content, certid, cert);
@@ -841,7 +846,7 @@ void MainWindow::onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem *
     QString sessKey = qvData.toString();
 
     /*Setup session label header*/
-    sessLabel->setText(sessKey);
+    sessLabel->setText( QString::fromStdString(m_bitmail->sessionName(sessKey.toStdString()))) ;
     btnSend->setEnabled(true);
     chatToolbar->setEnabled(true);
     btnSendQr->setEnabled(true);
@@ -1017,25 +1022,28 @@ void MainWindow::populateGroupTree()
     return ;
 }
 
+bool MainWindow::hasLeaf(QTreeWidgetItem * node, const QString &sessKey)
+{
+    for(int i = 0; i < node->childCount(); i++){
+        QTreeWidgetItem * elt = node->child(i);
+        if (elt->data(0, Qt::UserRole).toString() == sessKey){
+            return true;
+        }
+    }
+    return false;
+}
+
 void MainWindow::populateLeaf(const QString & sessKey)
 {
-    QString nick;
-    std::vector<std::string> vec_receips = BitMail::fromSessionKey(sessKey.toStdString());
-    for (std::vector<std::string>::const_iterator it = vec_receips.begin();
-         it != vec_receips.end();
-         ++it){
-        nick += QString::fromStdString(m_bitmail->GetFriendNick(*it));
-        nick += QString::fromStdString("\n");
-    }
     QStringList qslText;
-    qslText.append(nick);
+    qslText.append(QString::fromStdString(m_bitmail->sessionName(sessKey.toStdString())));
 
-    QTreeWidgetItem * node = (vec_receips.size() > 1) ? nodeGroups : nodeFriends;
+    QTreeWidgetItem * node = BitMail::isGroupSession(sessKey.toStdString()) ? nodeGroups : nodeFriends;
 
     QTreeWidgetItem *buddy = new QTreeWidgetItem(node, qslText, 0);
 
     //TODO: logo synthesize
-    if (vec_receips.size() > 1){
+    if (BitMail::isGroupSession(sessKey.toStdString())){
         buddy->setIcon(0, QIcon(":/images/group.png"));
     }else{
         buddy->setIcon(0, QIcon(":/images/head.png"));

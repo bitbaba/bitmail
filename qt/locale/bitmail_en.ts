@@ -456,18 +456,17 @@
     </message>
     <message>
         <location filename="../messagedialog.cpp" line="115"/>
-        <source>Replace with this certificate?
-</source>
+        <source>Replace with this certificate?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messagedialog.cpp" line="116"/>
-        <source>Old: [</source>
+        <source>Old:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../messagedialog.cpp" line="117"/>
-        <source>New: [</source>
+        <source>New:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

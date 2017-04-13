@@ -225,9 +225,9 @@
     <property name="font">
      <font>
       <family>Arial</family>
-      <pointsize>6</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
     <property name="cursor" stdset="0">
@@ -252,9 +252,9 @@
     <property name="font">
      <font>
       <family>Arial</family>
-      <pointsize>6</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
+      <pointsize>9</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
     <property name="cursor" stdset="0">
