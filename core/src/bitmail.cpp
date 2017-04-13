@@ -28,6 +28,18 @@
 
 #include <string.h>
 
+static void BitMailGlobalInit()
+{
+    OPENSSL_load_builtin_modules();
+    ERR_load_crypto_strings();
+    OpenSSL_add_all_ciphers();
+    OpenSSL_add_all_algorithms();
+    OpenSSL_add_all_digests();
+    #ifdef WIN32
+    WSAData wsa;
+    WSAStartup(MAKEWORD(2,2), &wsa);
+    #endif
+}
 
 BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
 : m_onPollEvent(NULL), m_onPollEventParam(NULL)
@@ -36,15 +48,7 @@ BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
 , m_rx(NULL), m_tx(NULL)
 , m_lock1(NULL), m_lock2(NULL), m_lock3(NULL), m_lock4(NULL)
 {
-    OpenSSL_add_all_ciphers();
-    OPENSSL_load_builtin_modules();
-    OpenSSL_add_all_algorithms();
-    ERR_load_crypto_strings();
-
-#ifdef WIN32
-    WSAData wsa;
-    WSAStartup(MAKEWORD(2,2), &wsa);
-#endif
+    BitMailGlobalInit();
 
     if (lock){
         m_lock1 = lock->CreateLock();
@@ -423,6 +427,21 @@ std::string BitMail::partEncoding(const std::string & in)
     return multipart_partEncoding(in);
 }
 
+std::string BitMail::md5(const std::string & s)
+{
+    return CX509Cert::hash(s, "md5");
+}
+
+std::string BitMail::sha1(const std::string & s)
+{
+    return CX509Cert::hash(s, "sha1");
+}
+
+std::string BitMail::sha256(const std::string & s)
+{
+    return CX509Cert::hash(s, "sha256");
+}
+
 std::string BitMail::toBase64(const std::string & s)
 {
     return CX509Cert::b64enc(s);
@@ -624,163 +643,75 @@ int BitMail::GetFriends(std::vector<std::string> & vecEmails) const
 }
 
 // Groups
-
-std::string BitMail::GenerateGroupId() const
-{
-    std::stringstream sstrm;
-    sstrm << GetID() << "." << (unsigned int) time(NULL);
-    return sstrm.str();
-}
-
-int BitMail::AddGroup(const std::string & gid, const std::string & groupname)
-{
-    if (gid.empty()){
-        return bmInvalidParam;
-    }
-    if (groupname.empty()){
-        return bmInvalidParam;
-    }
-    // Overwrite current groupname, by force.
-    m_groupNames[gid] = groupname;
-
-    return bmOk;
-}
-
-int BitMail::SetGroupCreator(const std::string & gid, const std::string & creator)
-{
-    m_groupCreators[gid] = creator;
-    return bmOk;
-}
-
-std::string BitMail::GetGroupCreator(const std::string & gid) const
-{
-    if (m_groupCreators.find(gid) != m_groupCreators.end()){
-        return m_groupCreators.find(gid)->second;
-    }
-    return "";
-}
-
-int BitMail::GetGroupName(const std::string & gid, std::string & groupName) const
-{
-    if (m_groupNames.find(gid) == m_groupNames.end()){
-        return bmNoGrp;
-    }
-    std::map<std::string, std::string>::const_iterator it = m_groupNames.find(gid);
-    groupName = it->second;
-    return bmOk;
-}
-
-int BitMail::RemoveGroup(const std::string & gid)
-{
-    if (gid.empty()){
-        return bmInvalidParam;
-    }
-    if (m_groups.end() == m_groups.find(gid)){
-        return bmOk;
-    }
-    m_groups.erase(gid);
-    return bmOk;
-}
-
-bool BitMail::HasGroup(const std::string & gid) const
-{
-    if (gid.empty()){
-        return false;
-    }
-    return m_groups.find(gid) != m_groups.end();
-}
-
 int BitMail::GetGroups(std::vector<std::string> & groups) const
 {
-    for (std::map<std::string, std::string>::const_iterator it = m_groupNames.begin()
-            ; it != m_groupNames.end()
-            ; ++it){
-        groups.push_back(it->first);
+    for (std::set<std::string>::const_iterator it = m_groups.begin(); it != m_groups.end(); ++it){
+        groups.push_back(*it);
     }
     return bmOk;
 }
 
-int BitMail::GetGroupMembers(const std::string & gid
-                            , std::vector<std::string> & members) const
+int BitMail::AddGroup(const std::string & group)
 {
-    if (gid.empty()){
-        return bmInvalidParam;
-    }
-    std::map<std::string, std::vector<std::string> >::const_iterator it =
-            m_groups.find(gid);
-    if (it == m_groups.end()){
-        return bmNoGrp;
-    }
-    members = it->second;
+    m_groups.insert(group);
     return bmOk;
 }
 
-int BitMail::AddGroupMember(const std::string & gid
-                            , const std::string & member)
+int BitMail::RemoveGroup(const std::string & group)
 {
-    if (gid.empty() || member.empty()){
-        return bmInvalidParam;
+    if (m_groups.find( (group) ) != m_groups.end()){
+        m_groups.erase(m_groups.find( ( group )));
     }
-    std::map<std::string, std::vector<std::string> >::iterator it =
-            m_groups.find(gid);
-    if (it == m_groups.end()){
-        m_groups[gid] = std::vector<std::string>();
-        it = m_groups.find(gid);
-    }
-    std::vector<std::string> & members = it->second;
-    if (std::find(members.begin(), members.end(), member)
-        != members.end()){
-        return bmMemberExist;
-    }
-    members.push_back(member);
     return bmOk;
 }
 
-bool BitMail::HasGroupMember(const std::string & gid
-                            , const std::string & member) const
+// Receips
+std::vector<std::string> BitMail::decodeReceips(const std::string & receips)
 {
-    if (gid.empty() || member.empty()){
-        return bmInvalidParam;
+    std::istringstream iss(receips);
+    std::vector<std::string> v;
+    std::string line;
+    while (std::getline(iss, line, ';')){
+        if (line.empty()) continue;
+        if (line.find('@') != std::string::npos){
+            std::transform(line.begin(), line.end(), line.begin(), ::tolower);
+            v.push_back(line);
+        }
     }
-    std::map<std::string, std::vector<std::string> >::const_iterator it =
-            m_groups.find(gid);
-    if (it == m_groups.end()){
-        return false;
-    }
-    const std::vector<std::string> & members = it->second;
-    return (std::find(members.begin(), members.end(), member)
-            != members.end());
+    std::sort(v.begin(), v.end());
+    std::unique(v.begin(), v.end());
+    return v;
 }
 
-int BitMail::RemoveGroupMember(const std::string & gid
-                            , const std::string & member)
+std::string BitMail::serializeReceips(const std::vector<std::string> & vec_receips)
 {
-    if (gid.empty() || member.empty()){
-        return bmInvalidParam;
+    std::string receips;
+    for (std::vector<std::string>::const_iterator it = vec_receips.begin(); it != vec_receips.end(); ++it){
+        receips += *it;
+        receips += ";";
     }
-    std::map<std::string, std::vector<std::string> >::iterator it =
-            m_groups.find(gid);
-    if (it == m_groups.end()){
-        return bmNoGrp;
-    }
-    std::vector<std::string> & members = it->second;
-    std::vector<std::string>::iterator it_member
-        = std::find(members.begin(), members.end(), member);
-
-    if (it_member == members.end()){
-        return bmNoMember;
-    }
-
-    members.erase(it_member);
-    return bmOk;
+    return receips;
 }
 
-int BitMail::ClearGroupMembers(const std::string & gid)
+// Session Key
+std::string BitMail::toSessionKey(const std::string & receip)
 {
-    m_groups[gid] = std::vector<std::string>();
-    return bmOk;
+    std::vector<std::string> v;
+    v.push_back(receip);
+    return toSessionKey(v);
 }
 
+std::string BitMail::toSessionKey(const std::vector<std::string> & vec_receips)
+{
+    return toBase64( serializeReceips(vec_receips) );
+}
+
+std::vector<std::string> BitMail::fromSessionKey(const std::string & sessKey)
+{
+    return decodeReceips( fromBase64(sessKey) );
+}
+
+// Mime parser
 int BitMail::EmailHandler(BMEventHead * h, void * userp)
 {
     BitMail * self = (BitMail *)userp;
@@ -804,45 +735,10 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     }
 
     BMEventMessage * bmeMsg = (BMEventMessage *)h;
-    
-    std::string mimemsg = bmeMsg->msg;
-    
-    /**
-      *TODO: parse address list
-      * https://www.w3.org/Protocols/rfc822/#z8
-      * https://tools.ietf.org/html/rfc5322#section-2.2.3
-      * TODO: Split lines by LF now, but should be CRLF
-    */
-    std::istringstream iss(mimemsg);
-    std::string line, receips;
-    while (std::getline(iss, line))
-    {
-        // clear CR
-        while(line.find('\r') != std::string::npos){
-            line.erase(line.find('\r'));
-        }
 
-        const char * p = line.c_str();
+    std::string sMimeBody = bmeMsg->msg;;
 
-        // initial state
-        if (receips.empty()){
-            if (*p && (*p == 't' || *p == 'T')) p++;
-            else continue;
-            if (*p && (*p == 'o' || *p == 'O')) p++;
-            else continue;
-            if (*p && *p == ':') p++;
-            else continue;
-            receips = line;
-        }else{
-        // mulit-line mode: folding
-            if (*p && !::isspace(*p)) break;
-            else{
-                receips += line;
-            }
-        }
-    }
-
-    std::string sMimeBody = mimemsg;
+    std::string receips = parseRFC822AddressList(sMimeBody);
 
     /**
     * Crypto filter
@@ -870,7 +766,7 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     if (self && self->m_onMessageEvent){
         // TODO: parse all receips from header `To'.
         self->m_onMessageEvent(buddyCert.GetEmail().c_str()
-                                , receips.c_str() //self->GetEmail() + ";" + self->GetEmail()).c_str()
+                                , receips.c_str()
                                 , sMimeBody.data()
                                 , sMimeBody.length()
                                 , buddyCert.GetID().c_str()
@@ -879,4 +775,70 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
     }
 
     return bmOk;
+}
+
+std::string BitMail::parseRFC822AddressList(const std::string & mimemsg)
+{
+    /**
+      *TODO: parse address list
+      * https://www.w3.org/Protocols/rfc822/#z8
+      * https://tools.ietf.org/html/rfc5322#section-2.2.3
+      * TODO: Split lines by LF now, but should be CRLF
+    */
+    std::string receips;
+    do {
+        std::istringstream iss(mimemsg);
+        std::string line;
+        while (std::getline(iss, line))
+        {
+            // clear CR
+            while(line.find('\r') != std::string::npos){
+                line.erase(line.find('\r'));
+            }
+
+            const char * p = line.c_str();
+
+            // initial state
+            if (receips.empty()){
+                if (*p && (*p == 't' || *p == 'T')) p++;
+                else continue;
+                if (*p && (*p == 'o' || *p == 'O')) p++;
+                else continue;
+                if (*p && *p == ':') p++;
+                else continue;
+                receips = line;
+            }else{
+            // mulit-line mode: folding
+                if (*p && !::isspace(*p)) break;
+                else{
+                    receips += line;
+                }
+            }
+        }
+    }while(0);
+
+
+    // a weak RFC822 address parser
+    do{
+        if (receips.empty()) break;
+
+        char * receips_buf = strdup(receips.c_str());
+        receips.clear();
+
+        if (!receips_buf) break;
+
+        const char * delims = "~`!$%^&*-+=\\{}[]?<>()\"':,;|/ \t\r\n";
+        const char * tok = strtok(receips_buf, delims);
+        while(tok){
+            if (*tok && strchr(tok, '@')){
+                receips += tok;
+                receips += ";";
+            }
+            tok = strtok(NULL, delims);
+        }
+
+        free(receips_buf);
+    }while(0);
+
+    return (receips);
 }

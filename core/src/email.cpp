@@ -194,6 +194,8 @@ int CMailClient::SendMsg( const std::string & from
                         , const std::string & encSignedMail
                         , RTxProgressCB cb, void * userp)
 {
+    // Spam: http://challenge.aol.com/en/US/spam.html
+
     if (cb ){
         std::stringstream txinfo;
         txinfo<< "Try to Send Message";
@@ -210,22 +212,26 @@ int CMailClient::SendMsg( const std::string & from
     struct TxCallback_t txcb;
 
     std::stringstream sstrmMail;
-    sstrmMail << "To: BitMail CoreTeam: \r\n    ";
-    for (std::vector<std::string>::const_iterator it = to.begin(); ;){
-        sstrmMail << "<" << *it << ">";
-        ++it;
-        if (it == to.end()){
-            break;
-        }
-        sstrmMail << "," ;
-    }
-    sstrmMail << ";\r\n";
 
     /*
      * <From> Field
      */
     sstrmMail << "From: <"<< from <<">"
               << "\r\n";
+
+    /*
+     * <To> Field
+     */
+    sstrmMail     << "To:        \r\n";
+    for (std::vector<std::string>::const_iterator it = to.begin(); ;){
+        sstrmMail << "           <" << *it << ">";
+        ++it;
+        if (it == to.end()){
+            break;
+        }
+        sstrmMail << ",\r\n" ;
+    }
+    sstrmMail     << "\r\n";
 
     /**
      * <Subject> field

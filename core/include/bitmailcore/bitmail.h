@@ -2,6 +2,7 @@
 #define BitMail_H
 #include <string>
 #include <map>
+#include <set>
 #include <vector>
 
 #define BMVER_MAJOR (1)
@@ -179,8 +180,14 @@ public:
     static std::string partContent(const std::string & in);
 
     static std::string partEncoding(const std::string & in);
-	
+
     // Base64 codecs
+    static std::string md5(const std::string & s);
+
+    static std::string sha1(const std::string & s);
+
+    static std::string sha256(const std::string & s);
+
     static std::string toBase64(const std::string & s);
 
     static std::string fromBase64(const std::string & s);
@@ -237,50 +244,41 @@ public:
 
     std::string Decrypt(const std::string & code) const;
 
-    // Certificate attributes
+    // Friends
+    int GetFriends(std::vector<std::string> & vecEmails) const;
+
+    int AddFriend(const std::string & email, const std::string & certpem);
+
+    int RemoveFriend(const std::string & email);
+
+    bool HasFriend(const std::string & email) const;
+
+    bool IsFriend(const std::string & email, const std::string & certpem) const;
+
     std::string GetFriendNick(const std::string & email) const;
 
     std::string GetFriendCert(const std::string & email) const;
 
     std::string GetFriendID(const std::string & email) const;
 
-    // Friends
-    int AddFriend(const std::string & email, const std::string & certpem);
-
-    int RemoveFriend(const std::string & email);
-
-    int GetFriends(std::vector<std::string> & vecEmails) const;
-
-    bool HasFriend(const std::string & email) const;
-
-    bool IsFriend(const std::string & email, const std::string & certpem) const;
-
     // Groups
-    std::string GenerateGroupId() const;
+    int GetGroups(std::vector<std::string> & group) const;
 
-    int AddGroup(const std::string & gid, const std::string & groupname);
+    int AddGroup(const std::string & group);
 
-    int SetGroupCreator(const std::string & gid, const std::string & creator);
+    int RemoveGroup(const std::string & group);
 
-    std::string GetGroupCreator(const std::string & gid) const;
+    // Receips
+   static std::vector<std::string> decodeReceips(const std::string & receips);
 
-    int GetGroupName(const std::string & gid, std::string & groupName)  const;
+   static std::string serializeReceips(const std::vector<std::string> & vec_receips);
 
-    int RemoveGroup(const std::string & gid);
+   // Session Key
+   static std::string toSessionKey(const std::string & receip);
 
-    bool HasGroup(const std::string & gid) const;
+   static std::string toSessionKey(const std::vector<std::string> & vec_receips);
 
-    int GetGroups(std::vector<std::string> & gids) const;
-
-    int GetGroupMembers(const std::string & gid, std::vector<std::string> & members) const;
-
-    int AddGroupMember(const std::string & gid, const std::string & member);
-
-    bool HasGroupMember(const std::string & gid, const std::string & member) const;
-
-    int RemoveGroupMember(const std::string & gid, const std::string & member);
-
-    int ClearGroupMembers(const std::string & gid);
+   static std::vector<std::string> fromSessionKey(const std::string & sessKey);
 
 protected:
 
@@ -298,13 +296,7 @@ protected:
     std::map<std::string, std::string> m_buddies;
     
     // Groups, Key: GroupID, Value: vector of friends' email
-    std::map<std::string, std::vector<std::string> > m_groups;
-
-    // GroupNames, Key: GroupID, Value: GroupName
-    std::map<std::string, std::string> m_groupNames;
-
-    // GroupCreators, Key: GroupID, Value: Creator
-    std::map<std::string, std::string> m_groupCreators;
+    std::set<std::string> m_groups;
 
     // Lock
     ILock * m_lock1;
@@ -323,6 +315,8 @@ public:
 
 protected:
     static int EmailHandler(BMEventHead * h, void * userp);
+
+    static std::string parseRFC822AddressList(const std::string & mime);
 };
 
 

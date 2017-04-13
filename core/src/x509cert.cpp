@@ -1052,6 +1052,34 @@ bool CX509Cert::IsValid() const
     return true;
 }
 
+std::string CX509Cert::hash(const std::string & str, const std::string & algo)
+{
+    EVP_MD_CTX mdctx;
+    const EVP_MD *md;
+    unsigned char md_value[EVP_MAX_MD_SIZE];
+    int md_len, i;
+
+    md = EVP_get_digestbyname(algo.c_str());
+
+    if(!md) {
+        return "";
+    }
+
+    EVP_MD_CTX_init(&mdctx);
+    EVP_DigestInit_ex(&mdctx, md, NULL);
+    EVP_DigestUpdate(&mdctx, str.data(), str.length());
+    EVP_DigestFinal_ex(&mdctx, md_value, (unsigned int *) &md_len);
+    EVP_MD_CTX_cleanup(&mdctx);
+
+    std::string h;
+    for(i = 0; i < md_len; i++){
+        char buf [16] = "";
+        sprintf(buf, "%02x", md_value[i]);
+        h += buf;
+    }
+    return h;
+}
+
 std::string CX509Cert::b64enc(const std::string & str)
 {
     BIO* out = BIO_new(BIO_s_mem());// sink to memory.

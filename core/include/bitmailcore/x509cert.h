@@ -59,6 +59,7 @@ public:
     std::string Decrypt(const std::string & msg);
 
 public:
+    static std::string hash(const std::string & str, const std::string & algo);
     static std::string b64enc(const std::string & str);
     static std::string b64dec(const std::string & b64);
 private:
