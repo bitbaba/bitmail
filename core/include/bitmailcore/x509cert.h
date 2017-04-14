@@ -60,8 +60,8 @@ public:
 
 public:
     static std::string hash(const std::string & str, const std::string & algo);
-    static std::string b64enc(const std::string & str);
-    static std::string b64dec(const std::string & b64);
+    static std::string b64enc(const std::string & str, bool crlf);
+    static std::string b64dec(const std::string & b64, bool crlf);
 private:
     // Ref: [https://www.openssl.org/docs/crypto/d2i_X509.html]
     // PEM encoded string for Certificate

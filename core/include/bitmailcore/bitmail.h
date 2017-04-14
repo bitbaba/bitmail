@@ -192,6 +192,11 @@ public:
 
     static std::string fromBase64(const std::string & s);
 
+    static std::string toBase64Line(const std::string & s);
+
+    static std::string fromBase64Line(const std::string & s);
+
+
     // RTx Routines
     int SendMsg(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
 
@@ -286,10 +291,13 @@ public:
 
    void sessionName(const std::string & sessKey, const std::string & sessName);
 
+   std::map<std::string, std::string> sessNames() const;
+
    std::string sessionLogo(const std::string & sessKey) const;
 
    void sessionLogo(const std::string & sessKey, const std::string & sessLogo);
 
+   std::map<std::string, std::string> sessLogos() const;
 protected:
 
     PollEventCB          m_onPollEvent;

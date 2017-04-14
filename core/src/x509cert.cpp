@@ -1080,7 +1080,7 @@ std::string CX509Cert::hash(const std::string & str, const std::string & algo)
     return h;
 }
 
-std::string CX509Cert::b64enc(const std::string & str)
+std::string CX509Cert::b64enc(const std::string & str, bool crlf)
 {
     BIO* out = BIO_new(BIO_s_mem());// sink to memory.
     if (!out){
@@ -1094,6 +1094,10 @@ std::string CX509Cert::b64enc(const std::string & str)
     }
 
     out = BIO_push(b64, out);
+
+    if (!crlf){
+        BIO_set_flags(out, BIO_FLAGS_BASE64_NO_NL);
+    }
 
     BIO_write(out, (char *)str.c_str(), str.length());
 
@@ -1109,7 +1113,7 @@ std::string CX509Cert::b64enc(const std::string & str)
     return b64str;
 }
 
-std::string CX509Cert::b64dec(const std::string & b64str)
+std::string CX509Cert::b64dec(const std::string & b64str, bool crlf)
 {
     /**
      * @TODO: if no tail with CRLF, this will fail?
@@ -1124,6 +1128,10 @@ std::string CX509Cert::b64dec(const std::string & b64str)
     }
 
     in = BIO_push(b64, in);
+
+    if (!crlf){
+        BIO_set_flags(in, BIO_FLAGS_BASE64_NO_NL);
+    }
 
     char buf [16] = "";
     int bufsz = sizeof(buf);

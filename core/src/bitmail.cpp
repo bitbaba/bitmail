@@ -444,12 +444,22 @@ std::string BitMail::sha256(const std::string & s)
 
 std::string BitMail::toBase64(const std::string & s)
 {
-    return CX509Cert::b64enc(s);
+    return CX509Cert::b64enc(s, true);
 }
 
 std::string BitMail::fromBase64(const std::string & s)
 {
-    return CX509Cert::b64dec(s);
+    return CX509Cert::b64dec(s, true);
+}
+
+std::string BitMail::toBase64Line(const std::string & s)
+{
+    return CX509Cert::b64enc(s, false);
+}
+
+std::string BitMail::fromBase64Line(const std::string & s)
+{
+    return CX509Cert::b64dec(s, false);
 }
 
 std::string BitMail::EncMsg(const std::vector<std::string> & friends
@@ -705,12 +715,12 @@ std::string BitMail::toSessionKey(const std::string & receip)
 
 std::string BitMail::toSessionKey(const std::vector<std::string> & vec_receips)
 {
-    return toBase64( serializeReceips(vec_receips) );
+    return toBase64Line( serializeReceips(vec_receips) );
 }
 
 std::vector<std::string> BitMail::fromSessionKey(const std::string & sessKey)
 {
-    return decodeReceips( fromBase64(sessKey) );
+    return decodeReceips( fromBase64Line(sessKey) );
 }
 
 bool BitMail::isGroupSession(const std::string & sessKey)
@@ -743,6 +753,11 @@ void BitMail::sessionName(const std::string & sessKey, const std::string & sessN
     return ;
 }
 
+std::map<std::string, std::string> BitMail::sessNames()const
+{
+    return m_sessNames;
+}
+
 std::string BitMail::sessionLogo(const std::string & sessKey) const
 {
     if (m_sessLogos.find(sessKey) != m_sessLogos.end()){
@@ -756,6 +771,10 @@ void BitMail::sessionLogo(const std::string & sessKey, const std::string & sessL
     m_sessLogos [sessKey] = sessLogo;
 }
 
+std::map<std::string, std::string> BitMail::sessLogos()const
+{
+    return m_sessLogos;
+}
 
 // Mime parser
 int BitMail::EmailHandler(BMEventHead * h, void * userp)
