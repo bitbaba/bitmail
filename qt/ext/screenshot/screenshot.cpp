@@ -68,7 +68,9 @@ Screenshot::Screenshot()
     QGroupBox *optionsGroupBox = new QGroupBox(tr("Options"), this);
     delaySpinBox = new QSpinBox(optionsGroupBox);
     delaySpinBox->setSuffix(tr(" s"));
-    delaySpinBox->setMaximum(60);
+    delaySpinBox->setMaximum(1);
+    delaySpinBox->setMinimum(1);
+    delaySpinBox->setDisabled(true);
 
     typedef void (QSpinBox::*QSpinBoxIntSignal)(int);
     connect(delaySpinBox, static_cast<QSpinBoxIntSignal>(&QSpinBox::valueChanged),
@@ -89,6 +91,7 @@ Screenshot::Screenshot()
     buttonsLayout->addWidget(newScreenshotButton);
     QPushButton *saveScreenshotButton = new QPushButton(tr("Save Screenshot"), this);
     connect(saveScreenshotButton, &QPushButton::clicked, this, &Screenshot::saveScreenshot);
+    saveScreenshotButton->setDisabled(true);
     buttonsLayout->addWidget(saveScreenshotButton);
     QPushButton *quitScreenshotButton = new QPushButton(tr("Quit"), this);
     quitScreenshotButton->setShortcut(Qt::CTRL + Qt::Key_Q);
@@ -98,12 +101,25 @@ Screenshot::Screenshot()
     mainLayout->addLayout(buttonsLayout);
 
     shootScreen();
-    delaySpinBox->setValue(5);
+    delaySpinBox->setValue(1);
+    hideThisWindowCheckBox->setChecked(true);
+    hideThisWindowCheckBox->setDisabled(true);
 
     setWindowTitle(tr("Screenshot"));
-    resize(300, 200);
+    resize(600, 400);
 }
 //! [0]
+
+void Screenshot::closeEvent(QCloseEvent *event)
+{
+    if (!savePath.isEmpty()){
+        if (!originalPixmap.save(savePath)) {
+            QMessageBox::warning(this, tr("Save Error"), tr("The image could not be saved to \"%1\".")
+                                 .arg(QDir::toNativeSeparators(savePath)));
+        }
+    }
+    event->accept();
+}
 
 //! [1]
 void Screenshot::resizeEvent(QResizeEvent * /* event */)
@@ -125,6 +141,11 @@ void Screenshot::newScreenshot()
     QTimer::singleShot(delaySpinBox->value() * 1000, this, &Screenshot::shootScreen);
 }
 //! [2]
+
+void Screenshot::setOutputFile(const QString &filename)
+{
+    savePath = filename;
+}
 
 //! [3]
 void Screenshot::saveScreenshot()
@@ -171,8 +192,9 @@ void Screenshot::shootScreen()
     updateScreenshotLabel();
 
     newScreenshotButton->setDisabled(false);
-    if (hideThisWindowCheckBox->isChecked())
+    if (hideThisWindowCheckBox->isChecked()){
         show();
+    }
 }
 //! [4]
 

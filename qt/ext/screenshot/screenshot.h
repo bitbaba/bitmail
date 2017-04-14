@@ -72,9 +72,11 @@ class Screenshot : public QWidget
 
 public:
     Screenshot();
+    void setOutputFile(const QString & filename);
 
 protected:
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private slots:
     void newScreenshot();
@@ -91,6 +93,8 @@ private:
     QSpinBox *delaySpinBox;
     QCheckBox *hideThisWindowCheckBox;
     QPushButton *newScreenshotButton;
+
+    QString savePath;
 };
 //! [0]
 

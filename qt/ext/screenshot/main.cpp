@@ -57,7 +57,17 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    QString outputfile;
+    for (int i = 0; i < argc; i++){
+        // FromLocal8Bit, means from locale 8bit.
+        QString opt = QString::fromLocal8Bit(argv[i]);
+        if (!opt.isEmpty() && !opt.compare("-o") && i + 1 < argc){
+            outputfile = QString::fromLocal8Bit(argv[i+1]);
+        }
+    }
+
     Screenshot screenshot;
+    screenshot.setOutputFile(outputfile);
     screenshot.move(QApplication::desktop()->availableGeometry(&screenshot).topLeft() + QPoint(20, 20));
     screenshot.show();
     return app.exec();
