@@ -288,6 +288,9 @@ int CMailClient::SendMsg( const std::string & from
             txinfo<< "Message sent Failed";
             cb(RTS_Error, txinfo.str().c_str(), userp);
         }
+        // do-reset
+        curl_easy_reset(curl);
+
         return bmTxFail;
     }
 
@@ -297,6 +300,7 @@ int CMailClient::SendMsg( const std::string & from
         cb(RTS_Done, txinfo.str().c_str(), userp);
     }
 
+    curl_easy_reset(curl);
     return bmOk;
 }
 

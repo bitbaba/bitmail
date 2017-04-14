@@ -738,8 +738,13 @@ std::string BitMail::sessionName(const std::string & sessKey) const
     std::string sessName = "";
     std::vector<std::string> vec_receips = fromSessionKey(sessKey);
     for (std::vector<std::string>::const_iterator it = vec_receips.begin(); it != vec_receips.end(); ){
-        std::string nick = this->GetFriendNick(*it++);
-        sessName += nick;
+        std::string email = *it++;
+        std::string nick = this->GetFriendNick(email);
+        if (!nick.empty()){
+            sessName += nick;
+        }else{
+            sessName += email;
+        }
         if (it == vec_receips.end() )break;
         sessName += ",";
     }
