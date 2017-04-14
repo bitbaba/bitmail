@@ -56,11 +56,11 @@ class Camera : public QMainWindow
     Q_OBJECT
 
 public:
-    Camera(const QString & outputFile, QWidget *parent = 0);
+    Camera(bool captureMovie, const QString & outputFile, QWidget *parent = 0);
     ~Camera();
 
 private slots:
-    void setCamera(const QCameraInfo &cameraInfo);
+    void setCamera(bool captureMovie, const QCameraInfo &cameraInfo);
 
     void startCamera();
     void stopCamera();
@@ -119,6 +119,7 @@ private:
     bool applicationExiting;
 
     QString saveFile;
+    bool captureMovie;
 };
 
 #endif

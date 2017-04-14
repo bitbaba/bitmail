@@ -56,7 +56,7 @@
 
 Q_DECLARE_METATYPE(QCameraInfo)
 
-Camera::Camera(const QString & outputFile, QWidget *parent) :
+Camera::Camera(bool CaptureMovie, const QString & outputFile, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Camera),
     camera(0),
@@ -64,7 +64,8 @@ Camera::Camera(const QString & outputFile, QWidget *parent) :
     mediaRecorder(0),
     isCapturingImage(false),
     applicationExiting(false),
-    saveFile(outputFile)
+    saveFile(outputFile),
+    captureMovie(CaptureMovie)
 {
     ui->setupUi(this);
 
@@ -85,7 +86,7 @@ Camera::Camera(const QString & outputFile, QWidget *parent) :
     connect(videoDevicesGroup, SIGNAL(triggered(QAction*)), SLOT(updateCameraDevice(QAction*)));
     connect(ui->captureWidget, SIGNAL(currentChanged(int)), SLOT(updateCaptureMode()));
 
-    setCamera(QCameraInfo::defaultCamera());
+    setCamera(captureMovie, QCameraInfo::defaultCamera());
 }
 
 Camera::~Camera()
@@ -95,7 +96,7 @@ Camera::~Camera()
     delete camera;
 }
 
-void Camera::setCamera(const QCameraInfo &cameraInfo)
+void Camera::setCamera(bool captureMovie, const QCameraInfo &cameraInfo)
 {
     delete imageCapture;
     delete mediaRecorder;
@@ -135,8 +136,8 @@ void Camera::setCamera(const QCameraInfo &cameraInfo)
     connect(camera, SIGNAL(lockStatusChanged(QCamera::LockStatus,QCamera::LockChangeReason)),
             this, SLOT(updateLockStatus(QCamera::LockStatus,QCamera::LockChangeReason)));
 
-    ui->captureWidget->setTabEnabled(0, (camera->isCaptureModeSupported(QCamera::CaptureStillImage)));
-    ui->captureWidget->setTabEnabled(1, (camera->isCaptureModeSupported(QCamera::CaptureVideo)));
+    ui->captureWidget->setTabEnabled(0, !captureMovie && (camera->isCaptureModeSupported(QCamera::CaptureStillImage)));
+    ui->captureWidget->setTabEnabled(1,  captureMovie && (camera->isCaptureModeSupported(QCamera::CaptureVideo)));
 
     updateCaptureMode();
     camera->start();
@@ -198,9 +199,9 @@ void Camera::processCapturedImage(int requestId, const QImage& img)
 
     ui->lastImagePreviewLabel->setPixmap(QPixmap::fromImage(scaledImage));
 
-    // Display captured image for 4 seconds.
+    // Display captured image for 5 seconds.
     displayCapturedImage();
-    QTimer::singleShot(4000, this, SLOT(displayViewfinder()));
+    QTimer::singleShot(5000, this, SLOT(displayViewfinder()));
 }
 
 void Camera::configureCaptureSettings()
@@ -398,7 +399,7 @@ void Camera::displayCameraError()
 
 void Camera::updateCameraDevice(QAction *action)
 {
-    setCamera(qvariant_cast<QCameraInfo>(action->data()));
+    setCamera(captureMovie, qvariant_cast<QCameraInfo>(action->data()));
 }
 
 void Camera::displayViewfinder()
