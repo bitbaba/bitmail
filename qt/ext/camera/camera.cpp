@@ -56,14 +56,15 @@
 
 Q_DECLARE_METATYPE(QCameraInfo)
 
-Camera::Camera(QWidget *parent) :
+Camera::Camera(const QString & outputFile, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Camera),
     camera(0),
     imageCapture(0),
     mediaRecorder(0),
     isCapturingImage(false),
-    applicationExiting(false)
+    applicationExiting(false),
+    saveFile(outputFile)
 {
     ui->setupUi(this);
 
@@ -106,6 +107,8 @@ void Camera::setCamera(const QCameraInfo &cameraInfo)
     connect(camera, SIGNAL(error(QCamera::Error)), this, SLOT(displayCameraError()));
 
     mediaRecorder = new QMediaRecorder(camera);
+    mediaRecorder->setOutputLocation(QUrl::fromLocalFile(saveFile));
+
     connect(mediaRecorder, SIGNAL(stateChanged(QMediaRecorder::State)), this, SLOT(updateRecorderState(QMediaRecorder::State)));
 
     imageCapture = new QCameraImageCapture(camera);
@@ -309,7 +312,7 @@ void Camera::updateLockStatus(QCamera::LockStatus status, QCamera::LockChangeRea
 void Camera::takeImage()
 {
     isCapturingImage = true;
-    imageCapture->capture();
+    imageCapture->capture(saveFile);
 }
 
 void Camera::displayCaptureError(int id, const QCameraImageCapture::Error error, const QString &errorString)

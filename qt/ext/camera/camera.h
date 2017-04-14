@@ -56,7 +56,7 @@ class Camera : public QMainWindow
     Q_OBJECT
 
 public:
-    Camera(QWidget *parent = 0);
+    Camera(const QString & outputFile, QWidget *parent = 0);
     ~Camera();
 
 private slots:
@@ -117,6 +117,8 @@ private:
     QString videoContainerFormat;
     bool isCapturingImage;
     bool applicationExiting;
+
+    QString saveFile;
 };
 
 #endif

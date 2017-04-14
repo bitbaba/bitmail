@@ -46,8 +46,17 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    Camera camera;
+    QString outputfile;
+    for (int i = 0; i < argc; i++){
+        // FromLocal8Bit, means from locale 8bit.
+        QString opt = QString::fromLocal8Bit(argv[i]);
+        if (!opt.isEmpty() && !opt.compare("-o") && i + 1 < argc){
+            outputfile = QString::fromLocal8Bit(argv[i+1]);
+        }
+    }
+
+    Camera camera(outputfile);
     camera.show();
 
     return app.exec();
-};
+}
