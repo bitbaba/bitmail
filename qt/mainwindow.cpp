@@ -563,6 +563,9 @@ void MainWindow::onBtnInviteClicked()
     if (QDialog::Accepted != inviteDialog.exec()){
         return ;
     }
+    QString qsTo = inviteDialog.GetEmail();
+    QString sessKey = QString::fromStdString( BitMail::toSessionKey(qsTo.toStdString()) );
+
     QString qsWhisper = inviteDialog.GetWhisper();
     QStringList attachments = inviteDialog.attachments();
     QStringList parts;
@@ -575,7 +578,11 @@ void MainWindow::onBtnInviteClicked()
     }
     QString qsMsg = BMQTApplication::toMixed(parts);
 
-    Send(qsMsg);
+    SendTo(sessKey, qsMsg);
+
+    if (!hasLeaf(nodeGroups, sessKey) && !hasLeaf(nodeFriends, sessKey)){
+        populateLeaf(sessKey);
+    }
 
     return ;
 }
