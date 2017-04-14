@@ -64,6 +64,7 @@ public:
 
 public slots:
     void processBuffer(const QAudioBuffer&);
+    void setOutputFile(const QString & file);
 
 private slots:
     void setOutputLocation();

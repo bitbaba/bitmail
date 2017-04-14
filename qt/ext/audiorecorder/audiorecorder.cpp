@@ -220,6 +220,12 @@ void AudioRecorder::togglePause()
         audioRecorder->record();
 }
 
+void AudioRecorder::setOutputFile(const QString &fileName)
+{
+    audioRecorder->setOutputLocation(QUrl::fromLocalFile(fileName));
+    outputLocationSet = true;
+}
+
 void AudioRecorder::setOutputLocation()
 {
     QString fileName = QFileDialog::getSaveFileName();

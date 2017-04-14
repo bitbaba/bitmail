@@ -46,7 +46,19 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    QString outputfile;
+    for (int i = 0; i < argc; i++){
+        // FromLocal8Bit, means from locale 8bit.
+        QString opt = QString::fromLocal8Bit(argv[i]);
+        if (!opt.isEmpty() && !opt.compare("-o") && i + 1 < argc){
+            outputfile = QString::fromLocal8Bit(argv[i+1]);
+        }
+    }
+
     AudioRecorder recorder;
+    if (!outputfile.isEmpty()){
+        recorder.setOutputFile(outputfile);
+    }
     recorder.show();
 
     return app.exec();
