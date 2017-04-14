@@ -97,6 +97,8 @@ public slots:
     void onTxDone();
     void onTxProgress(const QString & info);
 
+    void onProcThDone(const QString & sessKey, const QString & output);
+
     void onRemoveAct();
     void onNetAct();
     void onFileAct();
@@ -130,6 +132,7 @@ private:
     QStringList dequeueMsg(const QString &key);
 
     void Send(const QString & msg);
+    void SendTo(const QString & sessKey, const QString & msg);
 private:
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;

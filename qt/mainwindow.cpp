@@ -57,6 +57,7 @@
 //! [0]
 #include "rxthread.h"
 #include "txthread.h"
+#include "procth.h"
 #include "optiondialog.h"
 #include "logindialog.h"
 #include "netoptdialog.h"
@@ -368,7 +369,7 @@ void MainWindow::createActions()
     do{
         videoAct = new QAction(QIcon(":/images/video.png"), tr("&Video"), this);
         videoAct->setStatusTip(tr("Send video"));
-        videoAct->setEnabled(false);
+        //videoAct->setEnabled(false);
         connect(videoAct, SIGNAL(triggered()), this, SLOT(onVideoAct()));
     }while(0);
 }
@@ -494,22 +495,66 @@ void MainWindow::onEmojiAct()
 
 void MainWindow::onAudioAct()
 {
-    QString audio = BMQTApplication::GetTempFile();
+    QString sessKey = currentSessionKey();
+
+    QString app = BMQTApplication::GetAppHome() + "/audiorecorder" + BMQTApplication::GetExeSuffix();
+
+    QString temp = BMQTApplication::GetTempFile();
+    temp += ".wav";
+
+    ProcTh * proc = new ProcTh(sessKey, app, QStringList(), temp);
+
+    connect(proc, SIGNAL(procDone(QString, QString)), this, SLOT(onProcThDone(QString, QString)));
+
+    proc->start();
 }
 
 void MainWindow::onSnapAct()
 {
-    QString snap = BMQTApplication::GetTempFile();
+    QString sessKey = currentSessionKey();
+
+    QString app = BMQTApplication::GetAppHome() + "/screenshot" + BMQTApplication::GetExeSuffix();
+
+    QString temp = BMQTApplication::GetTempFile();
+    temp += ".png";
+
+    ProcTh * proc = new ProcTh(sessKey, app, QStringList(), temp);
+
+    connect(proc, SIGNAL(procDone(QString, QString)), this, SLOT(onProcThDone(QString, QString)));
+
+    proc->start();
 }
 
 void MainWindow::onPhotoAct()
 {
-    QString photo = BMQTApplication::GetTempFile();
+    QString sessKey = currentSessionKey();
+
+    QString app = BMQTApplication::GetAppHome() + "/camera" + BMQTApplication::GetExeSuffix();
+
+    QString temp = BMQTApplication::GetTempFile();
+    temp += ".jpg";
+
+    ProcTh * proc = new ProcTh(sessKey, app, QStringList()<<"-j", temp);
+
+    connect(proc, SIGNAL(procDone(QString, QString)), this, SLOT(onProcThDone(QString, QString)));
+
+    proc->start();
 }
 
 void MainWindow::onVideoAct()
 {
-    QString video = BMQTApplication::GetTempFile();
+    QString sessKey = currentSessionKey();
+
+    QString app = BMQTApplication::GetAppHome() + "/camera" + BMQTApplication::GetExeSuffix();
+
+    QString temp = BMQTApplication::GetTempFile();
+    temp += ".mpg";
+
+    ProcTh * proc = new ProcTh(sessKey, app, QStringList()<<"-m", temp);
+
+    connect(proc, SIGNAL(procDone(QString, QString)), this, SLOT(onProcThDone(QString, QString)));
+
+    proc->start();
 }
 
 void MainWindow::onBtnInviteClicked()
@@ -632,10 +677,12 @@ QStringList MainWindow::dequeueMsg(const QString &k)
 void MainWindow::Send(const QString & qsMsg)
 {
     QString sessionKey = currentSessionKey();
-    if (sessionKey.isEmpty()){
-        return ;
-    }
+    SendTo(sessionKey, qsMsg);
+}
 
+
+void MainWindow::SendTo(const QString & sessionKey, const QString & qsMsg)
+{
     std::vector<std::string> vec_receips = BitMail::fromSessionKey(sessionKey.toStdString());
     if (vec_receips.empty()){
         return ;
@@ -879,5 +926,14 @@ void MainWindow::populateLeaf(const QString & sessKey)
     buddy->setData(0, Qt::UserRole, sessKey);
 
     node->addChild(buddy);
+    return ;
+}
+
+void MainWindow::onProcThDone(const QString & sessKey, const QString &output)
+{
+    if (QFileInfo(output).exists() && QFileInfo(output).size()){
+        QString qsMsg = BMQTApplication::toMimeAttachment(output);
+        SendTo(sessKey, qsMsg);
+    }
     return ;
 }

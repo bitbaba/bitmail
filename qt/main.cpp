@@ -302,6 +302,15 @@ namespace BMQTApplication {
         }
         return lanaddr;
     }
+    QString GetExeSuffix()
+    {
+        #if defined(WIN32)
+            return ".exe";
+        #else
+            return "";
+        #endif
+    }
+
     QStringList GetProfiles()
     {
         QString qsProfileHome = GetProfileHome();
