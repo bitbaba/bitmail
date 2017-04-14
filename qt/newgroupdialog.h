@@ -37,6 +37,8 @@ private slots:
 
     void on_listAddedMembers_itemDoubleClicked(QListWidgetItem *item);
 
+    void on_btnSetGroupName_clicked();
+
 private:
     Ui::NewGroupDialog *ui;
     BitMail * m_bitmail;
@@ -47,6 +49,8 @@ private:
     QComboBox  * m_cbbMembers;
     QListWidget* m_listAddedMembers;
 
+signals:
+    void groupChanged();
 };
 
 #endif // NEWGROUPDIALOG_H

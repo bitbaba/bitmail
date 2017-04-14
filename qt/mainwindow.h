@@ -60,11 +60,6 @@ class QListWidgetItem;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QProcess;
-class QAudioRecorder;
-class QCamera;
-class QCameraViewfinder;
-class QCameraImageCapture;
-class QMediaRecorder;
 
 
 QT_END_NAMESPACE
@@ -111,16 +106,8 @@ public slots:
     void onPhotoAct();
     void onVideoAct();
 
-    void onDurationChanged(qint64);
-    void shootScreen();
-    void shootPhoto();
-    void shootVideo();
-    void onCameraCaptureSaved(int id, const QString & filepath);
-    void onVideoDurationChanged(qint64);
-
     void populateFriendTree();
     void populateGroupTree();
-
 private:    
     QString currentSessionKey();
 
@@ -144,12 +131,6 @@ private:
 
     void Send(const QString & msg);
 private:
-    QAudioRecorder *audioRecorder;
-    QCamera * camera;
-    QCameraViewfinder * viewfinder;
-    QCameraImageCapture * imageCapture;
-    QMediaRecorder * vrec;
-
     QPlainTextEdit *textEdit;
     QTreeWidget * btree;
     QTreeWidgetItem * nodeFriends;

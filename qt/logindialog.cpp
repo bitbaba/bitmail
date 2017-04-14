@@ -11,13 +11,12 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui(new Ui::LoginDialog)
 {
     ui->setupUi(this);
-    ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Ok"));
 
     QLabel * lbLogo = findChild<QLabel *>("lbLogo");
-    QPixmap imgLogo = QPixmap(":/images/bkgrd.png");
+    QPixmap imgLogo = QPixmap(":/images/login.png");
     QPainter pencil;
     pencil.begin(&imgLogo);
-    pencil.setPen(Qt::red);
+    pencil.setPen(Qt::black);
     pencil.setFont(QFont("Arial", 12));
     pencil.drawText(125, 20, 300, 100, Qt::AlignCenter, tr("BitMail Qt Client"));
     pencil.end();
@@ -93,4 +92,9 @@ bool LoginDialog::imAssistant() const
 {
     bool fChecked = m_cbAssistant->isChecked();
     return fChecked;
+}
+
+void LoginDialog::on_btnEnter_clicked()
+{
+    done(QDialog::Accepted);
 }

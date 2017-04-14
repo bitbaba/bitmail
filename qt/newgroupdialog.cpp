@@ -1,4 +1,5 @@
 #include "newgroupdialog.h"
+#include "main.h"
 #include "ui_newgroupdialog.h"
 
 #include <QListView>
@@ -87,9 +88,23 @@ QStringList NewGroupDialog::groupMembers() const
 
 void NewGroupDialog::groupMembers(const QStringList & members)
 {
+    std::string sessKey = BitMail::toSessionKey(BMQTApplication::toStdStringList(members));
+
+    m_leGroupId->setText( QString::fromStdString( sessKey ));
+
+    groupName(QString::fromStdString(m_bitmail->sessionName(sessKey)));
+
     for (QStringList::const_iterator it = members.begin(); it != members.end(); it++)
     {
         if (it->isEmpty()) continue;
         m_listAddedMembers->addItem(new QListWidgetItem(QIcon(":/images/head.png"), *it));
     }
+}
+
+void NewGroupDialog::on_btnSetGroupName_clicked()
+{
+    if (!groupName().isEmpty() && !groupId().isEmpty()){
+        m_bitmail->sessionName(groupId().toStdString(), groupName().toStdString());
+    }
+    emit groupChanged();
 }

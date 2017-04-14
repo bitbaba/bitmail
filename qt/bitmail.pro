@@ -1,4 +1,4 @@
-QT += widgets network multimedia multimediawidgets
+QT += widgets network
 
 CODECFORTR = utf-8
 TRANSLATIONS = locale/bitmail_en.ts \
@@ -23,8 +23,7 @@ HEADERS       = mainwindow.h \
                 netoptdialog.h \
                 assistantdialog.h \
                 newgroupdialog.h \
-                lock.h \
-    ardialog.h
+                lock.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
@@ -39,8 +38,7 @@ SOURCES       = main.cpp \
                 netoptdialog.cpp \
                 assistantdialog.cpp \
                 newgroupdialog.cpp \
-                lock.cpp \
-    ardialog.cpp
+                lock.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
@@ -56,8 +54,7 @@ FORMS += \
     messagedialog.ui \
     netoptdialog.ui \
     assistantdialog.ui \
-    newgroupdialog.ui \
-    ardialog.ui
+    newgroupdialog.ui
 
 win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore
 

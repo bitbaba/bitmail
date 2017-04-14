@@ -30,6 +30,9 @@ public:
     void SetCertID(const QString & cid);
     QString GetCertID() const;
 
+    void comment(const QString & cmt);
+    QString comment() const;
+
     void qrImage(const QPixmap & p);
 
 private slots:
@@ -37,14 +40,20 @@ private slots:
 
     void on_buttonBox_rejected();
 
+    void on_btnSetComment_clicked();
+
 private:
     Ui::CertDialog *ui;
     BitMail   *m_bitmail;
     QLineEdit *m_leEmail;
     QLineEdit *m_leNick;
     QLineEdit *m_leCertID;
+    QLineEdit *m_leComment;
     QLabel *m_lbQrCode;
     QPlainTextEdit *m_txtCert;
+
+signals:
+    void friendChanged();
 };
 
 #endif // CERTDIALOG_H

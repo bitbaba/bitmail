@@ -28,6 +28,8 @@ private slots:
     void on_cbEmail_currentIndexChanged(const QString &arg1);
     void on_cbAssistant_clicked(bool checked);
 
+    void on_btnEnter_clicked();
+
 public:
     QString GetEmail() const;
     void SetEmail(const QString & email);

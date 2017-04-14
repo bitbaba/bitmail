@@ -60,6 +60,7 @@
 #include <QMimeType>
 #include <QPainter>
 #include <QMessageBox>
+#include <QStyleFactory>
 
 #include "optiondialog.h"
 #include "logindialog.h"
@@ -128,6 +129,11 @@ int main(int argc, char *argv[])
     if (appTranslator.load("bitmail_" + QLocale().name(), BMQTApplication::GetLocaleHome())){
         app.installTranslator(&appTranslator);
     }
+
+    // Skin
+    QStringList styles = QStyleFactory::keys();
+    qDebug() << styles.join(";");
+    app.setStyle("Fusion");
 
     // Get Account Profile
     QString qsEmail, qsPassphrase;
@@ -236,6 +242,14 @@ namespace BMQTApplication {
         }
         return qsTempHome;
     }
+    QString GetTempFile(const QString & dotsuffix)
+    {
+        QString qsTempFile = GetTempHome();
+        qsTempFile += "/";
+        qsTempFile += QUuid::createUuid().toString().remove("{").remove("}");
+        qsTempFile += dotsuffix;
+        return qsTempFile;
+    }
     QString GetLogHome()
     {
         QString qsLogHome = QDir::homePath();
@@ -339,13 +353,16 @@ namespace BMQTApplication {
         }
         QTextStream in(&file);
         QJsonDocument jdoc;
-        jdoc = QJsonDocument::fromJson(in.readAll().toLatin1());
+        // the file may contains multi-bytes encoding charactors
+        // so use UTF-8 to transform.
+        jdoc = QJsonDocument::fromJson(in.readAll().toUtf8());
         QJsonObject joRoot = jdoc.object();
         QJsonObject joProfile;
         QJsonObject joTx;
         QJsonObject joRx;
         QJsonObject joBuddies;
         QJsonArray jaGroups;
+        QJsonObject joSessNames;
         QJsonObject joProxy;
         if (joRoot.contains("Profile")){
             joProfile = joRoot["Profile"].toObject();
@@ -431,6 +448,21 @@ namespace BMQTApplication {
             }
         }while(0);
 
+        do {
+            if (!joRoot.contains("sessionNames")){
+                break;
+            }
+            joSessNames = joRoot["sessionNames"].toObject();
+            for (QJsonObject::const_iterator it = joSessNames.constBegin()
+                 ; it != joSessNames.constEnd()
+                 ; it ++)
+            {
+                QString sessKey = it.key();
+                QString sessName = it.value().toString();
+                bm->sessionName(sessKey.toStdString(), sessName.toStdString());
+            }
+        }while(0);
+
         if (joRoot.contains("proxy")){
             joProxy = joRoot["proxy"].toObject();
             do {
@@ -465,6 +497,7 @@ namespace BMQTApplication {
         QJsonObject joRx;
         QJsonObject joBuddies;
         QJsonArray jaGroups;     // Group chatting
+        QJsonObject joSessNames;
         QJsonObject joProxy;
         // Profile
         joProfile["email"] = QString::fromStdString(bm->GetEmail());
@@ -492,11 +525,16 @@ namespace BMQTApplication {
         // Groups
         std::vector<std::string> vecGroups;
         bm->GetGroups(vecGroups);
-        for (std::vector<std::string>::const_iterator it = vecGroups.begin()
-             ; it != vecGroups.end()
-             ; ++it)
+        for (std::vector<std::string>::const_iterator it = vecGroups.begin(); it != vecGroups.end(); ++it)
         {
             jaGroups.append(QString::fromStdString(*it));
+        }
+        // Session Names
+        std::map<std::string, std::string> sessNames = bm->sessNames();
+        for (std::map<std::string, std::string>::const_iterator it = sessNames.begin(); it != sessNames.end(); ++it){
+            QString sessKey  = QString::fromStdString(it->first);
+            QString sessName = QString::fromStdString(it->second);
+            joSessNames[sessKey] = sessName;
         }
         // proxy
         do {
@@ -513,6 +551,7 @@ namespace BMQTApplication {
         joRoot["friends"] = joBuddies;
         joRoot["proxy"] = joProxy;
         joRoot["groups"] = jaGroups;
+        joRoot["sessionNames"] = joSessNames;
         QJsonDocument jdoc(joRoot);
         QFile file(qsProfile);
         if (!file.open(QFile::WriteOnly | QFile::Text)) {

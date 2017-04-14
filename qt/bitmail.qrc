@@ -10,7 +10,6 @@
         <file>images/live.png</file>
         <file>images/invite.png</file>
         <file>images/bitcoin.png</file>
-        <file>images/bkgrd.png</file>
         <file>images/head.png</file>
         <file>images/wallet.s.png</file>
         <file>images/bubble.png</file>
@@ -25,5 +24,6 @@
         <file>images/network.png</file>
         <file>images/newgroup.png</file>
         <file>images/camera.png</file>
+        <file>images/login.png</file>
     </qresource>
 </RCC>

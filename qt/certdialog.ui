@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>340</width>
-    <height>450</height>
+    <height>480</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,19 +19,19 @@
   <property name="minimumSize">
    <size>
     <width>340</width>
-    <height>450</height>
+    <height>480</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>340</width>
-    <height>450</height>
+    <height>480</height>
    </size>
   </property>
   <property name="baseSize">
    <size>
     <width>300</width>
-    <height>450</height>
+    <height>480</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,7 @@
      <x>20</x>
      <y>20</y>
      <width>301</width>
-     <height>403</height>
+     <height>440</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -82,14 +82,14 @@
       <item row="2" column="1">
        <widget class="QLineEdit" name="leNick"/>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="lbCertID">
         <property name="text">
          <string>CertFP:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="4" column="1">
        <widget class="QLineEdit" name="leCertID">
         <property name="font">
          <font>
@@ -100,6 +100,27 @@
          </font>
         </property>
        </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lbComment">
+        <property name="text">
+         <string>Comment:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLineEdit" name="leComment"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnSetComment">
+          <property name="text">
+           <string>Set</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>

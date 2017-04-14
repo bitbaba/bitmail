@@ -129,9 +129,6 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="leGroupName"/>
-     </item>
      <item row="2" column="0">
       <widget class="QLabel" name="lblMembers">
        <property name="text">
@@ -171,12 +168,25 @@
        </item>
       </layout>
      </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLineEdit" name="leGroupName"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnSetGroupName">
+         <property name="text">
+          <string>Set</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
    </widget>
   </widget>
  </widget>
  <tabstops>
-  <tabstop>leGroupName</tabstop>
   <tabstop>cbbMembers</tabstop>
   <tabstop>btnAdd</tabstop>
  </tabstops>

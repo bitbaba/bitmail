@@ -50,10 +50,6 @@
 #include <QtMultimedia/QAudioRecorder>
 #include <QFileIconProvider>
 #include <QSystemTrayIcon>
-#include <QCamera>
-#include <QCameraViewFinder>
-#include <QCameraImageCapture>
-#include <QMediaRecorder>
 
 #include <iostream>
 #include <bitmailcore/bitmail.h>
@@ -68,20 +64,14 @@
 #include "certdialog.h"
 #include "invitedialog.h"
 #include "messagedialog.h"
-#include "ardialog.h"
 #include "newgroupdialog.h"
 #include "main.h"
 
 MainWindow::MainWindow(BitMail * bitmail)
-    : camera(NULL)
-    , viewfinder(NULL)
-    , imageCapture(NULL)
-    , vrec(NULL)
-    , m_bitmail(bitmail)
+    : m_bitmail(bitmail)
     , m_rxth(NULL)
     , m_txth(NULL)
     , m_shutdownDialog(NULL)
-    , m_arDlg(NULL)
 {
 #if defined(MACOSX)
     setUnifiedTitleAndToolBarOnMac(true);
@@ -104,10 +94,6 @@ MainWindow::MainWindow(BitMail * bitmail)
     createActions();
     createToolBars();
     createStatusBar();
-
-    /** audio recorder **/
-    audioRecorder = new QAudioRecorder();
-    connect(audioRecorder, SIGNAL(durationChanged(qint64)), this, SLOT(onDurationChanged(qint64)));
 
     /** Form */
     QVBoxLayout *leftLayout = new QVBoxLayout;
@@ -168,7 +154,6 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     btnSend = new QPushButton(tr("Send"));
     btnSend->setToolTip(tr("Ctrl+Enter"));
-    //btnSend->setFixedWidth(64);
     btnSend->setFixedHeight(32);
     btnSend->setEnabled(false);
     btnSend->setShortcut(QKeySequence("Ctrl+Return"));
@@ -176,7 +161,6 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     btnSendQr = new QPushButton(tr("QrImage"));
     btnSendQr->setToolTip(tr("Ctrl+Shift+Enter"));
-    //btnSendQr->setFixedWidth(64);
     btnSendQr->setFixedHeight(32);
     btnSendQr->setEnabled(false);
     btnSendQr->setShortcut(QKeySequence("Ctrl+Shift+Return"));
@@ -304,9 +288,13 @@ void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
         certDialog.SetEmail(qsEmail);
         certDialog.SetNick(qsNick);
         certDialog.SetCertID(qsCertID);
+        std::string sessKey = BitMail::toSessionKey(qsEmail.toStdString());
+        certDialog.comment(QString::fromStdString(m_bitmail->sessionName(sessKey)));
 
         QPixmap qrImage = BMQTApplication::toQrImage(QString("bitmail:%1#%2").arg(qsEmail).arg(qsCertID));
         certDialog.qrImage(qrImage);
+
+        connect(&certDialog, SIGNAL(friendChanged()), this, SLOT(populateFriendTree()));
 
         if (QDialog::Rejected == certDialog.exec()){
             return ;
@@ -314,6 +302,7 @@ void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
     }else if (receips.size() >= 2){
         NewGroupDialog dlg(m_bitmail);
         dlg.groupMembers(receips);
+        connect(&dlg, SIGNAL(groupChanged()), this, SLOT(populateGroupTree()));
         if (dlg.exec() != QDialog::Accepted){
             return ;
         }
@@ -386,12 +375,12 @@ void MainWindow::createActions()
 
 void MainWindow::createToolBars()
 {
+    editToolBar = addToolBar(tr("Buddies"));
+    editToolBar->addAction(inviteAct);
+
     fileToolBar = addToolBar(tr("Profile"));
     fileToolBar->addAction(configAct);
     fileToolBar->addAction(netAct);
-
-    editToolBar = addToolBar(tr("Buddies"));
-    editToolBar->addAction(inviteAct);
 
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->setIconSize(QSize(24,24));
@@ -496,45 +485,6 @@ void MainWindow::onFileAct()
     Send(qsMsg);
 }
 
-void MainWindow::onAudioAct()
-{
-    if (m_txth == NULL){
-        statusBar()->showMessage(tr("No active network"));
-        return ;
-    }
-    QString tempAudio = BMQTApplication::GetTempHome() + "/" +QUuid::createUuid().toString().remove("{").remove("}");
-    QAudioEncoderSettings audioSettings;
-    audioSettings.setCodec("audio/amr");
-    audioSettings.setQuality(QMultimedia::VeryLowQuality);
-    audioRecorder->setEncodingSettings(audioSettings);
-    audioRecorder->setOutputLocation(QUrl::fromLocalFile(tempAudio));
-    audioRecorder->record();
-    if (!m_arDlg){
-        m_arDlg = new arDialog(this);
-    }
-    if (m_arDlg){
-        m_arDlg->exec();
-    }
-}
-
-void MainWindow::onDurationChanged(qint64 duration)
-{
-    if (duration >= 3000){
-        if (m_arDlg){
-            m_arDlg->done(0);
-        }
-        audioRecorder->stop();
-        QString audioFilePath = audioRecorder->outputLocation().toLocalFile();
-
-        QString qsMsg = BMQTApplication::toMimeAttachment(audioFilePath);
-
-        Send(qsMsg);
-
-    }else{
-        m_arDlg->ShowStatus(tr("Recorded") + QString("%1.%2").arg(duration / 1000).arg(duration % 1000) + tr("seconds"));
-    }
-}
-
 void MainWindow::onEmojiAct()
 {
     QString emojiFile = QFileDialog::getOpenFileName(this, tr("select a emoji to send"), BMQTApplication::GetEmojiHome(), "Emoji Files (*.png *.jpg *.bmp)");
@@ -542,146 +492,24 @@ void MainWindow::onEmojiAct()
     Send(qsMsg);
 }
 
-void MainWindow::onSnapAct()
+void MainWindow::onAudioAct()
 {
-    // minimize parent
-    this->hide();
-
-    QTimer::singleShot(1000, this, &MainWindow::shootScreen);
+    QString audio = BMQTApplication::GetTempFile();
 }
 
-void MainWindow::shootScreen()
+void MainWindow::onSnapAct()
 {
-    QApplication::beep();
-
-    QScreen *screen = QGuiApplication::primaryScreen();
-    if (const QWindow *window = windowHandle())
-        screen = window->screen();
-    if (!screen)
-        return;
-
-    // grab
-    QPixmap originalPixmap = screen->grabWindow(0);
-    // TODO: model a edit window to select in a pixmap
-
-    // show window
-    this->showNormal();
-
-    QString qsMsg = BMQTApplication::toMimeImage(originalPixmap.toImage());
-
-    Send(qsMsg);
+    QString snap = BMQTApplication::GetTempFile();
 }
 
 void MainWindow::onPhotoAct()
 {
-    //TODO: use external app. to capture.
-    if (camera == NULL){
-        camera = new QCamera;
-    }
-    if (viewfinder == NULL){
-        viewfinder = new QCameraViewfinder;
-    }
-
-    if (imageCapture == NULL){
-        imageCapture = new QCameraImageCapture(camera);
-    }
-
-    camera->setViewfinder(viewfinder);
-    viewfinder->show();
-
-    camera->setCaptureMode(QCamera::CaptureStillImage);
-    if (camera->state() != QCamera::ActiveState){
-        qDebug() << "Start camera";
-        camera->start(); // to start the viewfinder
-    }
-
-    qDebug() << "Start to shoot photo";
-    QTimer::singleShot(1000, this, &MainWindow::shootPhoto);
-}
-
-void MainWindow::shootPhoto()
-{
-    if (imageCapture){
-        qDebug() << "Shoot photo!";
-        QString loc = BMQTApplication::GetTempHome() + "/" + QUuid::createUuid().toString().remove("{").remove("}");
-        imageCapture->capture(loc);
-        connect(imageCapture, SIGNAL(imageSaved(int,QString)), this, SLOT(onCameraCaptureSaved(int,QString)));
-    }
-    //qDebug() << "Stop camera";
-    //camera->stop();
-}
-
-void MainWindow::onCameraCaptureSaved(int id, const QString & filepath)
-{
-    qDebug() << "Photo captured: id=" << id << ", FilePath=" << filepath;
-
-    if (!QFile(filepath).exists()){
-        return ;
-    }
-
-    QString qsMsg = BMQTApplication::toMimeImage(QImage(filepath));
-
-    Send(qsMsg);
+    QString photo = BMQTApplication::GetTempFile();
 }
 
 void MainWindow::onVideoAct()
 {
-    // http://stackoverflow.com/questions/22452432/qt-recording-video-using-qmediarecorder-not-working
-    // http://doc.qt.io/qt-5/qtmultimedia-windows.html
-    // http://kibsoft.ru/
-    return ;
-
-    //TODO: use external app. to capture.
-    if (camera == NULL){
-        camera = new QCamera;
-    }
-    if (viewfinder == NULL){
-        viewfinder = new QCameraViewfinder;
-    }
-
-    if (vrec == NULL){
-        vrec = new QMediaRecorder(camera);
-        connect(vrec, SIGNAL(durationChanged(qint64)), this, SLOT(onVideoDurationChanged(qint64)));
-    }
-
-    camera->setViewfinder(viewfinder);
-    viewfinder->show();
-
-    camera->setCaptureMode(QCamera::CaptureVideo);
-
-    if (camera->state() != QCamera::ActiveState){
-        qDebug() << "Start camera";
-        camera->start(); // to start the viewfinder
-    }
-
-    qDebug() << "Start to shoot video";
-    QTimer::singleShot(1000, this, &MainWindow::shootVideo);
-}
-
-void MainWindow::shootVideo()
-{
-    qDebug() << "shootVideo";
-    if (camera->state() == QCamera::ActiveState){
-        qDebug() << "Start to record video";
-        QString tempVideo = BMQTApplication::GetTempHome() + "/" +QUuid::createUuid().toString().remove("{").remove("}");
-        QVideoEncoderSettings vsetting;
-        vsetting.setCodec("video/mpeg2");
-        vsetting.setResolution(640, 480);
-        vrec->setVideoSettings(vsetting);
-        vrec->setOutputLocation(QUrl::fromLocalFile(tempVideo));
-        vrec->record();
-    }
-}
-
-void MainWindow::onVideoDurationChanged(qint64 duration)
-{
-    if (duration > 2000){
-        qDebug() << "Stop video record";
-        vrec->stop();
-    }else{
-        qDebug() << "video recording... " << duration ;
-    }
-
+    QString video = BMQTApplication::GetTempFile();
 }
 
 void MainWindow::onBtnInviteClicked()

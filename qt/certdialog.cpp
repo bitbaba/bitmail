@@ -14,16 +14,15 @@ CertDialog::CertDialog(BitMail * bm, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    m_leEmail = findChild<QLineEdit *>("leEmail");
+    m_leEmail  = findChild<QLineEdit*>("leEmail"  );
+    m_leNick   = findChild<QLineEdit*>("leNick"   );
+    m_leCertID = findChild<QLineEdit*>("leCertID" );
+    m_lbQrCode = findChild<QLabel*>   ("lbQrCode" );
+    m_leComment= findChild<QLineEdit*>("leComment");
+
     m_leEmail->setReadOnly(true);
-
-    m_leNick = findChild<QLineEdit*>("leNick");
     m_leNick->setReadOnly(true);
-
-    m_leCertID = findChild<QLineEdit*>("leCertID");
     m_leCertID->setReadOnly(true);
-
-    m_lbQrCode = findChild<QLabel*>("lbQrCode");
 }
 
 CertDialog::~CertDialog()
@@ -71,8 +70,27 @@ QString CertDialog::CertDialog::GetCertID() const
     return m_leCertID->text();
 }
 
+void CertDialog::comment(const QString &cmt)
+{
+    m_leComment->setText(cmt);
+}
+
+QString CertDialog::comment() const
+{
+    return m_leComment->text();
+}
+
 void CertDialog::qrImage(const QPixmap &p)
 {
     m_lbQrCode->setScaledContents(true);
     m_lbQrCode->setPixmap(p);
+}
+
+void CertDialog::on_btnSetComment_clicked()
+{
+    if (!GetEmail().isEmpty() && !comment().isEmpty()){
+        std::string sessKey = BitMail::toSessionKey(GetEmail().toStdString());
+        m_bitmail->sessionName(sessKey, comment().toStdString());
+    }
+    emit friendChanged();
 }
