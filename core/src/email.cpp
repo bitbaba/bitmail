@@ -270,6 +270,8 @@ int CMailClient::SendMsg( const std::string & from
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     }
 
+    curl_easy_setopt(curl, CURLOPT_PROXY, "socks5://127.0.0.1:1080/");
+
     if (cb ){
         std::stringstream txinfo;
         txinfo<< "Sending Message";

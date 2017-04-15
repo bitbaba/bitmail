@@ -53,10 +53,21 @@ public:
     EVP_PKEY * GetPrivateKey();
     std::string GetPrivateKeyAsEncryptedPem();
 
+    /*Certificate*/
     std::string Sign(const std::string & msg);
     std::string Verify(const std::string & msg);
     std::string Encrypt(const std::string & msg);
     std::string Decrypt(const std::string & msg);
+
+    /*Public Key*/
+    std::string PKSign(const std::string & msg);
+    std::string PKVerify(const std::string & msg, const std::string & sig);
+    std::string PKEncrypt(const std::string & msg);
+    std::string PKDecrypt(const std::string & code);
+
+    /*Symmetric Key*/
+    static std::string SKEncrypt(const std::string & msg, const std::string & algo, const std::string & secret);
+    static std::string SKDecrypt(const std::string & code, const std::string & algo, const std::string & secret);
 
 public:
     static std::string hash(const std::string & str, const std::string & algo);
