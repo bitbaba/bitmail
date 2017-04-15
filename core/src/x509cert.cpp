@@ -471,15 +471,29 @@ EVP_PKEY * CX509Cert::PemToPKey(const std::string & sRsa, const std::string & pa
                                     , NULL /*or, &x */
                                     , NULL /*void callback*/
                                     , (void *)passphrase.c_str());
-    if (!rsa) return NULL;
+    if (!rsa) {
+        BIO_free(mbio);mbio = NULL;
+        return NULL;
+    }
 
     EVP_PKEY * pkey = EVP_PKEY_new();
-    if (!pkey) return NULL;
-
-    if (!EVP_PKEY_assign_RSA(pkey, rsa))
+    if (!pkey) {
+        BIO_free(mbio);mbio = NULL;
         return NULL;
+    }
+
+    if (!EVP_PKEY_assign_RSA(pkey, rsa)){
+        BIO_free(mbio);mbio = NULL;
+        EVP_PKEY_free(pkey); pkey = NULL;
+        return NULL;
+    }
 
     return pkey;
+}
+
+void CX509Cert::FreePrivateKey(EVP_PKEY * pkey)
+{
+    EVP_PKEY_free(pkey);
 }
 
 X509 * CX509Cert::PemToCert(const std::string sCert)
@@ -492,7 +506,14 @@ X509 * CX509Cert::PemToCert(const std::string sCert)
                                     , NULL /*void callback*/
                                     , 0);
 
+    BIO_free(mbio);
+
     return x;
+}
+
+void CX509Cert::FreeCert(X509 * x)
+{
+    X509_free(x);
 }
 
 X509 *  CX509Cert::GetCert() const
@@ -1148,4 +1169,56 @@ std::string CX509Cert::b64dec(const std::string & b64str, bool crlf)
     BIO_free(b64);
 
     return str;
+}
+
+/*Public Key*/
+std::string CX509Cert::PKSign(const std::string & msg, const std::string & dgst_algo)
+{
+    int rv = 0;
+    EVP_PKEY_CTX * ctx = NULL;
+    EVP_PKEY * pkey = GetPrivateKey();
+    ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    EVP_PKEY_sign_init(ctx);
+
+    std::string dgst = this->hash(msg, dgst_algo);
+
+    size_t outlen = 0;
+    unsigned char * out = NULL;
+    // caculate the required size for output buffer.
+    rv = EVP_PKEY_sign(ctx, out, &outlen, (const unsigned char *)dgst.data(), dgst.length());
+    // alocate buffer
+    out = (unsigned char *)malloc(outlen);
+    // do real sign
+    rv = EVP_PKEY_sign(ctx, out, &outlen, (const unsigned char *)dgst.data(), dgst.length());
+    // free buf
+    free(out);
+    EVP_PKEY_CTX_free(ctx);
+    FreePrivateKey(pkey);
+    return msg;
+}
+
+std::string CX509Cert::PKVerify(const std::string & msg, const std::string & dgst, const std::string & sig)
+{
+    return "";
+}
+
+std::string CX509Cert::PKEncrypt(const std::string & msg)
+{
+    return "";
+}
+
+std::string CX509Cert::PKDecrypt(const std::string & code)
+{
+    return "";
+}
+
+/*Symmetric Key*/
+std::string CX509Cert::SKEncrypt(const std::string & msg, const std::string & algo, const std::string & secret)
+{
+    return "";
+}
+
+std::string CX509Cert::SKDecrypt(const std::string & code, const std::string & algo, const std::string & secret)
+{
+    return "";
 }

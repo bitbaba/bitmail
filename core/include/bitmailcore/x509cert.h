@@ -42,6 +42,7 @@ public:
 public:
     bool IsValid() const;
     X509 * GetCert() const;
+    void FreeCert(X509 * x);
     std::string GetCertByPem() const;
     std::string GetEmail() const ;
     std::string GetCommonName() const;
@@ -51,6 +52,7 @@ public:
     int SetPassphrase(const std::string & passphrase);
 
     EVP_PKEY * GetPrivateKey();
+    void FreePrivateKey(EVP_PKEY * pkey);
     std::string GetPrivateKeyAsEncryptedPem();
 
     /*Certificate*/
@@ -60,8 +62,8 @@ public:
     std::string Decrypt(const std::string & msg);
 
     /*Public Key*/
-    std::string PKSign(const std::string & msg);
-    std::string PKVerify(const std::string & msg, const std::string & sig);
+    std::string PKSign(const std::string & msg, const std::string & dgst);
+    std::string PKVerify(const std::string & msg, const std::string & dgst, const std::string & sig);
     std::string PKEncrypt(const std::string & msg);
     std::string PKDecrypt(const std::string & code);
 
