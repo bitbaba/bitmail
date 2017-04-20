@@ -16,13 +16,13 @@ public:
 public:
     void run();
     void stop();
-    void NotifyTxProgress(const QString & info);
+    void NotifyTxProgress(int st, const QString & info);
 
 signals:
 
     void done();
 
-    void txProgress(const QString & info);
+    void txProgress(int st, const QString & info);
 
 public slots:
     void onSendMessage(const QString & from

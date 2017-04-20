@@ -63,18 +63,17 @@ void TxThread::stop()
     m_fStopFlag = true;
 }
 
-void TxThread::NotifyTxProgress(const QString &info)
+void TxThread::NotifyTxProgress(int st, const QString &info)
 {
-    emit txProgress(info);
+    emit txProgress(st, info);
 }
 
 int TxProgressHandler(RTxState st, const char * info, void * userp)
 {
-    (void)st;
     TxThread * self = (TxThread *)userp;
     if (self == NULL){
         return bmInvalidParam;
     }
-    self->NotifyTxProgress(QString::fromLatin1(info));
+    self->NotifyTxProgress((int)st, QString::fromLatin1(info));
     return bmOk;
 }

@@ -60,14 +60,16 @@ class QListWidgetItem;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QProcess;
-
+class QProgressBar;
+class QComboBox;
+class QFontComboBox;
+class QTextCharFormat;
 
 QT_END_NAMESPACE
 class BitMail;
 class RxThread;
 class TxThread;
 class ShutdownDialog;
-class arDialog;
 
 
 //! [0]
@@ -87,15 +89,15 @@ public slots:
     void onBtnConfigClicked();
     void onBtnInviteClicked();
 
-    void onNewMessage(const QString & from, const QString & receips, const QString & msg, const QString & certid, const QString & cert);
+    void onNewMessage(const QString & from, const QString & receips, const QString & msg, const QString & certid, const QString & cert, const QString & sigtime);
     void onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous);
     void onTreeBuddyDoubleClicked(QTreeWidgetItem * actItem,int col);
     void onMessageDoubleClicked(QListWidgetItem * actItem);
 
     void onRxDone();
-    void onRxProgress(const QString & info);
+    void onRxProgress(int st, const QString & info);
     void onTxDone();
-    void onTxProgress(const QString & info);
+    void onTxProgress(int st, const QString & info);
 
     void onProcThDone(const QString & sessKey, const QString & output);
 
@@ -107,15 +109,33 @@ public slots:
     void onSnapAct();
     void onPhotoAct();
     void onVideoAct();
+    void onHtmlAct(bool fChecked);
 
     void populateFriendTree();
     void populateGroupTree();
-private:    
+
+private slots:
+    void textBold();
+    void textUnderline();
+    void textItalic();
+    void textFamily(const QString &f);
+    void textSize(const QString &p);
+    void textStyle(int styleIndex);
+    void textColor();
+
+private:
+    void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
+    void fontChanged(const QFont &f);
+    void colorChanged(const QColor &c);
+
     QString currentSessionKey();
 
     void createActions();
+    void setupTextActions();
     void createToolBars();
     void createStatusBar();
+    QWidget * createMessageWidget(int width, const QVariantList & varlist);
+
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
 
@@ -128,13 +148,17 @@ private:
 
     void shutdownNetwork();
 
-    void enqueueMsg(const QString & k, bool tx, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert);
+    void enqueueMsg(const QString & k, bool tx, const QString & sigtime, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert);
     QStringList dequeueMsg(const QString &key);
 
     void Send(const QString & msg);
     void SendTo(const QString & sessKey, const QString & msg);
 private:
-    QPlainTextEdit *textEdit;
+    QComboBox *comboStyle;
+    QFontComboBox *comboFont;
+    QComboBox *comboSize;
+
+    QTextEdit *textEdit;
     QTreeWidget * btree;
     QTreeWidgetItem * nodeFriends;
     QTreeWidgetItem * nodeGroups;
@@ -145,8 +169,13 @@ private:
     QToolBar *editToolBar;
     QToolBar *chatToolbar;
     QToolBar *netToolbar;
+    QToolBar *textToolbar;
     QPushButton * btnSend;
     QPushButton * btnSendQr;
+    QProgressBar * rxProg;
+    QLabel * rxTip;
+    QProgressBar * txProg;
+    QLabel * txTip;
 
     QAction *configAct;
     QAction *inviteAct;
@@ -158,6 +187,13 @@ private:
     QAction *snapAct;
     QAction *photoAct;
     QAction *videoAct;
+    QAction *htmlAct;
+
+    // Text edit options
+    QAction *actionTextBold;
+    QAction *actionTextUnderline;
+    QAction *actionTextItalic;
+    QAction *actionTextColor;
 
 private:
     BitMail *m_bitmail;
@@ -166,7 +202,6 @@ private:
     TxThread *m_txth;
 
     ShutdownDialog *m_shutdownDialog;
-    arDialog * m_arDlg;
 
     // histroy messages queue
     std::map<QString, QStringList> m_peermsgQ;

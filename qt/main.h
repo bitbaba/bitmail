@@ -18,10 +18,12 @@ namespace BMQTApplication {
     QString GetLogHome();
     QString GetLocaleHome();
     QString GetEmojiHome();
+    QString GetResHome();
     QString GetLanIp();
     QString GetExeSuffix();
     QStringList GetProfiles();
     QString GetProfilePath(const QString & email);
+    QString GetSigTime(const QString & sigtime);
     bool IsValidPofile(const QString & profilePath);
     bool SaveProfile(BitMail * bm);
     bool LoadProfile(BitMail * bm, const QString & email, const QString & passphrase);
@@ -98,7 +100,7 @@ namespace BMQTApplication {
 
     QString fromMimeTextPlain(const QString & part);
 
-    QString fromMimeTextHtml(const QString & part);
+    QByteArray fromMimeTextHtml(const QString & part);
 
     QString fromMimeAttachemnt(const QString & part);
 

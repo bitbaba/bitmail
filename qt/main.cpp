@@ -61,6 +61,7 @@
 #include <QPainter>
 #include <QMessageBox>
 #include <QStyleFactory>
+#include <QTimeZone>
 
 #include "optiondialog.h"
 #include "logindialog.h"
@@ -285,6 +286,18 @@ namespace BMQTApplication {
         }
         return qsEmojiHome;
     }
+    QString GetResHome()
+    {
+        QString qsResHome = GetAppHome();
+        qsResHome += "/";
+        qsResHome += "res";
+        QDir qdir(qsResHome);
+        if (!qdir.exists()){
+            qdir.mkpath(qsResHome);
+        }
+        return qsResHome;
+    }
+
     QString GetLanIp()
     {
         QString lanaddr;
@@ -333,6 +346,24 @@ namespace BMQTApplication {
         qsProfilePath += email;
         return qsProfilePath;
     }
+
+    QString GetSigTime(const QString &sigtime)
+    {
+        QString generalTime = "";
+        if (sigtime.startsWith("GT:", Qt::CaseInsensitive)){
+            generalTime = sigtime.mid(3);
+            return QDateTime::fromString(generalTime, Qt::ISODate).toLocalTime().toString();
+        }
+        else if (sigtime.startsWith("UTC:", Qt::CaseInsensitive)){
+            generalTime += sigtime.mid(4);
+            QDateTime st = QDateTime::fromString(generalTime, "yyMMddHHmmssZ").addYears(100);
+            st.setTimeSpec(Qt::UTC);
+            return st.toLocalTime().toString();
+        }else{
+            return sigtime;
+        }
+    }
+
     bool IsValidPofile(const QString & qsProfile)
     {
         QFile profile(qsProfile);
@@ -407,7 +438,7 @@ namespace BMQTApplication {
                 qsTxLogin = joTx["login"].toString();
             }
             if (joTx.contains("password")){
-                qsTxPassword = QString::fromStdString( bm->Decrypt(joTx["password"].toString().toStdString()));
+                qsTxPassword = QString::fromStdString( bm->Reveal(joTx["password"].toString().toStdString()));
             }
         }
         QString qsRxUrl, qsRxLogin, qsRxPassword;
@@ -420,7 +451,7 @@ namespace BMQTApplication {
                 qsRxLogin = joRx["login"].toString();
             }
             if (joRx.contains("password")){
-                qsRxPassword = QString::fromStdString( bm->Decrypt(joRx["password"].toString().toStdString()));
+                qsRxPassword = QString::fromStdString( bm->Reveal(joRx["password"].toString().toStdString()));
             }
         }
         bm->InitNetwork(qsTxUrl.toStdString(), qsTxLogin.toStdString(), qsTxPassword.toStdString()
@@ -489,7 +520,7 @@ namespace BMQTApplication {
                 }
                 if (joProxy.contains("password")){
                     QString qsVal = joProxy["password"].toString();
-                    bm->SetProxyPassword(bm->Decrypt(qsVal.toStdString()));
+                    bm->SetProxyPassword(bm->Reveal(qsVal.toStdString()));
                 }
             }while(0);
         }
@@ -516,11 +547,11 @@ namespace BMQTApplication {
         // Tx
         joTx["url"] = QString::fromStdString(bm->GetTxUrl());
         joTx["login"] = QString::fromStdString(bm->GetTxLogin());
-        joTx["password"] = QString::fromStdString(bm->Encrypt(bm->GetTxPassword()));
+        joTx["password"] = QString::fromStdString(bm->Protect(bm->GetTxPassword()));
         // Rx
         joRx["url"] = QString::fromStdString(bm->GetRxUrl());
         joRx["login"] = QString::fromStdString(bm->GetRxLogin());
-        joRx["password"] = QString::fromStdString(bm->Encrypt(bm->GetRxPassword()));
+        joRx["password"] = QString::fromStdString(bm->Protect(bm->GetRxPassword()));
         // friends
         std::vector<std::string > vecBuddies;
         bm->GetFriends(vecBuddies);
@@ -550,7 +581,7 @@ namespace BMQTApplication {
             joProxy["ip"] = QString::fromStdString( bm->GetProxyIp());
             joProxy["port"] = (int)bm->GetProxyPort();
             joProxy["user"] = QString::fromStdString(bm->GetProxyUser());
-            joProxy["password"] = QString::fromStdString(bm->Encrypt(bm->GetProxyPassword()));
+            joProxy["password"] = QString::fromStdString(bm->Protect(bm->GetProxyPassword()));
         }while(0);
 
         // for more readable, instead of `profile'
@@ -917,9 +948,14 @@ namespace BMQTApplication {
         return qsText;
     }
 
-    QString fromMimeTextHtml(const QString & qsPart)
+    /**
+     * @brief fromMimeTextHtml, use QByteArray to store HTML text.
+     * @param qsPart
+     * @return
+     */
+    QByteArray fromMimeTextHtml(const QString & qsPart)
     {
-        return fromMimeTextPlain(qsPart);
+        return fromMimeTextPlain(qsPart).toUtf8();
     }
 
     QString fromMimeAttachemnt(const QString & qsPart)
@@ -971,8 +1007,10 @@ namespace BMQTApplication {
 
         QString qsMsgType = QString::fromStdString(BitMail::partType(qsMsg.toStdString()));
 
-        if (qsMsgType.startsWith("text/")){
+        if (qsMsgType.startsWith("text/plain")){
             varlist.append( BMQTApplication::fromMimeTextPlain(qsMsg) );
+        }else if (qsMsgType.startsWith("text/html")){
+            varlist.append( BMQTApplication::fromMimeTextHtml(qsMsg) );
         }
         else if (qsMsgType.startsWith("image/")){
             QImage image = BMQTApplication::fromMimeImage(qsMsg);
@@ -986,8 +1024,10 @@ namespace BMQTApplication {
 
                 QString qsPartType = QString::fromStdString(BitMail::partType(qsPart.toStdString()));
 
-                if (qsPartType.startsWith("text/")){
+                if (qsPartType.startsWith("text/plain")){
                     varlist.append( BMQTApplication::fromMimeTextPlain(qsPart) );
+                }else if (qsPartType.startsWith("text/html")){
+                    varlist.append( BMQTApplication::fromMimeTextHtml(qsPart) );
                 }else if (qsPartType.startsWith("image/")){
                     QImage image = BMQTApplication::fromMimeImage(qsPart);
                     varlist.append(image);

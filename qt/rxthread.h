@@ -19,9 +19,10 @@ public:
                           , const QString & receips
                           , const QString & msg
                           , const QString & certid
-                          , const QString & cert);
+                          , const QString & cert
+                          , const QString & sigtime);
 
-    void NotifyProgress(const QString & info);
+    void NotifyProgress(int st, const QString & info);
 
     void stop();
 
@@ -30,10 +31,11 @@ signals:
                         , const QString & receips
                         , const QString & msg
                         , const QString & certid
-                        , const QString & cert);
+                        , const QString & cert
+                        , const QString & sigtime);
     void done();
 
-    void rxProgress(const QString & info);
+    void rxProgress(int st, const QString & info);
 
 public slots:
     void onInboxPollEvent();

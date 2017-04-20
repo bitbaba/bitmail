@@ -50,6 +50,7 @@
 #include <QtMultimedia/QAudioRecorder>
 #include <QFileIconProvider>
 #include <QSystemTrayIcon>
+#include <QProgressBar>
 
 #include <iostream>
 #include <bitmailcore/bitmail.h>
@@ -95,6 +96,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     createActions();
     createToolBars();
     createStatusBar();
+    setupTextActions();
 
     /** Form */
     QVBoxLayout *leftLayout = new QVBoxLayout;
@@ -142,13 +144,11 @@ MainWindow::MainWindow(BitMail * bitmail)
     msgView->setIconSize(QSize(48,48));
     msgView->setSpacing(2);
     msgView->setFont(QFont("Arial", 8));
+    msgView->setSpacing(10);
 
-    textEdit = new QPlainTextEdit;
-    textEdit->setMinimumWidth(480);
+    textEdit = new QTextEdit;
+    textEdit->setMinimumWidth(560);
     textEdit->setFixedHeight(100);
-    QFont font = textEdit->font();
-    font.setBold(true);
-    textEdit->setFont(font);
     textEdit->setFocus();
 
     btnLayout->setAlignment(Qt::AlignLeft);
@@ -170,6 +170,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     rightLayout->addWidget(sessLabel);
     rightLayout->addWidget(msgView);
     rightLayout->addWidget(chatToolbar);
+    rightLayout->addWidget(textToolbar);
     rightLayout->addWidget(textEdit);
     rightLayout->addLayout(btnLayout);
     mainLayout->addLayout(rightLayout);
@@ -178,6 +179,40 @@ MainWindow::MainWindow(BitMail * bitmail)
     wrap->setMinimumHeight(600);
     wrap->setLayout(mainLayout);
     setCentralWidget(wrap);
+
+    do {
+        rxProg = new QProgressBar(this);
+        rxProg->setTextVisible(false);
+        rxProg->setMaximumHeight(statusBar()->height()/2);
+        rxProg->setMinimumWidth(rxProg->maximumHeight()/2);
+        rxProg->setMaximumWidth(rxProg->maximumHeight()/2);
+        rxProg->setInvertedAppearance(true);
+        rxProg->setOrientation(Qt::Vertical);
+        //rxProg->setRange(0, 0);
+        statusBar()->addPermanentWidget(rxProg);
+
+        rxTip = new QLabel(this);
+        rxTip->setMaximumWidth(64);
+        rxTip->setMinimumWidth(64);
+        statusBar()->addPermanentWidget(rxTip);
+    }while(0);
+
+
+    do {
+        txProg = new QProgressBar(this);
+        txProg->setTextVisible(false);
+        txProg->setMaximumHeight(statusBar()->height()/2);
+        txProg->setMinimumWidth(txProg->maximumHeight()/2);
+        txProg->setMaximumWidth(txProg->maximumHeight()/2);
+        txProg->setInvertedAppearance(false);
+        txProg->setOrientation(Qt::Vertical);
+        statusBar()->addPermanentWidget(txProg);
+
+        txTip = new QLabel(this);
+        txTip->setMaximumWidth(64);
+        txTip->setMinimumWidth(64);
+        statusBar()->addPermanentWidget(txTip);
+    }while(0);
 
     // Bind signals
     connect(btree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(onTreeCurrentBuddy(QTreeWidgetItem*,QTreeWidgetItem*)));
@@ -199,15 +234,15 @@ void MainWindow::configNetwork()
 void MainWindow::startupNetwork()
 {
     m_rxth = new RxThread(m_bitmail);
-    connect(m_rxth, SIGNAL(gotMessage(QString, QString, QString, QString, QString)), this, SLOT(onNewMessage(QString, QString, QString, QString, QString)));
+    connect(m_rxth, SIGNAL(gotMessage(QString, QString, QString, QString, QString, QString)), this, SLOT(onNewMessage(QString, QString, QString, QString, QString, QString)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
-    connect(m_rxth, SIGNAL(rxProgress(QString)), this, SLOT(onRxProgress(QString)));
+    connect(m_rxth, SIGNAL(rxProgress(int, QString)), this, SLOT(onRxProgress(int, QString)));
     m_rxth->start();
 
     m_txth = new TxThread(m_bitmail);
     connect(this, SIGNAL(readyToSend(QString,QStringList,QString)), m_txth, SLOT(onSendMessage(QString,QStringList,QString)));
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
-    connect(m_txth, SIGNAL(txProgress(QString)), this, SLOT(onTxProgress(QString)));
+    connect(m_txth, SIGNAL(txProgress(int, QString)), this, SLOT(onTxProgress(int, QString)));
     m_txth->start();
 }
 
@@ -227,16 +262,28 @@ void MainWindow::onRxDone()
         m_shutdownDialog->done(0);
     }
 }
-void MainWindow::onRxProgress(const QString &info)
+void MainWindow::onRxProgress(int st, const QString &info)
 {
     qDebug() << info;
-    statusBar()->showMessage(info, 2000);
+    if (st == Rx_download){
+        rxProg->setValue(info.toFloat());
+    }
+    if (st == Rx_doneload){
+        rxProg->setValue(0);
+    }
+    rxTip->setText(info);
     return ;
 }
-void MainWindow::onTxProgress(const QString &info)
+void MainWindow::onTxProgress(int st, const QString &info)
 {
     qDebug() << info;
-    statusBar()->showMessage(info, 2000);
+    if (st == Tx_upload){
+        txProg->setValue(info.toFloat());
+    }
+    if (st == Tx_updone){
+        txProg->setValue(0);
+    }
+    txTip->setText(info);
     return ;
 }
 
@@ -369,9 +416,228 @@ void MainWindow::createActions()
     do{
         videoAct = new QAction(QIcon(":/images/video.png"), tr("&Video"), this);
         videoAct->setStatusTip(tr("Send video"));
-        //videoAct->setEnabled(false);
         connect(videoAct, SIGNAL(triggered()), this, SLOT(onVideoAct()));
     }while(0);
+
+    do{
+        htmlAct = new QAction(QIcon(":/images/html.png"), tr("&Html"), this);
+        htmlAct->setStatusTip(tr("HTML mode"));
+        htmlAct->setCheckable(true);
+        connect(htmlAct, SIGNAL(triggered(bool)), this, SLOT(onHtmlAct(bool)));
+    }while(0);
+}
+
+
+void MainWindow::setupTextActions()
+{
+    QToolBar *tb = addToolBar(tr("Format Actions"));
+    textToolbar = tb;
+    textToolbar->setVisible(false);
+
+    QString rsrcPath = BMQTApplication::GetResHome();
+    rsrcPath += "/textedit/win";
+
+    const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(rsrcPath + "/textbold.png"));
+    actionTextBold = tb->addAction(boldIcon, tr("&Bold"), this, &MainWindow::textBold);
+    actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
+    actionTextBold->setPriority(QAction::LowPriority);
+    QFont bold;
+    bold.setBold(true);
+    actionTextBold->setFont(bold);
+    tb->addAction(actionTextBold);
+    actionTextBold->setCheckable(true);
+
+    const QIcon italicIcon = QIcon::fromTheme("format-text-italic", QIcon(rsrcPath + "/textitalic.png"));
+    actionTextItalic = tb->addAction(italicIcon, tr("&Italic"), this, &MainWindow::textItalic);
+    actionTextItalic->setPriority(QAction::LowPriority);
+    actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
+    QFont italic;
+    italic.setItalic(true);
+    actionTextItalic->setFont(italic);
+    tb->addAction(actionTextItalic);
+    actionTextItalic->setCheckable(true);
+
+    const QIcon underlineIcon = QIcon::fromTheme("format-text-underline", QIcon(rsrcPath + "/textunder.png"));
+    actionTextUnderline = tb->addAction(underlineIcon, tr("&Underline"), this, &MainWindow::textUnderline);
+    actionTextUnderline->setShortcut(Qt::CTRL + Qt::Key_U);
+    actionTextUnderline->setPriority(QAction::LowPriority);
+    QFont underline;
+    underline.setUnderline(true);
+    actionTextUnderline->setFont(underline);
+    tb->addAction(actionTextUnderline);
+    actionTextUnderline->setCheckable(true);
+
+    QPixmap pix(16, 16);
+    pix.fill(Qt::black);
+    actionTextColor = tb->addAction(pix, tr("&Color..."), this, &MainWindow::textColor);
+    tb->addAction(actionTextColor);
+
+    comboStyle = new QComboBox(tb);
+    tb->addWidget(comboStyle);
+    comboStyle->addItem("Standard");
+    comboStyle->addItem("Bullet List (Disc)");
+    comboStyle->addItem("Bullet List (Circle)");
+    comboStyle->addItem("Bullet List (Square)");
+    comboStyle->addItem("Ordered List (Decimal)");
+    comboStyle->addItem("Ordered List (Alpha lower)");
+    comboStyle->addItem("Ordered List (Alpha upper)");
+    comboStyle->addItem("Ordered List (Roman lower)");
+    comboStyle->addItem("Ordered List (Roman upper)");
+
+    typedef void (QComboBox::*QComboIntSignal)(int);
+    connect(comboStyle, static_cast<QComboIntSignal>(&QComboBox::activated), this, &MainWindow::textStyle);
+
+    typedef void (QComboBox::*QComboStringSignal)(const QString &);
+    comboFont = new QFontComboBox(tb);
+    tb->addWidget(comboFont);
+    connect(comboFont, static_cast<QComboStringSignal>(&QComboBox::activated), this, &MainWindow::textFamily);
+
+    comboSize = new QComboBox(tb);
+    comboSize->setObjectName("comboSize");
+    tb->addWidget(comboSize);
+    comboSize->setEditable(true);
+
+    const QList<int> standardSizes = QFontDatabase::standardSizes();
+    foreach (int size, standardSizes) comboSize->addItem(QString::number(size));
+    comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
+
+    connect(comboSize, static_cast<QComboStringSignal>(&QComboBox::activated), this, &MainWindow::textSize);
+}
+
+void MainWindow::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
+{
+    QTextCursor cursor = textEdit->textCursor();
+    if (!cursor.hasSelection())
+        cursor.select(QTextCursor::WordUnderCursor);
+    cursor.mergeCharFormat(format);
+    textEdit->mergeCurrentCharFormat(format);
+}
+
+void MainWindow::fontChanged(const QFont &f)
+{
+    comboFont->setCurrentIndex(comboFont->findText(QFontInfo(f).family()));
+    comboSize->setCurrentIndex(comboSize->findText(QString::number(f.pointSize())));
+    actionTextBold->setChecked(f.bold());
+    actionTextItalic->setChecked(f.italic());
+    actionTextUnderline->setChecked(f.underline());
+}
+
+void MainWindow::colorChanged(const QColor &c)
+{
+    QPixmap pix(16, 16);
+    pix.fill(c);
+    actionTextColor->setIcon(pix);
+}
+
+void MainWindow::textBold()
+{
+    QTextCharFormat fmt;
+    fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void MainWindow::textUnderline()
+{
+    QTextCharFormat fmt;
+    fmt.setFontUnderline(actionTextUnderline->isChecked());
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void MainWindow::textItalic()
+{
+    QTextCharFormat fmt;
+    fmt.setFontItalic(actionTextItalic->isChecked());
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void MainWindow::textFamily(const QString &f)
+{
+    QTextCharFormat fmt;
+    fmt.setFontFamily(f);
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void MainWindow::textSize(const QString &p)
+{
+    qreal pointSize = p.toFloat();
+    if (p.toFloat() > 0) {
+        QTextCharFormat fmt;
+        fmt.setFontPointSize(pointSize);
+        mergeFormatOnWordOrSelection(fmt);
+    }
+}
+
+void MainWindow::textStyle(int styleIndex)
+{
+    QTextCursor cursor = textEdit->textCursor();
+
+    if (styleIndex != 0) {
+        QTextListFormat::Style style = QTextListFormat::ListDisc;
+
+        switch (styleIndex) {
+            default:
+            case 1:
+                style = QTextListFormat::ListDisc;
+                break;
+            case 2:
+                style = QTextListFormat::ListCircle;
+                break;
+            case 3:
+                style = QTextListFormat::ListSquare;
+                break;
+            case 4:
+                style = QTextListFormat::ListDecimal;
+                break;
+            case 5:
+                style = QTextListFormat::ListLowerAlpha;
+                break;
+            case 6:
+                style = QTextListFormat::ListUpperAlpha;
+                break;
+            case 7:
+                style = QTextListFormat::ListLowerRoman;
+                break;
+            case 8:
+                style = QTextListFormat::ListUpperRoman;
+                break;
+        }
+
+        cursor.beginEditBlock();
+
+        QTextBlockFormat blockFmt = cursor.blockFormat();
+
+        QTextListFormat listFmt;
+
+        if (cursor.currentList()) {
+            listFmt = cursor.currentList()->format();
+        } else {
+            listFmt.setIndent(blockFmt.indent() + 1);
+            blockFmt.setIndent(0);
+            cursor.setBlockFormat(blockFmt);
+        }
+
+        listFmt.setStyle(style);
+
+        cursor.createList(listFmt);
+
+        cursor.endEditBlock();
+    } else {
+        // ####
+        QTextBlockFormat bfmt;
+        bfmt.setObjectIndex(-1);
+        cursor.mergeBlockFormat(bfmt);
+    }
+}
+
+void MainWindow::textColor()
+{
+    QColor col = QColorDialog::getColor(textEdit->textColor(), this);
+    if (!col.isValid())
+        return;
+    QTextCharFormat fmt;
+    fmt.setForeground(col);
+    mergeFormatOnWordOrSelection(fmt);
+    colorChanged(col);
 }
 
 void MainWindow::createToolBars()
@@ -391,6 +657,7 @@ void MainWindow::createToolBars()
     chatToolbar->addAction(audioAct);
     chatToolbar->addAction(photoAct);
     chatToolbar->addAction(videoAct);
+    chatToolbar->addAction(htmlAct);
 }
 
 void MainWindow::createStatusBar()
@@ -467,7 +734,7 @@ void MainWindow::onRemoveAct()
 void MainWindow::onFileAct()
 {
     if (m_txth == NULL){
-        statusBar()->showMessage(tr("No active network"));
+        txTip->setText(tr("No active network"));
         return ;
     }
 
@@ -557,6 +824,11 @@ void MainWindow::onVideoAct()
     proc->start();
 }
 
+void MainWindow::onHtmlAct(bool fChecked)
+{
+    textToolbar->setVisible(fChecked);
+}
+
 void MainWindow::onBtnInviteClicked()
 {
     InviteDialog inviteDialog(this);
@@ -590,16 +862,17 @@ void MainWindow::onBtnInviteClicked()
 void MainWindow::onBtnSendClicked()
 {
     if (m_txth == NULL){
-        statusBar()->showMessage(tr("No active network"));
+        txTip->setText(tr("No active network"));
         return ;
     }
-    QString qsMsgPlain = textEdit->toPlainText();
+    QString qsMsgPlain = !htmlAct->isChecked() ? textEdit->toPlainText() : textEdit->document()->toHtml();
     textEdit->clear();
+
     if (qsMsgPlain.isEmpty()){
         return ;
     }
 
-    QString qsMsg = BMQTApplication::toMimeTextPlain(qsMsgPlain);
+    QString qsMsg = !htmlAct->isChecked() ? BMQTApplication::toMimeTextPlain(qsMsgPlain) : BMQTApplication::toMimeTextHtml(qsMsgPlain);
 
     Send(qsMsg);
 }
@@ -607,11 +880,12 @@ void MainWindow::onBtnSendClicked()
 void MainWindow::onBtnSendQrClicked()
 {
     if (m_txth == NULL){
-        statusBar()->showMessage(tr("No active network"));
+        txTip->setText(tr("No active network"));
         return ;
     }
-    QString qsMsgPlain = textEdit->toPlainText();
+    QString qsMsgPlain = !htmlAct->isChecked() ? textEdit->toPlainText() : textEdit->document()->toHtml();
     textEdit->clear();
+
     if (qsMsgPlain.isEmpty()){
         return ;
     }
@@ -630,7 +904,8 @@ void MainWindow::onNewMessage(const QString & from
                               , const QString & qsTo /*receips*/
                               , const QString & content
                               , const QString & certid
-                              , const QString & cert)
+                              , const QString & cert
+                              , const QString & sigtime)
 {   
     qDebug() << "receips: " << qsTo;
 
@@ -646,8 +921,8 @@ void MainWindow::onNewMessage(const QString & from
         populateLeaf(sessionKey);
     }
 
-    QString receips = QString::fromStdString(BitMail::serializeReceips(vec_receips));
-    enqueueMsg(sessionKey, false, from, receips, content, certid, cert);
+    QString receips = QString::fromStdString(BitMail::serializeReceips(vec_receips));    
+    enqueueMsg(sessionKey, false, BMQTApplication::GetSigTime(sigtime), from, receips, content, certid, cert);
 
     if (!sessionKey.isEmpty() && sessionKey == this->currentSessionKey()){
         populateMessages(sessionKey);
@@ -658,6 +933,7 @@ void MainWindow::onNewMessage(const QString & from
 
 void MainWindow::enqueueMsg(const QString & k
                             , bool tx
+                            , const QString & sigtime
                             , const QString & from
                             , const QString & to
                             , const QString & msg
@@ -666,6 +942,7 @@ void MainWindow::enqueueMsg(const QString & k
 {
     QJsonObject obj;
     obj["tx"] = tx;
+    obj["sigtime"] = sigtime;
     obj["from"] = from;
     obj["to"] = to;
     obj["msg"] = msg;
@@ -701,7 +978,7 @@ void MainWindow::SendTo(const QString & sessionKey, const QString & qsMsg)
 
     emit readyToSend(qsFrom, BMQTApplication::toQStringList(vec_receips), qsMsg);
 
-    enqueueMsg(sessionKey, true, qsFrom, QString::fromStdString( BitMail::serializeReceips(vec_receips) ), qsMsg, qsCertId, qsCert);
+    enqueueMsg(sessionKey, true, QDateTime::currentDateTime().toString(), qsFrom, QString::fromStdString( BitMail::serializeReceips(vec_receips) ), qsMsg, qsCertId, qsCert);
 
     populateMessages(sessionKey);
 }
@@ -753,68 +1030,66 @@ void MainWindow::populateMessages(const QString & k)
         QString qsMsg = msgObj["msg"].toString();
 
         QVariantList varlist = BMQTApplication::fromMime(qsMsg);
+        varlist.insert(0, msgObj["sigtime"].toString());
 
         msgElt->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-        msgElt->setBackgroundColor(msgObj["tx"].toBool() ? Qt::lightGray : Qt::green);
+        msgElt->setBackgroundColor(msgObj["tx"].toBool() ? QColor(158,234,106) : Qt::lightGray);
         msgElt->setData(Qt::UserRole, msgObj);
-
-        //http://stackoverflow.com/questions/948444/qlistview-qlistwidget-with-custom-items-and-custom-item-widgets
-        //http://www.qtcentre.org/threads/27777-Customize-QListWidgetItem-how-to
-        QWidget* w = new QWidget;
-        QVBoxLayout* v = new QVBoxLayout( w );
-        for (QVariantList::const_iterator it = varlist.constBegin(); it != varlist.constEnd(); ++it){
-            QVariant var = *it;
-            QWidget * vElt = NULL;//new QLabel(w);
-            if (QString::fromStdString(var.typeName()) == "QImage"){
-                QImage qImage = qvariant_cast<QImage>(var);
-                QLabel * tmp = new QLabel(w);
-                tmp->setScaledContents(true);
-                tmp->setFixedSize(64, 64);
-                tmp->setPixmap(QPixmap::fromImage(qImage));
-                vElt = tmp;
-            }else if (QString::fromStdString(var.typeName()) == "QString"){
-                if (0){
-                    QTextEdit * tmp = new QTextEdit(w);
-                    tmp->setReadOnly(true);
-                    tmp->setTextBackgroundColor(msgElt->backgroundColor());
-                    tmp->setFrameStyle(QFrame::NoFrame);
-                    tmp->setFixedWidth(msgView->width());
-                    tmp->setWordWrapMode(QTextOption::WordWrap);
-                    tmp->setAlignment(Qt::AlignRight);
-                    tmp->setHtml(var.toString());
-                    vElt = tmp;
-                }
-                if (1){
-                    QLabel * tmp = new QLabel(w);
-                    tmp->setScaledContents(true);
-                    tmp->setFixedWidth(msgView->width());
-                    tmp->setWordWrap(true);
-                    tmp->setText(var.toString());
-                    vElt = tmp;
-                }
-            }else if (QString::fromStdString(var.typeName()) == "QFileInfo"){
-                QFileInfo fileInfo = qvariant_cast<QFileInfo>(var);
-                QLabel * tmp = new QLabel(w);
-                tmp->setScaledContents(true);
-                tmp->setPixmap((QFileIconProvider().icon(fileInfo).pixmap(QSize(64,64))));
-                vElt = tmp;
-            }else{
-                qDebug() << "unknown type name";
-                QLabel * tmp = new QLabel(w);
-                tmp->setScaledContents(true);
-                vElt = tmp;
-            }
-            v->addWidget( vElt );
-        }
-        v->setSizeConstraint( QLayout::SetFixedSize );
-
-        msgElt->setSizeHint(w->sizeHint());
-
+        QWidget * widget = createMessageWidget(msgView->width()>>1, varlist);
+        msgElt->setSizeHint(widget->sizeHint());
         msgView->addItem(msgElt);
-        msgView->setItemWidget(msgElt, w);
-
+        msgView->setItemWidget(msgElt, widget);
         msgView->scrollToBottom();
     }
+}
+
+QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist)
+{
+    //http://stackoverflow.com/questions/948444/qlistview-qlistwidget-with-custom-items-and-custom-item-widgets
+    //http://www.qtcentre.org/threads/27777-Customize-QListWidgetItem-how-to
+    QWidget* widget = new QWidget;
+    QVBoxLayout* vbox = new QVBoxLayout( widget );
+    vbox->setSizeConstraint( QLayout::SetFixedSize );
+
+    for (QVariantList::const_iterator it = varlist.constBegin(); it != varlist.constEnd(); ++it){
+        QWidget * vElt = NULL;
+        QVariant var = *it;
+        if (QString::fromStdString(var.typeName()) == "QImage"){
+            QImage qImage = qvariant_cast<QImage>(var);
+            QLabel * tmp = new QLabel(widget);
+            tmp->setScaledContents(true);
+            tmp->setFixedSize(width, width*1.0f/qImage.width() * qImage.height());
+            tmp->setPixmap(QPixmap::fromImage(qImage));
+            vElt = tmp;
+        }else if (QString::fromStdString(var.typeName()) == "QString"){
+            QTextEdit * tmp = new QTextEdit(widget);
+            tmp->setReadOnly(true);
+            tmp->setStyleSheet("background-color:transparent;");
+            tmp->setText(var.toString());
+            tmp->setFixedWidth(width);
+            tmp->setFixedHeight( tmp->viewport()->size().height());
+            tmp->setWordWrapMode(QTextOption::WordWrap);
+            vElt = tmp;
+        }else if (QString::fromStdString(var.typeName()) == "QByteArray"){
+            QTextEdit * tmp = new QTextEdit(widget);
+            tmp->setReadOnly(true);
+            tmp->setStyleSheet("background-color:transparent;");
+            tmp->setHtml(QString::fromUtf8(var.toByteArray()));
+            tmp->setFixedWidth(width);
+            tmp->setFixedHeight( tmp->viewport()->size().height());
+            tmp->setWordWrapMode(QTextOption::WordWrap);
+            vElt = tmp;
+        }else if (QString::fromStdString(var.typeName()) == "QFileInfo"){
+            QFileInfo fileInfo = qvariant_cast<QFileInfo>(var);
+            QLabel * tmp = new QLabel(widget);
+            tmp->setPixmap((QFileIconProvider().icon(fileInfo).pixmap(QSize(64<width?64:width,64<width?64:width))));
+            vElt = tmp;
+        }else{
+
+        }
+        vbox->addWidget( vElt );
+    }
+    return widget;
 }
 
 /** Double click message element in message view*/
