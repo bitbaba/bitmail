@@ -25,5 +25,6 @@
         <file>images/newgroup.png</file>
         <file>images/camera.png</file>
         <file>images/login.png</file>
+        <file>images/html.png</file>
     </qresource>
 </RCC>
