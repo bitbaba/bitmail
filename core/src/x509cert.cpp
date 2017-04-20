@@ -105,6 +105,67 @@ int CX509Cert::LoadCertFromSig(const std::string & msg)
     return 0;
 }
 
+std::string CX509Cert::GetSigningTime(const std::string & sig)
+{
+    BIO * in = BIO_new_mem_buf((void*)sig.c_str(), sig.length());
+    if (!in) return "";
+
+    BIO *cont = NULL;
+    CMS_ContentInfo * cms = NULL;
+
+    /* read signature */
+    cms = SMIME_read_CMS(in, &cont);
+
+    if (!cms){ BIO_free(in); return "";}
+
+    STACK_OF(CMS_SignerInfo) * sis = CMS_get0_SignerInfos(cms);
+
+    if (sk_CMS_SignerInfo_num(sis) == 0){
+        CMS_ContentInfo_free(cms);
+        BIO_free(in);
+        return "";
+    }
+
+    /* First signer */
+    CMS_SignerInfo *si = sk_CMS_SignerInfo_value(sis, 0);
+    if (si == NULL){
+        CMS_ContentInfo_free(cms);
+        BIO_free(in);
+        return "";
+    }
+
+    X509_ATTRIBUTE *xa = CMS_signed_get_attr(si, CMS_signed_get_attr_by_NID(si, NID_pkcs9_signingTime, -1));
+    if (xa == NULL){
+        CMS_ContentInfo_free(cms);
+        BIO_free(in);
+        return "";
+    }
+
+    /* First SigningTime attribute */
+    ASN1_TYPE *so = sk_ASN1_TYPE_value(xa->value.set, 0);
+    if (so == NULL){
+        CMS_ContentInfo_free(cms);
+        BIO_free(in);
+        return "";
+    }
+
+    std::string sigtime = "";
+    switch (so->type) {
+            case V_ASN1_UTCTIME:
+            sigtime.append("UTC:");
+            sigtime.append((char *)so->value.utctime->data, so->value.utctime->length);
+            break;
+            case  V_ASN1_GENERALIZEDTIME:
+            sigtime.append("GT:");
+            sigtime.append((char *)so->value.generalizedtime->data, so->value.generalizedtime->length);
+            break;
+    }
+
+    CMS_ContentInfo_free(cms);
+    BIO_free(in);
+    return sigtime;
+}
+
 int CX509Cert::CheckMsgType(const std::string & msg)
 {
     int nid = 0;

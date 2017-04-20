@@ -19,12 +19,17 @@ struct TxCallback_t{
     size_t        length;
     size_t        offset;
     CMailClient * self  ;
+    RTxProgressCB cb    ;
+    void *        userp ;
 };
 
 struct RxCallback_t {
   char        * memory;
   size_t        size  ;
+  size_t        length;
   CMailClient * self  ;
+  RTxProgressCB cb    ;
+  void *        userp ;
 };
 
 
@@ -198,8 +203,8 @@ int CMailClient::SendMsg( const std::string & from
 
     if (cb ){
         std::stringstream txinfo;
-        txinfo<< "Try to Send Message";
-        cb(RTS_Start, txinfo.str().c_str(), userp);
+        txinfo<< "Sending";
+        cb(Tx_start, txinfo.str().c_str(), userp);
     }
 
     if (!m_tx){
@@ -249,6 +254,8 @@ int CMailClient::SendMsg( const std::string & from
     txcb.length = strMailBody.length();
     txcb.offset = 0;
     txcb.self = this;
+    txcb.cb = cb;
+    txcb.userp = userp;
 
     /* Set url, username and password */
     curl_easy_setopt(curl, CURLOPT_USERNAME, m_txuser.c_str());
@@ -270,12 +277,12 @@ int CMailClient::SendMsg( const std::string & from
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
     }
 
-    curl_easy_setopt(curl, CURLOPT_PROXY, "socks5://127.0.0.1:1080/");
+    //curl_easy_setopt(curl, CURLOPT_PROXY, "socks5://127.0.0.1:1080/");
 
     if (cb ){
         std::stringstream txinfo;
-        txinfo<< "Sending Message";
-        cb(RTS_Work, txinfo.str().c_str(), userp);
+        txinfo<< "Uploading Message";
+        cb(Tx_upload, txinfo.str().c_str(), userp);
     }
     res = curl_easy_perform(curl);
 
@@ -287,8 +294,8 @@ int CMailClient::SendMsg( const std::string & from
         fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
         if (cb ){
             std::stringstream txinfo;
-            txinfo<< "Message sent Failed";
-            cb(RTS_Error, txinfo.str().c_str(), userp);
+            txinfo<< "Fail";
+            cb(Tx_error, txinfo.str().c_str(), userp);
         }
         // do-reset
         curl_easy_reset(curl);
@@ -298,8 +305,8 @@ int CMailClient::SendMsg( const std::string & from
 
     if (cb ){
         std::stringstream txinfo;
-        txinfo<< "Message sent Ok";
-        cb(RTS_Done, txinfo.str().c_str(), userp);
+        txinfo<< "Send Ok";
+        cb(Tx_done, txinfo.str().c_str(), userp);
     }
 
     curl_easy_reset(curl);
@@ -309,45 +316,37 @@ int CMailClient::SendMsg( const std::string & from
 int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
 {
     if (cb ){
-        cb(RTS_Start, "CheckInbox", userp);
+        cb(Rx_start, "", userp);
     }
 
     std::vector<MessageNo> msgnolist;
     this->GetUnseenMessageNoList(msgnolist);
-    std::stringstream proginfo;
-    proginfo << "msgnolist: [";
-    for (std::vector<MessageNo>::const_iterator it = msgnolist.begin();
-            it != msgnolist.end();
-            ++it)
-    {
-        proginfo<< *it << ",";
-    }
-    proginfo << "]";
 
     if (cb ){
-        cb(RTS_Work, proginfo.str().c_str(), userp);
+        std::string info = "list: ";
+        for (std::vector<MessageNo>::const_iterator it = msgnolist.begin();it != msgnolist.end();++it){
+            char buf[100] = ""; sprintf(buf, "%d", *it); info += buf; info += ",";
+        }
+        cb(Rx_msglist, info.c_str(), userp);
     }
 
-    for (std::vector<MessageNo>::iterator it = msgnolist.begin();
-            it != msgnolist.end();
-            it ++)
-    {
+    for (std::vector<MessageNo>::iterator it = msgnolist.begin();it != msgnolist.end();it ++){
         MessageNo msgno = *it;
 
         if (cb ){
             std::stringstream rxinfo;
-            rxinfo<< "Try to Receive Message: [" << *it << "]";
-            cb(RTS_Work, rxinfo.str().c_str(), userp);
+            rxinfo<< "Recv:[" << *it << "]";
+            cb(Rx_msg, rxinfo.str().c_str(), userp);
         }
 
         std::string smime;
-        this->GetUnseenMessageByMessageNo(msgno, smime);
+        this->GetUnseenMessageByMessageNo(msgno, smime, cb, userp);
 
 
         if (cb ){
             std::stringstream rxinfo;
-            rxinfo<< "Rx Message size: [" <<  smime.length() << "]";
-            cb(RTS_Work, rxinfo.str().c_str(), userp);
+            rxinfo<< "Size:[" <<  smime.length() << "]";
+            cb(Rx_doneload, rxinfo.str().c_str(), userp);
         }
 
         if (m_cb){
@@ -364,15 +363,15 @@ int CMailClient::CheckInbox(RTxProgressCB cb, void * userp)
 
         if (cb ){
             std::stringstream rxinfo;
-            rxinfo<<"Rx Store \\Seen Flag to MsgNo: [" <<  msgno << "]";
-            cb(RTS_Work, rxinfo.str().c_str(), userp);
+            rxinfo<<"Delete : [" <<  msgno << "]";
+            cb(Rx_delete, rxinfo.str().c_str(), userp);
         }
     }
     
     if (cb ){
         std::stringstream rxinfo;
-        rxinfo<<"Rx Done";
-        cb(RTS_Done, rxinfo.str().c_str(), userp);
+        rxinfo<<"Fetch Ok";
+        cb(Rx_done, rxinfo.str().c_str(), userp);
     }
 
     return msgnolist.size();
@@ -384,6 +383,9 @@ int CMailClient::GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist)
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
+    chunk.length = 0; /* test with 100k total length*/
+    chunk.cb   = NULL;
+    chunk.userp= NULL;
 
     if (!m_rx){
         m_rx = curl_easy_init();
@@ -477,12 +479,15 @@ int CMailClient::GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist)
     return bmOk;
 }
 
-int CMailClient::GetUnseenMessageByMessageNo(MessageNo msgno, std::string & smime)
+int CMailClient::GetUnseenMessageByMessageNo(MessageNo msgno, std::string & smime, RTxProgressCB cb, void * userp)
 {
     struct RxCallback_t chunk;
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
+    chunk.length = 100000; /* test with 100k total length*/
+    chunk.cb   = cb;
+    chunk.userp= userp;
 
     if (!m_rx){
         m_rx = curl_easy_init();
@@ -544,6 +549,9 @@ int CMailClient::StoreFlag(MessageNo msgno, const std::string & flag)
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
+    chunk.length = 0; /* test with 100k total length*/
+    chunk.cb   = NULL;
+    chunk.userp= NULL;
 
     if (!m_rx){
         m_rx = curl_easy_init();
@@ -605,12 +613,15 @@ int CMailClient::StoreFlag(MessageNo msgno, const std::string & flag)
     return bmOk;
 }
 
-int CMailClient::Expunge(RTxProgressCB cb, void * userp)
+int CMailClient::Expunge()
 {
     struct RxCallback_t chunk;
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
+    chunk.length = 0; /* test with 100k total length*/
+    chunk.cb   = NULL;
+    chunk.userp= NULL;
 
     if (!m_rx){
         m_rx = curl_easy_init();
@@ -752,7 +763,7 @@ int CMailClient::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
     if (cb ){
         std::stringstream pollinfo;
         pollinfo<<"Poll Start";
-        cb(RTS_Start, pollinfo.str().c_str(), userp);
+        cb(Poll_start, pollinfo.str().c_str(), userp);
     }
 
     /**
@@ -787,7 +798,7 @@ int CMailClient::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
         if (cb ){
             std::stringstream pollinfo;
             pollinfo<<"Poll Failed to connect: " << m_rxurl <<", username: " << m_rxuser;
-            cb(RTS_Error, pollinfo.str().c_str(), userp);
+            cb(Poll_error, pollinfo.str().c_str(), userp);
         }
         return bmIdleFail;
     }
@@ -795,7 +806,7 @@ int CMailClient::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
     if (cb ){
         std::stringstream pollinfo;
         pollinfo<<"Poll connected ";
-        cb(RTS_Work, pollinfo.str().c_str(), userp);
+        cb(Poll_connect, pollinfo.str().c_str(), userp);
     }
 
     /**
@@ -846,7 +857,7 @@ int CMailClient::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
     if (cb ){
         std::stringstream pollinfo;
         pollinfo<<"Poll Done";
-        cb(RTS_Done, pollinfo.str().c_str(), userp);
+        cb(Poll_done, pollinfo.str().c_str(), userp);
     }
 
     return bmOk;
@@ -901,6 +912,9 @@ size_t CMailClient::OnTxfer(void *ptr, size_t size, size_t nmemb, void *sstrm)
     struct TxCallback_t * ctx = (struct TxCallback_t *)sstrm;
 
     if (ctx->offset >= ctx->length) {
+        if (ctx->cb){
+            ctx->cb(Tx_updone, "100.00", ctx->userp);
+        }
         return 0;
     }
 
@@ -912,6 +926,12 @@ size_t CMailClient::OnTxfer(void *ptr, size_t size, size_t nmemb, void *sstrm)
 
     ctx->offset += xfer_bytes;
 
+    if (ctx->cb){
+        char percentage [100] = "";
+        sprintf(percentage, "%.2f", ctx->offset * 100.0f / ctx->length);
+        ctx->cb(Tx_upload, percentage, ctx->userp);
+    }
+
     return (xfer_bytes); // 0 for EOF
 }
 
@@ -922,12 +942,21 @@ size_t CMailClient::OnRxfer(void *contents, size_t size, size_t nmemb, void * us
 
     ctx->memory = (char *)realloc(ctx->memory, ctx->size + realsize + 1);
     if(ctx->memory == NULL) {
+        if (ctx->cb){
+            ctx->cb(Rx_doneload, "100.00", ctx->userp);
+        }
         return 0;
     }
 
     memcpy(&(ctx->memory[ctx->size]), contents, realsize);
     ctx->size += realsize;
     ctx->memory[ctx->size] = 0;
+
+    if (ctx->cb){
+        char percentage [100] = "";
+        sprintf(percentage, "%.2f", ctx->size * 100.0f / 500000);
+        ctx->cb(Rx_download, percentage, ctx->userp);
+    }
 
     return realsize;
 }

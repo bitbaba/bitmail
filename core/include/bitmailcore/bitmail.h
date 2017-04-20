@@ -61,15 +61,30 @@ enum BMError{
 };
 
 enum RTxState{
-    RTS_Start = 0,
-    RTS_Work  = 1,
-    RTS_Done  = 2,
-    RTS_Error = 3,
+    Rx_start    = 0,
+    Rx_msglist  = 1,
+    Rx_download = 2,
+    Rx_doneload = 3,
+    Rx_msg      = 4,
+    Rx_delete   = 5,
+    Rx_done     = 9,
+    Rx_error    = 99,
+
+    Tx_start    = 100,
+    Tx_upload   = 103,
+    Tx_updone   = 104,
+    Tx_done     = 105,
+    Tx_error    = 199,
+
+    Poll_start  = 200,
+    Poll_connect= 201,
+    Poll_done   = 202,
+    Poll_error  = 299,
 };
 
 typedef int (* PollEventCB)(unsigned int count, void * p);
 
-typedef int (* MessageEventCB)(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, void * p);
+typedef int (* MessageEventCB)(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, const char * sigtime, void * p);
 
 typedef int (* RTxProgressCB)(RTxState, const char * info, void * userptr);
 
@@ -210,9 +225,9 @@ public:
 
     int CheckInbox(RTxProgressCB cb = NULL, void * userp = NULL);
 
-    int StartIdle(unsigned int timeout/*Interval to re-idle*/, RTxProgressCB cb = NULL, void * userp = NULL);
+    int StartIdle(unsigned int timeout, RTxProgressCB cb = NULL, void * userp = NULL);
     
-    int Expunge(RTxProgressCB cb = NULL, void * userp = NULL);
+    int Expunge();
 
     // Profile
     int CreateProfile(const std::string & commonName
@@ -245,9 +260,9 @@ public:
     std::string GetPassphrase() const;
 
     // Security routines
-    std::string Encrypt(const std::string & text) const;
+    std::string Protect(const std::string & text) const;
 
-    std::string Decrypt(const std::string & code) const;
+    std::string Reveal(const std::string & code) const;
 
     // Friends
     int GetFriends(std::vector<std::string> & vecEmails) const;

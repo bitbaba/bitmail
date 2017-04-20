@@ -67,7 +67,7 @@ public:
     
     int StartIdle(unsigned int timeout, RTxProgressCB cb = NULL, void * userp = NULL);
 
-    int Expunge(RTxProgressCB cb = NULL, void * userp = NULL);
+    int Expunge();
 
 public:
     static int GetEmailAddrList(const std::string & addr, std::vector<std::string> & vecAddrs);
@@ -77,7 +77,7 @@ public:
 protected:
     int GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist);
 
-    int GetUnseenMessageByMessageNo(MessageNo msgno, std::string & bitmsg);
+    int GetUnseenMessageByMessageNo(MessageNo msgno, std::string & bitmsg, RTxProgressCB cb = NULL, void * userp = NULL);
     
     int StoreFlag(MessageNo msgno, const std::string & flag);
     

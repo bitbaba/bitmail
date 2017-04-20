@@ -295,10 +295,10 @@ int BitMail::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
     return bmOk;
 }
 
-int BitMail::Expunge(RTxProgressCB cb, void * userp)
+int BitMail::Expunge()
 {
     // Clear all <deleted> messages
-    m_mc->Expunge(cb, userp);
+    m_mc->Expunge();
 }
 
 /**
@@ -392,12 +392,12 @@ std::string BitMail::GetPassphrase() const
     return m_profile->GetPassphrase();
 }
 
-std::string BitMail::Encrypt(const std::string & text) const
+std::string BitMail::Protect(const std::string & text) const
 {
     return m_profile->Encrypt(text);
 }
 
-std::string BitMail::Decrypt(const std::string & code) const
+std::string BitMail::Reveal(const std::string & code) const
 {
     return m_profile->Decrypt(code);
 }
@@ -470,6 +470,7 @@ std::string BitMail::EncMsg(const std::vector<std::string> & friends
     if (msg.empty()){
         return smime;
     }
+
     /**
      * Note:
      * GroupMsg(msg, vector<bob>) != SendMsg(msg, bob);
@@ -820,8 +821,13 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
         }
     }
 
+    std::string sigtime = "";
     CX509Cert buddyCert;
     if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_signed){
+        /** signature time**/
+        sigtime = CX509Cert::GetSigningTime(sMimeBody);
+
+        /** friend's certificate**/
         buddyCert.LoadCertFromSig(sMimeBody);
         if (buddyCert.IsValid()){
             sMimeBody = buddyCert.Verify(sMimeBody);
@@ -841,6 +847,7 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
                                 , sMimeBody.length()
                                 , buddyCert.GetID().c_str()
                                 , buddyCert.GetCertByPem().c_str()
+                                , sigtime.c_str()
                                 , self->m_onMessageEventParam);
     }
 
