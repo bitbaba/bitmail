@@ -123,6 +123,8 @@ private slots:
     void textStyle(int styleIndex);
     void textColor();
 
+    void currentCharFormatChanged(const QTextCharFormat &format);
+
 private:
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);

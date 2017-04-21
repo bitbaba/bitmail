@@ -118,6 +118,7 @@ MainWindow::MainWindow(BitMail * bitmail)
         nodeFriends->setIcon(0, QIcon(":/images/head.png"));
         btree->addTopLevelItem(nodeFriends);
         populateFriendTree();
+        nodeFriends->setExpanded(true);
     }
 
     if (2){
@@ -150,6 +151,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     textEdit->setMinimumWidth(560);
     textEdit->setFixedHeight(100);
     textEdit->setFocus();
+    connect(textEdit, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
 
     btnLayout->setAlignment(Qt::AlignLeft);
 
@@ -513,6 +515,12 @@ void MainWindow::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
     textEdit->mergeCurrentCharFormat(format);
 }
 
+void MainWindow::currentCharFormatChanged(const QTextCharFormat &format)
+{
+    fontChanged(format.font());
+    colorChanged(format.foreground().color());
+}
+
 void MainWindow::fontChanged(const QFont &f)
 {
     comboFont->setCurrentIndex(comboFont->findText(QFontInfo(f).family()));
@@ -827,6 +835,20 @@ void MainWindow::onVideoAct()
 void MainWindow::onHtmlAct(bool fChecked)
 {
     textToolbar->setVisible(fChecked);
+    if (!fChecked){
+        // to get a `reset' palin text format
+        QTextEdit * plain = new QTextEdit();
+        // setup plain mode
+        textEdit->setCurrentCharFormat(plain->currentCharFormat());
+        if (0){
+            // reset all rich-text
+            QTextCursor cursor = textEdit->textCursor();
+            cursor.select(QTextCursor::Document);
+            cursor.mergeCharFormat(plain->currentCharFormat());
+            textEdit->mergeCurrentCharFormat(plain->currentCharFormat());
+        }
+        delete plain;
+    }
 }
 
 void MainWindow::onBtnInviteClicked()
@@ -1045,8 +1067,10 @@ void MainWindow::populateMessages(const QString & k)
 
 QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist)
 {
+    // ThanskTo:
     //http://stackoverflow.com/questions/948444/qlistview-qlistwidget-with-custom-items-and-custom-item-widgets
     //http://www.qtcentre.org/threads/27777-Customize-QListWidgetItem-how-to
+    // http://stackoverflow.com/questions/9506586/qtextedit-resize-to-fit
     QWidget* widget = new QWidget;
     QVBoxLayout* vbox = new QVBoxLayout( widget );
     vbox->setSizeConstraint( QLayout::SetFixedSize );
@@ -1062,22 +1086,15 @@ QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist
             tmp->setPixmap(QPixmap::fromImage(qImage));
             vElt = tmp;
         }else if (QString::fromStdString(var.typeName()) == "QString"){
-            QTextEdit * tmp = new QTextEdit(widget);
-            tmp->setReadOnly(true);
-            tmp->setStyleSheet("background-color:transparent;");
-            tmp->setText(var.toString());
+            QLabel * tmp = new QLabel(widget);
             tmp->setFixedWidth(width);
-            tmp->setFixedHeight( tmp->viewport()->size().height());
-            tmp->setWordWrapMode(QTextOption::WordWrap);
+            tmp->setWordWrap(true);
+            tmp->setText(var.toString());
             vElt = tmp;
         }else if (QString::fromStdString(var.typeName()) == "QByteArray"){
-            QTextEdit * tmp = new QTextEdit(widget);
-            tmp->setReadOnly(true);
-            tmp->setStyleSheet("background-color:transparent;");
-            tmp->setHtml(QString::fromUtf8(var.toByteArray()));
-            tmp->setFixedWidth(width);
-            tmp->setFixedHeight( tmp->viewport()->size().height());
-            tmp->setWordWrapMode(QTextOption::WordWrap);
+            QLabel * tmp = new QLabel(widget);
+            tmp->setTextFormat(Qt::RichText);
+            tmp->setText(QString::fromUtf8(var.toByteArray()));
             vElt = tmp;
         }else if (QString::fromStdString(var.typeName()) == "QFileInfo"){
             QFileInfo fileInfo = qvariant_cast<QFileInfo>(var);
@@ -1087,6 +1104,7 @@ QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist
         }else{
 
         }
+        vbox->setSpacing(5);
         vbox->addWidget( vElt );
     }
     return widget;
