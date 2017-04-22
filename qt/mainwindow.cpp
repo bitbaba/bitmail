@@ -150,6 +150,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     textEdit = new QTextEdit;
     textEdit->setMinimumWidth(560);
     textEdit->setFixedHeight(100);
+    textEdit->setAcceptRichText(false);
     textEdit->setFocus();
     connect(textEdit, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
 
@@ -835,19 +836,27 @@ void MainWindow::onVideoAct()
 void MainWindow::onHtmlAct(bool fChecked)
 {
     textToolbar->setVisible(fChecked);
-    if (!fChecked){
+    if (fChecked){
+        if (!textEdit->acceptRichText()) textEdit->setAcceptDrops(true);
+        if (0){
+            /**
+             * 1) emoji could be implemented by <img src=":/emoji/smile.png>, without setting `BASEURL', as this this emoji can be compiled into resources.
+             * 2) rich-text images edit/display with 'setBaseUrl()' is tech. possilbe as following test. But is it nesserary?
+             *    tech. details: all distribution shared a uiniq "$APPHOME/res/<hash>" path to resouces, such as image, stylesheet, etc.
+             */
+            QTextCursor cursor = textEdit->textCursor();
+            textEdit->document()->setBaseUrl(QUrl::fromLocalFile("D:/workspace/github/bitmail/build-bitmail-Desktop_Qt_5_7_0_MinGW_32bit-Debug/debug/emoji"));
+            cursor.insertHtml("<img src=\"./emoji/like.png\" />");
+            cursor.insertHtml("<img src=\"D:/workspace/github/bitmail/qt/images/add.png\" />");
+        }
+    }else{
         // to get a `reset' palin text format
         QTextEdit * plain = new QTextEdit();
         // setup plain mode
         textEdit->setCurrentCharFormat(plain->currentCharFormat());
-        if (0){
-            // reset all rich-text
-            QTextCursor cursor = textEdit->textCursor();
-            cursor.select(QTextCursor::Document);
-            cursor.mergeCharFormat(plain->currentCharFormat());
-            textEdit->mergeCurrentCharFormat(plain->currentCharFormat());
-        }
         delete plain;
+        textEdit->setPlainText(textEdit->document()->toPlainText());
+        if (textEdit->acceptRichText()) textEdit->setAcceptRichText(false);
     }
 }
 
