@@ -13,7 +13,7 @@
   ;Name and file
   Name "BitMail-Qt Win32 Installer"
   OutFile "bitmail-qt-win32-installer.exe"
-  Icon "bitmail.256.ico"
+  Icon "${BitMailQtRoot}\images\bitmail.256.ico"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\BitMail"
@@ -56,6 +56,7 @@
 ;Languages
  
   !insertmacro MUI_LANGUAGE "English"
+  ;!insertmacro MUI_LANGUAGE "SimpChinese"
 
 ;--------------------------------
 ;Installer Sections
@@ -64,30 +65,30 @@ Section "BitMail" SecBitMail
 
   SetOutPath "$INSTDIR"
 	File "License.txt"
-	File "bitmail.256.ico"
-	File "release\bitmail.exe"
+	File "${BitMailQtRoot}\images\bitmail.256.ico"
+	File "${BitMailQtReleaseRoot}\bitmail.exe"
 	
   SetOutPath "$INSTDIR"
-	File "qtdist\LICENSE"
-	File "qtdist\LICENSE.FDL"
-	File "qtdist\Qt5Core.dll"
-	File "qtdist\Qt5Gui.dll"
-	File "qtdist\Qt5Widgets.dll"
-	File "qtdist\Qt5Network.dll"
+	File "${QtDistRoot}\Licenses\LICENSE"
+	File "${QtDistRoot}\Licenses\LICENSE.FDL"
+	File "${QtDistRoot}\5.7\mingw53_32\bin\Qt5Core.dll"
+	File "${QtDistRoot}\5.7\mingw53_32\bin\Qt5Gui.dll"
+	File "${QtDistRoot}\5.7\mingw53_32\bin\Qt5Widgets.dll"
+	File "${QtDistRoot}\5.7\mingw53_32\bin\Qt5Network.dll"
 	
   SetOutPath "$INSTDIR"
-	File "qtdist\libgcc_s_dw2-1.dll"
-	File "qtdist\libstdc++-6.dll"
-	File "qtdist\libwinpthread-1.dll"  
+	File "${QtDistRoot}\5.7\mingw53_32\bin\libgcc_s_dw2-1.dll"
+	File "${QtDistRoot}\5.7\mingw53_32\bin\libstdc++-6.dll"
+	File "${QtDistRoot}\5.7\mingw53_32\bin\libwinpthread-1.dll"  
 
   SetOutPath "$INSTDIR\locale"
-  File "locale\*.qm"
+  File "${BitMailQtRoot}\locale\*.qm"
   
   SetOutPath "$INSTDIR\platforms"
-  File "qtdist\platforms\*.dll"
+  File "${QtDistPluginsRoot}\platforms\*.dll"
   
   SetOutPath "$INSTDIR\imageformats"
-  File "qtdist\imageformats\*.dll"
+  File "${QtDistPluginsRoot}\imageformats\*.dll"
     
   ;Store installation folder
   WriteRegStr HKCU "Software\BitMail" "Location" "$INSTDIR"
@@ -151,7 +152,7 @@ SectionEnd
 
   ;Assign language strings to sections
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-    !insertmacro MUI_DESCRIPTION_TEXT ${SecBitMail} $(DESC_BitMail)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecBitMail} $(DESC_BitMail)
   !insertmacro MUI_FUNCTION_DESCRIPTION_END
  
 ;--------------------------------
