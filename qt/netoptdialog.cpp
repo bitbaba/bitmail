@@ -15,21 +15,14 @@ NetOptionDialog::NetOptionDialog(QWidget *parent) :
         m_leImapUrl      = findChild<QLineEdit*>("leImapUrl");
         m_leLogin        = findChild<QLineEdit*>("leLogin");
         m_lePassword     = findChild<QLineEdit*>("lePassword");
-    }while(0); // Network settings
-
-    do {
-        m_leProxyIP       = findChild<QLineEdit*>("leProxyIP");
-        m_leProxyPort     = findChild<QLineEdit*>("leProxyPort");
-        m_leProxyLogin    = findChild<QLineEdit*>("leProxyLogin");
-        m_leProxyPassword = findChild<QLineEdit*>("leProxyPassword");
-    }while(0); // Proxy settings
+        m_leSocks5       = findChild<QLineEdit*>("leSocks5");
+    }while(0);
 
     m_leSmtpUrl->setPlaceholderText("smtps://smtp.somesite.net/");
     m_leSmtpUrl->setValidator(new QRegExpValidator(QRegExp("smtps://[a-ZA-Z0-9.]+/", Qt::CaseInsensitive), m_leSmtpUrl));
     m_leImapUrl->setPlaceholderText("imaps://imap.somesite.net/");
     m_leImapUrl->setValidator(new QRegExpValidator(QRegExp("imaps://[a-ZA-Z0-9.]+/", Qt::CaseInsensitive), m_leImapUrl));
-    //m_leProxyIP->setInputMask("000.000.000.000");
-    //m_leProxyPort->setInputMask("00000");
+    m_leSocks5->setPlaceholderText("socks5://login:password@127.0.0.1:1080/");
 }
 
 NetOptionDialog::~NetOptionDialog()
@@ -109,42 +102,12 @@ QString NetOptionDialog::GetImapPassword() const
     return m_lePassword->text();
 }
 
-void NetOptionDialog::SetProxyIP(const QString & ip)
+void NetOptionDialog::socks5(const QString &proxy)
 {
-    m_leProxyIP->setText(ip);
+    m_leSocks5->setText(proxy);
 }
 
-QString NetOptionDialog::GetProxyIP() const
+QString NetOptionDialog::socks5() const
 {
-    return m_leProxyIP->text();
-}
-
-void NetOptionDialog::SetProxyPort(unsigned short port)
-{
-    m_leProxyPort->setText(QString("%1").arg(port));
-}
-
-unsigned short NetOptionDialog::GetProxyPort() const
-{
-    return m_leProxyPort->text().toUShort();
-}
-
-void NetOptionDialog::SetProxyLogin(const QString & login)
-{
-    m_leProxyLogin->setText(login);
-}
-
-QString NetOptionDialog::GetProxyLogin() const
-{
-    return m_leProxyLogin->text();
-}
-
-void NetOptionDialog::SetProxyPassword(const QString & pass)
-{
-    m_leProxyPassword->setText(pass);
-}
-
-QString NetOptionDialog::GetProxyPassword() const
-{
-    return m_leProxyPassword->text();
+    return m_leSocks5->text();
 }

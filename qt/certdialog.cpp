@@ -5,7 +5,10 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QPlainTextEdit>
+#include <QDir>
+#include <QFileDialog>
 #include <bitmailcore/bitmail.h>
+
 
 CertDialog::CertDialog(BitMail * bm, QWidget *parent) :
     QDialog(parent),
@@ -14,15 +17,20 @@ CertDialog::CertDialog(BitMail * bm, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    m_leEmail  = findChild<QLineEdit*>("leEmail"  );
-    m_leNick   = findChild<QLineEdit*>("leNick"   );
-    m_leCertID = findChild<QLineEdit*>("leCertID" );
-    m_lbQrCode = findChild<QLabel*>   ("lbQrCode" );
-    m_leComment= findChild<QLineEdit*>("leComment");
+    m_leEmail  = findChild<QLineEdit*>  ("leEmail"  );
+    m_leNick   = findChild<QLineEdit*>  ("leNick"   );
+    m_leCertID = findChild<QLineEdit*>  ("leCertID" );
+    m_lbQrCode = findChild<QLabel*>     ("lbQrCode" );
+    m_leComment= findChild<QLineEdit*>  ("leComment");
+    m_btnLogo  = findChild<QPushButton*>("btnLogo"  );
 
     m_leEmail->setReadOnly(true);
     m_leNick->setReadOnly(true);
     m_leCertID->setReadOnly(true);
+    m_btnLogo->setToolTip(tr("click to choose a logo"));
+    m_btnLogo->setText("");
+    m_btnLogo->setIcon(QIcon(":/images/head.png"));
+
 }
 
 CertDialog::~CertDialog()
@@ -92,5 +100,32 @@ void CertDialog::on_btnSetComment_clicked()
         std::string sessKey = BitMail::toSessionKey(GetEmail().toStdString());
         m_bitmail->sessionName(sessKey, comment().toStdString());
     }
+    emit friendChanged();
+}
+
+void CertDialog::on_btnLogo_clicked()
+{
+    QString logoFile = QFileDialog::getOpenFileName(this, tr("choose a logo"), QDir::homePath(), "Logo (*.png *.jpg *.bmp)");
+    if (logoFile.isEmpty()){
+        return ;
+    }
+    QIcon head(logoFile);
+
+    QByteArray b64logo = BMQTApplication::StringifyIcon(head);
+
+    if (b64logo.isEmpty()){
+        return ;
+    }
+
+    if (GetEmail().isEmpty()){
+        return ;
+    }
+
+    std::string sessKey = BitMail::toSessionKey(GetEmail().toStdString());
+
+    m_bitmail->sessionLogo(sessKey, b64logo.toStdString());
+
+    m_btnLogo->setIcon(head);
+
     emit friendChanged();
 }

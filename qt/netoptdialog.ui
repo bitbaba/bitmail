@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>400</height>
+    <height>250</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,19 +19,19 @@
   <property name="minimumSize">
    <size>
     <width>400</width>
-    <height>400</height>
+    <height>250</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>400</width>
-    <height>400</height>
+    <height>250</height>
    </size>
   </property>
   <property name="baseSize">
    <size>
     <width>400</width>
-    <height>400</height>
+    <height>250</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>350</y>
+     <y>200</y>
      <width>381</width>
      <height>32</height>
     </rect>
@@ -71,23 +71,16 @@
       <x>20</x>
       <y>30</y>
       <width>351</width>
-      <height>111</height>
+      <height>130</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="0" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QLineEdit" name="leSmtpUrl">
-         <property name="toolTip">
-          <string>smtps://example.net/</string>
-         </property>
-         <property name="inputMethodHints">
-          <set>Qt::ImhUrlCharactersOnly</set>
-         </property>
-        </widget>
-       </item>
-      </layout>
+     <item row="4" column="0">
+      <widget class="QLabel" name="lbSocks5">
+       <property name="text">
+        <string>Socks5:</string>
+       </property>
+      </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="lbSmtpLogin">
@@ -103,12 +96,40 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLineEdit" name="leSmtpUrl">
+         <property name="toolTip">
+          <string>smtps://example.net/</string>
+         </property>
+         <property name="inputMethodHints">
+          <set>Qt::ImhUrlCharactersOnly</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
      <item row="1" column="0">
       <widget class="QLabel" name="lbImapUrl">
        <property name="text">
         <string>Rx:</string>
        </property>
       </widget>
+     </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLineEdit" name="leImapUrl">
+         <property name="toolTip">
+          <string>imaps://example.net/</string>
+         </property>
+         <property name="inputMethodHints">
+          <set>Qt::ImhUrlCharactersOnly</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="3" column="1">
       <widget class="QLineEdit" name="lePassword">
@@ -131,188 +152,12 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLineEdit" name="leImapUrl">
-         <property name="toolTip">
-          <string>imaps://example.net/</string>
-         </property>
-         <property name="inputMethodHints">
-          <set>Qt::ImhUrlCharactersOnly</set>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QGroupBox" name="groupBox_3">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>190</y>
-     <width>381</width>
-     <height>141</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Proxy( Powered by Socks5)</string>
-   </property>
-   <widget class="QWidget" name="gridLayoutWidget_4">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>30</y>
-      <width>356</width>
-      <height>91</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_5">
-     <item row="2" column="0">
-      <widget class="QLabel" name="lbProxyPassword">
-       <property name="text">
-        <string>Password:  </string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="lbProxyLogin">
-       <property name="text">
-        <string>Login:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="leProxyPassword">
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="leSocks5">
        <property name="echoMode">
-        <enum>QLineEdit::Password</enum>
+        <enum>QLineEdit::Normal</enum>
        </property>
       </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="leProxyLogin">
-       <property name="inputMethodHints">
-        <set>Qt::ImhLatinOnly</set>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="lbProxyAddress">
-       <property name="text">
-        <string>Address:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QLineEdit" name="leProxyIP">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>150</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="baseSize">
-          <size>
-           <width>150</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="inputMask">
-          <string notr="true"/>
-         </property>
-         <property name="text">
-          <string notr="true"/>
-         </property>
-         <property name="placeholderText">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="baseSize">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="leProxyPort">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>80</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>80</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="baseSize">
-          <size>
-           <width>80</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="inputMask">
-          <string notr="true"/>
-         </property>
-         <property name="text">
-          <string notr="true"/>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </item>
     </layout>
    </widget>
@@ -323,10 +168,6 @@
   <tabstop>leImapUrl</tabstop>
   <tabstop>leLogin</tabstop>
   <tabstop>lePassword</tabstop>
-  <tabstop>leProxyIP</tabstop>
-  <tabstop>leProxyPort</tabstop>
-  <tabstop>leProxyLogin</tabstop>
-  <tabstop>leProxyPassword</tabstop>
  </tabstops>
  <resources/>
  <connections>

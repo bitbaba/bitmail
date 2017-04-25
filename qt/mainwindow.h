@@ -144,7 +144,8 @@ private:
     void ViewCert(const QString & e);
 
     bool hasLeaf(QTreeWidgetItem * node, const QString & sessKey);
-    void populateLeaf(const QString & sessKey);
+    void removeLeaf(QTreeWidgetItem * node, const QString & sessKey);
+    void populateLeaf(QTreeWidgetItem * node, const QString & sessKey);
 
     void populateMessages(const QString & k);
 

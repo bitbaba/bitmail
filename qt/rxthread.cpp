@@ -26,22 +26,12 @@ RxThread::~RxThread()
 
 void RxThread::run()
 {
-    qint64 lastCheck = QDateTime::currentMSecsSinceEpoch();
-
-    m_bitmail->OnMessageEvent(MessageEventHandler, this);
-
     while(!m_fStopFlag){
         qDebug() << "RxThread: Waiting for inbox poll event";
         m_inboxPoll.tryAcquire(1, m_checkInterval);
-        qDebug() << "RxThread: Timeout of inbox poll event";
 
-        qint64 now = QDateTime::currentMSecsSinceEpoch();
-
-        if (lastCheck + m_checkInterval < now){
-            qDebug() << "RxThread: check inbox directly!";
-            m_bitmail->CheckInbox(RxProgressHandler, this);
-            lastCheck = now;
-        }        
+        qDebug() << "RxThread: checking inbox!";
+        m_bitmail->CheckInbox(MessageEventHandler, this, RxProgressHandler, this);
     }
 
     m_bitmail->Expunge();

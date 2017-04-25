@@ -42,6 +42,8 @@ private slots:
 
     void on_btnSetComment_clicked();
 
+    void on_btnLogo_clicked();
+
 private:
     Ui::CertDialog *ui;
     BitMail   *m_bitmail;
@@ -51,6 +53,7 @@ private:
     QLineEdit *m_leComment;
     QLabel *m_lbQrCode;
     QPlainTextEdit *m_txtCert;
+    QPushButton *m_btnLogo;
 
 signals:
     void friendChanged();

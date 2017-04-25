@@ -45,28 +45,15 @@ public:
     void SetImapPassword(const QString & p);
     QString GetImapPassword() const;
 
-    void SetProxyIP(const QString & ip);
-    QString GetProxyIP() const;
-
-    void SetProxyPort(unsigned short port);
-    unsigned short GetProxyPort() const;
-
-    void SetProxyLogin(const QString & login);
-    QString GetProxyLogin() const;
-
-    void SetProxyPassword(const QString & pass);
-    QString GetProxyPassword() const;
+    void socks5(const QString & proxy);
+    QString socks5() const;
 
 private:
     QLineEdit *m_leSmtpUrl;    
     QLineEdit *m_leImapUrl;
     QLineEdit *m_leLogin;
     QLineEdit *m_lePassword;
-
-    QLineEdit *m_leProxyIP;
-    QLineEdit *m_leProxyPort;
-    QLineEdit *m_leProxyLogin;
-    QLineEdit *m_leProxyPassword;
+    QLineEdit *m_leSocks5;
 };
 
 #endif // NETOPTIONDIALOG_H

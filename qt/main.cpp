@@ -173,9 +173,9 @@ int main(int argc, char *argv[])
     if (!fAssistant){
         MainWindow mainWin(bitmail);
         mainWin.show();
-        if (bitmail->GetTxUrl().empty()){
+        if (bitmail->txUrl().empty()){
             mainWin.configNetwork();
-            if (bitmail->GetTxUrl().empty()){
+            if (bitmail->txUrl().empty()){
                 qDebug() << "Main: no network configuration, exit";
                 return 0;
             }
@@ -403,7 +403,8 @@ namespace BMQTApplication {
         QJsonObject joBuddies;
         QJsonArray jaGroups;
         QJsonObject joSessNames;
-        QJsonObject joProxy;
+        QJsonObject joSessLogos;
+        QString qsProxy;
         if (joRoot.contains("Profile")){
             joProfile = joRoot["Profile"].toObject();
             QString qsEmail;
@@ -454,8 +455,16 @@ namespace BMQTApplication {
                 qsRxPassword = QString::fromStdString( bm->Reveal(joRx["password"].toString().toStdString()));
             }
         }
-        bm->InitNetwork(qsTxUrl.toStdString(), qsTxLogin.toStdString(), qsTxPassword.toStdString()
-                        , qsRxUrl.toStdString(), qsRxLogin.toStdString(), qsRxPassword.toStdString());
+        if (joRoot.contains("proxy")){
+            qsProxy = joRoot["proxy"].toString();
+        }
+        bm->InitNetwork(qsTxUrl.toStdString()
+                        , qsTxLogin.toStdString()
+                        , qsTxPassword.toStdString()
+                        , qsRxUrl.toStdString()
+                        , qsRxLogin.toStdString()
+                        , qsRxPassword.toStdString()
+                        , qsProxy.toStdString());
 
         if (joRoot.contains("friends"))
         {
@@ -484,7 +493,11 @@ namespace BMQTApplication {
                  ; it ++)
             {
                 QString memberlist = (*it).toString();
-                bm->AddGroup(memberlist.toStdString());
+                std::vector<std::string> receips = BitMail::decodeReceips(memberlist.toStdString());
+                std::string sessKey = BitMail::toSessionKey(receips);
+                if (BitMail::isGroupSession(sessKey)){
+                    bm->AddGroup(memberlist.toStdString());
+                }
             }
         }while(0);
 
@@ -503,27 +516,21 @@ namespace BMQTApplication {
             }
         }while(0);
 
-        if (joRoot.contains("proxy")){
-            joProxy = joRoot["proxy"].toObject();
-            do {
-                if (joProxy.contains("ip")){
-                    QString qsVal = joProxy["ip"].toString();
-                    bm->SetProxyIp(qsVal.toStdString());
-                }
-                if (joProxy.contains("port")){
-                    unsigned short port = joProxy["port"].toInt();
-                    bm->SetProxyPort(port);
-                }
-                if (joProxy.contains("user")){
-                    QString qsVal = joProxy["user"].toString();
-                    bm->SetProxyUser(qsVal.toStdString());
-                }
-                if (joProxy.contains("password")){
-                    QString qsVal = joProxy["password"].toString();
-                    bm->SetProxyPassword(bm->Reveal(qsVal.toStdString()));
-                }
-            }while(0);
-        }
+        do {
+            if (!joRoot.contains("sessionLogos")){
+                break;
+            }
+            joSessLogos = joRoot["sessionLogos"].toObject();
+            for (QJsonObject::const_iterator it = joSessLogos.constBegin()
+                 ; it != joSessLogos.constEnd()
+                 ; it ++)
+            {
+                QString sessKey = it.key();
+                QString sessLogo = it.value().toString();
+                bm->sessionLogo(sessKey.toStdString(), sessLogo.toStdString());
+            }
+        }while(0);
+
         return true;
     }
     bool SaveProfile(BitMail * bm)
@@ -538,20 +545,21 @@ namespace BMQTApplication {
         QJsonObject joBuddies;
         QJsonArray jaGroups;     // Group chatting
         QJsonObject joSessNames;
-        QJsonObject joProxy;
+        QJsonObject joSessLogos;
+        QString qsProxy;
         // Profile
         joProfile["email"] = QString::fromStdString(bm->GetEmail());
         joProfile["nick"] = QString::fromStdString(bm->GetNick());
         joProfile["key"] = QString::fromStdString(bm->GetKey());
         joProfile["cert"] = QString::fromStdString(bm->GetCert());
         // Tx
-        joTx["url"] = QString::fromStdString(bm->GetTxUrl());
-        joTx["login"] = QString::fromStdString(bm->GetTxLogin());
-        joTx["password"] = QString::fromStdString(bm->Protect(bm->GetTxPassword()));
+        joTx["url"] = QString::fromStdString(bm->txUrl());
+        joTx["login"] = QString::fromStdString(bm->txLogin());
+        joTx["password"] = QString::fromStdString(bm->Protect(bm->txPassword()));
         // Rx
-        joRx["url"] = QString::fromStdString(bm->GetRxUrl());
-        joRx["login"] = QString::fromStdString(bm->GetRxLogin());
-        joRx["password"] = QString::fromStdString(bm->Protect(bm->GetRxPassword()));
+        joRx["url"] = QString::fromStdString(bm->rxUrl());
+        joRx["login"] = QString::fromStdString(bm->rxLogin());
+        joRx["password"] = QString::fromStdString(bm->Protect(bm->rxPassword()));
         // friends
         std::vector<std::string > vecBuddies;
         bm->GetFriends(vecBuddies);
@@ -567,7 +575,10 @@ namespace BMQTApplication {
         bm->GetGroups(vecGroups);
         for (std::vector<std::string>::const_iterator it = vecGroups.begin(); it != vecGroups.end(); ++it)
         {
-            jaGroups.append(QString::fromStdString(*it));
+            std::string sessKey = BitMail::toSessionKey(*it);
+            if (BitMail::isGroupSession(sessKey)){
+                jaGroups.append(QString::fromStdString(*it));
+            }
         }
         // Session Names
         std::map<std::string, std::string> sessNames = bm->sessNames();
@@ -576,12 +587,16 @@ namespace BMQTApplication {
             QString sessName = QString::fromStdString(it->second);
             joSessNames[sessKey] = sessName;
         }
+        // Session Logos
+        std::map<std::string, std::string> sessLogos = bm->sessLogos();
+        for (std::map<std::string, std::string>::const_iterator it = sessLogos.begin(); it != sessLogos.end(); ++it){
+            QString sessKey  = QString::fromStdString(it->first);
+            QString sessLogo = QString::fromStdString(it->second);
+            joSessLogos[sessKey] = sessLogo;
+        }
         // proxy
         do {
-            joProxy["ip"] = QString::fromStdString( bm->GetProxyIp());
-            joProxy["port"] = (int)bm->GetProxyPort();
-            joProxy["user"] = QString::fromStdString(bm->GetProxyUser());
-            joProxy["password"] = QString::fromStdString(bm->Protect(bm->GetProxyPassword()));
+            qsProxy = QString::fromStdString( bm->proxy());
         }while(0);
 
         // for more readable, instead of `profile'
@@ -589,9 +604,10 @@ namespace BMQTApplication {
         joRoot["tx"] = joTx;
         joRoot["rx"] = joRx;
         joRoot["friends"] = joBuddies;
-        joRoot["proxy"] = joProxy;
+        joRoot["proxy"] = qsProxy;
         joRoot["groups"] = jaGroups;
         joRoot["sessionNames"] = joSessNames;
+        joRoot["sessionLogos"] = joSessLogos;
         QJsonDocument jdoc(joRoot);
         QFile file(qsProfile);
         if (!file.open(QFile::WriteOnly | QFile::Text)) {
@@ -659,6 +675,42 @@ namespace BMQTApplication {
             abort();
         }
         FlushLogger();
+    }
+
+    QIcon Iconfy(const QByteArray & b64line)
+    {
+        if(!b64line.isEmpty()){
+            QString tmplogofile = BMQTApplication::GetTempFile(".ico");
+            std::string logofiledata = BitMail::fromBase64Line(b64line.toStdString());
+            QFile fout(tmplogofile);
+            if (fout.open(QIODevice::WriteOnly)){
+               fout.setTextModeEnabled(false);
+               fout.write(logofiledata.data(), logofiledata.length());
+               fout.close();
+               return QIcon(tmplogofile);
+            }
+        }
+        return QIcon(":/images/head.png");
+    }
+
+    QByteArray StringifyIcon(const QIcon & icon)
+    {
+        QImage ico = icon.pixmap(48,48).toImage();
+        QString icofile = BMQTApplication::GetTempFile(".ico");
+        ico.save(icofile);
+
+        QFile fin(icofile);
+        if (!fin.open(QIODevice::ReadOnly)){
+            return QByteArray();
+        }
+
+        fin.setTextModeEnabled(false);
+        QByteArray bytes = fin.readAll();
+        fin.close();
+
+        std::string b64logo = BitMail::toBase64Line(bytes.toStdString());
+
+        return QByteArray(b64logo.data(), b64logo.length());
     }
 
     /**

@@ -357,6 +357,12 @@ void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
         if (dlg.exec() != QDialog::Accepted){
             return ;
         }
+        std::vector<std::string> _receips = BMQTApplication::toStdStringList(dlg.groupMembers());
+        std::string _sessKey = BitMail::toSessionKey(_receips);
+        if (_sessKey != sessKey.toStdString()){
+            m_bitmail->AddGroup(BitMail::serializeReceips(_receips));
+            populateGroupTree();
+        }
     }
 }
 
@@ -692,44 +698,37 @@ void MainWindow::onBtnConfigClicked()
 void MainWindow::onNetAct()
 {
     NetOptionDialog optDialog(this);
-    optDialog.SetSmtpUrl(QString::fromStdString(m_bitmail->GetTxUrl()));
-    optDialog.SetSmtpLogin(QString::fromStdString(m_bitmail->GetTxLogin()));
-    optDialog.SetSmtpPassword(QString::fromStdString(m_bitmail->GetTxPassword()));
+    optDialog.SetSmtpUrl(QString::fromStdString(m_bitmail->txUrl()));
+    optDialog.SetSmtpLogin(QString::fromStdString(m_bitmail->txLogin()));
+    optDialog.SetSmtpPassword(QString::fromStdString(m_bitmail->txPassword()));
 
-    optDialog.SetImapUrl(QString::fromStdString(m_bitmail->GetRxUrl()));
-    optDialog.SetImapLogin(QString::fromStdString(m_bitmail->GetRxLogin()));
-    optDialog.SetImapPassword(QString::fromStdString(m_bitmail->GetRxPassword()));
+    optDialog.SetImapUrl(QString::fromStdString(m_bitmail->rxUrl()));
+    optDialog.SetImapLogin(QString::fromStdString(m_bitmail->rxLogin()));
+    optDialog.SetImapPassword(QString::fromStdString(m_bitmail->rxPassword()));
 
-    optDialog.SetProxyIP(QString::fromStdString(m_bitmail->GetProxyIp()));
-    optDialog.SetProxyPort(m_bitmail->GetProxyPort());
-    optDialog.SetProxyLogin(QString::fromStdString(m_bitmail->GetProxyUser()));
-    optDialog.SetProxyPassword(QString::fromStdString(m_bitmail->GetProxyPassword()));
+    optDialog.socks5(QString::fromStdString(m_bitmail->proxy()));
 
     if (QDialog::Accepted != optDialog.exec()){
         return ;
     }
 
-    QString qsTxUrl = optDialog.GetSmtpUrl();
-    QString qsTxLogin = optDialog.GetSmtpLogin();
+    QString qsTxUrl      = optDialog.GetSmtpUrl();
+    QString qsTxLogin    = optDialog.GetSmtpLogin();
     QString qsTxPassword = optDialog.GetSmtpPassword();
 
-    QString qsRxUrl = optDialog.GetImapUrl();
-    QString qsRxLogin = optDialog.GetImapLogin();
+    QString qsRxUrl      = optDialog.GetImapUrl();
+    QString qsRxLogin    = optDialog.GetImapLogin();
     QString qsRxPassword = optDialog.GetImapPassword();
+
+    QString qsProxy      = optDialog.socks5();
 
     m_bitmail->InitNetwork(qsTxUrl.toStdString()
                         , qsTxLogin.toStdString()
                         , qsTxPassword.toStdString()
                         , qsRxUrl.toStdString()
                         , qsRxLogin.toStdString()
-                        , qsRxPassword.toStdString());
-
-    do {
-        m_bitmail->SetProxyIp(optDialog.GetProxyIP().toStdString());
-        m_bitmail->SetProxyPort(optDialog.GetProxyPort());
-        m_bitmail->SetProxyUser(optDialog.GetProxyLogin().toStdString());
-        m_bitmail->SetProxyPassword(optDialog.GetProxyPassword().toStdString());
-    }while(0);
+                        , qsRxPassword.toStdString()
+                        , qsProxy.toStdString());
 
     return ;
 }
@@ -837,7 +836,7 @@ void MainWindow::onHtmlAct(bool fChecked)
 {
     textToolbar->setVisible(fChecked);
     if (fChecked){
-        if (!textEdit->acceptRichText()) textEdit->setAcceptDrops(true);
+        if (!textEdit->acceptRichText()) textEdit->setAcceptRichText(true);
         if (0){
             /**
              * 1) emoji could be implemented by <img src=":/emoji/smile.png>, without setting `BASEURL', as this this emoji can be compiled into resources.
@@ -866,9 +865,8 @@ void MainWindow::onBtnInviteClicked()
     if (QDialog::Accepted != inviteDialog.exec()){
         return ;
     }
-    QString qsTo = inviteDialog.GetEmail();
-    QString sessKey = QString::fromStdString( BitMail::toSessionKey(qsTo.toStdString()) );
-
+    std::vector<std::string> receips = BMQTApplication::toStdStringList(inviteDialog.GetEmail().split(",;:| \t\r\n"));
+    QString sessKey = QString::fromStdString( BitMail::toSessionKey( BitMail::serializeReceips(receips)) );
     QString qsWhisper = inviteDialog.GetWhisper();
     QStringList attachments = inviteDialog.attachments();
     QStringList parts;
@@ -883,8 +881,14 @@ void MainWindow::onBtnInviteClicked()
 
     SendTo(sessKey, qsMsg);
 
-    if (!hasLeaf(nodeGroups, sessKey) && !hasLeaf(nodeFriends, sessKey)){
-        populateLeaf(sessKey);
+    if (BitMail::isGroupSession(sessKey.toStdString())){
+        if (!hasLeaf(nodeGroups, sessKey)){
+            populateLeaf(nodeGroups, sessKey);
+        }
+    }else {
+        if (!hasLeaf(nodeFriends, sessKey)){
+            populateLeaf(nodeFriends, sessKey);
+        }
     }
 
     return ;
@@ -948,8 +952,14 @@ void MainWindow::onNewMessage(const QString & from
         sessionKey = QString::fromStdString(BitMail::toSessionKey(vec_receips));
     }
 
-    if (!hasLeaf(nodeFriends, sessionKey) && !hasLeaf(nodeGroups, sessionKey)){
-        populateLeaf(sessionKey);
+    if (BitMail::isGroupSession(sessionKey.toStdString())){
+        if (!hasLeaf(nodeGroups, sessionKey)){
+            populateLeaf(nodeGroups, sessionKey);
+        }
+    }else{
+        if (!hasLeaf(nodeFriends, sessionKey)){
+            populateLeaf(nodeFriends, sessionKey);
+        }
     }
 
     QString receips = QString::fromStdString(BitMail::serializeReceips(vec_receips));    
@@ -1056,7 +1066,16 @@ void MainWindow::populateMessages(const QString & k)
         QString tmp = rtxList.at(i);
         QJsonObject msgObj = (QJsonDocument::fromJson(tmp.toUtf8()).object());
         QListWidgetItem * msgElt = new QListWidgetItem();
-        msgElt->setIcon(QIcon(":/images/bubble.png"));
+        if (msgObj["tx"].toBool()){
+            msgElt->setIcon(BMQTApplication::Iconfy(QByteArray::fromStdString(m_bitmail->sessionLogo(BitMail::toSessionKey(m_bitmail->GetEmail())))));
+        }else{
+            if (BitMail::isGroupSession(k.toStdString())){
+                //TODO: display a merged head
+                msgElt->setIcon(QIcon(":/images/bubble.png"));
+            }else{
+                msgElt->setIcon(BMQTApplication::Iconfy(QByteArray::fromStdString(m_bitmail->sessionLogo(k.toStdString()))));
+            }
+        }
 
         QString qsMsg = msgObj["msg"].toString();
 
@@ -1090,8 +1109,10 @@ QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist
         if (QString::fromStdString(var.typeName()) == "QImage"){
             QImage qImage = qvariant_cast<QImage>(var);
             QLabel * tmp = new QLabel(widget);
-            tmp->setScaledContents(true);
-            tmp->setFixedSize(width, width*1.0f/qImage.width() * qImage.height());
+            if (qImage.width() > width){
+                tmp->setFixedSize(width, width*1.0f/qImage.width() * qImage.height());
+                tmp->setScaledContents(true);
+            }
             tmp->setPixmap(QPixmap::fromImage(qImage));
             vElt = tmp;
         }else if (QString::fromStdString(var.typeName()) == "QString"){
@@ -1181,7 +1202,10 @@ void MainWindow::populateFriendTree()
          ; it != vecEmails.end(); ++it)
     {
         QString sessKey = QString::fromStdString( BitMail::toSessionKey(*it) );
-        populateLeaf(sessKey);
+        if (BitMail::isGroupSession(sessKey.toStdString())){
+            continue;
+        }
+        populateLeaf(nodeFriends, sessKey);
     }
     return ;
 }
@@ -1201,7 +1225,10 @@ void MainWindow::populateGroupTree()
          ; it != vecGroups.end(); ++it)
     {
         QString sessKey = QString::fromStdString( BitMail::toSessionKey( BitMail::decodeReceips(*it) ) );
-        populateLeaf(sessKey);
+        if (!BitMail::isGroupSession(sessKey.toStdString())){
+            continue;
+        }
+        populateLeaf(nodeGroups, sessKey);
     }
     return ;
 }
@@ -1217,12 +1244,21 @@ bool MainWindow::hasLeaf(QTreeWidgetItem * node, const QString &sessKey)
     return false;
 }
 
-void MainWindow::populateLeaf(const QString & sessKey)
+void MainWindow::removeLeaf(QTreeWidgetItem * node, const QString & sessKey)
+{
+    for (int j = 0; j < node->childCount(); j++){
+        QTreeWidgetItem * leaf = node->child(j);
+        if (leaf->data(0, Qt::UserRole).toString() == sessKey){
+            node->removeChild(leaf);
+            return ;
+        }
+    }
+}
+
+void MainWindow::populateLeaf(QTreeWidgetItem * node, const QString & sessKey)
 {
     QStringList qslText;
     qslText.append(QString::fromStdString(m_bitmail->sessionName(sessKey.toStdString())));
-
-    QTreeWidgetItem * node = BitMail::isGroupSession(sessKey.toStdString()) ? nodeGroups : nodeFriends;
 
     QTreeWidgetItem *buddy = new QTreeWidgetItem(node, qslText, 0);
 
@@ -1230,7 +1266,12 @@ void MainWindow::populateLeaf(const QString & sessKey)
     if (BitMail::isGroupSession(sessKey.toStdString())){
         buddy->setIcon(0, QIcon(":/images/group.png"));
     }else{
-        buddy->setIcon(0, QIcon(":/images/head.png"));
+        std::string b64logo = m_bitmail->sessionLogo(sessKey.toStdString());
+        if (!b64logo.empty()){
+            buddy->setIcon(0, BMQTApplication::Iconfy(QByteArray::fromStdString(b64logo)));
+        }else{
+            buddy->setIcon(0, QIcon(":/images/head.png"));
+        }
     }
     buddy->setData(0, Qt::UserRole, sessKey);
 

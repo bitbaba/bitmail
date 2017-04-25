@@ -33,6 +33,9 @@ namespace BMQTApplication {
     bool CloseLogger();
     void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
+    QIcon Iconfy(const QByteArray & b64line);
+
+    QByteArray StringifyIcon(const QIcon & icon);
 
     /**
      * @brief toQrImage, convert a string to qr-encoded image
