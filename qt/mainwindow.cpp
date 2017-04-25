@@ -448,8 +448,7 @@ void MainWindow::setupTextActions()
     textToolbar = tb;
     textToolbar->setVisible(false);
 
-    QString rsrcPath = BMQTApplication::GetResHome();
-    rsrcPath += "/textedit/win";
+    QString rsrcPath = BMQTApplication::GetImageResHome() + "/textedit/win";
 
     const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(rsrcPath + "/textbold.png"));
     actionTextBold = tb->addAction(boldIcon, tr("&Bold"), this, &MainWindow::textBold);

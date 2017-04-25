@@ -4,6 +4,7 @@
 #include <QPlainTextEdit>
 #include <bitmailcore/bitmail.h>
 #include <QMessageBox>
+#include "main.h"
 
 MessageDialog::MessageDialog(BitMail * bitmail, QWidget *parent) :
     QDialog(parent),

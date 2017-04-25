@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QClipboard>
+#include "main.h"
 
 AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
     QDialog(parent),
