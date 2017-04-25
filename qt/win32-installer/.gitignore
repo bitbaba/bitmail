@@ -1,5 +1,7 @@
 /*.exe
 /*.dll
+/*.zip
+/nsis-*/
 /.qmake.stash
 /Makefile
 /Makefile.*
