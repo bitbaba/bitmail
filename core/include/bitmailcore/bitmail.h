@@ -138,52 +138,16 @@ public:
                     , const std::string & txpass
                     , const std::string & rxurl
                     , const std::string & rxuser
-                    , const std::string & rxpass);
-    
-    int SetProxy(const std::string & ip
-                , unsigned short port
-                , const std::string & user
-                , const std::string & password);
+                    , const std::string & rxpass
+                    , const std::string & proxy);
 
-    void SetProxyIp(const std::string & ip);
-
-    std::string GetProxyIp() const;
-
-    void SetProxyPort(unsigned short port);
-
-    unsigned short GetProxyPort() const;
-
-    void SetProxyUser(const std::string & user);
-
-    std::string GetProxyUser() const;
-
-    void SetProxyPassword(const std::string & password);
-
-    std::string GetProxyPassword() const;
-
-    int SetTxUrl(const std::string & u);
-
-    std::string GetTxUrl() const;
-
-    int SetTxLogin(const std::string & l);
-    
-    std::string GetTxLogin() const;
-
-    int SetTxPassword(const std::string & p);
-
-    std::string GetTxPassword() const;
-
-    int SetRxUrl(const std::string & u);
-
-    std::string GetRxUrl() const;
-
-    int SetRxLogin(const std::string & l);
-
-    std::string GetRxLogin() const;
-
-    int SetRxPassword(const std::string & p);
-
-    std::string GetRxPassword() const;
+    std::string txUrl() const;
+    std::string txLogin() const;
+    std::string txPassword() const;
+    std::string rxUrl() const;
+    std::string rxLogin() const;
+    std::string rxPassword() const;
+    std::string proxy() const;
 
     // Mulitpart
     static int splitMultiparts(const std::string & in, std::vector<std::string> & out);
@@ -215,18 +179,12 @@ public:
     // RTx Routines
     int SendMsg(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
 
-    int OnPollEvent( PollEventCB cb, void * userp);
-
-    int OnMessageEvent( MessageEventCB cb, void * userp);
+    int CheckInbox(MessageEventCB cb, void * msgcbp, RTxProgressCB rtxcb = NULL, void * rtxcbp = NULL);
 
     std::string EncMsg(const std::vector<std::string> & friends, const std::string & msg, bool fSignOnly);
 
-    int DecMsg(const std::string & smime, std::string & from, std::string & nick, std::string & msg, std::string & certid, std::string & cert);
+    int DecMsg(const std::string & smime, std::string & from, std::string & nick, std::string & msg, std::string & certid, std::string & cert, std::string & sigtime);
 
-    int CheckInbox(RTxProgressCB cb = NULL, void * userp = NULL);
-
-    int StartIdle(unsigned int timeout, RTxProgressCB cb = NULL, void * userp = NULL);
-    
     int Expunge();
 
     // Profile
@@ -313,14 +271,9 @@ public:
    void sessionLogo(const std::string & sessKey, const std::string & sessLogo);
 
    std::map<std::string, std::string> sessLogos() const;
+
 protected:
-
-    PollEventCB          m_onPollEvent;
-    
-    void               * m_onPollEventParam;
-    
     MessageEventCB       m_onMessageEvent;
-
     void               * m_onMessageEventParam;
     
     CMailClient        * m_mc;

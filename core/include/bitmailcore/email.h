@@ -12,46 +12,23 @@ public:
     CMailClient( BMEventCB netcb, void * netcbparam);
     ~CMailClient();
 public:
-    int InitTx( const std::string & url
-              , const std::string & user
-              , const std::string & pass);
+    int Init( const std::string & txUrl
+              , const std::string & txUser
+              , const std::string & txPass
+              , const std::string & rxUrl
+              , const std::string & rxLogin
+              , const std::string & rxPassword
+              , const std::string & proxy);
 
-    void SetTxUrl(const std::string & u);
-    std::string GetTxUrl() const;
-    void SetTxLogin(const std::string & l);
-    std::string GetTxLogin() const;
-    void SetTxPassword(const std::string & p);
-    std::string GetTxPassword() const;
+    std::string txUrl() const;
+    std::string txLogin() const;
+    std::string txPassword() const;
 
-    int InitRx( const std::string & url
-              , const std::string & user
-              , const std::string & pass);
-    
-    void SetRxUrl(const std::string & u);
-    std::string GetRxUrl() const;
-    void SetRxLogin(const std::string & l);
-    std::string GetRxLogin() const;
-    void SetRxPassword(const std::string &p);
-    std::string GetRxPassword() const;
+    std::string rxUrl() const;
+    std::string rxLogin() const;
+    std::string rxPassword() const;
 
-    int SetProxy(const std::string & ip, unsigned short port
-                        , const std::string & user, const std::string & pass);
-
-    void SetProxyIp(const std::string & ip);
-
-    std::string GetProxyIp() const;
-
-    void SetProxyPort(unsigned short port);
-
-    unsigned short GetProxyPort() const;
-
-    void SetProxyUser(const std::string & user);
-
-    std::string GetProxyUser() const;
-
-    void SetProxyPassword(const std::string & password);
-
-    std::string GetProxyPassword() const;
+    std::string proxy() const;
 
 
     /**
@@ -65,32 +42,19 @@ public:
 
     int CheckInbox(RTxProgressCB cb = NULL, void * userp = NULL);
     
-    int StartIdle(unsigned int timeout, RTxProgressCB cb = NULL, void * userp = NULL);
-
     int Expunge();
 
-public:
     static int GetEmailAddrList(const std::string & addr, std::vector<std::string> & vecAddrs);
     
     static int GetLines(std::string & str, std::vector<std::string> & lines);
     
 protected:
-    int GetUnseenMessageNoList(std::vector<MessageNo> & msgnolist);
+    int GetUnseen(std::vector<MessageNo> & msgnolist);
 
-    int GetUnseenMessageByMessageNo(MessageNo msgno, std::string & bitmsg, RTxProgressCB cb = NULL, void * userp = NULL);
+    int GetMsg(MessageNo msgno, std::string & bitmsg, RTxProgressCB cb = NULL, void * userp = NULL);
     
     int StoreFlag(MessageNo msgno, const std::string & flag);
-    
-protected:
-    /* Auxiliary function that waits on the socket. */     
-    int  CurlWait(void *curl, bool forRead, unsigned int & timeout_ms);
-     
-    void CurlRecv(void *curl, std::string & resp);
-     
-    void CurlSend(void *curl, const std::string & req);
 
-    
-protected:
     static size_t OnTxfer(void *ptr, size_t size, size_t nmemb, void * userp);
 
     static size_t OnRxfer(void *ptr, size_t size, size_t nmemb, void * userp);
@@ -119,17 +83,9 @@ private:
     std::string m_rxpass;
     
     /**
-     * Rx Handle for <IDLE> check
-     */
-    void *      m_rxIdle;
-
-    /**
      * Socks5 proxy
      */
-    std::string m_proxyIp;
-    unsigned short m_proxyPort;
-    std::string m_proxyUser;
-    std::string m_proxyPassword;
+    std::string m_proxy;
 };
 
 

@@ -13,40 +13,27 @@ typedef unsigned int MessageNo;
 #define BMMAGIC (0xbeefbeef)
 
 enum BMEventFlag{
-    bmefSystem       =     0,
-    bmefMsgCount     =     1,
-    bmefMessage      =     2,
+    bmefMsgUndef = 0,
+    bmefMessage  = 1,
 };
 
 enum BMEventSource{
-	bmesUndef = 0,
-	bmesEmail = 1,
-	bmesBrac  = 2,
+    bmesUndef = 0,
+    bmesEmail = 1,
 };
 
 struct BMEventHead{
     unsigned int magic;
-    BMEventFlag bmef;
-};
-
-struct BMEventSystem{
-    BMEventHead h;
-    unsigned int reserved;
-};
-
-struct BMEventMsgCount{
-    BMEventHead h;
-    unsigned int msgcount;
+    BMEventFlag  bmef;
 };
 
 struct BMEventMessage{
-    BMEventHead h;
-    std::string msg;
-    BMEventSource src;
-    void * client;
+    BMEventHead    h;
+    std::string    msg;
 };
 
-typedef int (* BMEventCB)(BMEventHead * h, void * userp);
+typedef
+int (* BMEventCB)(BMEventHead * h, void * userp);
 
 /**
  ******************************************************************************

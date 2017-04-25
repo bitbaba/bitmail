@@ -42,11 +42,10 @@ static void BitMailGlobalInit()
 }
 
 BitMail::BitMail(ILockFactory * lock, IRTxFactory * net)
-: m_onPollEvent(NULL), m_onPollEventParam(NULL)
-, m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
-, m_mc(NULL)
-, m_rx(NULL), m_tx(NULL)
-, m_lock1(NULL), m_lock2(NULL), m_lock3(NULL), m_lock4(NULL)
+    : m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
+    , m_mc(NULL)
+    , m_rx(NULL), m_tx(NULL)
+    , m_lock1(NULL), m_lock2(NULL), m_lock3(NULL), m_lock4(NULL)
 {
     BitMailGlobalInit();
 
@@ -113,23 +112,6 @@ unsigned int BitMail::GetVersion() const
 }
 
 /**
-* Callback & params
-*/
-int BitMail::OnPollEvent( PollEventCB cb, void * userp)
-{
-    m_onPollEvent = cb;
-    m_onPollEventParam = userp;
-    return bmOk;
-}
-
-int BitMail::OnMessageEvent( MessageEventCB cb, void * userp)
-{
-    m_onMessageEvent = cb;
-    m_onMessageEventParam = userp;
-    return bmOk;
-}
-
-/**
 * Network initialize
 */
 int BitMail::InitNetwork( const std::string & txurl
@@ -137,133 +119,53 @@ int BitMail::InitNetwork( const std::string & txurl
                     , const std::string & txpass
                     , const std::string & rxurl
                     , const std::string & rxuser
-                    , const std::string & rxpass)
+                    , const std::string & rxpass
+                    , const std::string & proxy)
 {
     if (m_mc == NULL){
         return bmOutMem;
     }
-    if (m_mc->InitTx(txurl, txuser, txpass)){
+
+    if (m_mc->Init(txurl, txuser, txpass, rxurl, rxuser, rxpass, proxy)){
         return bmTxFail;
     }
 
-    if (m_mc->InitRx(rxurl, rxuser, rxpass)){
-        return bmRxFail;
-    }
     return bmOk;
 }
 
-int BitMail::SetProxy(const std::string & ip
-        , unsigned short port
-        , const std::string & user
-        , const std::string & password)
+std::string BitMail::txUrl() const
 {
-    return m_mc->SetProxy(ip, port, user, password);
+    return m_mc->txUrl();
 }
 
-void BitMail::SetProxyIp(const std::string & ip)
+std::string BitMail::txLogin() const
 {
-    m_mc->SetProxyIp(ip);
+    return m_mc->txLogin();
 }
 
-std::string BitMail::GetProxyIp() const
+std::string BitMail::txPassword() const
 {
-    return m_mc->GetProxyIp();
+    return m_mc->txPassword();
 }
 
-void BitMail::SetProxyPort(unsigned short port)
+std::string BitMail::rxUrl() const
 {
-    m_mc->SetProxyPort(port);
+    return m_mc->rxUrl();
 }
 
-unsigned short BitMail::GetProxyPort() const
+std::string BitMail::rxLogin() const
 {
-    return m_mc->GetProxyPort();
+    return m_mc->rxLogin();
 }
 
-void BitMail::SetProxyUser(const std::string & user)
+std::string BitMail::rxPassword() const
 {
-    m_mc->SetProxyUser(user);
+    return m_mc->rxPassword();
 }
 
-std::string BitMail::GetProxyUser() const
+std::string BitMail::proxy() const
 {
-    return m_mc->GetProxyUser();
-}
-
-void BitMail::SetProxyPassword(const std::string & password)
-{
-    m_mc->SetProxyPassword(password);
-}
-
-std::string BitMail::GetProxyPassword() const
-{
-    return m_mc->GetProxyPassword();
-}
-
-int BitMail::SetTxUrl(const std::string & u)
-{
-    m_mc->SetTxUrl(u);
-    return bmOk;
-}
-
-std::string BitMail::GetTxUrl() const
-{
-    return m_mc->GetTxUrl();
-}
-
-int BitMail::SetTxLogin(const std::string & l)
-{
-    m_mc->SetTxLogin(l);
-    return bmOk;
-}
-
-std::string BitMail::GetTxLogin() const
-{
-    return m_mc->GetTxLogin();
-}
-
-int BitMail::SetTxPassword(const std::string & p)
-{
-    m_mc->SetTxPassword(p);
-    return bmOk;
-}
-
-std::string BitMail::GetTxPassword() const
-{
-    return m_mc->GetTxPassword();
-}
-
-int BitMail::SetRxUrl(const std::string & u)
-{
-    m_mc->SetRxUrl(u);
-    return bmOk;
-}
-
-std::string BitMail::GetRxUrl() const
-{
-    return m_mc->GetRxUrl();
-}
-
-int BitMail::SetRxLogin(const std::string & l)
-{
-    m_mc->SetRxLogin(l);
-    return bmOk;
-}
-
-std::string BitMail::GetRxLogin() const
-{
-    return m_mc->GetRxLogin();
-}
-
-int BitMail::SetRxPassword(const std::string & p)
-{
-    m_mc->SetRxPassword(p);
-    return bmOk;
-}
-
-std::string BitMail::GetRxPassword() const
-{
-    return m_mc->GetRxPassword();
+    return m_mc->proxy();
 }
 
 int BitMail::SendMsg(const std::vector<std::string> & friends
@@ -279,18 +181,14 @@ int BitMail::SendMsg(const std::vector<std::string> & friends
     return bmOk;
 }
 
-int BitMail::CheckInbox(RTxProgressCB cb, void * userp)
+int BitMail::CheckInbox(MessageEventCB cb, void * msgcbp, RTxProgressCB rtxcb, void * rtxcbp)
 {
-    if (m_mc->CheckInbox(cb, userp)){
-        return bmRxFail;
-    }
-    return bmOk;
-}
+    // TODO: re-entry in mulithreads
+    // but it seems no nessesary to refresh your inbox in multithreads.
+    m_onMessageEvent = cb; m_onMessageEventParam = msgcbp;
 
-int BitMail::StartIdle(unsigned int timeout, RTxProgressCB cb, void * userp)
-{
-    if (m_mc->StartIdle(timeout, cb, userp)){
-        return bmIdleFail;
+    if (m_mc->CheckInbox(rtxcb, rtxcbp)){
+        return bmRxFail;
     }
     return bmOk;
 }
@@ -508,7 +406,8 @@ int BitMail::DecMsg(const std::string & smime
         , std::string & nick
         , std::string & msg
         , std::string & certid
-        , std::string & cert)
+        , std::string & cert
+        , std::string & sigtime)
 {
     std::string sMimeBody = smime;
     BitMail * self = this;
@@ -521,6 +420,9 @@ int BitMail::DecMsg(const std::string & smime
 
     CX509Cert buddyCert;
     if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_signed){
+        /** signature time**/
+        sigtime = CX509Cert::GetSigningTime(sMimeBody);
+        /** signer certificate**/
         buddyCert.LoadCertFromSig(sMimeBody);
         if (buddyCert.IsValid()){
             sMimeBody = buddyCert.Verify(sMimeBody);
@@ -787,66 +689,20 @@ int BitMail::EmailHandler(BMEventHead * h, void * userp)
 {
     BitMail * self = (BitMail *)userp;
 
-    if (h->magic != BMMAGIC){
-        return bmInvalidParam;
-    }
-
-    if (h->bmef == bmefMsgCount){
-        if (self && self->m_onPollEvent){
-            return self->m_onPollEvent(((BMEventMsgCount*)h)->msgcount
-                                        , self->m_onPollEventParam);
-        }else{
-            return bmInvalidParam;
-        }
-    }else if (h->bmef == bmefSystem){
-        return 0;
-    }else if (h->bmef == bmefMessage){
-    }else{
+    if (!self || h->magic != BMMAGIC || h->bmef != bmefMessage){
         return bmInvalidParam;
     }
 
     BMEventMessage * bmeMsg = (BMEventMessage *)h;
-
-    std::string sMimeBody = bmeMsg->msg;;
-
-    std::string receips = parseRFC822AddressList(sMimeBody);
-
-    /**
-    * Crypto filter
-    */
-    if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){
-        sMimeBody = self->m_profile->Decrypt(sMimeBody);
-        if (sMimeBody.empty()){
-            return bmDecryptFail;
-        }
-    }
-
-    std::string sigtime = "";
-    CX509Cert buddyCert;
-    if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_signed){
-        /** signature time**/
-        sigtime = CX509Cert::GetSigningTime(sMimeBody);
-
-        /** friend's certificate**/
-        buddyCert.LoadCertFromSig(sMimeBody);
-        if (buddyCert.IsValid()){
-            sMimeBody = buddyCert.Verify(sMimeBody);
-            if (sMimeBody.empty()){
-                return bmVerifyFail;
-            }
-        }else{
-            return bmInvalidCert;
-        }
-    }
-
-    if (self && self->m_onMessageEvent){
-        // TODO: parse all receips from header `To'.
-        self->m_onMessageEvent(buddyCert.GetEmail().c_str()
+    std::string receips = parseRFC822AddressList(bmeMsg->msg);
+    std::string from, nick, msg, certid, cert, sigtime;
+    self->DecMsg(bmeMsg->msg, from, nick, msg, certid, cert, sigtime);
+    if (self->m_onMessageEvent){
+        self->m_onMessageEvent(from.c_str()
                                 , receips.c_str()
-                                , sMimeBody.data()
-                                , sMimeBody.length()
-                                , buddyCert.GetID().c_str()
-                                , buddyCert.GetCertByPem().c_str()
+                                , msg.data(), msg.length()
+                                , certid.c_str()
+                                , cert.c_str()
                                 , sigtime.c_str()
                                 , self->m_onMessageEventParam);
     }
