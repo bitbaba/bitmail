@@ -83,7 +83,7 @@ MainWindow::MainWindow(BitMail * bitmail)
 #if defined(MACOSX)
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
-    setWindowIcon(QIcon(":/images/bitmail.png"));
+    setWindowIcon(QIcon(BMQTApplication::GetImageResHome() + "/bitmail.png"));
     /** Title */
     do {
         QString qsEmail = QString::fromStdString(m_bitmail->GetEmail());
@@ -120,7 +120,7 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     if (1){
         nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")));
-        nodeFriends->setIcon(0, QIcon(":/images/head.png"));
+        nodeFriends->setIcon(0, QIcon(BMQTApplication::GetImageResHome() + "/head.png"));
         btree->addTopLevelItem(nodeFriends);
         populateFriendTree();
         nodeFriends->setExpanded(true);
@@ -128,7 +128,7 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     if (2){
         nodeGroups = new QTreeWidgetItem(btree, QStringList(tr("Groups")));
-        nodeGroups->setIcon(0, QIcon(":/images/group.png"));
+        nodeGroups->setIcon(0, QIcon(BMQTApplication::GetImageResHome() + "/group.png"));
         btree->addTopLevelItem(nodeGroups);
         populateGroupTree();
     }
@@ -374,67 +374,67 @@ void MainWindow::onTreeBuddyDoubleClicked(QTreeWidgetItem *actItem, int col)
 void MainWindow::createActions()
 {
     do {
-        configAct = new QAction(QIcon(":/images/config.png"), tr("&Configure"), this);
+        configAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/config.png"), tr("&Configure"), this);
         configAct->setStatusTip(tr("Configure current account"));
         connect(configAct, SIGNAL(triggered()), this, SLOT(onBtnConfigClicked()));
     }while(0);
 
     do{
-        netAct = new QAction(QIcon(":/images/network.png"), tr("&Network"), this);
+        netAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/network.png"), tr("&Network"), this);
         netAct->setStatusTip(tr("Network"));
         connect(netAct, SIGNAL(triggered()), this, SLOT(onNetAct()));
     }while(0);
 
     do {
-        inviteAct = new QAction(QIcon(":/images/invite.png"), tr("&Invite"), this);
+        inviteAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/invite.png"), tr("&Invite"), this);
         inviteAct->setStatusTip(tr("Invite by sending your signature"));
         connect(inviteAct, SIGNAL(triggered()), this, SLOT(onBtnInviteClicked()));
     }while(0);
 
     do{        
-        removeAct = new QAction(QIcon(":/images/remove.png"), tr("&Remove"), this);
+        removeAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/remove.png"), tr("&Remove"), this);
         removeAct->setStatusTip(tr("Remove"));
         connect(removeAct, SIGNAL(triggered()), this, SLOT(onRemoveAct()));
     }while(0);
 
     do{
-        fileAct = new QAction(QIcon(":/images/file.png"), tr("&File"), this);
+        fileAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/file.png"), tr("&File"), this);
         fileAct->setStatusTip(tr("Send File"));
         connect(fileAct, SIGNAL(triggered()), this, SLOT(onFileAct()));
     }while(0);
 
     do{
-        audioAct = new QAction(QIcon(":/images/sound.png"), tr("&Audio"), this);
+        audioAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/sound.png"), tr("&Audio"), this);
         audioAct->setStatusTip(tr("Send audio"));
         connect(audioAct, SIGNAL(triggered()), this, SLOT(onAudioAct()));
     }while(0);
 
     do{
-        emojiAct = new QAction(QIcon(":/images/emoj.png"), tr("&Emoji"), this);
+        emojiAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/emoj.png"), tr("&Emoji"), this);
         emojiAct->setStatusTip(tr("Send emoji"));
         connect(emojiAct, SIGNAL(triggered()), this, SLOT(onEmojiAct()));
     }while(0);
 
     do{
-        snapAct = new QAction(QIcon(":/images/snap.png"), tr("&Snapshot"), this);
+        snapAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/snap.png"), tr("&Snapshot"), this);
         snapAct->setStatusTip(tr("Send snapshot"));
         connect(snapAct, SIGNAL(triggered()), this, SLOT(onSnapAct()));
     }while(0);
 
     do{
-        photoAct = new QAction(QIcon(":/images/camera.png"), tr("&Photo"), this);
+        photoAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/camera.png"), tr("&Photo"), this);
         photoAct->setStatusTip(tr("Send photo"));
         connect(photoAct, SIGNAL(triggered()), this, SLOT(onPhotoAct()));
     }while(0);
 
     do{
-        videoAct = new QAction(QIcon(":/images/video.png"), tr("&Video"), this);
+        videoAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/video.png"), tr("&Video"), this);
         videoAct->setStatusTip(tr("Send video"));
         connect(videoAct, SIGNAL(triggered()), this, SLOT(onVideoAct()));
     }while(0);
 
     do{
-        htmlAct = new QAction(QIcon(":/images/html.png"), tr("&Html"), this);
+        htmlAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/html.png"), tr("&Html"), this);
         htmlAct->setStatusTip(tr("HTML mode"));
         htmlAct->setCheckable(true);
         connect(htmlAct, SIGNAL(triggered(bool)), this, SLOT(onHtmlAct(bool)));
@@ -768,7 +768,7 @@ void MainWindow::onFileAct()
 
 void MainWindow::onEmojiAct()
 {
-    QString emojiFile = QFileDialog::getOpenFileName(this, tr("select a emoji to send"), BMQTApplication::GetEmojiHome(), "Emoji Files (*.png *.jpg *.bmp)");
+    QString emojiFile = QFileDialog::getOpenFileName(this, tr("select a emoji to send"), BMQTApplication::GetEmResHome(), "Emoji Files (*.png *.jpg *.bmp)");
     QString qsMsg = BMQTApplication::toMimeAttachment(emojiFile);
     Send(qsMsg);
 }
@@ -1093,7 +1093,7 @@ void MainWindow::populateMessages(const QString & k)
         }else{
             if (BitMail::isGroupSession(k.toStdString())){
                 //TODO: display a merged head
-                msgElt->setIcon(QIcon(":/images/bubble.png"));
+                msgElt->setIcon(QIcon(BMQTApplication::GetImageResHome() + "/bubble.png"));
             }else{
                 msgElt->setIcon(BMQTApplication::Iconfy(QByteArray::fromStdString(m_bitmail->sessionLogo(k.toStdString()))));
             }
@@ -1290,13 +1290,13 @@ void MainWindow::populateLeaf(QTreeWidgetItem * node, const QString & sessKey)
 
     //TODO: logo synthesize
     if (BitMail::isGroupSession(sessKey.toStdString())){
-        buddy->setIcon(0, QIcon(":/images/group.png"));
+        buddy->setIcon(0, QIcon(BMQTApplication::GetImageResHome() + "/group.png"));
     }else{
         std::string b64logo = m_bitmail->sessionLogo(sessKey.toStdString());
         if (!b64logo.empty()){
             buddy->setIcon(0, BMQTApplication::Iconfy(QByteArray::fromStdString(b64logo)));
         }else{
-            buddy->setIcon(0, QIcon(":/images/head.png"));
+            buddy->setIcon(0, QIcon(BMQTApplication::GetImageResHome() + "/head.png"));
         }
     }
     buddy->setData(0, Qt::UserRole, sessKey);

@@ -275,17 +275,6 @@ namespace BMQTApplication {
         }
         return qsLocaleHome;
     }
-    QString GetEmojiHome()
-    {
-        QString qsEmojiHome = GetAppHome();
-        qsEmojiHome += "/";
-        qsEmojiHome += "emoji";
-        QDir qdir(qsEmojiHome);
-        if (!qdir.exists()){
-            qdir.mkpath(qsEmojiHome);
-        }
-        return qsEmojiHome;
-    }
     QString GetResHome()
     {
         QString qsResHome = GetAppHome();
@@ -297,7 +286,28 @@ namespace BMQTApplication {
         }
         return qsResHome;
     }
-
+    QString GetEmResHome()
+    {
+        QString qsEmHome = GetResHome();
+        qsEmHome += "/";
+        qsEmHome += "em";
+        QDir qdir(qsEmHome);
+        if (!qdir.exists()){
+            qdir.mkpath(qsEmHome);
+        }
+        return qsEmHome;
+    }
+    QString GetImageResHome()
+    {
+        QString qsImageResHome = GetResHome();
+        qsImageResHome += "/";
+        qsImageResHome += "image";
+        QDir qdir(qsImageResHome);
+        if (!qdir.exists()){
+            qdir.mkpath(qsImageResHome);
+        }
+        return qsImageResHome;
+    }
     QString GetLanIp()
     {
         QString lanaddr;
@@ -690,7 +700,7 @@ namespace BMQTApplication {
                return QIcon(tmplogofile);
             }
         }
-        return QIcon(":/images/head.png");
+        return QIcon(BMQTApplication::GetImageResHome() + "/head.png");
     }
 
     QByteArray StringifyIcon(const QIcon & icon)

@@ -12,7 +12,7 @@ MessageDialog::MessageDialog(BitMail * bitmail, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    setWindowIcon(QIcon(":/images/bitmail.png"));
+    setWindowIcon(QIcon(BMQTApplication::GetImageResHome() + "/bitmail.png"));
 
     m_leFrom = findChild<QLineEdit*>("leFrom");
     m_leCertID = findChild<QLineEdit*>("leCertID");

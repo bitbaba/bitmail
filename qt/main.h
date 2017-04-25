@@ -17,8 +17,9 @@ namespace BMQTApplication {
     QString GetTempFile(const QString & dotsuffix = "");
     QString GetLogHome();
     QString GetLocaleHome();
-    QString GetEmojiHome();
     QString GetResHome();
+    QString GetEmResHome();
+    QString GetImageResHome();
     QString GetLanIp();
     QString GetExeSuffix();
     QStringList GetProfiles();

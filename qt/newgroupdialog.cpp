@@ -15,7 +15,7 @@ NewGroupDialog::NewGroupDialog(BitMail * bm, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    setWindowIcon(QIcon(":/images/bitmail.png"));
+    setWindowIcon(QIcon(BMQTApplication::GetImageResHome() + "/bitmail.png"));
 
     m_leGroupId = findChild<QLineEdit*>("leGroupId");
     m_leGroupId->setReadOnly(true);
@@ -33,7 +33,7 @@ NewGroupDialog::NewGroupDialog(BitMail * bm, QWidget *parent) :
          ; it != vecFriends.end()
          ; ++it)
     {
-        m_cbbMembers->addItem(QIcon(":/images/head.png"), QString::fromStdString(*it));
+        m_cbbMembers->addItem(QIcon(BMQTApplication::GetImageResHome() + "/head.png"), QString::fromStdString(*it));
     }
 }
 
@@ -51,7 +51,7 @@ void NewGroupDialog::on_btnAdd_clicked()
     if (m_listAddedMembers->findItems(qsSelected, Qt::MatchExactly).size()){
         return ;
     }
-    QListWidgetItem * elt = new QListWidgetItem(QIcon(":/images/head.png"), qsSelected);
+    QListWidgetItem * elt = new QListWidgetItem(QIcon(BMQTApplication::GetImageResHome() + "/head.png"), qsSelected);
     m_listAddedMembers->addItem(elt);
 }
 
@@ -97,7 +97,7 @@ void NewGroupDialog::groupMembers(const QStringList & members)
     for (QStringList::const_iterator it = members.begin(); it != members.end(); it++)
     {
         if (it->isEmpty()) continue;
-        m_listAddedMembers->addItem(new QListWidgetItem(QIcon(":/images/head.png"), *it));
+        m_listAddedMembers->addItem(new QListWidgetItem(QIcon(BMQTApplication::GetImageResHome() + "/head.png"), *it));
     }
 }
 

@@ -29,7 +29,7 @@ CertDialog::CertDialog(BitMail * bm, QWidget *parent) :
     m_leCertID->setReadOnly(true);
     m_btnLogo->setToolTip(tr("click to choose a logo"));
     m_btnLogo->setText("");
-    m_btnLogo->setIcon(QIcon(":/images/head.png"));
+    m_btnLogo->setIcon(QIcon(BMQTApplication::GetImageResHome() + "/head.png"));
 
 }
 

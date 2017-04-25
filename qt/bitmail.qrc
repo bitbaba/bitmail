@@ -1,30 +1,3 @@
 <RCC>
-    <qresource prefix="/">
-        <file>images/bitmail.png</file>
-        <file>images/emoj.png</file>
-        <file>images/file.png</file>
-        <file>images/sound.png</file>
-        <file>images/video.png</file>
-        <file>images/snap.png</file>
-        <file>images/config.png</file>
-        <file>images/live.png</file>
-        <file>images/invite.png</file>
-        <file>images/bitcoin.png</file>
-        <file>images/head.png</file>
-        <file>images/wallet.s.png</file>
-        <file>images/bubble.png</file>
-        <file>images/upnp.png</file>
-        <file>images/proxy.png</file>
-        <file>images/group.png</file>
-        <file>images/subscribe.png</file>
-        <file>images/stranger.png</file>
-        <file>images/add.png</file>
-        <file>images/remove.png</file>
-        <file>images/shutdown.png</file>
-        <file>images/network.png</file>
-        <file>images/newgroup.png</file>
-        <file>images/camera.png</file>
-        <file>images/login.png</file>
-        <file>images/html.png</file>
-    </qresource>
+    <qresource prefix="/"/>
 </RCC>

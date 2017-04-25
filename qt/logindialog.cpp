@@ -13,7 +13,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui->setupUi(this);
 
     QLabel * lbLogo = findChild<QLabel *>("lbLogo");
-    QPixmap imgLogo = QPixmap(":/images/login.png");
+    QPixmap imgLogo = QPixmap(BMQTApplication::GetImageResHome() + "/login.png");
     QPainter pencil;
     pencil.begin(&imgLogo);
     pencil.setPen(Qt::black);
@@ -36,14 +36,14 @@ LoginDialog::LoginDialog(QWidget *parent) :
     for (QStringList::iterator it = sList.begin(); it != sList.end(); it++){
         QString qsEmail = *it;
         QFileInfo fi(qsEmail);
-        m_cbEmail->addItem(QIcon(":/images/head.png"),  fi.fileName());
+        m_cbEmail->addItem(QIcon(BMQTApplication::GetImageResHome() + "/head.png"),  fi.fileName());
     }
 
     if (m_cbEmail->count()){
         m_lePassphrase->setFocus();
     }
 
-    setWindowIcon(QIcon(":/images/bitmail.png"));
+    setWindowIcon(QIcon(BMQTApplication::GetImageResHome() + "/bitmail.png"));
 }
 
 LoginDialog::~LoginDialog()

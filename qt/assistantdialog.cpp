@@ -15,7 +15,7 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
 #if defined(MACOSX)
     setUnifiedTitleAndToolBarOnMac(true);
 #endif
-    setWindowIcon(QIcon(":/images/bitmail.png"));
+    setWindowIcon(QIcon(BMQTApplication::GetImageResHome() + "/bitmail.png"));
 
     m_txtInput     = findChild<QTextEdit*>  ("txtInput"    );
     m_btnEncrypt   = findChild<QPushButton*>("btnEncrypt"  );
@@ -35,7 +35,7 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
     {
         std::string email = (*it);
         std::string sessKey = BitMail::toSessionKey(email);
-        m_cbbFriends->addItem(QIcon(":/images/head.png")
+        m_cbbFriends->addItem(QIcon(BMQTApplication::GetImageResHome() + "/head.png")
                               , QString::fromStdString(m_bitmail->sessionName(sessKey))
                               , QVariant(QString::fromStdString(sessKey)));
     }
@@ -47,7 +47,7 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
         std::string group = groups[i];
         std::vector<std::string> vec_receips = BitMail::decodeReceips(group);
         std::string sessKey = BitMail::toSessionKey(vec_receips);
-        m_cbbFriends->addItem(QIcon(":/images/group.png")
+        m_cbbFriends->addItem(QIcon(BMQTApplication::GetImageResHome() + "/group.png")
                               , QString::fromStdString(m_bitmail->sessionName(sessKey))
                               , QVariant(QString::fromStdString(sessKey)));
     }
@@ -152,7 +152,7 @@ void AssistantDialog::on_btnAddFriend_clicked()
 
     std::string sessKey = BitMail::toSessionKey(qsFrom.toStdString());
 
-    m_cbbFriends->addItem(QIcon(":/images/head.png")
+    m_cbbFriends->addItem(QIcon(BMQTApplication::GetImageResHome() + "/head.png")
                           , QString::fromStdString(m_bitmail->sessionName(sessKey))
                           , QVariant(QString::fromStdString(sessKey)));
 }
