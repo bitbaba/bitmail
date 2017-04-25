@@ -64,6 +64,7 @@ class QProgressBar;
 class QComboBox;
 class QFontComboBox;
 class QTextCharFormat;
+class ClickableLabel;
 
 QT_END_NAMESPACE
 class BitMail;
@@ -88,6 +89,7 @@ public slots:
     void onBtnSendQrClicked();
     void onBtnConfigClicked();
     void onBtnInviteClicked();
+    void onLabelDoubleClicked(ClickableLabel * label);
 
     void onNewMessage(const QString & from, const QString & receips, const QString & msg, const QString & certid, const QString & cert, const QString & sigtime);
     void onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous);

@@ -24,7 +24,8 @@ HEADERS       = mainwindow.h \
                 assistantdialog.h \
                 newgroupdialog.h \
                 lock.h \
-    procth.h
+    procth.h \
+    clickablelabel.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
@@ -40,7 +41,8 @@ SOURCES       = main.cpp \
                 assistantdialog.cpp \
                 newgroupdialog.cpp \
                 lock.cpp \
-    procth.cpp
+    procth.cpp \
+    clickablelabel.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]

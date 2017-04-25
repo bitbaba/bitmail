@@ -67,7 +67,12 @@
 #include "invitedialog.h"
 #include "messagedialog.h"
 #include "newgroupdialog.h"
+#include "clickablelabel.h"
 #include "main.h"
+
+#if defined(WIN32)
+#include <Shellapi.h>
+#endif
 
 MainWindow::MainWindow(BitMail * bitmail)
     : m_bitmail(bitmail)
@@ -930,6 +935,23 @@ void MainWindow::onBtnSendQrClicked()
     Send(qsMsg);
 }
 
+void MainWindow::onLabelDoubleClicked(ClickableLabel *label)
+{
+#if defined(WIN32)
+    if (label->property("image").isValid()){
+        QImage image = qvariant_cast<QImage>(label->property("image"));
+        QString imagefile = BMQTApplication::GetTempFile(".png");
+        image.save(imagefile);
+        ::ShellExecuteW(0,QString("OPEN").toStdWString().c_str(), imagefile.toStdWString().c_str(), NULL, NULL, SW_SHOWNORMAL);
+    }else if (label->property("attachment").isValid()){
+        QFileInfo finfo = qvariant_cast<QFileInfo>(label->property("attachment"));
+        ::ShellExecuteW(0,QString("OPEN").toStdWString().c_str(), finfo.absoluteFilePath().toStdWString().c_str(), NULL, NULL, SW_SHOWNORMAL);
+    }
+#else
+    //TODO: browser resource in other platforms.
+#endif
+}
+
 /**
  * @Note: lesson about signal/slot paramters match
  * 1) emit signal(MsgType), slot(MsgType) will not called, if MsgType is a custom enumerate type.
@@ -1108,12 +1130,14 @@ QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist
         QVariant var = *it;
         if (QString::fromStdString(var.typeName()) == "QImage"){
             QImage qImage = qvariant_cast<QImage>(var);
-            QLabel * tmp = new QLabel(widget);
+            ClickableLabel * tmp = new ClickableLabel(widget);
             if (qImage.width() > width){
                 tmp->setFixedSize(width, width*1.0f/qImage.width() * qImage.height());
                 tmp->setScaledContents(true);
             }
             tmp->setPixmap(QPixmap::fromImage(qImage));
+            tmp->setProperty("image", QVariant::fromValue(qImage));
+            connect(tmp, SIGNAL(dbclicked(ClickableLabel*)), this, SLOT(onLabelDoubleClicked(ClickableLabel *)));
             vElt = tmp;
         }else if (QString::fromStdString(var.typeName()) == "QString"){
             QLabel * tmp = new QLabel(widget);
@@ -1128,8 +1152,10 @@ QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist
             vElt = tmp;
         }else if (QString::fromStdString(var.typeName()) == "QFileInfo"){
             QFileInfo fileInfo = qvariant_cast<QFileInfo>(var);
-            QLabel * tmp = new QLabel(widget);
+            ClickableLabel * tmp = new ClickableLabel(widget);
             tmp->setPixmap((QFileIconProvider().icon(fileInfo).pixmap(QSize(64<width?64:width,64<width?64:width))));
+            tmp->setProperty("attachment", QVariant::fromValue(fileInfo));
+            connect(tmp, SIGNAL(dbclicked(ClickableLabel*)), this, SLOT(onLabelDoubleClicked(ClickableLabel*)));
             vElt = tmp;
         }else{
 
