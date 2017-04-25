@@ -80,7 +80,7 @@
         <translation type="vanished">你们已经是好友。</translation>
     </message>
     <message>
-        <location filename="../assistantdialog.cpp" line="148"/>
+        <location filename="../assistantdialog.cpp" line="149"/>
         <source>Add Friend</source>
         <translation>添加好友</translation>
     </message>
@@ -98,7 +98,7 @@
         <translation type="vanished">新的:[</translation>
     </message>
     <message>
-        <location filename="../assistantdialog.cpp" line="148"/>
+        <location filename="../assistantdialog.cpp" line="149"/>
         <source>Failed to add friend</source>
         <translation>添加好友失败</translation>
     </message>
@@ -136,6 +136,11 @@
         <translation>设定</translation>
     </message>
     <message>
+        <location filename="../certdialog.ui" line="163"/>
+        <source>logo</source>
+        <translation>头像</translation>
+    </message>
+    <message>
         <source>CertID:</source>
         <translation type="vanished">证书ID:</translation>
     </message>
@@ -144,13 +149,23 @@
         <translation type="vanished">订阅</translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="162"/>
+        <location filename="../certdialog.ui" line="212"/>
         <source>QrCode</source>
         <translation>二维码</translation>
     </message>
     <message>
         <source>FingerPrint:</source>
         <translation type="vanished">证书指纹:</translation>
+    </message>
+    <message>
+        <location filename="../certdialog.cpp" line="30"/>
+        <source>click to choose a logo</source>
+        <translation>点击此处选择一个头像</translation>
+    </message>
+    <message>
+        <location filename="../certdialog.cpp" line="108"/>
+        <source>choose a logo</source>
+        <translation>选择一个头像</translation>
     </message>
 </context>
 <context>
@@ -236,22 +251,22 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../mainwindow.cpp" line="94"/>
+        <location filename="../mainwindow.cpp" line="86"/>
         <source>BitMail</source>
         <translation>比特信</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="124"/>
+        <location filename="../mainwindow.cpp" line="113"/>
         <source>Contact</source>
         <translation>通信录</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="128"/>
+        <location filename="../mainwindow.cpp" line="117"/>
         <source>Friends</source>
         <translation>朋友</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="135"/>
+        <location filename="../mainwindow.cpp" line="125"/>
         <source>Groups</source>
         <translation>群组</translation>
     </message>
@@ -260,37 +275,37 @@
         <translation type="vanished">订阅</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="169"/>
+        <location filename="../mainwindow.cpp" line="159"/>
         <source>Send</source>
         <translation>发送</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="170"/>
+        <location filename="../mainwindow.cpp" line="160"/>
         <source>Ctrl+Enter</source>
         <translation>Ctrl+Enter</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="177"/>
+        <location filename="../mainwindow.cpp" line="166"/>
         <source>QrImage</source>
         <translation>发送二维码</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="178"/>
+        <location filename="../mainwindow.cpp" line="167"/>
         <source>Ctrl+Shift+Enter</source>
         <translation>Ctrl+Shift+Enter</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="331"/>
+        <location filename="../mainwindow.cpp" line="372"/>
         <source>&amp;Configure</source>
         <translation>&amp;配置</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="332"/>
+        <location filename="../mainwindow.cpp" line="373"/>
         <source>Configure current account</source>
         <translation>配置当前帐号</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="343"/>
+        <location filename="../mainwindow.cpp" line="384"/>
         <source>&amp;Invite</source>
         <translation>&amp;邀请</translation>
     </message>
@@ -307,7 +322,7 @@
         <translation type="vanished">创建一个新的群组</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="373"/>
+        <location filename="../mainwindow.cpp" line="414"/>
         <source>&amp;Snapshot</source>
         <translation>&amp;截屏</translation>
     </message>
@@ -316,7 +331,7 @@
         <translation type="vanished">截屏</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="355"/>
+        <location filename="../mainwindow.cpp" line="396"/>
         <source>&amp;File</source>
         <translation>&amp;文件</translation>
     </message>
@@ -325,7 +340,7 @@
         <translation type="vanished">文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="367"/>
+        <location filename="../mainwindow.cpp" line="408"/>
         <source>&amp;Emoji</source>
         <translation>&amp;表情</translation>
     </message>
@@ -342,7 +357,7 @@
         <translation type="vanished">声音</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="385"/>
+        <location filename="../mainwindow.cpp" line="426"/>
         <source>&amp;Video</source>
         <translation>&amp;视频</translation>
     </message>
@@ -395,12 +410,12 @@
         <translation type="vanished">导入</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="349"/>
+        <location filename="../mainwindow.cpp" line="390"/>
         <source>&amp;Remove</source>
         <translation>&amp;删除</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="350"/>
+        <location filename="../mainwindow.cpp" line="391"/>
         <source>Remove</source>
         <translation>删除</translation>
     </message>
@@ -425,67 +440,102 @@
         <translation type="vanished">开始</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="337"/>
+        <location filename="../mainwindow.cpp" line="378"/>
         <source>&amp;Network</source>
         <translation>&amp;网络</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="338"/>
+        <location filename="../mainwindow.cpp" line="379"/>
         <source>Network</source>
         <translation>网络</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="344"/>
+        <location filename="../mainwindow.cpp" line="385"/>
         <source>Invite by sending your signature</source>
         <translation>发送签名消息来要求朋友</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="356"/>
+        <location filename="../mainwindow.cpp" line="397"/>
         <source>Send File</source>
         <translation>发送文件</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="361"/>
+        <location filename="../mainwindow.cpp" line="402"/>
         <source>&amp;Audio</source>
         <translation>&amp;语音</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="362"/>
+        <location filename="../mainwindow.cpp" line="403"/>
         <source>Send audio</source>
         <translation>发送语音</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="368"/>
+        <location filename="../mainwindow.cpp" line="409"/>
         <source>Send emoji</source>
         <translation>发送表情</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="374"/>
+        <location filename="../mainwindow.cpp" line="415"/>
         <source>Send snapshot</source>
         <translation>发送屏幕截图</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="379"/>
+        <location filename="../mainwindow.cpp" line="420"/>
         <source>&amp;Photo</source>
         <translation>&amp;照片</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="380"/>
+        <location filename="../mainwindow.cpp" line="421"/>
         <source>Send photo</source>
         <translation>发送照片</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="386"/>
+        <location filename="../mainwindow.cpp" line="427"/>
         <source>Send video</source>
         <translation>发送视频</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="394"/>
+        <location filename="../mainwindow.cpp" line="432"/>
+        <source>&amp;Html</source>
+        <translation>&amp;超文本</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="433"/>
+        <source>HTML mode</source>
+        <translation>超文本编辑模式</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="442"/>
+        <source>Format Actions</source>
+        <translation>格式化动作</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="450"/>
+        <source>&amp;Bold</source>
+        <translation>&amp;黑体</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="460"/>
+        <source>&amp;Italic</source>
+        <translation>&amp;斜体</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="470"/>
+        <source>&amp;Underline</source>
+        <translation>&amp;下划线</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="481"/>
+        <source>&amp;Color...</source>
+        <translation>&amp;颜色</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="663"/>
         <source>Profile</source>
         <translation>配置</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="398"/>
+        <location filename="../mainwindow.cpp" line="660"/>
         <source>Buddies</source>
         <translation>朋友</translation>
     </message>
@@ -494,12 +544,12 @@
         <translation type="vanished">钱包</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="401"/>
+        <location filename="../mainwindow.cpp" line="667"/>
         <source>Chat</source>
         <translation>聊天</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="413"/>
+        <location filename="../mainwindow.cpp" line="680"/>
         <source>Ready</source>
         <translation>就绪</translation>
     </message>
@@ -508,25 +558,22 @@
         <translation type="vanished">...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="485"/>
-        <location filename="../mainwindow.cpp" line="507"/>
-        <location filename="../mainwindow.cpp" line="718"/>
-        <location filename="../mainwindow.cpp" line="735"/>
+        <location filename="../mainwindow.cpp" line="745"/>
+        <location filename="../mainwindow.cpp" line="900"/>
+        <location filename="../mainwindow.cpp" line="918"/>
         <source>No active network</source>
         <translation>没有可用的网络</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="539"/>
         <source>Recorded</source>
-        <translation>已经录制</translation>
+        <translation type="vanished">已经录制</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="539"/>
         <source>seconds</source>
-        <translation>秒钟</translation>
+        <translation type="vanished">秒钟</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="545"/>
+        <location filename="../mainwindow.cpp" line="766"/>
         <source>select a emoji to send</source>
         <translation>选择一个表情来发送</translation>
     </message>
@@ -652,51 +699,51 @@
         <translation>收发网络(当前使用IMAPs/SMTPs)</translation>
     </message>
     <message>
-        <location filename="../netoptdialog.ui" line="83"/>
+        <location filename="../netoptdialog.ui" line="104"/>
         <source>smtps://example.net/</source>
         <translation>smtps://smtp.example.net/</translation>
     </message>
     <message>
-        <location filename="../netoptdialog.ui" line="95"/>
-        <location filename="../netoptdialog.ui" line="186"/>
+        <location filename="../netoptdialog.ui" line="88"/>
         <source>Login:</source>
         <translation>登录：</translation>
     </message>
     <message>
-        <location filename="../netoptdialog.ui" line="102"/>
-        <location filename="../netoptdialog.ui" line="179"/>
+        <location filename="../netoptdialog.ui" line="81"/>
+        <source>Socks5:</source>
+        <translation>Socks5代理:</translation>
+    </message>
+    <message>
+        <location filename="../netoptdialog.ui" line="95"/>
         <source>Password:  </source>
         <translation>密码：</translation>
     </message>
     <message>
-        <location filename="../netoptdialog.ui" line="109"/>
+        <location filename="../netoptdialog.ui" line="116"/>
         <source>Rx:</source>
         <translation>收取地址：</translation>
     </message>
     <message>
-        <location filename="../netoptdialog.ui" line="123"/>
+        <location filename="../netoptdialog.ui" line="144"/>
         <source>Tx:</source>
         <translation>发送地址：</translation>
     </message>
     <message>
-        <location filename="../netoptdialog.ui" line="139"/>
+        <location filename="../netoptdialog.ui" line="125"/>
         <source>imaps://example.net/</source>
         <translation>imaps://imap.example.net/</translation>
     </message>
     <message>
-        <location filename="../netoptdialog.ui" line="164"/>
         <source>Proxy( Powered by Socks5)</source>
-        <translation>代理服务器(使用socks5）</translation>
+        <translation type="vanished">代理服务器(使用socks5）</translation>
     </message>
     <message>
-        <location filename="../netoptdialog.ui" line="207"/>
         <source>Address:</source>
-        <translation>地址：</translation>
+        <translation type="vanished">地址：</translation>
     </message>
     <message>
-        <location filename="../netoptdialog.ui" line="277"/>
         <source>:</source>
-        <translation>：</translation>
+        <translation type="vanished">：</translation>
     </message>
     <message>
         <source>P2P</source>
@@ -887,14 +934,12 @@
 <context>
     <name>arDialog</name>
     <message>
-        <location filename="../ardialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation>语音录制对话框</translation>
+        <translation type="vanished">语音录制对话框</translation>
     </message>
     <message>
-        <location filename="../ardialog.ui" line="42"/>
         <source>Audio Recording...</source>
-        <translation>正在录制语音...</translation>
+        <translation type="vanished">正在录制语音...</translation>
     </message>
 </context>
 <context>
