@@ -79,6 +79,8 @@ Section "BitMail" SecBitMail
 	File "${QtDistRoot}\Qt5Widgets.dll"
 	File "${QtDistRoot}\Qt5Network.dll"
 	File "${QtDistRoot}\Qt5Multimedia.dll"
+	File "${QtDistRoot}\Qt5MultimediaWidgets.dll"
+	File "${QtDistRoot}\Qt5OpenGL.dll"
 	
   SetOutPath "$INSTDIR"
 	File "${QtToolsRoot}\libgcc_s_dw2-1.dll"
