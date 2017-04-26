@@ -68,6 +68,7 @@
 #include "messagedialog.h"
 #include "newgroupdialog.h"
 #include "clickablelabel.h"
+#include "textedit.h"
 #include "main.h"
 
 #if defined(WIN32)
@@ -137,7 +138,7 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     mainLayout->addLayout(leftLayout);
 
-    sessLabel = new QLabel;
+    sessLabel = new QLabel(this);
     sessLabel->setMaximumHeight(32);
     sessLabel->setMinimumHeight(32);
     sessLabel->setAlignment(Qt::AlignCenter);
@@ -146,16 +147,17 @@ MainWindow::MainWindow(BitMail * bitmail)
     sessLabel->setPalette(pa);
     sessLabel->setText("");
 
-    msgView = new QListWidget;
+    msgView = new QListWidget(this);
     msgView->setIconSize(QSize(48,48));
     msgView->setSpacing(2);
     msgView->setFont(QFont("Arial", 8));
     msgView->setSpacing(10);
 
-    textEdit = new QTextEdit;
+    textEdit = new TextEdit(this);
     textEdit->setMinimumWidth(560);
     textEdit->setFixedHeight(100);
     textEdit->setAcceptRichText(false);
+    textEdit->setAcceptDrops(true);
     textEdit->setFocus();
     connect(textEdit, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
 

@@ -64,7 +64,9 @@ class QProgressBar;
 class QComboBox;
 class QFontComboBox;
 class QTextCharFormat;
+
 class ClickableLabel;
+class TextEdit;
 
 QT_END_NAMESPACE
 class BitMail;
@@ -163,7 +165,7 @@ private:
     QFontComboBox *comboFont;
     QComboBox *comboSize;
 
-    QTextEdit *textEdit;
+    TextEdit *textEdit;
     QTreeWidget * btree;
     QTreeWidgetItem * nodeFriends;
     QTreeWidgetItem * nodeGroups;
