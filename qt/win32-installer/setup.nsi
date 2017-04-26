@@ -13,7 +13,7 @@
   ;Name and file
   Name "BitMail-Qt Win32 Installer"
   OutFile "bitmail-qt-win32-installer.exe"
-  Icon "${BitMailQtRoot}\images\bitmail.256.ico"
+  Icon "${BitMailQtRoot}\res\image\bitmail.256.ico"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\BitMail"
@@ -35,7 +35,7 @@
 ;Pages
 
   ; For Installation
-  !insertmacro MUI_PAGE_LICENSE "License.txt"
+  !insertmacro MUI_PAGE_LICENSE "${BitMailQtRoot}\License.txt"
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
@@ -64,35 +64,50 @@
 Section "BitMail" SecBitMail
 
   SetOutPath "$INSTDIR"
-	File "License.txt"
-	File "${BitMailQtRoot}\images\bitmail.256.ico"
+	File "${BitMailQtRoot}\License.txt"
+	File "${BitMailQtRoot}\res\image\bitmail.256.ico"
 	File "${BitMailQtReleaseRoot}\bitmail.exe"
+	File "${BitMailQtReleaseRoot}\audiorecorder.exe"
+	File "${BitMailQtReleaseRoot}\camera.exe"
+	File "${BitMailQtReleaseRoot}\screenshot.exe"
 	
   SetOutPath "$INSTDIR"
-	File "${QtDistRoot}\Licenses\LICENSE"
-	File "${QtDistRoot}\Licenses\LICENSE.FDL"
-	File "${QtDistRoot}\5.7\mingw53_32\bin\Qt5Core.dll"
-	File "${QtDistRoot}\5.7\mingw53_32\bin\Qt5Gui.dll"
-	File "${QtDistRoot}\5.7\mingw53_32\bin\Qt5Widgets.dll"
-	File "${QtDistRoot}\5.7\mingw53_32\bin\Qt5Network.dll"
+	File "${QtLicenseRoot}\LICENSE"
+	File "${QtLicenseRoot}\LICENSE.FDL"
+	File "${QtDistRoot}\Qt5Core.dll"
+	File "${QtDistRoot}\Qt5Gui.dll"
+	File "${QtDistRoot}\Qt5Widgets.dll"
+	File "${QtDistRoot}\Qt5Network.dll"
+	File "${QtDistRoot}\Qt5Multimedia.dll"
 	
   SetOutPath "$INSTDIR"
-	File "${QtDistRoot}\5.7\mingw53_32\bin\libgcc_s_dw2-1.dll"
-	File "${QtDistRoot}\5.7\mingw53_32\bin\libstdc++-6.dll"
-	File "${QtDistRoot}\5.7\mingw53_32\bin\libwinpthread-1.dll"  
-
+	File "${QtToolsRoot}\libgcc_s_dw2-1.dll"
+	File "${QtToolsRoot}\libstdc++-6.dll"
+	File "${QtToolsRoot}\libwinpthread-1.dll"
+	
   SetOutPath "$INSTDIR\locale"
-  File "${BitMailQtRoot}\locale\*.qm"
+	File "${BitMailQtRoot}\locale\*.qm"	
+	
+  SetOutPath "$INSTDIR\res"
+	File /r "${BitMailQtRoot}\res\*.*"
+	
+  SetOutPath "$INSTDIR\imageformats"
+	File "${QtPluginsRoot}\imageformats\qdds.dll"
+	File "${QtPluginsRoot}\imageformats\qgif.dll"
+	File "${QtPluginsRoot}\imageformats\qicns.dll"
+	File "${QtPluginsRoot}\imageformats\qico.dll"
+	File "${QtPluginsRoot}\imageformats\qjpeg.dll"
+	File "${QtPluginsRoot}\imageformats\qsvg.dll"
+	File "${QtPluginsRoot}\imageformats\qtga.dll"
+	File "${QtPluginsRoot}\imageformats\qtiff.dll"
+	File "${QtPluginsRoot}\imageformats\qwbmp.dll"
+	File "${QtPluginsRoot}\imageformats\qwebp.dll"
   
   SetOutPath "$INSTDIR\platforms"
-  File "${QtDistPluginsRoot}\platforms\*.dll"
-  
-  SetOutPath "$INSTDIR\imageformats"
-  File "${QtDistPluginsRoot}\imageformats\*.dll"
-    
-  ;Store installation folder
-  WriteRegStr HKCU "Software\BitMail" "Location" "$INSTDIR"
-  
+	File "${QtPluginsRoot}\platforms\qminimal.dll"   
+	File "${QtPluginsRoot}\platforms\qoffscreen.dll"   
+	File "${QtPluginsRoot}\platforms\qwindows.dll"   
+
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   
@@ -110,37 +125,40 @@ Section "BitMail" SecBitMail
   CreateShortCut  "$SMPROGRAMS\BitMail\Uninstall.lnk" \
 				  "$INSTDIR\Uninstall.exe" \
 				  '' \
-				  "$INSTDIR\Uninstall.exe" 0 	
-
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
+				  "$INSTDIR\Uninstall.exe" 0 
+				  
+  ;Store installation folder
+  WriteRegStr HKCU "Software\BitMail" "Location" "$INSTDIR"
+  
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
                  "DisplayName" \
 				 "BitMail"
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
                  "Publisher" \
 				 "BitMailPublisher"
 				 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
                  "DisplayVersion" \
 				 "1.0.0.0"	
 
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
                  "VersionMajor" \
 				 "1"	
 				 
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
                  "VersionMinor" \
 				 "1"					 
 				 				 
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
+  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
                  "EstimatedSize" \
 				 "52000"					 
 				 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
                  "UninstallString" \
 				 "$\"$INSTDIR\Uninstall.exe$\""				  
 	
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail" \
                  "QuietUninstallString" \
 				 "$\"$INSTDIR\uninstall.exe$\" /S"
 SectionEnd
@@ -169,7 +187,7 @@ Section "Uninstall"
 
   DeleteRegKey /ifempty HKCU "Software\BitMail"
 
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail"
+  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\BitMail"
   
 SectionEnd
 

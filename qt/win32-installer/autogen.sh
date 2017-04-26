@@ -21,7 +21,9 @@ fi
 if   [ -f "$NSIS_CMD" ]; then
 	$NSIS_CMD /dBitMailQtRoot="D:\\workspace\\github\\bitmail\\qt" \
 			  /dBitMailQtReleaseRoot="D:\\workspace\\github\\bitmail\\qt\\build\\release" \
-			  /dQtDistRoot="C:\\Qt\\Qt5.7.0" \
-			  /dQtDistPluginsRoot="C:\\Qt\\Qt5.7.0\\5.7\\mingw53_32\\plugins" \
+			  /dQtLicenseRoot="C:\\Qt\\Qt5.7.0\\Licenses" \
+			  /dQtDistRoot="C:\\Qt\\Qt5.7.0\\5.7\\mingw53_32\\bin" \
+			  /dQtToolsRoot="C:\\Qt\\Qt5.7.0\\Tools\\mingw530_32\\bin" \
+			  /dQtPluginsRoot="C:\\Qt\\Qt5.7.0\\5.7\\mingw53_32\\plugins" \
 			  setup.nsi
 fi
