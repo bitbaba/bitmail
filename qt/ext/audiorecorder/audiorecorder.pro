@@ -1,7 +1,4 @@
-TEMPLATE = app
-TARGET = audiorecorder
-
-QT += multimedia
+QT += multimedia widgets
 
 win32:INCLUDEPATH += $$PWD
 
@@ -16,7 +13,3 @@ SOURCES = \
 
 FORMS += audiorecorder.ui
 
-target.path = $$[QT_INSTALL_EXAMPLES]/multimedia/audiorecorder
-INSTALLS += target
-
-QT+=widgets

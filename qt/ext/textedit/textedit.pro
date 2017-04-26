@@ -1,9 +1,6 @@
 QT += widgets
 qtHaveModule(printsupport): QT += printsupport
 
-TEMPLATE        = app
-TARGET          = textedit
-
 HEADERS         = textedit.h
 SOURCES         = textedit.cpp \
                   main.cpp
@@ -15,7 +12,3 @@ build_all:!build_pass {
 }
 
 EXAMPLE_FILES = textedit.qdoc
-
-# install
-target.path = $$[QT_INSTALL_EXAMPLES]/widgets/richtext/textedit
-INSTALLS += target

@@ -1,7 +1,4 @@
-TEMPLATE = app
-TARGET = camera
-
-QT += multimedia multimediawidgets
+QT += multimedia multimediawidgets widgets
 
 HEADERS = \
     camera.h \
@@ -18,8 +15,3 @@ FORMS += \
     camera.ui \
     videosettings.ui \
     imagesettings.ui
-
-target.path = $$[QT_INSTALL_EXAMPLES]/multimediawidgets/camera
-INSTALLS += target
-
-QT+=widgets
