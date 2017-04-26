@@ -160,6 +160,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     textEdit->setAcceptDrops(true);
     textEdit->setFocus();
     connect(textEdit, SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
+    connect(textEdit, SIGNAL(dropped(QVariantList)), this, SLOT(onTextEditDropped(QVariantList)));
 
     btnLayout->setAlignment(Qt::AlignLeft);
 
@@ -946,7 +947,12 @@ void MainWindow::onLabelDoubleClicked(ClickableLabel *label)
         ::ShellExecuteW(0,QString("OPEN").toStdWString().c_str(), imagefile.toStdWString().c_str(), NULL, NULL, SW_SHOWNORMAL);
     }else if (label->property("attachment").isValid()){
         QFileInfo finfo = qvariant_cast<QFileInfo>(label->property("attachment"));
-        ::ShellExecuteW(0,QString("OPEN").toStdWString().c_str(), finfo.absoluteFilePath().toStdWString().c_str(), NULL, NULL, SW_SHOWNORMAL);
+        ::ShellExecuteW(0
+                        , finfo.suffix().isEmpty() ? QString("Explore").toStdWString().c_str() : QString("OPEN").toStdWString().c_str()
+                        , finfo.suffix().isEmpty() ? finfo.absolutePath().toStdWString().c_str() : finfo.absoluteFilePath().toStdWString().c_str()
+                        , NULL
+                        , NULL
+                        , SW_SHOWNORMAL);
     }
 #else
     //TODO: browser resource in other platforms.
@@ -1313,4 +1319,9 @@ void MainWindow::onProcThDone(const QString & sessKey, const QString &output)
         SendTo(sessKey, qsMsg);
     }
     return ;
+}
+
+void MainWindow::onTextEditDropped(const QVariantList &varlist)
+{
+    Send(BMQTApplication::toMixed(varlist));
 }

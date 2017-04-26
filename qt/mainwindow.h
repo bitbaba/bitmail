@@ -92,6 +92,7 @@ public slots:
     void onBtnConfigClicked();
     void onBtnInviteClicked();
     void onLabelDoubleClicked(ClickableLabel * label);
+    void onTextEditDropped(const QVariantList & varlist);
 
     void onNewMessage(const QString & from, const QString & receips, const QString & msg, const QString & certid, const QString & cert, const QString & sigtime);
     void onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous);

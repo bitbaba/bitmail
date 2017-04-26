@@ -819,7 +819,11 @@ namespace BMQTApplication {
         QString hash = QString::fromStdString( QCryptographicHash::hash(origFile.readAll(), QCryptographicHash::Sha256).toHex().toStdString() );
         origFile.close();
 
-        QString path = BMQTApplication::GetDataHome() + "/" + hash + "." + origFileInfo.completeSuffix();
+        QString path = BMQTApplication::GetDataHome() + "/" + hash;
+        if (!origFileInfo.completeSuffix().isEmpty()){
+           path += ".";
+           path += origFileInfo.completeSuffix();
+        }
         QFile file(path);
         QFileInfo finfo(path);
 
@@ -853,6 +857,11 @@ namespace BMQTApplication {
 
         QMimeDatabase db;
         QString mimeType = db.mimeTypeForFile(path).name();
+        if (mimeType.startsWith("text/", Qt::CaseInsensitive)){
+            // Note: transfer plain text file as attachement
+            // As, we do not known the charset-encoding.
+            mimeType = "application/octet-stream";
+        }
 
         /* http://www.faqs.org/rfcs/rfc2111.html
         Both message-id and content-id are required to be globally unique.
@@ -872,16 +881,18 @@ namespace BMQTApplication {
          * to `tap to download'.
          * So, if direct display is needed, remove the header `Content-ID:'
          */
-        QString mime = "Content-Type: " + mimeType + "; name=" + finfo.fileName() + "\r\n";
-        mime += "Content-Disposition: inline; filename=" + finfo.fileName() + "\r\n";
+        QString fileName = finfo.fileName();
+        QString mime = "Content-Type: " + mimeType + "; name=" + fileName + "\r\n";
+        mime += "Content-Disposition: inline; filename=" + fileName + "\r\n";
         if (false){
-            mime += "Content-ID: <" + finfo.fileName() + ">\r\n";
+            mime += "Content-ID: <" + fileName + ">\r\n";
         }
         mime += "Content-Transfer-Encoding: base64\r\n";
         mime += "\r\n";
         if (!file.open(QIODevice::ReadOnly)){
             return "";
         }
+        file.setTextModeEnabled(false);
         mime += QString::fromStdString(BitMail::toBase64(file.readAll().toStdString()));
         mime += "\r\n";
         file.close();
@@ -982,10 +993,16 @@ namespace BMQTApplication {
 
         if (qsEncoding == "7bit"){ // latin1
             qsText = QString::fromStdString(content);
-        }else if (qsEncoding == "base64"){
+            return qsText;
+        }
+
+        if (qsEncoding == "base64" && !qsCharset.isEmpty()){
             content = BitMail::fromBase64(content + "\r\n");
             qsText = QTextCodec::codecForName(qsCharset.toStdString().c_str())->toUnicode(content.data(), content.length());
-        }else if (qsEncoding == "quoted-printable"){
+            return qsText;
+        }
+
+        if (qsEncoding == "quoted-printable" && qsCharset.isEmpty()){
             // ASCII TABLE segment: 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F
             const int hexVal[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12, 13, 14, 15};
             QByteArray temp;
@@ -1004,10 +1021,10 @@ namespace BMQTApplication {
                 }
             }
             qsText = QTextCodec::codecForName(qsCharset.toStdString().c_str())->toUnicode(temp);
-        }else{
-            qDebug() << "Unsupported text decoding";
+            return qsText;
         }
-        return qsText;
+
+        return "";
     }
 
     /**
@@ -1049,6 +1066,7 @@ namespace BMQTApplication {
         }
 
         if (fout.open(QIODevice::WriteOnly)){
+            fout.setTextModeEnabled(false);
             fout.write(content.data(), content.length());
             fout.close();
         }
