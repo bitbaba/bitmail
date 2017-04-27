@@ -33,7 +33,7 @@ struct BMEventMessage{
 };
 
 typedef
-int (* BMEventCB)(BMEventHead * h, void * userp);
+bool (* BMEventCB)(BMEventHead * h, void * userp);
 
 /**
  ******************************************************************************

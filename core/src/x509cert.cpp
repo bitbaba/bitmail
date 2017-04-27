@@ -15,40 +15,58 @@
 CX509Cert::CX509Cert()
     : m_cert("")
     , m_key("")
+	, m_passphrase("")
 {
 
 }
 
-int CX509Cert::Create(const std::string & commonName
-        , const std::string & email
-        , const std::string & passphrase
-        , unsigned int bits)
+CX509Cert::CX509Cert(const std::string & certpem)
 {
-    if (MakeCert(commonName, email, passphrase, bits) == 0){
-        m_passphrase = passphrase;
-        return 0;
+	X509 * x = PEM2Cert(certpem);
+	if (x != NULL){
+		m_cert = certpem;
+		X509_free(x);
+	}
+}
+
+CX509Cert::CX509Cert(const std::string & certpem, const std::string & privkey, const std::string & passphrase)
+{
+	ImportCert(certpem); ImportPrivKey(privkey, passphrase);
+}
+
+
+bool CX509Cert::Create(unsigned int bits
+					, const std::string & commonName
+					, const std::string & email
+					, const std::string & passphrase)
+{
+    if (MakeCert(commonName, email, passphrase, bits)){
+        return true;
     }
-    return 1;
+    m_passphrase = passphrase;
+    return true;
 }
 
-int CX509Cert::LoadCertFromPem(const std::string & sPemCert)
+bool CX509Cert::ImportCert(const std::string & sPemCert)
 {
-    X509 * x = PemToCert(sPemCert);
+    X509 * x = PEM2Cert(sPemCert);
     if (x != NULL){
         m_cert = sPemCert;
-        return 0;
+        X509_free(x);
+        return true;
     }
-    return -1;
+    return false;
 }
 
-int CX509Cert::LoadKeyFromEncryptedPem(const std::string &key, const std::string &passphrase)
+bool CX509Cert::ImportPrivKey(const std::string &key, const std::string &passphrase)
 {
-    EVP_PKEY * privKey = PemToPKey(key, passphrase);
+    EVP_PKEY * privKey = PEM2PrivKey(key, passphrase);
     if (privKey != NULL){
         m_key = key; m_passphrase = passphrase;
-        return 0;
+        EVP_PKEY_free(privKey);
+        return true;
     }
-    return -1;
+    return false;
 }
 
 /**
@@ -59,12 +77,12 @@ int CX509Cert::LoadKeyFromEncryptedPem(const std::string &key, const std::string
 * http://linux.die.net/man/3/pkcs7_verify
 * PKCS7_get0_signers() retrieves the signer's certificates from p7, it does not check their validity or whether any signatures are valid. The certs and flags parameters have the same meanings as in PKCS7_verify().
 */
-int CX509Cert::LoadCertFromSig(const std::string & msg)
+bool CX509Cert::ImportCertFromSig(const std::string & msg)
 {
     BIO * in = BIO_new_mem_buf((void*)msg.c_str(), msg.length());
     if (!in) {
         fprintf(stderr, "failed to create memory buffer\n");
-        return -1;
+        return false;
     }
     BIO *cont = NULL;
     PKCS7 * cms = NULL;
@@ -77,32 +95,27 @@ int CX509Cert::LoadCertFromSig(const std::string & msg)
     cms = SMIME_read_PKCS7(in, &cont);
 
     if (!cms){
-        fprintf(stderr, "Failed to read cms data\n");
-        goto err;
+        BIO_free(in);
+        return false;
     }
 
     sk_signers = PKCS7_get0_signers(cms, NULL, 0);
 
     if (!sk_signers){
-        printf("Failed to get singers\n");
+        PKCS7_free(cms);
+        BIO_free(in);
+        return false;
     }
 
     for (int i = 0; i < sk_X509_num(sk_signers); i++){
         X509 * x = sk_X509_value(sk_signers, i);
-        m_cert = CertToPem(x);
+        m_cert = Cert2PEM(x);
         break;
     }
 
-    ret = 0;
-
- err:
-    if (ret) {
-        fprintf(stderr, "Error load certificate(s)\n");
-        ERR_print_errors_fp(stderr);
-    }
     PKCS7_free(cms);
     BIO_free(in);
-    return 0;
+    return true;
 }
 
 std::string CX509Cert::GetSigningTime(const std::string & sig)
@@ -418,11 +431,13 @@ int CX509Cert::MakeCert(const std::string & commonName
         goto err_MakeCert;
 
     if (x){
-        m_cert = CertToPem(x);
+        m_cert = Cert2PEM(x);
+        X509_free(x); x = NULL;
     }
 
     if (pk){
-        m_key = PKeyToPem(pk, passphrase);
+        m_key = PrivKey2PEM(pk, passphrase);
+        EVP_PKEY_free(pk); pk = NULL;
     }
 
     return (0);
@@ -457,17 +472,17 @@ int CX509Cert::MakeCert(const std::string & commonName
 
 std::string CX509Cert::GetEmail() const
 {
-    X509 * x = GetCert();
+    X509 * x = PEM2Cert(m_cert);
     if (x == NULL){
         return "";
     }
     X509_NAME * name = X509_get_subject_name(x);
     if (name == NULL){
+    	X509_free(x);
         return "";
     }
     char szEmail [100] = "";
-    int rc = X509_NAME_get_text_by_NID(name, NID_pkcs9_emailAddress, szEmail, sizeof(szEmail));
-    (void )rc;
+    X509_NAME_get_text_by_NID(name, NID_pkcs9_emailAddress, szEmail, sizeof(szEmail));
     return szEmail;
 }
 
@@ -496,95 +511,12 @@ int CX509Cert::AddExt(X509 *cert, int nid, char *value)
     return 0;
 }
 
-std::string CX509Cert::PKeyToPem(const EVP_PKEY * pkey, const std::string & passphrase)
+unsigned int CX509Cert::GetBits() const
 {
-    BIO* mbio = BIO_new(BIO_s_mem());// sink to memory.
-
-    PEM_write_bio_RSAPrivateKey(mbio
-                                , pkey->pkey.rsa
-                                , EVP_des_ede3_cbc()
-                                , NULL, 0
-                                , NULL, (void*)passphrase.c_str());
-    BUF_MEM * bufptr = NULL;
-    BIO_get_mem_ptr(mbio, &bufptr);
-    std::string sRsaPEMEncoded = "";
-    sRsaPEMEncoded.append((char *)bufptr->data, bufptr->length);
-    return sRsaPEMEncoded;
-}
-
-std::string CX509Cert::CertToPem(const X509 * cert)
-{
-    BIO* mbio = BIO_new(BIO_s_mem());// sink to memory.
-    PEM_write_bio_X509(mbio, (X509*)cert);
-    BUF_MEM * bufptr = NULL;
-    BIO_get_mem_ptr(mbio, &bufptr);
-    std::string sCertPemEncoded = "";
-    sCertPemEncoded.append((char *)bufptr->data, bufptr->length);
-    return sCertPemEncoded;
-}
-
-EVP_PKEY * CX509Cert::PemToPKey(const std::string & sRsa, const std::string & passphrase)
-{
-    BIO * mbio = BIO_new_mem_buf((void*)sRsa.c_str(), sRsa.length());
-    if (!mbio) return NULL;
-
-    RSA * rsa = PEM_read_bio_RSAPrivateKey(mbio
-                                    , NULL /*or, &x */
-                                    , NULL /*void callback*/
-                                    , (void *)passphrase.c_str());
-    if (!rsa) {
-        BIO_free(mbio);mbio = NULL;
-        return NULL;
-    }
-
-    EVP_PKEY * pkey = EVP_PKEY_new();
-    if (!pkey) {
-        BIO_free(mbio);mbio = NULL;
-        return NULL;
-    }
-
-    if (!EVP_PKEY_assign_RSA(pkey, rsa)){
-        BIO_free(mbio);mbio = NULL;
-        EVP_PKEY_free(pkey); pkey = NULL;
-        return NULL;
-    }
-
-    return pkey;
-}
-
-void CX509Cert::FreePrivateKey(EVP_PKEY * pkey)
-{
-    EVP_PKEY_free(pkey);
-}
-
-X509 * CX509Cert::PemToCert(const std::string sCert)
-{
-    BIO * mbio = BIO_new_mem_buf((void*)sCert.c_str(), sCert.length());
-    if (!mbio) return NULL;
-
-    X509 * x = PEM_read_bio_X509(mbio
-                                    , NULL /*or, &x */
-                                    , NULL /*void callback*/
-                                    , 0);
-
-    BIO_free(mbio);
-
-    return x;
-}
-
-void CX509Cert::FreeCert(X509 * x)
-{
+	X509 * x = PEM2Cert(m_cert);
+    unsigned int bits = EVP_PKEY_bits(X509_get_pubkey(x));
     X509_free(x);
-}
-
-X509 *  CX509Cert::GetCert() const
-{
-    return PemToCert(m_cert);
-}
-
-int CX509Cert::GetBits() const 
-{
-    return EVP_PKEY_bits(X509_get_pubkey(GetCert()));
+    return bits;
 }
 
 std::string CX509Cert::GetPassphrase() const
@@ -592,18 +524,12 @@ std::string CX509Cert::GetPassphrase() const
     return m_passphrase;
 }
 
-std::string CX509Cert::GetCertByPem() const
+std::string CX509Cert::ExportCert() const
 {
     return m_cert;
 }
 
-EVP_PKEY *  CX509Cert::GetPrivateKey()
-{
-    if (m_key.empty()) return NULL;
-    return PemToPKey(m_key, m_passphrase);
-}
-
-std::string CX509Cert::GetPrivateKeyAsEncryptedPem()
+std::string CX509Cert::ExportPrivKey()
 {
     return m_key;
 }
@@ -617,17 +543,18 @@ int CX509Cert::SetPassphrase(const std::string & passphrase)
         return 0;
     }
 
-    EVP_PKEY *pkey = GetPrivateKey();
+    EVP_PKEY *pkey = PEM2PrivKey(m_key, m_passphrase);
     if (pkey == NULL){
         return 1;
     }
 
-    std::string sKeyPem = PKeyToPem(pkey, passphrase);
+    std::string sKeyPem = PrivKey2PEM(pkey, passphrase);
     if (sKeyPem.empty()){
         return 2;
     }
     m_key = sKeyPem;
     m_passphrase = passphrase;
+    EVP_PKEY_free(pkey);
     return 0;
 }
 
@@ -639,19 +566,30 @@ std::string CX509Cert::Sign(const std::string & msg)
     if (!in) return "";
 
     BIO* out = BIO_new(BIO_s_mem());// sink to memory.
-    if (!out) return "";
+    if (!out) {
+    	BIO_free(in);
+    	return "";
+    }
 
     X509 *scert = NULL;
     EVP_PKEY *skey = NULL;
     CMS_ContentInfo *cms = NULL;
     int ret = 1, flags = 0;
 
-    scert = GetCert();
+    scert = PEM2Cert(m_cert);
+    if (!scert){
+    	BIO_free(in);
+    	BIO_free(out);
+    	return "";
+    }
 
-    skey = GetPrivateKey();
-
-    if (!scert || !skey)
-        goto err;
+    skey = PEM2PrivKey(m_key, m_passphrase);
+    if (!skey){
+    	BIO_free(in);
+    	BIO_free(out);
+    	X509_free(scert);
+    	return "";
+    }
 
     /* Sign content, MUST be detached, otherwise, it dose not work on mobile phone */
 
@@ -669,35 +607,33 @@ std::string CX509Cert::Sign(const std::string & msg)
     flags = (CMS_STREAM |CMS_NOSMIMECAP | CMS_CRLFEOL | CMS_DETACHED );
     cms = CMS_sign(scert, skey, NULL, in, flags);
 
-    if (!cms)
-        goto err;
+    if (!cms){
+    	BIO_free(in);
+    	BIO_free(out);
+    	X509_free(scert);
+    	EVP_PKEY_free(skey);
+    	return "";
+    }
 
     if (!(flags & CMS_STREAM))
         BIO_reset(in);
 
     /* Write out S/MIME message */
-    if (!SMIME_write_CMS(out, cms, in, flags))
-        goto err;
+    if (!SMIME_write_CMS(out, cms, in, flags)){
+    	BIO_free(in);
+    	BIO_free(out);
+    	X509_free(scert);
+    	EVP_PKEY_free(skey);
+        CMS_ContentInfo_free(cms);
+    	return "";
+    }
     else{
         BUF_MEM * bufptr = NULL;
         BIO_get_mem_ptr(out, &bufptr);
-
         std::string p7out = "";
         p7out.append((char *)bufptr->data, bufptr->length);
         return p7out;
     }
- err:
-    if (ret) {
-        fprintf(stderr, "Error Signing Data\n");
-        ERR_print_errors_fp(stderr);
-    }
-    CMS_ContentInfo_free(cms);
-    X509_free(scert);
-    EVP_PKEY_free(skey);
-    BIO_free(in);
-    BIO_free(out);
-
-    return "";
 }
 
 /* Simple S/MIME verification example */
@@ -721,7 +657,7 @@ std::string CX509Cert::Verify(const std::string & msg)
     st = X509_STORE_new();
 
     //HarryWu: here, CA cert is itself.
-    cacert = GetCert();
+    cacert = PEM2Cert(m_cert);
 
     if (!cacert)
         goto err;
@@ -795,7 +731,7 @@ std::string CX509Cert::MEncrypt(const std::string & msg, const std::vector<CX509
         goto err;
 
     for(std::vector<CX509Cert>::const_iterator it = certs.begin(); it != certs.end(); ++it){
-        if (!sk_X509_push(recips, it->GetCert())){
+        if (!sk_X509_push(recips, PEM2Cert(it->m_cert))){
             ret = 1;
             break;
         }
@@ -864,7 +800,7 @@ std::string CX509Cert::Encrypt(const std::string & msg)
     int flags = CMS_STREAM;
 
     /* Read in recipient certificate */
-    rcert = GetCert();
+    rcert = PEM2Cert(m_cert);
 
     if (!rcert)
         goto err;
@@ -932,9 +868,9 @@ std::string CX509Cert::Decrypt(const std::string & msg)
 
     /* Read in recipient certificate and private key */
 
-    rcert = GetCert();
+    rcert = PEM2Cert(m_cert);
 
-    rkey = GetPrivateKey();
+    rkey = PEM2PrivKey(m_key, m_passphrase);
 
     if (!rcert || !rkey)
         goto err;
@@ -1069,9 +1005,8 @@ std::string CX509Cert::MSign(const std::string & msg, const std::vector<CX509Cer
 
 std::string CX509Cert::GetCommonName() const
 {
-    X509 * x = GetCert();
+    X509 * x = PEM2Cert(m_cert);
     if (x == NULL){
-        X509_free(x);
         return "";
     }
     X509_NAME * name = X509_get_subject_name(x);
@@ -1080,15 +1015,14 @@ std::string CX509Cert::GetCommonName() const
         return "";
     }
     char szCommonName [100] = "";
-    int rc = X509_NAME_get_text_by_NID(name, NID_commonName, szCommonName, sizeof(szCommonName));
-    (void )rc;
+    X509_NAME_get_text_by_NID(name, NID_commonName, szCommonName, sizeof(szCommonName));
     X509_free(x);
     return szCommonName;
 }
 
 std::string CX509Cert::GetID() const
 {
-    X509 * x = GetCert();
+    X509 * x = PEM2Cert(m_cert);
     if (x == NULL){
         return "";
     }
@@ -1127,11 +1061,7 @@ std::string CX509Cert::GetID() const
 
 bool CX509Cert::IsValid() const
 {
-    if (this->m_cert.empty()){
-        return false;
-    }
-    // TODO: more checks
-    return true;
+    return !m_cert.empty();
 }
 
 std::string CX509Cert::hash(const std::string & str, const std::string & algo)
@@ -1237,7 +1167,7 @@ std::string CX509Cert::PKSign(const std::string & msg, const std::string & dgst_
 {
     int rv = 0;
     EVP_PKEY_CTX * ctx = NULL;
-    EVP_PKEY * pkey = GetPrivateKey();
+    EVP_PKEY * pkey = PEM2PrivKey(m_key, m_passphrase);
     ctx = EVP_PKEY_CTX_new(pkey, NULL);
     EVP_PKEY_sign_init(ctx);
 
@@ -1254,7 +1184,7 @@ std::string CX509Cert::PKSign(const std::string & msg, const std::string & dgst_
     // free buf
     free(out);
     EVP_PKEY_CTX_free(ctx);
-    FreePrivateKey(pkey);
+    EVP_PKEY_free(pkey);
     return msg;
 }
 
@@ -1282,4 +1212,76 @@ std::string CX509Cert::SKEncrypt(const std::string & msg, const std::string & al
 std::string CX509Cert::SKDecrypt(const std::string & code, const std::string & algo, const std::string & secret)
 {
     return "";
+}
+
+/** PEM Utililties **/
+std::string CX509Cert::PrivKey2PEM(const EVP_PKEY * pkey, const std::string & passphrase)
+{
+    BIO* mbio = BIO_new(BIO_s_mem());// sink to memory.
+
+    PEM_write_bio_RSAPrivateKey(mbio
+                                , pkey->pkey.rsa
+                                , EVP_des_ede3_cbc()
+                                , NULL, 0
+                                , NULL, (void*)passphrase.c_str());
+    BUF_MEM * bufptr = NULL;
+    BIO_get_mem_ptr(mbio, &bufptr);
+    std::string sRsaPEMEncoded = "";
+    sRsaPEMEncoded.append((char *)bufptr->data, bufptr->length);
+    return sRsaPEMEncoded;
+}
+
+std::string CX509Cert::Cert2PEM(const X509 * cert)
+{
+    BIO* mbio = BIO_new(BIO_s_mem());// sink to memory.
+    PEM_write_bio_X509(mbio, (X509*)cert);
+    BUF_MEM * bufptr = NULL;
+    BIO_get_mem_ptr(mbio, &bufptr);
+    std::string sCertPemEncoded = "";
+    sCertPemEncoded.append((char *)bufptr->data, bufptr->length);
+    return sCertPemEncoded;
+}
+
+EVP_PKEY * CX509Cert::PEM2PrivKey(const std::string & sRsa, const std::string & passphrase)
+{
+    BIO * mbio = BIO_new_mem_buf((void*)sRsa.c_str(), sRsa.length());
+    if (!mbio) return NULL;
+
+    RSA * rsa = PEM_read_bio_RSAPrivateKey(mbio
+                                    , NULL /*or, &x */
+                                    , NULL /*void callback*/
+                                    , (void *)passphrase.c_str());
+    if (!rsa) {
+        BIO_free(mbio);mbio = NULL;
+        return NULL;
+    }
+
+    EVP_PKEY * pkey = EVP_PKEY_new();
+    if (!pkey) {
+        BIO_free(mbio);mbio = NULL;
+        return NULL;
+    }
+
+    if (!EVP_PKEY_assign_RSA(pkey, rsa)){
+        BIO_free(mbio);mbio = NULL;
+        EVP_PKEY_free(pkey); pkey = NULL;
+        return NULL;
+    }
+
+    return pkey;
+}
+
+X509 * CX509Cert::PEM2Cert(const std::string sCert)
+{
+    BIO * mbio = BIO_new_mem_buf((void*)sCert.c_str(), sCert.length());
+    if (!mbio) return NULL;
+
+    X509 * x = PEM_read_bio_X509(mbio
+                                    , NULL /*or, &x */
+                                    , NULL /*void callback*/
+                                    , 0);
+
+    BIO_free(mbio);
+
+    return x;
 }

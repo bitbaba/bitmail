@@ -9,56 +9,10 @@
 #define BMVER_MINOR (0)
 #define BMVER_TINY  (0)
 
-//https://tools.ietf.org/html/rfc822
-#define RECIP_SEPARATOR (";")
-
-
 /* Forward decleration */
-class CMailClient;
-class CX509Cert;
+class  CMailClient;
+class  CX509Cert  ;
 struct BMEventHead;
-class Brac;
-class Brad;
-
-enum BMError{
-    bmOk             =     0,
-    bmOutMem         =     1,
-    bmTxInitFail     =     2,
-    bmRxInitFail     =     3,
-    bmSignFail       =     4,
-    bmInvalidCert    =     5,
-    bmEncryptFail    =     6,
-    bmTxFail         =     7,
-    bmRxFail         =     8,
-    bmNewProfile     =     9,
-    bmInvalidProfile =     10,
-    bmNoBuddy        =     11,
-    bmNoFrom         =     12,
-    bmNoTo           =     14,
-    bmNoSubject      =     15,
-    bmNoMimeBody     =     16,
-    bmNoMatchTo      =     17,
-    bmStranger       =     18,
-    bmDecryptFail    =     19,
-    bmNotSigned      =     20,
-    bmVerifyFail     =     21,
-    bmInvalidParam   =     22,
-    bmPushCert       =     23,
-    bmIdleFail       =     24,
-    bmNoStranger     =     25,
-    bmAlreadyExist   =     26,
-    bmExpungeFail    =     27,
-    bmFlagFail       =     28,
-    bmGrpExist       =     29,
-    bmNoGrp          =     30,
-    bmMemberExist    =     31,
-    bmNoMember       =     32,
-    bmSubExist       =     33,
-    bmNoSub          =     34,
-    bmWaitFail       =     35,
-    bmWaitTimeout    =     36,
-    bmNetworkError   =     37,
-};
 
 enum RTxState{
     Rx_start    = 0,
@@ -75,79 +29,38 @@ enum RTxState{
     Tx_updone   = 104,
     Tx_done     = 105,
     Tx_error    = 199,
-
-    Poll_start  = 200,
-    Poll_connect= 201,
-    Poll_done   = 202,
-    Poll_error  = 299,
 };
-
-typedef int (* PollEventCB)(unsigned int count, void * p);
 
 typedef int (* MessageEventCB)(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, const char * sigtime, void * p);
 
 typedef int (* RTxProgressCB)(RTxState, const char * info, void * userptr);
 
-class ILock{
-public:
-	virtual void Lock() = 0;
-	virtual void TryLock(unsigned int ms) = 0;
-	virtual void Unlock() = 0;
-};
-
-class ILockFactory{
-public:
-	virtual ILock * CreateLock() = 0;
-	virtual void FreeLock(ILock * lock) = 0;
-};
-
-
-typedef int (* IRxOnDataCallback)(void * d, unsigned int l, void * userptr);
-
-class IRx{
-public:
-	virtual void onData(IRxOnDataCallback cb, void * userptr) = 0;
-};
-
-class ITx{
-public:
-	virtual int Send(void * d, unsigned int l) = 0;
-};
-
-class IRTxFactory{
-public:
-	virtual IRx * CreateRx() = 0;
-	virtual void FreeRx(IRx * irx) = 0;
-	virtual ITx * CreateTx() = 0;
-	virtual void FreeTx(ITx * itx) = 0;
-};
-
 class BitMail
 {
-public:
-    BitMail(ILockFactory * lock = NULL, IRTxFactory * net = NULL);
+private:
+    BitMail();
 
     ~BitMail();
 
-    unsigned int GetVersion() const;
+private:
+    static bool EmailHandler(BMEventHead * h, void * userp);
+
+    static std::string parseRFC822AddressList(const std::string & mime);
 
 public:
-    // Network
-    int InitNetwork(const std::string & txurl
-                    , const std::string & txuser
-                    , const std::string & txpass
-                    , const std::string & rxurl
-                    , const std::string & rxuser
-                    , const std::string & rxpass
-                    , const std::string & proxy);
+    // Profile
+    static BitMail * New();
 
-    std::string txUrl() const;
-    std::string txLogin() const;
-    std::string txPassword() const;
-    std::string rxUrl() const;
-    std::string rxLogin() const;
-    std::string rxPassword() const;
-    std::string proxy() const;
+    static void Free(BitMail * obj);
+
+    static unsigned int GetVersion();
+
+    // Receips
+    static std::vector<std::string> decodeReceips(const std::string & receips);
+
+    static std::string serializeReceips(const std::vector<std::string> & vec_receips);
+
+    static std::string serializeReceips(const std::string & receip);
 
     // Mulitpart
     static int splitMultiparts(const std::string & in, std::vector<std::string> & out);
@@ -175,143 +88,74 @@ public:
 
     static std::string fromBase64Line(const std::string & s);
 
+public:
+    bool Genesis(unsigned int bits
+                , const std::string & nick
+                , const std::string & email
+                , const std::string & passphrase
+                , const std::string & txurl
+                , const std::string & rxurl
+                , const std::string & login
+                , const std::string & pass
+                , const std::string & proxy);
+
+    bool Import(const std::string & passphrase, const std::string & json);
+
+    std::string Export() const;
+
+    std::string email() const;
+
+    bool UpdatePassphrase(const std::string & pass);
+
+    std::string passphrase() const;
+
+    bool SetupNetwork(const std::string & txurl, const std::string & rxurl, const std::string & login, const std::string & password, const std::string & proxy);
+
+    std::string txUrl() const;
+
+    std::string rxUrl() const;
+
+    std::string login() const;
+
+    std::string password() const;
+
+    std::string proxy() const;
+
+    // Contacts
+    std::vector<std::string> contacts() const;
+
+    bool addContact(const std::string & emails);
+
+    bool hasContact(const std::string & emails) const;
+
+    bool removeContact(const std::string & emails);
+
+    std::string attrib(const std::string & emails, const std::string & att_name) const;
+
+    bool attrib(const std::string & emails, const std::string & att_name, const std::string & att_value);
 
     // RTx Routines
-    int SendMsg(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
+    bool Tx(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
 
-    int CheckInbox(MessageEventCB cb, void * msgcbp, RTxProgressCB rtxcb = NULL, void * rtxcbp = NULL);
+    bool Rx(MessageEventCB cb, void * msgcbp, RTxProgressCB rtxcb = NULL, void * rtxcbp = NULL);
 
-    std::string EncMsg(const std::vector<std::string> & friends, const std::string & msg, bool fSignOnly);
-
-    int DecMsg(const std::string & smime, std::string & from, std::string & nick, std::string & msg, std::string & certid, std::string & cert, std::string & sigtime);
-
-    int Expunge();
-
-    // Profile
-    int CreateProfile(const std::string & commonName
-                    , const std::string & email
-                    , const std::string & passphrase
-                    , unsigned int bits);
-
-    int LoadProfile(const std::string & passphrase
-                    , const std::string & keyPem
-                    , const std::string & certPem);
-    
-    int SaveProfile(const std::string & passphrase
-                    , std::string & keypem
-                    , std::string & certpem);
-
-    int SetPassphrase(const std::string & passphrase);
-
-    std::string GetNick() const;
-
-    std::string GetID() const;
-
-    std::string GetEmail() const;
-
-    std::string GetCert() const;
-
-    std::string GetKey() const;
-
-    int GetBits() const;
-
-    std::string GetPassphrase() const;
+    bool Expunge();
 
     // Security routines
+    std::string Encrypt(const std::vector<std::string> & friends, const std::string & msg, bool fSignOnly);
+
+    bool Decrypt(const std::string & smime, std::string & from, std::string & nick, std::string & msg, std::string & certid, std::string & cert, std::string & sigtime);
+
     std::string Protect(const std::string & text) const;
 
     std::string Reveal(const std::string & code) const;
 
-    // Friends
-    int GetFriends(std::vector<std::string> & vecEmails) const;
-
-    int AddFriend(const std::string & email, const std::string & certpem);
-
-    int RemoveFriend(const std::string & email);
-
-    bool HasFriend(const std::string & email) const;
-
-    bool IsFriend(const std::string & email, const std::string & certpem) const;
-
-    std::string GetFriendNick(const std::string & email) const;
-
-    std::string GetFriendCert(const std::string & email) const;
-
-    std::string GetFriendID(const std::string & email) const;
-
-    // Groups
-    int GetGroups(std::vector<std::string> & group) const;
-
-    int AddGroup(const std::string & group);
-
-    int RemoveGroup(const std::string & group);
-
-    // Receips
-   static std::vector<std::string> decodeReceips(const std::string & receips);
-
-   static std::string serializeReceips(const std::vector<std::string> & vec_receips);
-
-   // Session Key
-   static std::string toSessionKey(const std::string & receip);
-
-   static std::string toSessionKey(const std::vector<std::string> & vec_receips);
-
-   static std::vector<std::string> fromSessionKey(const std::string & sessKey);
-
-   static bool isGroupSession(const std::string & sessKey);
-
-   std::string sessionName(const std::string & sessKey) const;
-
-   void sessionName(const std::string & sessKey, const std::string & sessName);
-
-   std::map<std::string, std::string> sessNames() const;
-
-   std::string sessionLogo(const std::string & sessKey) const;
-
-   void sessionLogo(const std::string & sessKey, const std::string & sessLogo);
-
-   std::map<std::string, std::string> sessLogos() const;
-
-protected:
+private:
+    CX509Cert          * m_profile;
+    CMailClient        * m_mc;
     MessageEventCB       m_onMessageEvent;
     void               * m_onMessageEventParam;
-    
-    CMailClient        * m_mc;
-
-    // Key: email, Value: Certificate In Pem format
-    std::map<std::string, std::string> m_buddies;
-    
-    // Groups, Key: GroupID, Value: vector of friends' email
-    std::set<std::string> m_groups;
-
-    // Sessions, local storage for all sessions.
-    // Key: sessionKey
-    // Value: session Names
-    std::map<std::string, std::string> m_sessNames;
-
-    // Key: session Key
-    // Value: session logo image encoded in base64
-    std::map<std::string, std::string> m_sessLogos;
-
-    // Lock
-    ILock * m_lock1;
-    ILock * m_lock2;
-    ILock * m_lock3;
-    ILock * m_lock4;
-    ILockFactory * m_lockCraft;
-
-    // Custom network
-    IRx * m_rx;
-    ITx * m_tx;
-    IRTxFactory * m_netCraft;
-
-public:
-    CX509Cert          * m_profile;
-
-protected:
-    static int EmailHandler(BMEventHead * h, void * userp);
-
-    static std::string parseRFC822AddressList(const std::string & mime);
+    std::string          contacts_;
 };
 
 

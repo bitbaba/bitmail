@@ -18,21 +18,24 @@ class CX509Cert
 {
 public:
     CX509Cert();
+    CX509Cert(const std::string & certpem);
+    CX509Cert(const std::string & certpem, const std::string & privkey, const std::string & passphrase);
+
 public:
-    int Create(const std::string & commonName, const std::string & email, const std::string & passphrase, unsigned int bits);
-    int LoadCertFromPem(const std::string & cert);
-    int LoadKeyFromEncryptedPem(const std::string & key, const std::string & passphrase);
-    int LoadCertFromSig(const std::string & sig);
+    bool Create(unsigned int bits, const std::string & commonName, const std::string & email, const std::string & passphrase);
+    bool ImportCert(const std::string & cert);
+    bool ImportPrivKey(const std::string & key, const std::string & passphrase);
+    bool ImportCertFromSig(const std::string & sig);
 
 protected:
     int MakeCert(const std::string & commonName, const std::string & email, const std::string & passphrase, unsigned int bits);
     int AddExt(X509 *cert, int nid, char *value);
 
 protected:
-    static std::string PKeyToPem(const EVP_PKEY * pkey, const std::string & passphrase);
-    static std::string CertToPem(const X509 * cert);
-    static EVP_PKEY * PemToPKey(const std::string & sRsa, const std::string & passphrase);
-    static X509 * PemToCert(const std::string sCert);
+    static std::string PrivKey2PEM(const EVP_PKEY * pkey, const std::string & passphrase);
+    static std::string Cert2PEM(const X509 * cert);
+    static X509 * PEM2Cert(const std::string sCert);
+    static EVP_PKEY * PEM2PrivKey(const std::string & sRsa, const std::string & passphrase);
 
 public:
     static std::string GetSigningTime(const std::string & sig);
@@ -42,19 +45,14 @@ public:
 
 public:
     bool IsValid() const;
-    X509 * GetCert() const;
-    void FreeCert(X509 * x);
-    std::string GetCertByPem() const;
+    std::string ExportCert() const;
     std::string GetEmail() const ;
     std::string GetCommonName() const;
     std::string GetID() const;
-    int GetBits() const;
+    unsigned int GetBits() const;
     std::string GetPassphrase() const;
     int SetPassphrase(const std::string & passphrase);
-
-    EVP_PKEY * GetPrivateKey();
-    void FreePrivateKey(EVP_PKEY * pkey);
-    std::string GetPrivateKeyAsEncryptedPem();
+    std::string ExportPrivKey();
 
     /*Certificate*/
     std::string Sign(const std::string & msg);
