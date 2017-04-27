@@ -30,8 +30,10 @@ void RxThread::run()
         qDebug() << "RxThread: Waiting for inbox poll event";
         m_inboxPoll.tryAcquire(1, m_checkInterval);
 
+        if (m_bitmail->rxUrl().empty()||m_bitmail->login().empty()||m_bitmail->password().empty()) continue;
+
         qDebug() << "RxThread: checking inbox!";
-        m_bitmail->CheckInbox(MessageEventHandler, this, RxProgressHandler, this);
+        m_bitmail->Rx(MessageEventHandler, this, RxProgressHandler, this);
     }
 
     m_bitmail->Expunge();
@@ -71,7 +73,7 @@ int MessageEventHandler(const char * from, const char * receips, const char * ms
 
     RxThread * self = (RxThread *)p;
     self->NotifyNewMessage(qsFrom, qsReceips, qsContent, qsCertID, qsCert, qsSigTime);
-    return bmOk;
+    return 0;
 }
 
 void RxThread::NotifyProgress(int st, const QString & info)
@@ -84,7 +86,7 @@ int RxProgressHandler(RTxState st, const char *info, void *userptr)
 {
     RxThread * self = (RxThread *)userptr;
     self->NotifyProgress((int)st, QString::fromLatin1(info));
-    return bmOk;
+    return 0;
 }
 
 

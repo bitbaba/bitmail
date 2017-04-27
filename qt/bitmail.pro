@@ -23,7 +23,6 @@ HEADERS       = mainwindow.h \
                 netoptdialog.h \
                 assistantdialog.h \
                 newgroupdialog.h \
-                lock.h \
     procth.h \
     clickablelabel.h \
     textedit.h
@@ -41,7 +40,6 @@ SOURCES       = main.cpp \
                 netoptdialog.cpp \
                 assistantdialog.cpp \
                 newgroupdialog.cpp \
-                lock.cpp \
     procth.cpp \
     clickablelabel.cpp \
     textedit.cpp

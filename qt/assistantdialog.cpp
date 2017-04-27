@@ -30,26 +30,24 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
     m_txtCert      = findChild<QTextEdit*>  ("txtCert"     );
     m_txtOutput    = findChild<QTextEdit*>  ("txtOutput"   );
 
-    std::vector<std::string> friends;
-    m_bitmail->GetFriends(friends);
+    std::vector<std::string> friends = m_bitmail->contacts();
     for (std::vector<std::string>::const_iterator it = friends.begin(); it != friends.end(); ++it)
     {
         std::string email = (*it);
-        std::string sessKey = BitMail::toSessionKey(email);
+        std::string sessKey = BitMail::serializeReceips(email);
         m_cbbFriends->addItem(QIcon(BMQTApplication::GetImageResHome() + "/head.png")
-                              , QString::fromStdString(m_bitmail->sessionName(sessKey))
+                              , QString::fromStdString(m_bitmail->attrib(sessKey, "comment"))
                               , QVariant(QString::fromStdString(sessKey)));
     }
 
-    std::vector<std::string> groups;
-    m_bitmail->GetGroups(groups);
+    std::vector<std::string> groups = m_bitmail->contacts();
     for (unsigned int i = 0; i < groups.size(); ++i)
     {
         std::string group = groups[i];
         std::vector<std::string> vec_receips = BitMail::decodeReceips(group);
-        std::string sessKey = BitMail::toSessionKey(vec_receips);
+        std::string sessKey = BitMail::serializeReceips(vec_receips);
         m_cbbFriends->addItem(QIcon(BMQTApplication::GetImageResHome() + "/group.png")
-                              , QString::fromStdString(m_bitmail->sessionName(sessKey))
+                              , QString::fromStdString(m_bitmail->attrib(sessKey, "comment"))
                               , QVariant(QString::fromStdString(sessKey)));
     }
 
@@ -123,16 +121,16 @@ void AssistantDialog::on_btnEncrypt_clicked()
     clearOutput();
     std::vector<std::string> friends;
     QString sessKey = m_cbbFriends->currentData().toString();
-    friends = BitMail::fromSessionKey(sessKey.toStdString());
+    friends = BitMail::decodeReceips(sessKey.toStdString());
     std::string msg = input().toStdString();
-    output(QString::fromStdString(m_bitmail->EncMsg(friends, msg, false)));
+    output(QString::fromStdString(m_bitmail->Encrypt(friends, msg, false)));
 }
 
 void AssistantDialog::on_btnDecrypt_clicked()
 {
     std::string smime = input().toStdString();
     std::string sEmail, sNick, sMsg, sCertId, sCert, sSigTime;
-    m_bitmail->DecMsg(smime, sEmail, sNick, sMsg, sCertId, sCert, sSigTime);
+    m_bitmail->Decrypt(smime, sEmail, sNick, sMsg, sCertId, sCert, sSigTime);
     nick(QString::fromStdString(sNick));
     email(QString::fromStdString(sEmail));
     output(QString::fromStdString(sMsg));
@@ -146,15 +144,15 @@ void AssistantDialog::on_btnAddFriend_clicked()
     QString qsFrom = email();
     QString qsCert = cert();
 
-    if (bmOk != m_bitmail->AddFriend(qsFrom.toStdString(), qsCert.toStdString())){
+    if (!m_bitmail->attrib(qsFrom.toStdString(), "cert", qsCert.toStdString())){
         QMessageBox::warning(this, tr("Add Friend"), tr("Failed to add friend"), QMessageBox::Ok);
         return ;
     }
 
-    std::string sessKey = BitMail::toSessionKey(qsFrom.toStdString());
+    std::string sessKey = BitMail::serializeReceips(qsFrom.toStdString());
 
     m_cbbFriends->addItem(QIcon(BMQTApplication::GetImageResHome() + "/head.png")
-                          , QString::fromStdString(m_bitmail->sessionName(sessKey))
+                          , QString::fromStdString(m_bitmail->attrib(sessKey, "comment"))
                           , QVariant(QString::fromStdString(sessKey)));
 }
 
@@ -198,7 +196,7 @@ void AssistantDialog::on_btnSign_clicked()
     clearOutput();
     std::vector<std::string> vecFriends;
     std::string msg = input().toStdString();
-    output(QString::fromStdString(m_bitmail->EncMsg(vecFriends, msg, true)));
+    output(QString::fromStdString(m_bitmail->Encrypt(vecFriends, msg, true)));
 }
 
 void AssistantDialog::clearOutput()

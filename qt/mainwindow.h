@@ -82,8 +82,6 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(BitMail * bitmail);
     ~MainWindow();
-    void configNetwork();
-    void startupNetwork();
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 public slots:
@@ -107,7 +105,6 @@ public slots:
     void onProcThDone(const QString & sessKey, const QString & output);
 
     void onRemoveAct();
-    void onNetAct();
     void onFileAct();
     void onAudioAct();
     void onEmojiAct();
@@ -188,7 +185,6 @@ private:
     QAction *configAct;
     QAction *inviteAct;
     QAction *removeAct;
-    QAction *netAct;
     QAction *fileAct;
     QAction *audioAct;
     QAction *emojiAct;

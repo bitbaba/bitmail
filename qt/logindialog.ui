@@ -241,19 +241,6 @@
     <string>Enter</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="cbAssistant">
-   <property name="geometry">
-    <rect>
-     <x>290</x>
-     <y>270</y>
-     <width>101</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>im Assistant</string>
-   </property>
-  </widget>
  </widget>
  <tabstops>
   <tabstop>cbEmail</tabstop>

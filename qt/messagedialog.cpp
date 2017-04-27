@@ -100,30 +100,9 @@ void MessageDialog::on_btnMakeFriend_clicked()
 {
     QString qsFrom = GetFrom();
     QString qsCert = GetCert();
-    QString qsCertID = GetCertID();
 
-    if (m_bitmail->HasFriend(qsFrom.toStdString())){
-        if (m_bitmail->IsFriend(qsFrom.toStdString(), qsCert.toStdString())){
-            QMessageBox::information(this
-                                     , tr("Friend")
-                                     , tr("You are already friends.")
-                                     , QMessageBox::Ok);
-            return ;
-        }
-        QString qsPrevCertID = QString::fromStdString(m_bitmail->GetFriendID(qsFrom.toStdString()));
-        int ret = QMessageBox::question(this
-                                        , tr("Add Friend")
-                                        , tr("Replace with this certificate?")      + QString("\r\n")
-                                        + tr("Old:") + QString(" [") + qsPrevCertID + QString("]\r\n")
-                                        + tr("New:") + QString(" [") + qsCertID     + QString("]\r\n")
-                                        , QMessageBox::Yes | QMessageBox::No);
-        if (ret != QMessageBox::Yes){
-            return ;
-        }
-    }
-
-    if (bmOk != m_bitmail->AddFriend(qsFrom.toStdString(), qsCert.toStdString())){
-        QMessageBox::warning(this, tr("Add Friend"), tr("Failed to add friend"), QMessageBox::Ok);
+    if (!m_bitmail->attrib(qsFrom.toStdString(), "cert", qsCert.toStdString())){
+        QMessageBox::warning(this, tr("Add Friend"), tr("Failed to set certificate of contact"), QMessageBox::Ok);
         return ;
     }
 
@@ -138,7 +117,7 @@ void MessageDialog::on_btnMakeFriend_clicked()
  */
 void MessageDialog::on_btnJoinGroup_clicked()
 {
-    m_bitmail->AddGroup(group().toStdString());
+    m_bitmail->addContact(group().toStdString());
 
     emit groupsChanged();
 }

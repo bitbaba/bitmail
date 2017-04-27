@@ -15,35 +15,35 @@ class LoginDialog : public QDialog
 {
     Q_OBJECT
 public:
-    enum {
-        CreateNew = 2,
-    };
-public:
     explicit LoginDialog(QWidget *parent = 0);
     ~LoginDialog();
 
 private slots:
     void on_cmdCreate_clicked();
 
-    void on_cbEmail_currentIndexChanged(const QString &arg1);
-    void on_cbAssistant_clicked(bool checked);
-
     void on_btnEnter_clicked();
 
 public:
     QString GetEmail() const;
-    void SetEmail(const QString & email);
 
     QString GetPassphrase() const;
-    void SetPassphrase(const QString & passphrase);
 
-    bool imAssistant() const;
+private:
+    void reloadProfiles();
+
+    bool createProfile(const QString & qsEmail
+                       , const QString & qsNick
+                       , const QString & qsPassphrase
+                       , int nBits
+                       , const QString & txUrl, const QString & txLogin, const QString & txPass
+                       , const QString & rxUrl, const QString & rxLogin, const QString & rxPass
+                       , const QString & proxy);
+
 private:
     Ui::LoginDialog *ui;
 private:
     QComboBox * m_cbEmail;
     QLineEdit * m_lePassphrase;
-    QCheckBox * m_cbAssistant;
 };
 
 #endif // LOGINDIALOG_H

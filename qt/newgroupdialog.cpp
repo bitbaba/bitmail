@@ -27,8 +27,7 @@ NewGroupDialog::NewGroupDialog(BitMail * bm, QWidget *parent) :
 
     m_cbbMembers = findChild<QComboBox*>("cbbMembers");
 
-    std::vector<std::string> vecFriends;
-    m_bitmail->GetFriends(vecFriends);
+    std::vector<std::string> vecFriends = m_bitmail->contacts();
     for (std::vector<std::string>::const_iterator it = vecFriends.begin()
          ; it != vecFriends.end()
          ; ++it)
@@ -88,11 +87,11 @@ QStringList NewGroupDialog::groupMembers() const
 
 void NewGroupDialog::groupMembers(const QStringList & members)
 {
-    std::string sessKey = BitMail::toSessionKey(BMQTApplication::toStdStringList(members));
+    std::string sessKey = BitMail::serializeReceips(BMQTApplication::toStdStringList(members));
 
     m_leGroupId->setText( QString::fromStdString( sessKey ));
 
-    groupName(QString::fromStdString(m_bitmail->sessionName(sessKey)));
+    groupName(QString::fromStdString(m_bitmail->attrib(sessKey, "comment")));
 
     for (QStringList::const_iterator it = members.begin(); it != members.end(); it++)
     {
@@ -104,7 +103,7 @@ void NewGroupDialog::groupMembers(const QStringList & members)
 void NewGroupDialog::on_btnSetGroupName_clicked()
 {
     if (!groupName().isEmpty() && !groupId().isEmpty()){
-        m_bitmail->sessionName(groupId().toStdString(), groupName().toStdString());
+        m_bitmail->attrib(groupId().toStdString(), "comment", groupName().toStdString());
     }
     emit groupChanged();
 }

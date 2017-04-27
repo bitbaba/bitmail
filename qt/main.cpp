@@ -63,14 +63,12 @@
 #include <QStyleFactory>
 #include <QTimeZone>
 
-#include "optiondialog.h"
 #include "logindialog.h"
 #include "mainwindow.h"
 #include "assistantdialog.h"
 #include <bitmailcore/bitmail.h>
 #include <qrencode.h>
 #include "main.h"
-#include "lock.h"
 
 static
 FILE * gLoggerHandle = NULL;
@@ -138,61 +136,32 @@ int main(int argc, char *argv[])
 
     // Get Account Profile
     QString qsEmail, qsPassphrase;
-    bool fAssistant = false;
-
-    while (true){
-        LoginDialog loginDialog;
-        int dlgret = (loginDialog.exec());
-        if (dlgret == QDialog::Rejected){
-            qDebug() << "User close login window, bye!";
-            return 1;
-        }else if (dlgret == QDialog::Accepted){
-            fAssistant = loginDialog.imAssistant();
-            qsEmail = loginDialog.GetEmail();
-            qsPassphrase = loginDialog.GetPassphrase();
-            break;
-        }else if (dlgret == LoginDialog::CreateNew){
-            OptionDialog optDialog(true);
-            if (optDialog.exec() != QDialog::Accepted){
-                continue;
-            }
-            qsEmail = optDialog.GetEmail();
-            qsPassphrase = optDialog.GetPassphrase();
-            break;
-        }
-    };
-
-    BitMail * bitmail = new BitMail(new BMLockFactory());
-
-    if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
-        qDebug() << "Failed to Load Profile, bye!";
-        QMessageBox::warning(NULL, QString("Login"), QString("Failed to load profile!"));
+    LoginDialog loginDialog;
+    if (loginDialog.exec() == QDialog::Accepted){
+        qsEmail = loginDialog.GetEmail();
+        qsPassphrase = loginDialog.GetPassphrase();
+    }else{
         return 0;
     }
 
-    if (!fAssistant){
-        MainWindow mainWin(bitmail);
-        mainWin.show();
-        if (bitmail->txUrl().empty()){
-            mainWin.configNetwork();
-            if (bitmail->txUrl().empty()){
-                qDebug() << "Main: no network configuration, exit";
-                return 0;
-            }
-        }
-        mainWin.startupNetwork();
-        app.exec();
-    }else{
-        AssistantDialog assistantDlg(bitmail);
-        assistantDlg.show();
-        app.exec();
+    BitMail * bitmail = BitMail::New();
+
+    if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
+        BitMail::Free(bitmail);
+        return 0;
     }
+
+    MainWindow mainWin(bitmail);
+
+    mainWin.show();
+
+    app.exec();
 
     BMQTApplication::SaveProfile(bitmail);
 
-    delete bitmail; bitmail = NULL;
+    BitMail::Free(bitmail);
 
-    qDebug() << "BitMail quit! Bye";
+    qDebug() << "BitMail quit!";
 
     BMQTApplication::CloseLogger();
 
@@ -396,235 +365,29 @@ namespace BMQTApplication {
     }
     bool LoadProfile(BitMail * bm, const QString &email, const QString & passphrase)
     {
-        QString qsProfile = GetProfilePath(email);
-        QFile file(qsProfile);
+        QString qsProfilePath = GetProfilePath(email);
+        QFile file(qsProfilePath);
         if (!file.open(QFile::ReadOnly | QFile::Text)) {
             return false;
         }
+        file.setTextModeEnabled(true);
         QTextStream in(&file);
-        QJsonDocument jdoc;
-        // the file may contains multi-bytes encoding charactors
-        // so use UTF-8 to transform.
-        jdoc = QJsonDocument::fromJson(in.readAll().toUtf8());
-        QJsonObject joRoot = jdoc.object();
-        QJsonObject joProfile;
-        QJsonObject joTx;
-        QJsonObject joRx;
-        QJsonObject joBuddies;
-        QJsonArray jaGroups;
-        QJsonObject joSessNames;
-        QJsonObject joSessLogos;
-        QString qsProxy;
-        if (joRoot.contains("Profile")){
-            joProfile = joRoot["Profile"].toObject();
-            QString qsEmail;
-            if (joProfile.contains("email")){
-                qsEmail = joProfile["email"].toString();
-            }
-            QString qsNick;
-            if (joProfile.contains("nick")){
-                qsNick = joProfile["nick"].toString();
-            }
-            QString qsCert;
-            if (joProfile.contains("cert")){
-                qsCert = joProfile["cert"].toString();
-            }
-            QString qsKey;
-            if (joProfile.contains("key")){
-                qsKey = joProfile["key"].toString();
-            }
-            if (bmOk != bm->LoadProfile(passphrase.toStdString()
-                            , qsKey.toStdString()
-                            , qsCert.toStdString())){
-                return false;
-            }
-        }
-        QString qsTxUrl, qsTxLogin, qsTxPassword;
-        if (joRoot.contains("tx")){
-            joTx = joRoot["tx"].toObject();
-            if (joTx.contains("url")){
-                qsTxUrl = joTx["url"].toString();
-            }
-            if (joTx.contains("login")){
-                qsTxLogin = joTx["login"].toString();
-            }
-            if (joTx.contains("password")){
-                qsTxPassword = QString::fromStdString( bm->Reveal(joTx["password"].toString().toStdString()));
-            }
-        }
-        QString qsRxUrl, qsRxLogin, qsRxPassword;
-        if (joRoot.contains("rx")){
-            joRx = joRoot["rx"].toObject();
-            if (joRx.contains("url")){
-                qsRxUrl = joRx["url"].toString();
-            }
-            if (joRx.contains("login")){
-                qsRxLogin = joRx["login"].toString();
-            }
-            if (joRx.contains("password")){
-                qsRxPassword = QString::fromStdString( bm->Reveal(joRx["password"].toString().toStdString()));
-            }
-        }
-        if (joRoot.contains("proxy")){
-            qsProxy = joRoot["proxy"].toString();
-        }
-        bm->InitNetwork(qsTxUrl.toStdString()
-                        , qsTxLogin.toStdString()
-                        , qsTxPassword.toStdString()
-                        , qsRxUrl.toStdString()
-                        , qsRxLogin.toStdString()
-                        , qsRxPassword.toStdString()
-                        , qsProxy.toStdString());
-
-        if (joRoot.contains("friends"))
-        {
-            joBuddies = joRoot["friends"].toObject();
-            for(QJsonObject::const_iterator it = joBuddies.constBegin()
-                ; it != joBuddies.constEnd(); it++)
-            {
-                QString qsEmail = it.key();
-                QJsonObject joValue = it.value().toObject();
-                if (joValue.contains("cert")){
-                    QString qsCert =  joValue["cert"].toString();
-                    if (!bm->HasFriend(qsEmail.toStdString())){
-                        bm->AddFriend(qsEmail.toStdString(), qsCert.toStdString());
-                    }
-                }
-            }
-        }
-
-        do {
-            if (!joRoot.contains("groups")){
-                break;
-            }
-            jaGroups = joRoot["groups"].toArray();
-            for (QJsonArray::const_iterator it = jaGroups.constBegin()
-                 ; it != jaGroups.constEnd()
-                 ; it ++)
-            {
-                QString memberlist = (*it).toString();
-                std::vector<std::string> receips = BitMail::decodeReceips(memberlist.toStdString());
-                std::string sessKey = BitMail::toSessionKey(receips);
-                if (BitMail::isGroupSession(sessKey)){
-                    bm->AddGroup(memberlist.toStdString());
-                }
-            }
-        }while(0);
-
-        do {
-            if (!joRoot.contains("sessionNames")){
-                break;
-            }
-            joSessNames = joRoot["sessionNames"].toObject();
-            for (QJsonObject::const_iterator it = joSessNames.constBegin()
-                 ; it != joSessNames.constEnd()
-                 ; it ++)
-            {
-                QString sessKey = it.key();
-                QString sessName = it.value().toString();
-                bm->sessionName(sessKey.toStdString(), sessName.toStdString());
-            }
-        }while(0);
-
-        do {
-            if (!joRoot.contains("sessionLogos")){
-                break;
-            }
-            joSessLogos = joRoot["sessionLogos"].toObject();
-            for (QJsonObject::const_iterator it = joSessLogos.constBegin()
-                 ; it != joSessLogos.constEnd()
-                 ; it ++)
-            {
-                QString sessKey = it.key();
-                QString sessLogo = it.value().toString();
-                bm->sessionLogo(sessKey.toStdString(), sessLogo.toStdString());
-            }
-        }while(0);
-
-        return true;
+        QString qsProfile = in.readAll().toUtf8();
+        file.close();
+        return bm->Import(passphrase.toStdString(), qsProfile.toStdString());
     }
     bool SaveProfile(BitMail * bm)
     {
-        QString qsEmail = QString::fromStdString(bm->GetEmail());
-        QString qsProfile = GetProfilePath(qsEmail);
-        // Format Profile to QJson
-        QJsonObject joRoot;
-        QJsonObject joProfile;
-        QJsonObject joTx;
-        QJsonObject joRx;
-        QJsonObject joBuddies;
-        QJsonArray jaGroups;     // Group chatting
-        QJsonObject joSessNames;
-        QJsonObject joSessLogos;
-        QString qsProxy;
-        // Profile
-        joProfile["email"] = QString::fromStdString(bm->GetEmail());
-        joProfile["nick"] = QString::fromStdString(bm->GetNick());
-        joProfile["key"] = QString::fromStdString(bm->GetKey());
-        joProfile["cert"] = QString::fromStdString(bm->GetCert());
-        // Tx
-        joTx["url"] = QString::fromStdString(bm->txUrl());
-        joTx["login"] = QString::fromStdString(bm->txLogin());
-        joTx["password"] = QString::fromStdString(bm->Protect(bm->txPassword()));
-        // Rx
-        joRx["url"] = QString::fromStdString(bm->rxUrl());
-        joRx["login"] = QString::fromStdString(bm->rxLogin());
-        joRx["password"] = QString::fromStdString(bm->Protect(bm->rxPassword()));
-        // friends
-        std::vector<std::string > vecBuddies;
-        bm->GetFriends(vecBuddies);
-        for (std::vector<std::string>::const_iterator it = vecBuddies.begin(); it != vecBuddies.end(); ++it){
-            std::string sBuddyCertPem = bm->GetFriendCert(*it);
-            QJsonObject joBuddy;
-            joBuddy["cert"]  = QString::fromStdString(sBuddyCertPem);
-            QString qsEmail = QString::fromStdString(*it);
-            joBuddies.insert(qsEmail, joBuddy);
-        }
-        // Groups
-        std::vector<std::string> vecGroups;
-        bm->GetGroups(vecGroups);
-        for (std::vector<std::string>::const_iterator it = vecGroups.begin(); it != vecGroups.end(); ++it)
-        {
-            std::string sessKey = BitMail::toSessionKey(*it);
-            if (BitMail::isGroupSession(sessKey)){
-                jaGroups.append(QString::fromStdString(*it));
-            }
-        }
-        // Session Names
-        std::map<std::string, std::string> sessNames = bm->sessNames();
-        for (std::map<std::string, std::string>::const_iterator it = sessNames.begin(); it != sessNames.end(); ++it){
-            QString sessKey  = QString::fromStdString(it->first);
-            QString sessName = QString::fromStdString(it->second);
-            joSessNames[sessKey] = sessName;
-        }
-        // Session Logos
-        std::map<std::string, std::string> sessLogos = bm->sessLogos();
-        for (std::map<std::string, std::string>::const_iterator it = sessLogos.begin(); it != sessLogos.end(); ++it){
-            QString sessKey  = QString::fromStdString(it->first);
-            QString sessLogo = QString::fromStdString(it->second);
-            joSessLogos[sessKey] = sessLogo;
-        }
-        // proxy
-        do {
-            qsProxy = QString::fromStdString( bm->proxy());
-        }while(0);
-
-        // for more readable, instead of `profile'
-        joRoot["Profile"] = joProfile;
-        joRoot["tx"] = joTx;
-        joRoot["rx"] = joRx;
-        joRoot["friends"] = joBuddies;
-        joRoot["proxy"] = qsProxy;
-        joRoot["groups"] = jaGroups;
-        joRoot["sessionNames"] = joSessNames;
-        joRoot["sessionLogos"] = joSessLogos;
-        QJsonDocument jdoc(joRoot);
-        QFile file(qsProfile);
+        QString qsProfilePath = GetProfilePath(QString::fromStdString(bm->email()));
+        QFile file(qsProfilePath);
         if (!file.open(QFile::WriteOnly | QFile::Text)) {
             return false;
         }
+        file.setTextModeEnabled(true);
         QTextStream out(&file);
-        out << jdoc.toJson();
+        QByteArray bytes = QByteArray::fromStdString(bm->Export());
+        out << bytes;
+        file.close();
         return true;
     }
     bool InitLogger(){
@@ -685,6 +448,22 @@ namespace BMQTApplication {
             abort();
         }
         FlushLogger();
+    }
+
+    QString guessTxUrl(const QString &email)
+    {
+        if (email.split("@").size() > 1)
+            return QString("smtps://%1/").arg(email.split("@").at(1));
+        else
+            return "";
+    }
+
+    QString guessRxUrl(const QString &email)
+    {
+        if (email.split("@").size() > 1)
+            return QString("imaps://%1/").arg(email.split("@").at(1));
+        else
+            return "";
     }
 
     QIcon Iconfy(const QByteArray & b64line)
@@ -1144,5 +923,6 @@ namespace BMQTApplication {
         }
         return v;
     }
+
 }
 

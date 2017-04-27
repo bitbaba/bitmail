@@ -97,8 +97,8 @@ void CertDialog::qrImage(const QPixmap &p)
 void CertDialog::on_btnSetComment_clicked()
 {
     if (!GetEmail().isEmpty() && !comment().isEmpty()){
-        std::string sessKey = BitMail::toSessionKey(GetEmail().toStdString());
-        m_bitmail->sessionName(sessKey, comment().toStdString());
+        std::string sessKey = BitMail::serializeReceips(GetEmail().toStdString());
+        m_bitmail->attrib(sessKey, "comment", comment().toStdString());
     }
     emit friendChanged();
 }
@@ -121,9 +121,9 @@ void CertDialog::on_btnLogo_clicked()
         return ;
     }
 
-    std::string sessKey = BitMail::toSessionKey(GetEmail().toStdString());
+    std::string sessKey = BitMail::serializeReceips(GetEmail().toStdString());
 
-    m_bitmail->sessionLogo(sessKey, b64logo.toStdString());
+    m_bitmail->attrib(sessKey, "head", b64logo.toStdString());
 
     m_btnLogo->setIcon(head);
 

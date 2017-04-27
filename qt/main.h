@@ -22,17 +22,31 @@ namespace BMQTApplication {
     QString GetImageResHome();
     QString GetLanIp();
     QString GetExeSuffix();
-    QStringList GetProfiles();
-    QString GetProfilePath(const QString & email);
     QString GetSigTime(const QString & sigtime);
+
+    QStringList GetProfiles();
+
+    QString GetProfilePath(const QString & email);
+
     bool IsValidPofile(const QString & profilePath);
+
     bool SaveProfile(BitMail * bm);
+
     bool LoadProfile(BitMail * bm, const QString & email, const QString & passphrase);
+
     bool InitLogger();
+
     FILE * GetLogger();
+
     void FlushLogger();
+
     bool CloseLogger();
+
     void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+
+    QString guessTxUrl(const QString & email);
+
+    QString guessRxUrl(const QString & email);
 
     QIcon Iconfy(const QByteArray & b64line);
 

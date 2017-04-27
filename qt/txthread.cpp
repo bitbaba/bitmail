@@ -43,6 +43,8 @@ void TxThread::run()
 
         if (!m_txq.readable(6*1000)) continue ;
 
+        if (m_bitmail->txUrl().empty()||m_bitmail->login().empty()||m_bitmail->password().empty()) continue;
+
         QJsonObject obj = QJsonDocument::fromJson(m_txq.pop().toUtf8()).object();
         QStringList to = obj["to"].toString().split("|");
         QString msg = obj["msg"].toString();
@@ -50,7 +52,7 @@ void TxThread::run()
         std::vector<std::string> vecTo = BMQTApplication::toStdStringList(to);
 
         if (m_bitmail){
-            m_bitmail->SendMsg(vecTo, msg.toStdString(), TxProgressHandler, this);
+            m_bitmail->Tx(vecTo, msg.toStdString(), TxProgressHandler, this);
         }
 
     }
@@ -72,8 +74,8 @@ int TxProgressHandler(RTxState st, const char * info, void * userp)
 {
     TxThread * self = (TxThread *)userp;
     if (self == NULL){
-        return bmInvalidParam;
+        return -1;
     }
     self->NotifyTxProgress((int)st, QString::fromLatin1(info));
-    return bmOk;
+    return 0;
 }

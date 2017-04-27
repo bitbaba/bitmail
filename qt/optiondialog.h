@@ -19,34 +19,50 @@ public:
     explicit OptionDialog(bool fNew = false, QWidget *parent = 0);
     ~OptionDialog();
 
-private slots:
-    void on_buttonBox_accepted();
-
-    void on_buttonBox_rejected();
-
 private:
     Ui::OptionDialog *ui;
 public:
-    void SetEmail(const QString & e);
-    QString GetEmail() const;
+    void email(const QString & e);
+    QString email() const;
 
-    void SetNick(const QString & n);
-    QString GetNick() const;
+    void nick(const QString & n);
+    QString nick() const;
 
-    void SetPassphrase(const QString & p);
-    QString GetPassphrase() const;
+    void passphrase(const QString & p);
+    QString passphrase() const;
 
-    void SetBits(const int & n);
-    int GetBits() const;
+    void bits(const int & n);
+    void bits(const QString & bits);
+    int bits() const;
+
+    void txUrl(const QString & txurl);
+    QString txUrl(void) const;
+
+    void rxUrl(const QString & rxurl);
+    QString rxUrl(void) const;
+
+    void login(const QString & l);
+    QString login(void) const;
+
+    void password(const QString & p);
+    QString password(void) const;
+
+    void socks5(const QString & s);
+    QString socks5(void) const;
 
 private:
     QLineEdit *m_leEmail;
     QLineEdit *m_leNick;
     QLineEdit *m_lePassphrase;
     QSpinBox  *m_sbBits;
+    QLineEdit *m_leTxUrl;
+    QLineEdit *m_leRxUrl;
+    QLineEdit *m_leLogin;
+    QLineEdit *m_lePassword;
+    QLineEdit *m_leSocks5;
 
 private:
-    bool       m_fNew;
+    bool       newProfile;
 };
 
 #endif // OPTIONDIALOG_H
