@@ -1,6 +1,7 @@
 #if defined(WIN32)
 # include <winsock2.h>
 #endif
+
 # include <bitmailcore/bitmail_internal.h>
 # include <bitmailcore/bitmail.h>
 # include <bitmailcore/email.h>
@@ -46,6 +47,7 @@ BitMail::BitMail()
 : m_profile(NULL)
 , m_mc(NULL)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
+, m_lockCraft(NULL), m_contactsLock(NULL)
 {
     BitMailGlobalInit();
 
@@ -63,6 +65,9 @@ BitMail::~BitMail()
     }
     if (m_mc != NULL){
         delete (m_mc); m_mc = NULL;
+    }
+    if (m_contactsLock){
+    	m_lockCraft->FreeLock(m_contactsLock); m_contactsLock = NULL;
     }
 }
 
@@ -213,6 +218,15 @@ unsigned int BitMail::certBits(const std::string & certpem)
 	return CX509Cert(certpem).GetBits();
 }
 
+bool BitMail::SetupLock(ILockCraft * craft)
+{
+	if (m_lockCraft) return false;
+
+	m_lockCraft = craft;
+
+	m_contactsLock = m_lockCraft->CreateLock();
+}
+
 bool BitMail::Genesis(unsigned int bits
                     , const std::string & nick
                     , const std::string & email
@@ -270,7 +284,6 @@ bool BitMail::Import(const std::string & passphrase, const std::string & json)
 std::string BitMail::Export() const
 {
     Json::Value joRoot;
-
     Json::Value profile;
     profile["cert"] = m_profile->ExportCert();
     profile["key"] = m_profile->ExportPrivKey();
@@ -654,4 +667,15 @@ std::string BitMail::parseRFC822AddressList(const std::string & mimemsg)
     }while(0);
 
     return (receips);
+}
+
+
+ScopedLock::ScopedLock(ILock * lock ) : m_lock(lock)
+{
+	m_lock->Lock();
+}
+
+ScopedLock::~ScopedLock()
+{
+	m_lock->Unlock();
 }

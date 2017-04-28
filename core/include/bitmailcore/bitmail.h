@@ -31,6 +31,19 @@ enum RTxState{
     Tx_error    = 199,
 };
 
+class ILock{
+public:
+	virtual void Lock() = 0;
+	virtual void TryLock(unsigned int ms) = 0;
+	virtual void Unlock() = 0;
+};
+
+class ILockCraft{
+public:
+	virtual ILock * CreateLock() = 0;
+	virtual void FreeLock(ILock * lock) = 0;
+};
+
 typedef int (* MessageEventCB)(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, const char * sigtime, void * p);
 
 typedef int (* RTxProgressCB)(RTxState, const char * info, void * userptr);
@@ -97,6 +110,8 @@ public:
     static unsigned int certBits(const std::string & certpem);
 
 public:
+    bool SetupLock(ILockCraft * craft);
+
     bool Genesis(unsigned int bits
                 , const std::string & nick
                 , const std::string & email
@@ -165,6 +180,8 @@ private:
     CMailClient        * m_mc;
     MessageEventCB       m_onMessageEvent;
     void               * m_onMessageEventParam;
+    ILockCraft         * m_lockCraft;
+    ILock              * m_contactsLock;
     std::string          contacts_;//TODO: reenter in mulithread
 };
 
