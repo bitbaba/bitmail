@@ -29,23 +29,13 @@ CertDialog::CertDialog(BitMail * bm, QWidget *parent) :
     m_leCertID->setReadOnly(true);
     m_btnLogo->setToolTip(tr("click to choose a logo"));
     m_btnLogo->setText("");
-    m_btnLogo->setIcon(QIcon(BMQTApplication::GetImageResHome() + "/head.png"));
 
+    m_btnLogo->setIcon(QIcon(BMQTApplication::GetImageResHome() + "/head.png"));
 }
 
 CertDialog::~CertDialog()
 {
     delete ui;
-}
-
-void CertDialog::on_buttonBox_accepted()
-{
-
-}
-
-void CertDialog::on_buttonBox_rejected()
-{
-
 }
 
 void CertDialog::SetEmail(const QString & e)
@@ -98,7 +88,7 @@ void CertDialog::on_btnSetComment_clicked()
 {
     if (!GetEmail().isEmpty() && !comment().isEmpty()){
         std::string sessKey = BitMail::serializeReceips(GetEmail().toStdString());
-        m_bitmail->attrib(sessKey, "comment", comment().toStdString());
+        m_bitmail->contattrib(sessKey, "comment", comment().toStdString());
     }
     emit friendChanged();
 }
@@ -123,9 +113,22 @@ void CertDialog::on_btnLogo_clicked()
 
     std::string sessKey = BitMail::serializeReceips(GetEmail().toStdString());
 
-    m_bitmail->attrib(sessKey, "head", b64logo.toStdString());
+    m_bitmail->contattrib(sessKey, "head", b64logo.toStdString());
 
     m_btnLogo->setIcon(head);
 
+    emit friendChanged();
+}
+
+void CertDialog::head(const QIcon &hd)
+{
+    m_btnLogo->setIcon(hd);
+}
+
+void CertDialog::on_btnRemove_clicked()
+{
+    if (!BitMail::getInst()->removeContact(GetEmail().toStdString())){
+        return ;
+    }
     emit friendChanged();
 }

@@ -1,5 +1,5 @@
-#ifndef NEWGROUPDIALOG_H
-#define NEWGROUPDIALOG_H
+#ifndef GROUPDIALOG_H
+#define GROUPDIALOG_H
 
 #include <QDialog>
 
@@ -9,18 +9,19 @@ class QListWidget;
 class QListWidgetItem;
 class QLineEdit;
 class QComboBox;
+class QPushButton;
 
 namespace Ui {
-class NewGroupDialog;
+class groupDialog;
 }
 
-class NewGroupDialog : public QDialog
+class groupDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit NewGroupDialog(BitMail * bm, QWidget *parent = 0);
-    ~NewGroupDialog();
+    explicit groupDialog(BitMail * bm, QWidget *parent = 0);
+    ~groupDialog();
 
     QString groupId() const;
     void groupId(const QString & gid);
@@ -31,6 +32,7 @@ public:
     QStringList groupMembers() const;
     void groupMembers(const QStringList & members);
 
+    void head(const QIcon & hd);
 
 private slots:
     void on_btnAdd_clicked();
@@ -39,8 +41,12 @@ private slots:
 
     void on_btnSetGroupName_clicked();
 
+    void on_btnLogo_clicked();
+
+    void on_btnRemove_clicked();
+
 private:
-    Ui::NewGroupDialog *ui;
+    Ui::groupDialog *ui;
     BitMail * m_bitmail;
 
     QLineEdit  * m_leCreator;
@@ -48,9 +54,10 @@ private:
     QLineEdit  * m_leGroupName;
     QComboBox  * m_cbbMembers;
     QListWidget* m_listAddedMembers;
+    QPushButton* m_btnLogo;
 
 signals:
     void groupChanged();
 };
 
-#endif // NEWGROUPDIALOG_H
+#endif // GROUPDIALOG_H

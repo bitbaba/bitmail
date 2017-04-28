@@ -2,7 +2,6 @@
 #include "ui_logindialog.h"
 
 #include "optiondialog.h"
-#include "netoptdialog.h"
 
 #include <QPainter>
 #include <QFileInfo>
@@ -52,13 +51,8 @@ void LoginDialog::on_cmdCreate_clicked()
         return ;
     }
 
-    if (!createProfile(optDlg.email()
-                       , optDlg.nick()
-                       , optDlg.passphrase()
-                       , optDlg.bits()
-                       , optDlg.txUrl(), optDlg.login(), optDlg.password()
-                       , optDlg.rxUrl(), optDlg.login(), optDlg.password()
-                       , optDlg.socks5()))
+    if (!createProfile(optDlg.bits(), optDlg.email(), optDlg.nick(), optDlg.passphrase()
+                       , optDlg.txUrl(), optDlg.rxUrl(), optDlg.login(), optDlg.password(), optDlg.socks5()))
     {
         return ;
     }
@@ -91,37 +85,23 @@ void LoginDialog::reloadProfiles()
     }
 }
 
-bool LoginDialog::createProfile(const QString & qsEmail
-                                , const QString & qsNick
-                                , const QString & qsPassphrase
-                                , int nBits
-                                , const QString & txUrl, const QString & txLogin, const QString & txPass
-                                , const QString & rxUrl, const QString & rxLogin, const QString & rxPass
-                                , const QString & proxy)
+bool LoginDialog::createProfile(int nBits, const QString & qsEmail, const QString & qsNick, const QString & qsPassphrase
+                                , const QString & txUrl, const QString & rxUrl, const QString & login, const QString & pass, const QString & proxy)
 {
     if (qsEmail.isEmpty()||qsNick.isEmpty()||qsPassphrase.isEmpty() || !nBits){
         return false;
     }
 
-    BitMail * bm = BitMail::New();
-    bool ret = bm->Genesis(nBits, qsNick.toStdString()
-                      , qsEmail.toStdString()
-                      , qsPassphrase.toStdString()
-                      , txUrl.toStdString(), rxUrl.toStdString()
-                      , txLogin.toStdString(), txPass.toStdString(), proxy.toStdString());
+    BitMail * bm = BitMail::getInst();
+    bool ret = bm->Genesis(nBits, qsNick.toStdString(), qsEmail.toStdString(), qsPassphrase.toStdString()
+                      , txUrl.toStdString(), rxUrl.toStdString(), login.toStdString(), pass.toStdString(), proxy.toStdString());
     if (!ret){
-        BitMail::Free(bm); bm = NULL;
         return false;
     }
-    // 1) add yourself as your friend
-    bm->addContact(bm->email());
 
-    // 2) save profile
     if (!BMQTApplication::SaveProfile(bm)){
-        BitMail::Free(bm); bm = NULL;
         return false;
     }
 
-    BitMail::Free(bm); bm = NULL;
     return true;
 }

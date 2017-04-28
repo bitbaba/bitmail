@@ -31,13 +31,8 @@ public:
 private:
     void reloadProfiles();
 
-    bool createProfile(const QString & qsEmail
-                       , const QString & qsNick
-                       , const QString & qsPassphrase
-                       , int nBits
-                       , const QString & txUrl, const QString & txLogin, const QString & txPass
-                       , const QString & rxUrl, const QString & rxLogin, const QString & rxPass
-                       , const QString & proxy);
+    bool createProfile(int nBits, const QString & qsEmail, const QString & qsNick, const QString & qsPassphrase
+                       , const QString & txUrl, const QString & rxUrl, const QString & login, const QString & pass, const QString & proxy);
 
 private:
     Ui::LoginDialog *ui;

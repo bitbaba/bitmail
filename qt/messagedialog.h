@@ -51,6 +51,8 @@ private slots:
 
     void on_btnJoinGroup_clicked();
 
+    void on_leGroupId_textChanged(const QString &arg1);
+
 signals:
     void friendsChanged();
 
@@ -60,11 +62,12 @@ private:
     Ui::MessageDialog *ui;
     BitMail * m_bitmail;
 
-    QLineEdit * m_leFrom;
-    QLineEdit * m_leCertID;
-    QTextEdit * m_ptxtMessage;
-    QPlainTextEdit * m_ptxtCert;
-    QPushButton * m_btnMakeFriend;
-    QLineEdit * m_leGroupId;
+    QLineEdit        * m_leFrom;
+    QLineEdit        * m_leCertID;
+    QTextEdit        * m_ptxtMessage;
+    QPlainTextEdit   * m_ptxtCert;
+    QPushButton      * m_btnMakeFriend;
+    QPushButton      * m_btnJoinGroup;
+    QLineEdit        * m_leGroupId;
 };
 #endif // MESSAGEDIALOG_H

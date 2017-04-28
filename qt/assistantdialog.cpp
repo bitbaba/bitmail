@@ -36,7 +36,7 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
         std::string email = (*it);
         std::string sessKey = BitMail::serializeReceips(email);
         m_cbbFriends->addItem(QIcon(BMQTApplication::GetImageResHome() + "/head.png")
-                              , QString::fromStdString(m_bitmail->attrib(sessKey, "comment"))
+                              , QString::fromStdString(m_bitmail->contattrib(sessKey, "comment"))
                               , QVariant(QString::fromStdString(sessKey)));
     }
 
@@ -47,7 +47,7 @@ AssistantDialog::AssistantDialog(BitMail * bm, QWidget *parent) :
         std::vector<std::string> vec_receips = BitMail::decodeReceips(group);
         std::string sessKey = BitMail::serializeReceips(vec_receips);
         m_cbbFriends->addItem(QIcon(BMQTApplication::GetImageResHome() + "/group.png")
-                              , QString::fromStdString(m_bitmail->attrib(sessKey, "comment"))
+                              , QString::fromStdString(m_bitmail->contattrib(sessKey, "comment"))
                               , QVariant(QString::fromStdString(sessKey)));
     }
 
@@ -144,7 +144,7 @@ void AssistantDialog::on_btnAddFriend_clicked()
     QString qsFrom = email();
     QString qsCert = cert();
 
-    if (!m_bitmail->attrib(qsFrom.toStdString(), "cert", qsCert.toStdString())){
+    if (!m_bitmail->contattrib(qsFrom.toStdString(), "cert", qsCert.toStdString())){
         QMessageBox::warning(this, tr("Add Friend"), tr("Failed to add friend"), QMessageBox::Ok);
         return ;
     }
@@ -152,7 +152,7 @@ void AssistantDialog::on_btnAddFriend_clicked()
     std::string sessKey = BitMail::serializeReceips(qsFrom.toStdString());
 
     m_cbbFriends->addItem(QIcon(BMQTApplication::GetImageResHome() + "/head.png")
-                          , QString::fromStdString(m_bitmail->attrib(sessKey, "comment"))
+                          , QString::fromStdString(m_bitmail->contattrib(sessKey, "comment"))
                           , QVariant(QString::fromStdString(sessKey)));
 }
 

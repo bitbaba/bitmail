@@ -15,15 +15,13 @@ MessageDialog::MessageDialog(BitMail * bitmail, QWidget *parent) :
 
     setWindowIcon(QIcon(BMQTApplication::GetImageResHome() + "/bitmail.png"));
 
-    m_leFrom = findChild<QLineEdit*>("leFrom");
-    m_leCertID = findChild<QLineEdit*>("leCertID");
-
-    m_ptxtCert = findChild<QPlainTextEdit*>("ptxtCert");
-    m_ptxtMessage = findChild<QTextEdit*>("ptxtMessage");
-
-    m_btnMakeFriend = findChild<QPushButton*>("btnMakeFriend");
-
-    m_leGroupId = findChild<QLineEdit*>("leGroupId");
+    m_leFrom         = findChild<QLineEdit*>     ("leFrom"       );
+    m_leCertID       = findChild<QLineEdit*>     ("leCertID"     );
+    m_ptxtCert       = findChild<QPlainTextEdit*>("ptxtCert"     );
+    m_ptxtMessage    = findChild<QTextEdit*>     ("ptxtMessage"  );
+    m_btnMakeFriend  = findChild<QPushButton*>   ("btnMakeFriend");
+    m_btnJoinGroup   = findChild<QPushButton*>   ("btnJoinGroup" );
+    m_leGroupId      = findChild<QLineEdit*>     ("leGroupId"    );
 }
 
 MessageDialog::~MessageDialog()
@@ -101,7 +99,7 @@ void MessageDialog::on_btnMakeFriend_clicked()
     QString qsFrom = GetFrom();
     QString qsCert = GetCert();
 
-    if (!m_bitmail->attrib(qsFrom.toStdString(), "cert", qsCert.toStdString())){
+    if (!m_bitmail->contattrib(qsFrom.toStdString(), "cert", qsCert.toStdString())){
         QMessageBox::warning(this, tr("Add Friend"), tr("Failed to set certificate of contact"), QMessageBox::Ok);
         return ;
     }
@@ -120,4 +118,9 @@ void MessageDialog::on_btnJoinGroup_clicked()
     m_bitmail->addContact(group().toStdString());
 
     emit groupsChanged();
+}
+
+void MessageDialog::on_leGroupId_textChanged(const QString &arg1)
+{
+    m_btnJoinGroup->setEnabled( (BitMail::decodeReceips(arg1.toStdString()).size() > 1) );
 }

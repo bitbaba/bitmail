@@ -64,12 +64,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../assistantdialog.cpp" line="149"/>
+        <location filename="../assistantdialog.cpp" line="148"/>
         <source>Add Friend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../assistantdialog.cpp" line="149"/>
+        <location filename="../assistantdialog.cpp" line="148"/>
         <source>Failed to add friend</source>
         <translation type="unfinished"></translation>
     </message>
@@ -87,32 +87,37 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="78"/>
+        <location filename="../certdialog.ui" line="89"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../certdialog.ui" line="98"/>
         <source>Nick:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="88"/>
+        <location filename="../certdialog.ui" line="203"/>
         <source>CertFP:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="107"/>
+        <location filename="../certdialog.ui" line="132"/>
         <source>Comment:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="119"/>
+        <location filename="../certdialog.ui" line="144"/>
         <source>Set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="163"/>
+        <location filename="../certdialog.ui" line="188"/>
         <source>logo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="212"/>
+        <location filename="../certdialog.ui" line="256"/>
         <source>QrCode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -122,7 +127,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.cpp" line="108"/>
+        <location filename="../certdialog.cpp" line="98"/>
         <source>choose a logo</source>
         <translation type="unfinished"></translation>
     </message>
@@ -192,223 +197,193 @@
         <source>Enter</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../logindialog.ui" line="254"/>
-        <source>im Assistant</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../logindialog.cpp" line="21"/>
-        <source>BitMail Qt Client</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../mainwindow.cpp" line="86"/>
+        <location filename="../mainwindow.cpp" line="91"/>
         <source>BitMail</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="113"/>
+        <location filename="../mainwindow.cpp" line="118"/>
         <source>Contact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="117"/>
+        <location filename="../mainwindow.cpp" line="122"/>
         <source>Friends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="159"/>
+        <location filename="../mainwindow.cpp" line="166"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="160"/>
+        <location filename="../mainwindow.cpp" line="167"/>
         <source>Ctrl+Enter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="166"/>
+        <location filename="../mainwindow.cpp" line="173"/>
         <source>QrImage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="167"/>
+        <location filename="../mainwindow.cpp" line="174"/>
         <source>Ctrl+Shift+Enter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="372"/>
+        <location filename="../mainwindow.cpp" line="382"/>
         <source>&amp;Configure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="373"/>
+        <location filename="../mainwindow.cpp" line="383"/>
         <source>Configure current account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="384"/>
+        <location filename="../mainwindow.cpp" line="388"/>
         <source>&amp;Invite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="390"/>
-        <source>&amp;Remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="391"/>
-        <source>Remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="378"/>
-        <source>&amp;Network</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="125"/>
+        <location filename="../mainwindow.cpp" line="130"/>
         <source>Groups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="379"/>
-        <source>Network</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="385"/>
+        <location filename="../mainwindow.cpp" line="389"/>
         <source>Invite by sending your signature</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="396"/>
+        <location filename="../mainwindow.cpp" line="394"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="397"/>
+        <location filename="../mainwindow.cpp" line="395"/>
         <source>Send File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="402"/>
+        <location filename="../mainwindow.cpp" line="400"/>
         <source>&amp;Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="403"/>
+        <location filename="../mainwindow.cpp" line="401"/>
         <source>Send audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="408"/>
+        <location filename="../mainwindow.cpp" line="406"/>
         <source>&amp;Emoji</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="409"/>
+        <location filename="../mainwindow.cpp" line="407"/>
         <source>Send emoji</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="414"/>
+        <location filename="../mainwindow.cpp" line="412"/>
         <source>&amp;Snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="415"/>
+        <location filename="../mainwindow.cpp" line="413"/>
         <source>Send snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="420"/>
+        <location filename="../mainwindow.cpp" line="418"/>
         <source>&amp;Photo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="421"/>
+        <location filename="../mainwindow.cpp" line="419"/>
         <source>Send photo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="426"/>
+        <location filename="../mainwindow.cpp" line="424"/>
         <source>&amp;Video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="427"/>
+        <location filename="../mainwindow.cpp" line="425"/>
         <source>Send video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="432"/>
+        <location filename="../mainwindow.cpp" line="430"/>
         <source>&amp;Html</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="433"/>
+        <location filename="../mainwindow.cpp" line="431"/>
         <source>HTML mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="442"/>
+        <location filename="../mainwindow.cpp" line="440"/>
         <source>Format Actions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="450"/>
+        <location filename="../mainwindow.cpp" line="447"/>
         <source>&amp;Bold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="460"/>
+        <location filename="../mainwindow.cpp" line="457"/>
         <source>&amp;Italic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="470"/>
+        <location filename="../mainwindow.cpp" line="467"/>
         <source>&amp;Underline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="481"/>
+        <location filename="../mainwindow.cpp" line="478"/>
         <source>&amp;Color...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="663"/>
+        <location filename="../mainwindow.cpp" line="660"/>
         <source>Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="660"/>
+        <location filename="../mainwindow.cpp" line="657"/>
         <source>Buddies</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="667"/>
+        <location filename="../mainwindow.cpp" line="663"/>
         <source>Chat</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="680"/>
+        <location filename="../mainwindow.cpp" line="676"/>
         <source>Ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="745"/>
-        <location filename="../mainwindow.cpp" line="900"/>
-        <location filename="../mainwindow.cpp" line="918"/>
+        <location filename="../mainwindow.cpp" line="731"/>
+        <location filename="../mainwindow.cpp" line="886"/>
+        <location filename="../mainwindow.cpp" line="904"/>
         <source>No active network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="766"/>
+        <location filename="../mainwindow.cpp" line="752"/>
         <source>select a emoji to send</source>
         <translation type="unfinished"></translation>
     </message>
@@ -456,126 +431,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messagedialog.cpp" line="107"/>
-        <source>Friend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../messagedialog.cpp" line="108"/>
-        <source>You are already friends.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../messagedialog.cpp" line="114"/>
-        <location filename="../messagedialog.cpp" line="125"/>
+        <location filename="../messagedialog.cpp" line="103"/>
         <source>Add Friend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../messagedialog.cpp" line="115"/>
-        <source>Replace with this certificate?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../messagedialog.cpp" line="116"/>
-        <source>Old:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../messagedialog.cpp" line="117"/>
-        <source>New:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../messagedialog.cpp" line="125"/>
-        <source>Failed to add friend</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NetOptionDialog</name>
-    <message>
-        <location filename="../netoptdialog.ui" line="38"/>
-        <source>Network</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../netoptdialog.ui" line="66"/>
-        <source>RTx( Powered by IMAPs/SMTPs Now)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../netoptdialog.ui" line="104"/>
-        <source>smtps://example.net/</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../netoptdialog.ui" line="88"/>
-        <source>Login:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../netoptdialog.ui" line="81"/>
-        <source>Socks5:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../netoptdialog.ui" line="95"/>
-        <source>Password:  </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../netoptdialog.ui" line="116"/>
-        <source>Rx:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../netoptdialog.ui" line="144"/>
-        <source>Tx:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../netoptdialog.ui" line="125"/>
-        <source>imaps://example.net/</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NewGroupDialog</name>
-    <message>
-        <location filename="../newgroupdialog.ui" line="38"/>
-        <location filename="../newgroupdialog.ui" line="103"/>
-        <source>Group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="66"/>
-        <source>Added Members(double-click to remove)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="118"/>
-        <source>Id:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="128"/>
-        <source>Name:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="135"/>
-        <source>Friends:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="165"/>
-        <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../newgroupdialog.ui" line="179"/>
-        <source>Set</source>
+        <location filename="../messagedialog.cpp" line="103"/>
+        <source>Failed to set certificate of contact</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -621,6 +483,46 @@
         <source>RSA: </source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../optiondialog.ui" line="158"/>
+        <source>Network( Powered by IMAPs/SMTPs Now)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="173"/>
+        <source>Socks5:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="180"/>
+        <source>Login:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="187"/>
+        <source>Password:  </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="196"/>
+        <source>smtps://example.net/</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="208"/>
+        <source>Rx:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="217"/>
+        <source>imaps://example.net/</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="236"/>
+        <source>Tx:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ShutdownDialog</name>
@@ -632,6 +534,60 @@
     <message>
         <location filename="../shutdowndialog.ui" line="74"/>
         <source>Shutting down ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>groupDialog</name>
+    <message>
+        <location filename="../groupdialog.ui" line="38"/>
+        <location filename="../groupdialog.ui" line="103"/>
+        <source>Group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../groupdialog.ui" line="66"/>
+        <source>Added Members(double-click to remove)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../groupdialog.ui" line="118"/>
+        <source>Id:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../groupdialog.ui" line="149"/>
+        <source>Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../groupdialog.ui" line="156"/>
+        <source>Friends:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../groupdialog.ui" line="186"/>
+        <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../groupdialog.ui" line="200"/>
+        <source>Set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../groupdialog.ui" line="244"/>
+        <source>logo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../groupdialog.ui" line="264"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../groupdialog.cpp" line="121"/>
+        <source>choose a logo</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

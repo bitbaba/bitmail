@@ -1,7 +1,6 @@
 #include "optiondialog.h"
 #include "ui_optiondialog.h"
 #include "main.h"
-#include "netoptdialog.h"
 
 #include <bitmailcore/bitmail.h>
 #include <QRegExpValidator>
@@ -44,7 +43,7 @@ OptionDialog::OptionDialog(bool fNew, QWidget *parent) :
     m_leTxUrl->setValidator(new QRegExpValidator(QRegExp("smtps://[a-ZA-Z0-9.]+/", Qt::CaseInsensitive), m_leTxUrl));
 
     m_leRxUrl->setPlaceholderText("imaps://imap.somesite.net/");
-    m_leTxUrl->setValidator(new QRegExpValidator(QRegExp("imaps://[a-ZA-Z0-9.]+/", Qt::CaseInsensitive), m_leRxUrl));
+    m_leRxUrl->setValidator(new QRegExpValidator(QRegExp("imaps://[a-ZA-Z0-9.]+/", Qt::CaseInsensitive), m_leRxUrl));
 
     m_leSocks5->setPlaceholderText("socks5://login:password@127.0.0.1:1080/");
 }
@@ -56,8 +55,6 @@ OptionDialog::~OptionDialog()
 
 void OptionDialog::email(const QString & e)
 {
-    if (!newProfile) return ;
-
     m_leEmail->setText(e);
 }
 
@@ -68,8 +65,6 @@ QString OptionDialog::email() const
 
 void OptionDialog::nick(const QString & n)
 {
-    if (!newProfile) return ;
-
     m_leNick->setText(n);
 }
 
@@ -94,14 +89,7 @@ void OptionDialog::bits(const int &n)
     * there is no alignment limit on `openssl genrsa [bits]'
     * e.g. openssl genrsa 1234
     */
-    if (!newProfile) return ;
-
     m_sbBits->setValue((n + m_sbBits->singleStep() - 1)/m_sbBits->singleStep() * m_sbBits->singleStep());
-}
-
-void OptionDialog::bits(const QString & sbits)
-{
-    bits(sbits.toUInt());
 }
 
 int OptionDialog::bits() const
@@ -157,4 +145,13 @@ void OptionDialog::socks5(const QString & s)
 QString OptionDialog::socks5(void) const
 {
     return m_leSocks5->text();
+}
+
+void OptionDialog::on_leEmail_textChanged(const QString &arg1)
+{
+    if (arg1.contains("@")){
+        txUrl(BMQTApplication::guessTxUrl(arg1));
+        rxUrl(BMQTApplication::guessRxUrl(arg1));
+    }
+    login(arg1);
 }

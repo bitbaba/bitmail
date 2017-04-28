@@ -144,10 +144,13 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    BitMail * bitmail = BitMail::New();
+    BitMail * bitmail = BitMail::getInst();
+    if (bitmail == NULL){
+        return 0;
+    }
 
     if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
-        BitMail::Free(bitmail);
+        BitMail::freeInst();
         return 0;
     }
 
@@ -159,7 +162,7 @@ int main(int argc, char *argv[])
 
     BMQTApplication::SaveProfile(bitmail);
 
-    BitMail::Free(bitmail);
+    BitMail::freeInst();
 
     qDebug() << "BitMail quit!";
 
@@ -453,7 +456,7 @@ namespace BMQTApplication {
     QString guessTxUrl(const QString &email)
     {
         if (email.split("@").size() > 1)
-            return QString("smtps://%1/").arg(email.split("@").at(1));
+            return QString("smtps://smtp.%1/").arg(email.split("@").at(1));
         else
             return "";
     }
@@ -461,7 +464,7 @@ namespace BMQTApplication {
     QString guessRxUrl(const QString &email)
     {
         if (email.split("@").size() > 1)
-            return QString("imaps://%1/").arg(email.split("@").at(1));
+            return QString("imaps://imap.%1/").arg(email.split("@").at(1));
         else
             return "";
     }
@@ -781,14 +784,17 @@ namespace BMQTApplication {
             return qsText;
         }
 
-        if (qsEncoding == "quoted-printable" && qsCharset.isEmpty()){
+        if (qsEncoding == "quoted-printable" && !qsCharset.isEmpty()){
             // ASCII TABLE segment: 0 1 2 3 4 5 6 7 8 9 : ; < = > ? @ A B C D E F
             const int hexVal[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12, 13, 14, 15};
             QByteArray temp;
             QString input = QString::fromStdString(content);
             for (int i = 0; i < input.length(); ++i)
             {
-                if (input.at(i).toLatin1() == '=')
+                if (input.at(i).toLatin1() == '='
+                    && i + 2 < input.length()
+                    && ((input.at(i+1).toLatin1() >= '0' && input.at(i+1).toLatin1() <= '9') || (input.at(i+1).toLatin1() >= 'A' && input.at(i+1).toLatin1() <= 'F'))
+                    && ((input.at(i+2).toLatin1() >= '0' && input.at(i+2).toLatin1() <= '9') || (input.at(i+2).toLatin1() >= 'A' && input.at(i+2).toLatin1() <= 'F')))
                 {
                     char ch = (hexVal[input.at(++i).toLatin1() - '0'] << 4);
                     ch += hexVal[input.at(++i).toLatin1() - '0'];

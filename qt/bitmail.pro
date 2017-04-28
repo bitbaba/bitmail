@@ -20,9 +20,8 @@ HEADERS       = mainwindow.h \
                 shutdowndialog.h \
                 invitedialog.h \
                 messagedialog.h \
-                netoptdialog.h \
                 assistantdialog.h \
-                newgroupdialog.h \
+                groupdialog.h \
     procth.h \
     clickablelabel.h \
     textedit.h
@@ -37,9 +36,8 @@ SOURCES       = main.cpp \
                 shutdowndialog.cpp \
                 invitedialog.cpp \
                 messagedialog.cpp \
-                netoptdialog.cpp \
                 assistantdialog.cpp \
-                newgroupdialog.cpp \
+                groupdialog.cpp \
     procth.cpp \
     clickablelabel.cpp \
     textedit.cpp
@@ -56,9 +54,8 @@ FORMS += \
     shutdowndialog.ui \
     invitedialog.ui \
     messagedialog.ui \
-    netoptdialog.ui \
     assistantdialog.ui \
-    newgroupdialog.ui
+    groupdialog.ui
 
 win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore
 

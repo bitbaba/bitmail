@@ -35,14 +35,14 @@ public:
 
     void qrImage(const QPixmap & p);
 
+    void head(const QIcon & hd);
+
 private slots:
-    void on_buttonBox_accepted();
-
-    void on_buttonBox_rejected();
-
     void on_btnSetComment_clicked();
 
     void on_btnLogo_clicked();
+
+    void on_btnRemove_clicked();
 
 private:
     Ui::CertDialog *ui;

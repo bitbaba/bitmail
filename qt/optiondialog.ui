@@ -260,6 +260,11 @@
   <tabstop>leNick</tabstop>
   <tabstop>lePassphrase</tabstop>
   <tabstop>sbBits</tabstop>
+  <tabstop>leSmtpUrl</tabstop>
+  <tabstop>leImapUrl</tabstop>
+  <tabstop>leLogin</tabstop>
+  <tabstop>lePassword</tabstop>
+  <tabstop>leSocks5</tabstop>
  </tabstops>
  <resources/>
  <connections>

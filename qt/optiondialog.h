@@ -32,7 +32,6 @@ public:
     QString passphrase() const;
 
     void bits(const int & n);
-    void bits(const QString & bits);
     int bits() const;
 
     void txUrl(const QString & txurl);
@@ -49,6 +48,9 @@ public:
 
     void socks5(const QString & s);
     QString socks5(void) const;
+
+private slots:
+    void on_leEmail_textChanged(const QString &arg1);
 
 private:
     QLineEdit *m_leEmail;
