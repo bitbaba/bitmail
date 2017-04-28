@@ -49,9 +49,9 @@ private:
 
 public:
     // Profile
-    static BitMail * New();
+    static BitMail * getInst();
 
-    static void Free(BitMail * obj);
+    static void freeInst();
 
     static unsigned int GetVersion();
 
@@ -88,6 +88,14 @@ public:
 
     static std::string fromBase64Line(const std::string & s);
 
+    static std::string certId(const std::string & certpem);
+
+    static std::string certCN(const std::string & certpem);
+
+    static std::string certEmail(const std::string & certpem);
+
+    static unsigned int certBits(const std::string & certpem);
+
 public:
     bool Genesis(unsigned int bits
                 , const std::string & nick
@@ -104,6 +112,8 @@ public:
     std::string Export() const;
 
     std::string email() const;
+
+    std::string cert() const;
 
     bool UpdatePassphrase(const std::string & pass);
 
@@ -130,9 +140,9 @@ public:
 
     bool removeContact(const std::string & emails);
 
-    std::string attrib(const std::string & emails, const std::string & att_name) const;
+    std::string contattrib(const std::string & emails, const std::string & att_name) const;
 
-    bool attrib(const std::string & emails, const std::string & att_name, const std::string & att_value);
+    bool contattrib(const std::string & emails, const std::string & att_name, const std::string & att_value);
 
     // RTx Routines
     bool Tx(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
@@ -155,7 +165,7 @@ private:
     CMailClient        * m_mc;
     MessageEventCB       m_onMessageEvent;
     void               * m_onMessageEventParam;
-    std::string          contacts_;
+    std::string          contacts_;//TODO: reenter in mulithread
 };
 
 

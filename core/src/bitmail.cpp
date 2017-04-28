@@ -66,12 +66,20 @@ BitMail::~BitMail()
     }
 }
 
-BitMail * BitMail::New(){
-    return new BitMail();
+static BitMail * global_Instance_of_Bitmail = NULL;
+
+BitMail * BitMail::getInst(){
+	if (global_Instance_of_Bitmail == NULL){
+		global_Instance_of_Bitmail = new BitMail();
+	}
+    return global_Instance_of_Bitmail;;
 }
 
-void BitMail::Free(BitMail * obj){
-    delete obj;
+void BitMail::freeInst(){
+    if (global_Instance_of_Bitmail != NULL){
+    	delete global_Instance_of_Bitmail;
+		global_Instance_of_Bitmail = NULL;
+    }
 }
 
 unsigned int BitMail::GetVersion()
@@ -84,16 +92,19 @@ unsigned int BitMail::GetVersion()
 std::vector<std::string> BitMail::decodeReceips(const std::string & receips)
 {
     std::istringstream iss(receips);
-    std::vector<std::string> v;
+    std::set<std::string> uniq_set;
     std::string line;
     while (std::getline(iss, line, ';')){
         if (line.empty()) continue;
         if (line.find('@') != std::string::npos){
             std::transform(line.begin(), line.end(), line.begin(), ::tolower);
-            v.push_back(line);
+            uniq_set.insert(line);
         }
     }
-    std::unique(v.begin(), v.end());
+    std::vector<std::string> v;
+    for(std::set<std::string>::const_iterator it = uniq_set.begin(); it != uniq_set.end(); ++it){
+        v.push_back(*it);
+    }
     std::sort(v.begin(), v.end());
     return v;
 }
@@ -182,6 +193,25 @@ std::string BitMail::fromBase64Line(const std::string & s)
     return CX509Cert::b64dec(s, false);
 }
 
+std::string BitMail::certId(const std::string & certpem)
+{
+	return CX509Cert(certpem).GetID();
+}
+
+std::string BitMail::certCN(const std::string & certpem)
+{
+	return CX509Cert(certpem).GetCommonName();
+}
+
+std::string BitMail::certEmail(const std::string & certpem)
+{
+	return CX509Cert(certpem).GetEmail();
+}
+
+unsigned int BitMail::certBits(const std::string & certpem)
+{
+	return CX509Cert(certpem).GetBits();
+}
 
 bool BitMail::Genesis(unsigned int bits
                     , const std::string & nick
@@ -193,10 +223,10 @@ bool BitMail::Genesis(unsigned int bits
                     , const std::string & pass
                     , const std::string & proxy)
 {
-    if (m_profile->Create(bits, nick, email, passphrase)){
+    if (!m_profile->Create(bits, nick, email, passphrase)){
         return false;
     }
-    if (m_mc->config(txurl, rxurl, login, pass, proxy)){
+    if (!m_mc->config(txurl, rxurl, login, pass, proxy)){
         return false;
     }
     return true;
@@ -220,14 +250,15 @@ bool BitMail::Import(const std::string & passphrase, const std::string & json)
         Json::Value network = joRoot["network"];
         if (network.isMember("txUrl")
             && network.isMember("rxUrl")
-			&& network.isMember("login")
-			&& network.isMember("password")
-			&& network.isMember("proxy")){
+            && network.isMember("login")
+            && network.isMember("password")
+            && network.isMember("proxy"))
+        {
             m_mc->config(network["txUrl"].asString()
-            		, network["rxUr"].asString()
-					, network["login"].asString()
-					, Reveal( network["password"].asString() )
-					, network["proxy"].asString());
+                            , network["rxUrl"].asString()
+                            , network["login"].asString()
+                            , Reveal( network["password"].asString() )
+                            , network["proxy"].asString());
         }
     }
     if (joRoot.isMember("contacts")){
@@ -249,24 +280,29 @@ std::string BitMail::Export() const
     network["txUrl"] = m_mc->txUrl();
     network["rxUrl"] = m_mc->rxUrl();
     network["login"] = m_mc->login();
-    network["pass"]  = Protect( m_mc->password() );
+    network["password"]  = Protect( m_mc->password() );
     network["proxy"] = m_mc->proxy();
     joRoot["network"] = network;
 
-	Json::Reader reader; Json::Value contacts;
-	if (reader.parse(contacts_, contacts)){
-		joRoot["contacts"] = contacts;
-	}
+    Json::Reader reader; Json::Value contacts;
+    if (!reader.parse(contacts_, contacts)){
+        contacts = Json::Value(Json::objectValue);
+    }
+    joRoot["contacts"] = contacts;
 
     return joRoot.toStyledString();
 }
 
 std::string BitMail::email() const{
-	return m_profile->GetEmail();
+    return m_profile->GetEmail();
+}
+
+std::string BitMail::cert() const{
+	return m_profile->ExportCert();
 }
 
 std::string BitMail::passphrase() const {
-	return m_profile->GetPassphrase();
+    return m_profile->GetPassphrase();
 }
 
 bool BitMail::UpdatePassphrase(const std::string & passphrase)
@@ -317,7 +353,7 @@ std::vector<std::string> BitMail::contacts() const
 
 bool BitMail::addContact(const std::string & emails)
 {
-	if (emails.empty()) return false;
+    if (emails.empty()) return false;
 
     Json::Reader reader; Json::Value contacts;
     if (!reader.parse(contacts_, contacts)){
@@ -329,10 +365,10 @@ bool BitMail::addContact(const std::string & emails)
     }
 
     Json::Value contact;
-	reader.parse("{}", contact);
-	contacts[emails] = contact;
+    reader.parse("{}", contact);
+    contacts[emails] = contact;
 
-	contacts_ = contacts.toStyledString();
+    contacts_ = contacts.toStyledString();
     return true;
 }
 
@@ -361,27 +397,29 @@ bool BitMail::removeContact(const std::string & emails)
     	return false;
     }
 
-	contacts_ = contacts.toStyledString();
-	return true;
+    contacts_ = contacts.toStyledString();
+    return true;
 }
 
-std::string BitMail::attrib(const std::string & emails, const std::string & att_name) const
+std::string BitMail::contattrib(const std::string & emails, const std::string & att_name) const
 {
-	if (emails.empty() || att_name.empty()) return "";
+    if (emails.empty() || att_name.empty()) return "";
 
-	if (att_name == "cert.bits" || att_name == "cert.nick" || att_name == "cert.id"){
-		std::string certpem = attrib(emails, "cert");
-		if (certpem.empty()) return "";
-		CX509Cert x(certpem);
-		if (!x.IsValid()) return "";
-		if (att_name == "cert.bits") { char buf[100]= ""; sprintf(buf, "%u", x.GetBits()); return buf; }
-		if (att_name == "cert.nick") return x.GetCommonName();
-		if (att_name == "cert.id")   return x.GetID();
-	}
+#if 0
+    if (att_name == "cert.bits" || att_name == "cert.nick" || att_name == "cert.id"){
+            std::string certpem = attrib(emails, "cert");
+            if (certpem.empty()) return "";
+            CX509Cert x(certpem);
+            if (!x.IsValid()) return "";
+            if (att_name == "cert.bits") { char buf[100]= ""; sprintf(buf, "%u", x.GetBits()); return buf; }
+            if (att_name == "cert.nick") return x.GetCommonName();
+            if (att_name == "cert.id")   return x.GetID();
+    }
+#endif
 
     Json::Reader reader; Json::Value contacts;
     if (!reader.parse(contacts_, contacts)){
-    	return false;
+        return "";
     }
 
     Json::Value contact;
@@ -397,9 +435,9 @@ std::string BitMail::attrib(const std::string & emails, const std::string & att_
     	return "";
 }
 
-bool BitMail::attrib(const std::string & emails, const std::string & att_name, const std::string & att_value)
+bool BitMail::contattrib(const std::string & emails, const std::string & att_name, const std::string & att_value)
 {
-	if (emails.empty() || att_name.empty()) return false;
+    if (emails.empty() || att_name.empty()) return false;
 
     Json::Reader reader; Json::Value contacts;
     if (!reader.parse(contacts_, contacts)){
@@ -418,7 +456,7 @@ bool BitMail::attrib(const std::string & emails, const std::string & att_name, c
     contact[att_name] = att_value;
     contacts[emails] = contact;
 
-	contacts_ = contacts.toStyledString();
+    contacts_ = contacts.toStyledString();
     return true;
 }
 
@@ -471,7 +509,7 @@ std::string BitMail::Encrypt(const std::vector<std::string> & emails, const std:
 
     std::vector<CX509Cert> vecTo;
     for (std::vector<std::string>::const_iterator it = emails.begin(); it != emails.end();++it){
-        CX509Cert buddy; buddy.ImportCert(attrib(*it, "cert"));
+        CX509Cert buddy; buddy.ImportCert(contattrib(*it, "cert"));
         if (buddy.IsValid()){ vecTo.push_back(buddy); }
     }
 
