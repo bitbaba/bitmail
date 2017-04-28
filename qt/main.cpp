@@ -68,6 +68,7 @@
 #include "assistantdialog.h"
 #include <bitmailcore/bitmail.h>
 #include <qrencode.h>
+#include "lock.h"
 #include "main.h"
 
 static
@@ -148,6 +149,8 @@ int main(int argc, char *argv[])
     if (bitmail == NULL){
         return 0;
     }
+
+    BitMail::getInst()->SetupLock(new BMLockCraft());
 
     if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
         BitMail::freeInst();
