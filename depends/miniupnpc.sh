@@ -12,7 +12,7 @@ TARBALL="miniupnpc-1.9.20160209.tar.gz"
 TAROPTS=zxvf
 TARDEST="/tmp"
 DESTDIR="/tmp/miniupnpc-1.9.20160209"
-DOWNLINK="http://miniupnp.free.fr/files/miniupnpc-1.9.20160209.tar.gz"
+DOWNLINK="http://miniupnp.tuxfamily.org/files/download.php?file=miniupnpc-1.9.20160209.tar.gz"
 DOWNOPTS=""
 
 if [[ $(uname -s) != "MINGW"* ]]; then
