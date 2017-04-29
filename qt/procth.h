@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QObject>
+#include <QStringList>
 
 class ProcTh : public QThread
 {

@@ -749,7 +749,7 @@ namespace BMQTApplication {
         std::vector<std::string> parts;
         BitMail::splitMultiparts(mparts.toStdString(), parts);
 
-        for (std::vector<std::string>::const_iterator it = parts.cbegin(); it != parts.cend(); ++it){
+        for (std::vector<std::string>::const_iterator it = parts.begin(); it != parts.end(); ++it){
             std::string part = (*it);
             if (false){
                 qDebug() << QString::fromStdString(BitMail::partType(part));

@@ -444,7 +444,9 @@ void MainWindow::setupTextActions()
     QString rsrcPath = BMQTApplication::GetImageResHome() + "/textedit/win";
 
     const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(rsrcPath + "/textbold.png"));
-    actionTextBold = tb->addAction(boldIcon, tr("&Bold"), this, &MainWindow::textBold);
+    actionTextBold = new QAction(boldIcon, tr("&Bold"), this);
+    connect(actionTextBold, SIGNAL(triggered()), this, SLOT(textBold()));
+    tb->addAction(actionTextBold);
     actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
     actionTextBold->setPriority(QAction::LowPriority);
     QFont bold;
@@ -454,7 +456,9 @@ void MainWindow::setupTextActions()
     actionTextBold->setCheckable(true);
 
     const QIcon italicIcon = QIcon::fromTheme("format-text-italic", QIcon(rsrcPath + "/textitalic.png"));
-    actionTextItalic = tb->addAction(italicIcon, tr("&Italic"), this, &MainWindow::textItalic);
+    actionTextItalic = new QAction(italicIcon, tr("&Italic"), this);
+    connect(actionTextItalic, SIGNAL(triggered()), this, SLOT(textItalic));
+    tb->addAction(actionTextItalic);
     actionTextItalic->setPriority(QAction::LowPriority);
     actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
     QFont italic;
@@ -464,7 +468,9 @@ void MainWindow::setupTextActions()
     actionTextItalic->setCheckable(true);
 
     const QIcon underlineIcon = QIcon::fromTheme("format-text-underline", QIcon(rsrcPath + "/textunder.png"));
-    actionTextUnderline = tb->addAction(underlineIcon, tr("&Underline"), this, &MainWindow::textUnderline);
+    actionTextUnderline = new QAction(underlineIcon, tr("&Underline"), this);
+    connect(actionTextUnderline, SIGNAL(triggered()), this, SLOT(textUnderline()));
+    tb->addAction(actionTextUnderline);
     actionTextUnderline->setShortcut(Qt::CTRL + Qt::Key_U);
     actionTextUnderline->setPriority(QAction::LowPriority);
     QFont underline;
@@ -475,7 +481,8 @@ void MainWindow::setupTextActions()
 
     QPixmap pix(16, 16);
     pix.fill(Qt::black);
-    actionTextColor = tb->addAction(pix, tr("&Color..."), this, &MainWindow::textColor);
+    actionTextColor = new QAction(pix, tr("&Color..."), this);
+    connect(actionTextColor, SIGNAL(triggered()), this, SLOT(textColor()));
     tb->addAction(actionTextColor);
 
     comboStyle = new QComboBox(tb);
