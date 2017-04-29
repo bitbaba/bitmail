@@ -5,7 +5,19 @@ NSIS_RELEASE="nsis-$NSIS_VERSION"
 NSIS_BALL="nsis-$NSIS_VERSION.zip"
 NSIS_CMD="$NSIS_RELEASE/makensis.exe"
 NSIS_LINK="https://svwh.dl.sourceforge.net/project/nsis/NSIS%202/$NSIS_VERSION/$NSIS_BALL"
-CURL_OPT="-k --proxy socks5://127.0.0.1:1080/"
+CURL_OPT="-k"
+#CURL_OPT="-k --proxy socks5://127.0.0.1:1080/"
+
+#BITMAIL_QT_ROOT="D:\\workspace\\github\\bitmail\\qt"
+#BITMAIL_QT_RELEASE_ROOT="D:\\workspace\\github\\bitmail\\qt\\build\\release"
+
+BITMAIL_QT_ROOT="D:\\github\\bitmail\\qt"
+BITMAIL_QT_RELEASE_ROOT="D:\\github\\bitmail\\qt\\build\\release"
+
+QT_LICENSE_ROOT="C:\\Qt\\Qt5.4.1\\Licenses"
+QT_DIST_ROOT="C:\\Qt\\Qt5.4.1\\5.4\\mingw491_32\\bin"
+QT_TOOLS_ROOT="C:\\Qt\\Qt5.4.1\\Tools\\mingw491_32\\bin"
+QT_PLUGINS_ROOT="C:\\Qt\\Qt5.4.1\\5.4\mingw491_32\\plugins"
 #NSIS_CMD="nsis/makensis.exe"
 
 #mingw-get.exe install msys-unzip
@@ -19,11 +31,11 @@ if ! [ -f "$NSIS_CMD" ]; then
 fi
 
 if   [ -f "$NSIS_CMD" ]; then
-	$NSIS_CMD /dBitMailQtRoot="D:\\workspace\\github\\bitmail\\qt" \
-			  /dBitMailQtReleaseRoot="D:\\workspace\\github\\bitmail\\qt\\build\\release" \
-			  /dQtLicenseRoot="C:\\Qt\\Qt5.7.0\\Licenses" \
-			  /dQtDistRoot="C:\\Qt\\Qt5.7.0\\5.7\\mingw53_32\\bin" \
-			  /dQtToolsRoot="C:\\Qt\\Qt5.7.0\\Tools\\mingw530_32\\bin" \
-			  /dQtPluginsRoot="C:\\Qt\\Qt5.7.0\\5.7\\mingw53_32\\plugins" \
+	$NSIS_CMD /dBitMailQtRoot="$BITMAIL_QT_ROOT" \
+			  /dBitMailQtReleaseRoot="$BITMAIL_QT_RELEASE_ROOT" \
+			  /dQtLicenseRoot="$QT_LICENSE_ROOT" \
+			  /dQtDistRoot="$QT_DIST_ROOT" \
+			  /dQtToolsRoot="$QT_TOOLS_ROOT" \
+			  /dQtPluginsRoot="$QT_PLUGINS_ROOT" \
 			  setup.nsi
 fi
