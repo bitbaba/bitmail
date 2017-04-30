@@ -1027,12 +1027,8 @@ std::string CX509Cert::GetID() const
         return "";
     }
 
-    const unsigned int SHA1_DIGEST_LENTH = 20;
-    const unsigned char BASE32TABLE[33] = "BM01346789ACDEFGHJKLNPQRSTUVWXYZ";
-    const unsigned char HEXTABLE[33] = "0123456789ABCDEF";
-
-    unsigned char sha1_hash[SHA1_DIGEST_LENTH];
-    unsigned sha1_hash_len = SHA1_DIGEST_LENTH;
+    unsigned char sha256_hash[EVP_MAX_MD_SIZE];
+    unsigned sha256_hash_len = EVP_MAX_MD_SIZE;
     /**
      * 1) X509_pubkey_digest produce [Subject key identifier]
      *    that is, sha1 hash of subject's public key structure,
@@ -1042,17 +1038,15 @@ std::string CX509Cert::GetID() const
      *    that is, sha1 hash of all certificate,
      *    this hash is NOT included in x509 certificate.
      */
-    int len = X509_digest(x, EVP_sha1(), sha1_hash, &sha1_hash_len);
-    if (len != 1 || sha1_hash_len != SHA1_DIGEST_LENTH) {
+    int len = X509_digest(x, EVP_sha256(), sha256_hash, &sha256_hash_len);
+    if (len != 1) {
+        X509_free(x);
         return "";
     }
 
-    std::string result = "";
-    for (unsigned int i = 0; i < SHA1_DIGEST_LENTH; i++){
-        unsigned char c = sha1_hash[i];
-        result += HEXTABLE[(c & 0xf0) >> 4];
-        result += HEXTABLE[(c & 0x0f)];
-    }
+    std::string result;
+    result.append((char *)sha256_hash, sha256_hash_len);
+    result = b64enc(result, false);
 
     X509_free(x);
 
