@@ -30,6 +30,27 @@
 
 # include <json/json.h>
 
+
+class ScopedLock
+{
+public:
+        ScopedLock(ILock * );
+        ~ScopedLock();
+private:
+        ILock * m_lock;
+};
+
+ScopedLock::ScopedLock(ILock * lock)
+    : m_lock(lock)
+{
+    m_lock->Lock();
+}
+
+ScopedLock::~ScopedLock(){
+    m_lock->Unlock();
+}
+
+
 static void BitMailGlobalInit()
 {
     OPENSSL_load_builtin_modules();
@@ -47,7 +68,7 @@ BitMail::BitMail()
 : m_profile(NULL)
 , m_mc(NULL)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
-, m_lockCraft(NULL), m_contactsLock(NULL)
+, m_lockCraft(NULL), m_lock(NULL)
 {
     BitMailGlobalInit();
 
@@ -66,8 +87,8 @@ BitMail::~BitMail()
     if (m_mc != NULL){
         delete (m_mc); m_mc = NULL;
     }
-    if (m_contactsLock){
-    	m_lockCraft->FreeLock(m_contactsLock); m_contactsLock = NULL;
+    if (m_lock){
+        m_lockCraft->FreeLock(m_lock); m_lock = NULL;
     }
 }
 
@@ -200,31 +221,31 @@ std::string BitMail::fromBase64Line(const std::string & s)
 
 std::string BitMail::certId(const std::string & certpem)
 {
-	return CX509Cert(certpem).GetID();
+    return CX509Cert(certpem).GetID();
 }
 
 std::string BitMail::certCN(const std::string & certpem)
 {
-	return CX509Cert(certpem).GetCommonName();
+    return CX509Cert(certpem).GetCommonName();
 }
 
 std::string BitMail::certEmail(const std::string & certpem)
 {
-	return CX509Cert(certpem).GetEmail();
+    return CX509Cert(certpem).GetEmail();
 }
 
 unsigned int BitMail::certBits(const std::string & certpem)
 {
-	return CX509Cert(certpem).GetBits();
+    return CX509Cert(certpem).GetBits();
 }
 
 bool BitMail::SetupLock(ILockCraft * craft)
 {
-	if (m_lockCraft) return false;
+    if (m_lockCraft) return false;
 
-	m_lockCraft = craft;
+    m_lockCraft = craft;
 
-	m_contactsLock = m_lockCraft->CreateLock();
+    m_lock = m_lockCraft->CreateLock();
 }
 
 bool BitMail::Genesis(unsigned int bits
@@ -247,7 +268,8 @@ bool BitMail::Genesis(unsigned int bits
 }
 
 bool BitMail::Import(const std::string & passphrase, const std::string & json)
-{
+{    
+    ScopedLock scope(m_lock);
     Json::Reader reader;
     Json::Value joRoot;
     if (!reader.parse(json, joRoot)){
@@ -311,7 +333,15 @@ std::string BitMail::email() const{
 }
 
 std::string BitMail::cert() const{
-	return m_profile->ExportCert();
+    return m_profile->ExportCert();
+}
+
+std::string BitMail::privKey() const{
+    return m_profile->ExportPrivKey();
+}
+
+std::string BitMail::pkcs12() const{
+    return "";
 }
 
 std::string BitMail::passphrase() const {
@@ -667,15 +697,4 @@ std::string BitMail::parseRFC822AddressList(const std::string & mimemsg)
     }while(0);
 
     return (receips);
-}
-
-
-ScopedLock::ScopedLock(ILock * lock ) : m_lock(lock)
-{
-	m_lock->Lock();
-}
-
-ScopedLock::~ScopedLock()
-{
-	m_lock->Unlock();
 }

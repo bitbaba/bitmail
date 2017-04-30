@@ -130,6 +130,10 @@ public:
 
     std::string cert() const;
 
+    std::string privKey() const;
+
+    std::string pkcs12() const;
+
     bool UpdatePassphrase(const std::string & pass);
 
     std::string passphrase() const;
@@ -181,7 +185,7 @@ private:
     MessageEventCB       m_onMessageEvent;
     void               * m_onMessageEventParam;
     ILockCraft         * m_lockCraft;
-    ILock              * m_contactsLock;
+    ILock              * m_lock;
     std::string          contacts_;//TODO: reenter in mulithread
 };
 

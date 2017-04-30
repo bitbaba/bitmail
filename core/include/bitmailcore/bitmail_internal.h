@@ -35,16 +35,6 @@ struct BMEventMessage{
 typedef
 bool (* BMEventCB)(BMEventHead * h, void * userp);
 
-class ILock;
-
-class ScopedLock
-{
-public:
-	ScopedLock(ILock * );
-	~ScopedLock();
-private:
-	ILock * m_lock;
-};
 
 /**
  ******************************************************************************
