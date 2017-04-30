@@ -132,3 +132,13 @@ void CertDialog::on_btnRemove_clicked()
     }
     emit friendChanged();
 }
+
+void CertDialog::on_btnExportCert_clicked()
+{
+
+}
+
+void CertDialog::on_btnExportKey_clicked()
+{
+
+}

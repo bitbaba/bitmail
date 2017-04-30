@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>340</width>
-    <height>510</height>
+    <width>400</width>
+    <height>520</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,20 +18,20 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>340</width>
-    <height>510</height>
+    <width>400</width>
+    <height>520</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>340</width>
-    <height>510</height>
+    <width>400</width>
+    <height>520</height>
    </size>
   </property>
   <property name="baseSize">
    <size>
-    <width>300</width>
-    <height>510</height>
+    <width>400</width>
+    <height>520</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -40,10 +40,10 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>10</x>
      <y>20</y>
-     <width>301</width>
-     <height>480</height>
+     <width>371</width>
+     <height>481</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -71,20 +71,75 @@
          <widget class="QLineEdit" name="leEmail"/>
         </item>
         <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
+         <widget class="QPushButton" name="btnExportCert">
+          <property name="minimumSize">
            <size>
-            <width>40</width>
-            <height>20</height>
+            <width>50</width>
+            <height>23</height>
            </size>
           </property>
-         </spacer>
+          <property name="maximumSize">
+           <size>
+            <width>50</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="baseSize">
+           <size>
+            <width>50</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Ex.Cert</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnExportKey">
+          <property name="minimumSize">
+           <size>
+            <width>50</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>50</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="baseSize">
+           <size>
+            <width>50</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Ex.Key</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnRemove">
+          <property name="minimumSize">
+           <size>
+            <width>45</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>45</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="baseSize">
+           <size>
+            <width>45</width>
+            <height>23</height>
+           </size>
+          </property>
           <property name="text">
            <string>Remove</string>
           </property>
@@ -209,7 +264,7 @@
         <property name="font">
          <font>
           <family>Arial</family>
-          <pointsize>10</pointsize>
+          <pointsize>8</pointsize>
           <weight>75</weight>
           <bold>true</bold>
          </font>
@@ -261,6 +316,19 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
     </item>
     <item>
      <widget class="QDialogButtonBox" name="buttonBox">

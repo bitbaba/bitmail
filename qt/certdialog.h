@@ -44,6 +44,10 @@ private slots:
 
     void on_btnRemove_clicked();
 
+    void on_btnExportCert_clicked();
+
+    void on_btnExportKey_clicked();
+
 private:
     Ui::CertDialog *ui;
     BitMail   *m_bitmail;
