@@ -15,23 +15,23 @@
 CX509Cert::CX509Cert()
     : m_cert("")
     , m_key("")
-	, m_passphrase("")
+    , m_passphrase("")
 {
 
 }
 
 CX509Cert::CX509Cert(const std::string & certpem)
 {
-	X509 * x = PEM2Cert(certpem);
-	if (x != NULL){
-		m_cert = certpem;
-		X509_free(x);
-	}
+    X509 * x = PEM2Cert(certpem);
+    if (x != NULL){
+        m_cert = certpem;
+        X509_free(x);
+    }
 }
 
 CX509Cert::CX509Cert(const std::string & certpem, const std::string & privkey, const std::string & passphrase)
 {
-	ImportCert(certpem); ImportPrivKey(privkey, passphrase);
+    ImportCert(certpem); ImportPrivKey(privkey, passphrase);
 }
 
 
