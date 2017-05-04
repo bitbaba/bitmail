@@ -9,10 +9,12 @@
 
 [![license](https://img.shields.io/badge/license-BSD-green.svg?style=flat)](https://github.com/imharrywu/bitmail/edit/master/LICENSE)
 
-###Download pre-built installer for windows
+#Download pre-built installer for windows
+
 http://imharrywu.github.io/bitmail-qt/bitmail-qt-win32-installer.exe
 
-###Introduction
+#Introduction
+
 - Bitmail(比特信) is a purly Peer-to-Peer instant messenger client, to help people to communicate with each other securely. 
 
 - Authentication and security are based on PKI(Public Key Infrastructure), and are powered by [OpenSSL](https://github.com/openssl/openssl). 
@@ -27,45 +29,45 @@ http://imharrywu.github.io/bitmail-qt/bitmail-qt-win32-installer.exe
 
 - White paper: [bitmail.pdf.md](./doc/bitmail.pdf.md)
     
-###Features
+#Features
 - secure talking with trusted buddies.
 - PKI utilities used to sign images, documents, and vote.
 - reject any spam message away.
 - invite friend(s) or accept friend(s) by exchange CertID.
 
-###Build
+#Build
 
-- clone
+## clone
 
 ```
 $git clone https://github.com/imharrywu/bitmail
 ```
 
-- Depends
+## build depends
 
 ```
 $cd depends
 $sh openssl.sh && sh curl.sh && sh libmicrohttpd.sh
 ```
 
-- Core
+## build core
 
 ```
 $sh autogen.sh
 ```
 
-- Qt
+## build Qt
 
 open \`qt/bitmail.pro' to build
 
 
-###TODO
+## TODO
 - Mobile;
 - Daemon & UPnP;
 - Bitcoin wallet integration;
 - Qt-GUI: translations, rich-text support, recall of history message-queue;
 
 
-### Welcome to contribute
+## Welcome to contribute
 - Anyone with Qt, web, mobile, or secure network programming knowledge is welcome.
                            
