@@ -6,6 +6,7 @@
 class QLineEdit;
 class QCheckBox;
 class QSpinBox;
+class QPushButton;
 
 namespace Ui {
 class OptionDialog;
@@ -52,6 +53,10 @@ public:
 private slots:
     void on_leEmail_textChanged(const QString &arg1);
 
+    void on_btnExportCert_clicked();
+
+    void on_btnExportKey_clicked();
+
 private:
     QLineEdit *m_leEmail;
     QLineEdit *m_leNick;
@@ -62,7 +67,8 @@ private:
     QLineEdit *m_leLogin;
     QLineEdit *m_lePassword;
     QLineEdit *m_leSocks5;
-
+    QPushButton *m_btnExCert;
+    QPushButton *m_btnExKey;
 private:
     bool       newProfile;
 };

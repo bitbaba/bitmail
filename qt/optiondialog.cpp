@@ -6,6 +6,9 @@
 #include <QRegExpValidator>
 #include <QRegExp>
 #include <QDebug>
+#include <QFile>
+#include <QFileDialog>
+#include <bitmailcore/bitmail.h>
 
 OptionDialog::OptionDialog(bool fNew, QWidget *parent) :
     QDialog(parent)
@@ -14,22 +17,29 @@ OptionDialog::OptionDialog(bool fNew, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    m_leEmail        = findChild<QLineEdit*>("leEmail");
-    m_leNick         = findChild<QLineEdit*>("leNick");
-    m_sbBits         = findChild<QSpinBox*>("sbBits");
+    m_leEmail        = findChild<QLineEdit*>("leEmail"     );
+    m_leNick         = findChild<QLineEdit*>("leNick"      );
+    m_sbBits         = findChild<QSpinBox*> ("sbBits"      );
     m_lePassphrase   = findChild<QLineEdit*>("lePassphrase");
 
-    m_leTxUrl        = findChild<QLineEdit*>("leSmtpUrl");
-    m_leRxUrl        = findChild<QLineEdit*>("leImapUrl");
-    m_leLogin        = findChild<QLineEdit*>("leLogin");
-    m_lePassword     = findChild<QLineEdit*>("lePassword");
-    m_leSocks5       = findChild<QLineEdit*>("leSocks5");
+    m_leTxUrl        = findChild<QLineEdit*>("leSmtpUrl"   );
+    m_leRxUrl        = findChild<QLineEdit*>("leImapUrl"   );
+    m_leLogin        = findChild<QLineEdit*>("leLogin"     );
+    m_lePassword     = findChild<QLineEdit*>("lePassword"  );
+    m_leSocks5       = findChild<QLineEdit*>("leSocks5"    );
+
+    m_btnExCert      = findChild<QPushButton*>("btnExportCert");
+    m_btnExKey       = findChild<QPushButton*>("btnExportKey" );
 
     m_leEmail->setEnabled(newProfile);
 
     m_leNick->setEnabled(newProfile);
 
     m_sbBits->setEnabled(newProfile);
+
+    m_btnExCert->setEnabled(!newProfile);
+
+    m_btnExKey->setEnabled(!newProfile);
 
     m_lePassphrase->setEnabled(true);
 
@@ -154,4 +164,34 @@ void OptionDialog::on_leEmail_textChanged(const QString &arg1)
         rxUrl(BMQTApplication::guessRxUrl(arg1));
     }
     login(arg1);
+}
+
+void OptionDialog::on_btnExportCert_clicked()
+{
+    QString path = QFileDialog::getSaveFileName(this, tr("Export Certificate"));
+    if (QFileInfo(path).completeSuffix() != "crt"
+        || QFileInfo(path).completeSuffix() != "cer"){
+        path += ".crt";
+    }
+    QFile file(path);
+    file.open(QIODevice::WriteOnly);
+    file.setTextModeEnabled(false);
+    std::string cert = BitMail::getInst()->cert();
+    file.write(cert.data(), cert.length());
+    file.close();
+}
+
+void OptionDialog::on_btnExportKey_clicked()
+{
+    QString path = QFileDialog::getSaveFileName(this, tr("Export Private Key"));
+    if (QFileInfo(path).completeSuffix() != "pfx"
+        || QFileInfo(path).completeSuffix() != "p12"){
+        path += ".p12";
+    }
+    QFile file(path);
+    file.open(QIODevice::WriteOnly);
+    file.setTextModeEnabled(false);
+    std::string pkcs12 = BitMail::getInst()->pkcs12();
+    file.write(pkcs12.data(), pkcs12.length());
+    file.close();
 }

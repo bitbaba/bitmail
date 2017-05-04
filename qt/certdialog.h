@@ -44,10 +44,6 @@ private slots:
 
     void on_btnRemove_clicked();
 
-    void on_btnExportCert_clicked();
-
-    void on_btnExportKey_clicked();
-
 private:
     Ui::CertDialog *ui;
     BitMail   *m_bitmail;
@@ -58,7 +54,6 @@ private:
     QLabel *m_lbQrCode;
     QPlainTextEdit *m_txtCert;
     QPushButton *m_btnLogo;
-
 signals:
     void friendChanged();
 };

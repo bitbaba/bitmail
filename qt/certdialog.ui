@@ -71,56 +71,6 @@
          <widget class="QLineEdit" name="leEmail"/>
         </item>
         <item>
-         <widget class="QPushButton" name="btnExportCert">
-          <property name="minimumSize">
-           <size>
-            <width>50</width>
-            <height>23</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>50</width>
-            <height>23</height>
-           </size>
-          </property>
-          <property name="baseSize">
-           <size>
-            <width>50</width>
-            <height>23</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Ex.Cert</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="btnExportKey">
-          <property name="minimumSize">
-           <size>
-            <width>50</width>
-            <height>23</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>50</width>
-            <height>23</height>
-           </size>
-          </property>
-          <property name="baseSize">
-           <size>
-            <width>50</width>
-            <height>23</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Ex.Key</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QPushButton" name="btnRemove">
           <property name="minimumSize">
            <size>

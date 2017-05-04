@@ -75,40 +75,6 @@
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="leNick"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="lbNick">
-       <property name="text">
-        <string>Nick:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="lbEmail">
-       <property name="text">
-        <string>Email:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="leEmail">
-       <property name="toolTip">
-        <string/>
-       </property>
-       <property name="inputMethodHints">
-        <set>Qt::ImhNone</set>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="lbPassphrase">
-       <property name="text">
-        <string>Passphrase:</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="1">
       <widget class="QLineEdit" name="lePassphrase">
        <property name="echoMode">
@@ -116,10 +82,10 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="lbBits">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lbEmail">
        <property name="text">
-        <string>Bits:</string>
+        <string>Email:</string>
        </property>
       </widget>
      </item>
@@ -141,6 +107,58 @@
         <number>1024</number>
        </property>
       </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="lbBits">
+       <property name="text">
+        <string>Bits:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="lbPassphrase">
+       <property name="text">
+        <string>Passphrase:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lbNick">
+       <property name="text">
+        <string>Nick:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="leNick"/>
+     </item>
+     <item row="0" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLineEdit" name="leEmail">
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="inputMethodHints">
+          <set>Qt::ImhNone</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnExportCert">
+         <property name="text">
+          <string>Ex.Cert</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnExportKey">
+         <property name="text">
+          <string>Ex.Key</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>
@@ -256,7 +274,6 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>leEmail</tabstop>
   <tabstop>leNick</tabstop>
   <tabstop>lePassphrase</tabstop>
   <tabstop>sbBits</tabstop>

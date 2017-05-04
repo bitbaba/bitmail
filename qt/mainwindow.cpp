@@ -661,11 +661,11 @@ void MainWindow::textColor()
 
 void MainWindow::createToolBars()
 {
-    editToolBar = addToolBar(tr("Buddies"));
-    editToolBar->addAction(inviteAct);
-
     fileToolBar = addToolBar(tr("Profile"));
     fileToolBar->addAction(configAct);
+
+    editToolBar = addToolBar(tr("Buddies"));
+    editToolBar->addAction(inviteAct);
 
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->setIconSize(QSize(24,24));

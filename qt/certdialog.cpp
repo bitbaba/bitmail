@@ -6,6 +6,8 @@
 #include <QLabel>
 #include <QPlainTextEdit>
 #include <QDir>
+#include <QFile>
+#include <QTextStream>
 #include <QFileDialog>
 #include <bitmailcore/bitmail.h>
 
@@ -131,14 +133,4 @@ void CertDialog::on_btnRemove_clicked()
         return ;
     }
     emit friendChanged();
-}
-
-void CertDialog::on_btnExportCert_clicked()
-{
-
-}
-
-void CertDialog::on_btnExportKey_clicked()
-{
-
 }
