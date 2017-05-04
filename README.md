@@ -9,7 +9,7 @@
 
 [![license](https://img.shields.io/badge/license-BSD-green.svg?style=flat)](https://github.com/imharrywu/bitmail/edit/master/LICENSE)
 
-#Download pre-built installer for windows
+# Download pre-built installer for windows
 
 http://imharrywu.github.io/bitmail-qt/bitmail-qt-win32-installer.exe
 
