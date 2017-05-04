@@ -26,6 +26,16 @@ public:
     bool ImportCert(const std::string & cert);
     bool ImportPrivKey(const std::string & key, const std::string & passphrase);
     bool ImportCertFromSig(const std::string & sig);
+    std::string ExportCert() const;
+    std::string ExportPrivKey() const;
+    std::string ExportPKCS12() const;
+    bool IsValid() const;
+    std::string GetPassphrase() const;
+    bool SetPassphrase(const std::string & passphrase);
+    std::string GetEmail() const ;
+    std::string GetCommonName() const;
+    std::string GetID() const;
+    unsigned int GetBits() const;
 
 protected:
     int MakeCert(const std::string & commonName, const std::string & email, const std::string & passphrase, unsigned int bits);
@@ -44,16 +54,6 @@ public:
     static std::string MSign(const std::string & msg, const std::vector<CX509Cert> & signers);
 
 public:
-    bool IsValid() const;
-    std::string ExportCert() const;
-    std::string GetEmail() const ;
-    std::string GetCommonName() const;
-    std::string GetID() const;
-    unsigned int GetBits() const;
-    std::string GetPassphrase() const;
-    int SetPassphrase(const std::string & passphrase);
-    std::string ExportPrivKey();
-
     /*Certificate*/
     std::string Sign(const std::string & msg);
     std::string Verify(const std::string & msg);

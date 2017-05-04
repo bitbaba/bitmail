@@ -341,7 +341,7 @@ std::string BitMail::privKey() const{
 }
 
 std::string BitMail::pkcs12() const{
-    return "";
+    return m_profile->ExportPKCS12();
 }
 
 std::string BitMail::passphrase() const {

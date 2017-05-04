@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <openssl/pkcs12.h>
 
 #if defined(X509_NAME) && (defined(_MSC_VER) || defined(MINGW_DDK_H))
 #undef X509_NAME
@@ -529,33 +530,87 @@ std::string CX509Cert::ExportCert() const
     return m_cert;
 }
 
-std::string CX509Cert::ExportPrivKey()
+std::string CX509Cert::ExportPrivKey() const
 {
     return m_key;
+}
+
+std::string CX509Cert::ExportPKCS12() const
+{
+    BIO* out = BIO_new(BIO_s_mem());// sink to memory.
+    if (!out) {
+        return "";
+    }
+    PKCS12 *p12 = NULL;
+
+    X509 *ucert = PEM2Cert(m_cert);
+    EVP_PKEY *key = PEM2PrivKey(m_key, m_passphrase);
+
+    // `enc' has no use in `export' mode
+    p12 = PKCS12_create(const_cast<char *>(m_passphrase.c_str())
+                        , const_cast<char*>(GetCommonName().c_str())
+                        , key
+                        , ucert
+                        , NULL
+                        , NID_pbe_WithSHA1And3_Key_TripleDES_CBC
+                        , NID_pbe_WithSHA1And40BitRC2_CBC
+                        , PKCS12_DEFAULT_ITER
+                        , -1
+                        , KEY_EX);
+
+    if (!p12){
+        EVP_PKEY_free(key);
+        X509_free(ucert);
+        return "";
+    }
+
+    PKCS12_set_mac(p12
+                   , const_cast<char *>(m_passphrase.c_str())
+                   , -1
+                   , NULL
+                   , 0
+                   , PKCS12_DEFAULT_ITER
+                   , NULL);
+
+    if (i2d_PKCS12_bio(out, p12)){
+        BUF_MEM * bufptr = NULL;
+        BIO_get_mem_ptr(out, &bufptr);
+        std::string p7out = "";
+        p7out.append((char *)bufptr->data, bufptr->length);
+        EVP_PKEY_free(key);
+        X509_free(ucert);
+        PKCS12_free(p12);
+        return p7out;
+    }
+
+    EVP_PKEY_free(key);
+    X509_free(ucert);
+    PKCS12_free(p12);
+    return "";
 }
 
 /**
 * Update passphrase
 */
-int CX509Cert::SetPassphrase(const std::string & passphrase)
+bool CX509Cert::SetPassphrase(const std::string & passphrase)
 {
+    if (passphrase.empty()){
+        return false;
+    }
+
     if (m_passphrase == passphrase){
-        return 0;
+        return true;
     }
 
     EVP_PKEY *pkey = PEM2PrivKey(m_key, m_passphrase);
     if (pkey == NULL){
-        return 1;
+        return false;
     }
 
-    std::string sKeyPem = PrivKey2PEM(pkey, passphrase);
-    if (sKeyPem.empty()){
-        return 2;
-    }
-    m_key = sKeyPem;
+    m_key = PrivKey2PEM(pkey, passphrase);
     m_passphrase = passphrase;
     EVP_PKEY_free(pkey);
-    return 0;
+    return true;
 }
 
 /* Simple S/MIME signing example */
