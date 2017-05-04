@@ -1,0 +1,1 @@
+echo \#define BITMAIL_QT_GIT_VERSION \"$(git log -1 . | grep commit | cut -d " " -f 2)\" > version.h
