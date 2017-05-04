@@ -546,9 +546,16 @@ std::string CX509Cert::ExportPKCS12() const
     X509 *ucert = PEM2Cert(m_cert);
     EVP_PKEY *key = PEM2PrivKey(m_key, m_passphrase);
 
+    char pass [32 + 1] = "";
+    if (m_passphrase.length() < sizeof(pass)){
+        strcpy(pass, m_passphrase.c_str());
+    }else{
+        return "";
+    }
+
     // `enc' has no use in `export' mode
-    p12 = PKCS12_create(const_cast<char *>(m_passphrase.c_str())
-                        , const_cast<char*>(GetCommonName().c_str())
+    p12 = PKCS12_create(pass
+                        , NULL
                         , key
                         , ucert
                         , NULL
@@ -565,7 +572,7 @@ std::string CX509Cert::ExportPKCS12() const
     }
 
     PKCS12_set_mac(p12
-                   , const_cast<char *>(m_passphrase.c_str())
+                   , pass
                    , -1
                    , NULL
                    , 0
