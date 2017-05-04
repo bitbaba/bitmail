@@ -14,7 +14,7 @@ if [[ $(uname -s) != "MINGW"* ]]; then
 fi
 
 # Version
-echo \#define BITMAIL_CORE_GIT_VERSION \"$(git log -1 | grep commit | cut -d " " -f 2)\" > $BitmailCoreHome/include/bitmailcore/version.h
+echo \#define BITMAIL_CORE_GIT_VERSION \"$(git log -1 .| grep commit | cut -d " " -f 2)\" > $BitmailCoreHome/include/bitmailcore/version.h
 
 DebugFlags="-g -O0"
 
