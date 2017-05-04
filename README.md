@@ -19,9 +19,9 @@ http://imharrywu.github.io/bitmail/bitmail-qt-win32-installer.exe
 
 - Authentication and security are based on PKI(Public Key Infrastructure), and are powered by [OpenSSL](https://github.com/openssl/openssl). 
 
-- A Message singed with your private key is definitely sent from yourself, not from a middle-man.
+- A Message singed by a signer's private key identify the sender (see Middle-Man Attack).
 
-- A Message encrypted with your friend's certificate, is not viewed by anyone while transferring.
+- A Message encrypted by public key, can not be viewed by anyone without private key while transferring.
 
 - The rx/tx network is now based on MX(eMail eXchange) protocols, e.g. imap(s) & smtp(s), and is powered by [CURL](https://github.com/bagder/curl). There is more delay than real IM or IRC network. But the MX network can be replaced by (or upgraded to) other transfer networks. 
 
@@ -30,10 +30,10 @@ http://imharrywu.github.io/bitmail/bitmail-qt-win32-installer.exe
 - White paper: [bitmail.pdf.md](./doc/bitmail.pdf.md)
     
 # Features
-- secure talking with trusted buddies.
-- PKI utilities used to sign images, documents, and vote.
+- secure talking with trusted friends.
+- PKI utilities used to sign images, documents, and voting.
 - reject any spam message away.
-- invite friend(s) or accept friend(s) by exchange CertID.
+- invite friend(s) or accept friend(s) by exchange CertID ( the fingerprint of certificate ).
 
 # Build
 
@@ -47,7 +47,7 @@ $git clone https://github.com/imharrywu/bitmail
 
 ```
 $cd depends
-$sh openssl.sh && sh curl.sh && sh libmicrohttpd.sh
+$sh openssl.sh && sh curl.sh && sh libmicrohttpd.sh && sh miniupnpc.sh && qrencode.sh
 ```
 
 ## build core
