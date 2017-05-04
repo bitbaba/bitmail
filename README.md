@@ -11,7 +11,7 @@
 
 # Download pre-built installer for windows
 
-http://imharrywu.github.io/bitmail-qt/bitmail-qt-win32-installer.exe
+http://imharrywu.github.io/bitmail/bitmail-qt-win32-installer.exe
 
 # Introduction
 
