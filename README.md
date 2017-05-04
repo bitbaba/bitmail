@@ -13,7 +13,7 @@
 
 http://imharrywu.github.io/bitmail-qt/bitmail-qt-win32-installer.exe
 
-#Introduction
+# Introduction
 
 - Bitmail(比特信) is a purly Peer-to-Peer instant messenger client, to help people to communicate with each other securely. 
 
@@ -29,13 +29,13 @@ http://imharrywu.github.io/bitmail-qt/bitmail-qt-win32-installer.exe
 
 - White paper: [bitmail.pdf.md](./doc/bitmail.pdf.md)
     
-#Features
+# Features
 - secure talking with trusted buddies.
 - PKI utilities used to sign images, documents, and vote.
 - reject any spam message away.
 - invite friend(s) or accept friend(s) by exchange CertID.
 
-#Build
+# Build
 
 ## clone
 
