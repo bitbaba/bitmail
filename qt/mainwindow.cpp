@@ -975,6 +975,9 @@ void MainWindow::onNewMessage(const QString & from
     qDebug() << "receips: " << qsTo;
 
     std::vector<std::string> vec_receips = BitMail::decodeReceips(qsTo.toStdString());
+    if (vec_receips.size() > 1 && from.toStdString() == BitMail::getInst()->email()){
+        return ;
+    }
 
     QString sessionKey = QString::fromStdString(BitMail::serializeReceips(from.toStdString()));
 
