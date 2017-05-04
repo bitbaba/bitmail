@@ -26,7 +26,8 @@ HEADERS       = mainwindow.h \
     clickablelabel.h \
     textedit.h \
     lock.h \
-    versiondialog.h
+    versiondialog.h \
+    version.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
