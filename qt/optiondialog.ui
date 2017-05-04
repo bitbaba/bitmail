@@ -147,14 +147,14 @@
        <item>
         <widget class="QPushButton" name="btnExportCert">
          <property name="text">
-          <string>Ex.Cert</string>
+          <string>ExCert</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="btnExportKey">
          <property name="text">
-          <string>Ex.Key</string>
+          <string>ExKey</string>
          </property>
         </widget>
        </item>

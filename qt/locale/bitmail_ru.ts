@@ -87,47 +87,47 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="89"/>
+        <location filename="../certdialog.ui" line="94"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="98"/>
+        <location filename="../certdialog.ui" line="103"/>
         <source>Nick:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="203"/>
-        <source>CertFP:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../certdialog.ui" line="132"/>
+        <location filename="../certdialog.ui" line="137"/>
         <source>Comment:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="144"/>
+        <location filename="../certdialog.ui" line="149"/>
         <source>Set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="188"/>
+        <location filename="../certdialog.ui" line="193"/>
         <source>logo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.ui" line="256"/>
+        <location filename="../certdialog.ui" line="208"/>
+        <source>CertFP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../certdialog.ui" line="274"/>
         <source>QrCode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.cpp" line="30"/>
+        <location filename="../certdialog.cpp" line="32"/>
         <source>click to choose a logo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../certdialog.cpp" line="98"/>
+        <location filename="../certdialog.cpp" line="100"/>
         <source>choose a logo</source>
         <translation type="unfinished"></translation>
     </message>
@@ -216,6 +216,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../mainwindow.cpp" line="130"/>
+        <source>Groups</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../mainwindow.cpp" line="166"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
@@ -248,11 +253,6 @@
     <message>
         <location filename="../mainwindow.cpp" line="388"/>
         <source>&amp;Invite</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="130"/>
-        <source>Groups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -341,49 +341,49 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="457"/>
+        <location filename="../mainwindow.cpp" line="459"/>
         <source>&amp;Italic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="467"/>
+        <location filename="../mainwindow.cpp" line="471"/>
         <source>&amp;Underline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="478"/>
+        <location filename="../mainwindow.cpp" line="484"/>
         <source>&amp;Color...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="660"/>
+        <location filename="../mainwindow.cpp" line="664"/>
         <source>Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="657"/>
+        <location filename="../mainwindow.cpp" line="667"/>
         <source>Buddies</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="663"/>
+        <location filename="../mainwindow.cpp" line="670"/>
         <source>Chat</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="676"/>
+        <location filename="../mainwindow.cpp" line="683"/>
         <source>Ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="731"/>
-        <location filename="../mainwindow.cpp" line="886"/>
-        <location filename="../mainwindow.cpp" line="904"/>
+        <location filename="../mainwindow.cpp" line="737"/>
+        <location filename="../mainwindow.cpp" line="894"/>
+        <location filename="../mainwindow.cpp" line="912"/>
         <source>No active network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="752"/>
+        <location filename="../mainwindow.cpp" line="758"/>
         <source>select a emoji to send</source>
         <translation type="unfinished"></translation>
     </message>
@@ -454,73 +454,93 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="84"/>
-        <source>Nick:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../optiondialog.ui" line="91"/>
+        <location filename="../optiondialog.ui" line="88"/>
         <source>Email:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="108"/>
-        <source>Passphrase:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../optiondialog.ui" line="122"/>
-        <source>Bits:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../optiondialog.ui" line="129"/>
+        <location filename="../optiondialog.ui" line="95"/>
         <source>(bits)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="132"/>
+        <location filename="../optiondialog.ui" line="98"/>
         <source>RSA: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="158"/>
+        <location filename="../optiondialog.ui" line="114"/>
+        <source>Bits:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="121"/>
+        <source>Passphrase:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="128"/>
+        <source>Nick:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="150"/>
+        <source>ExCert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="157"/>
+        <source>ExKey</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="176"/>
         <source>Network( Powered by IMAPs/SMTPs Now)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="173"/>
+        <location filename="../optiondialog.ui" line="191"/>
         <source>Socks5:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="180"/>
+        <location filename="../optiondialog.ui" line="198"/>
         <source>Login:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="187"/>
+        <location filename="../optiondialog.ui" line="205"/>
         <source>Password:  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="196"/>
+        <location filename="../optiondialog.ui" line="214"/>
         <source>smtps://example.net/</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="208"/>
+        <location filename="../optiondialog.ui" line="226"/>
         <source>Rx:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="217"/>
+        <location filename="../optiondialog.ui" line="235"/>
         <source>imaps://example.net/</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="236"/>
+        <location filename="../optiondialog.ui" line="254"/>
         <source>Tx:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.cpp" line="171"/>
+        <source>Export Certificate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.cpp" line="186"/>
+        <source>Export Private Key</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
