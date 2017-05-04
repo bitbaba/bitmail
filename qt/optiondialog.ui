@@ -274,6 +274,7 @@
   </widget>
  </widget>
  <tabstops>
+  <tabstop>leEmail</tabstop>
   <tabstop>leNick</tabstop>
   <tabstop>lePassphrase</tabstop>
   <tabstop>sbBits</tabstop>
@@ -282,6 +283,8 @@
   <tabstop>leLogin</tabstop>
   <tabstop>lePassword</tabstop>
   <tabstop>leSocks5</tabstop>
+  <tabstop>btnExportCert</tabstop>
+  <tabstop>btnExportKey</tabstop>
  </tabstops>
  <resources/>
  <connections>
