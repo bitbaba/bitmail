@@ -25,7 +25,8 @@ HEADERS       = mainwindow.h \
     procth.h \
     clickablelabel.h \
     textedit.h \
-    lock.h
+    lock.h \
+    versiondialog.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
@@ -42,7 +43,8 @@ SOURCES       = main.cpp \
     procth.cpp \
     clickablelabel.cpp \
     textedit.cpp \
-    lock.cpp
+    lock.cpp \
+    versiondialog.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
@@ -57,7 +59,8 @@ FORMS += \
     invitedialog.ui \
     messagedialog.ui \
     assistantdialog.ui \
-    groupdialog.ui
+    groupdialog.ui \
+    versiondialog.ui
 
 win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore
 

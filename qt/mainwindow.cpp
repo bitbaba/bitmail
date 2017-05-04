@@ -68,6 +68,7 @@
 #include "groupdialog.h"
 #include "clickablelabel.h"
 #include "textedit.h"
+#include "versiondialog.h"
 #include "main.h"
 
 #if defined(WIN32)
@@ -390,6 +391,12 @@ void MainWindow::createActions()
         connect(inviteAct, SIGNAL(triggered()), this, SLOT(onBtnInviteClicked()));
     }while(0);
 
+    do {
+        helpAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/help.png"), tr("&Help"), this);
+        helpAct->setStatusTip(tr("Help"));
+        connect(helpAct, SIGNAL(triggered()), this, SLOT(onHelpAct()));
+    }while(0);
+
     do{
         fileAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/file.png"), tr("&File"), this);
         fileAct->setStatusTip(tr("Send File"));
@@ -666,6 +673,7 @@ void MainWindow::createToolBars()
 
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(inviteAct);
+    editToolBar->addAction(helpAct);
 
     chatToolbar = addToolBar(tr("Chat"));
     chatToolbar->setIconSize(QSize(24,24));
@@ -886,6 +894,12 @@ void MainWindow::onBtnInviteClicked()
     BitMail::getInst()->addContact(sessKey.toStdString());
 
     return ;
+}
+
+void MainWindow::onHelpAct()
+{
+    VersionDialog version(this);
+    version.exec();
 }
 
 void MainWindow::onBtnSendClicked()

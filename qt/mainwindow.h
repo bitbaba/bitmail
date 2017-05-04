@@ -89,6 +89,7 @@ public slots:
     void onBtnSendQrClicked();
     void onBtnConfigClicked();
     void onBtnInviteClicked();
+    void onHelpAct();
     void onLabelDoubleClicked(ClickableLabel * label);
     void onTextEditDropped(const QVariantList & varlist);
 
@@ -184,6 +185,7 @@ private:
 
     QAction *configAct;
     QAction *inviteAct;
+    QAction *helpAct;
     QAction *fileAct;
     QAction *audioAct;
     QAction *emojiAct;
