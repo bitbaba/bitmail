@@ -5,10 +5,6 @@
 #include <set>
 #include <vector>
 
-#define BMVER_MAJOR (1)
-#define BMVER_MINOR (0)
-#define BMVER_TINY  (0)
-
 /* Forward decleration */
 class  CMailClient;
 class  CX509Cert  ;
@@ -66,7 +62,7 @@ public:
 
     static void freeInst();
 
-    static unsigned int GetVersion();
+    static std::string GetVersion();
 
     // Receips
     static std::vector<std::string> decodeReceips(const std::string & receips);

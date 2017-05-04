@@ -8,6 +8,7 @@
 # include <bitmailcore/x509cert.h>
 # include <bitmailcore/rpc.h>
 # include <bitmailcore/multipart.h>
+# include <bitmailcore/version.h>
 
 # include <curl/curl.h>
 # include <openssl/cms.h>
@@ -108,11 +109,9 @@ void BitMail::freeInst(){
     }
 }
 
-unsigned int BitMail::GetVersion()
+std::string BitMail::GetVersion()
 {
-    return    (BMVER_MAJOR * 1000000)
-            + (BMVER_MINOR * 1000)
-            + (BMVER_TINY);
+    return BITMAIL_CORE_GIT_VERSION;
 }
 
 std::vector<std::string> BitMail::decodeReceips(const std::string & receips)
