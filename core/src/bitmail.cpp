@@ -22,9 +22,9 @@
 # include <openssl/rand.h>
 # include <openssl/pkcs7.h>
 
-#include <lua.h>
+extern "C" {
 #include <lauxlib.h>
-#include <lualib.h>
+};
 
 # include <string>
 # include <fstream>
@@ -455,9 +455,6 @@ void BitMail::blockNoFriend(bool yes) {
 bool BitMail::exec(const std::string & script)
 {
 	lua_State *L = luaL_newstate();  /* create state */
-	if (L == NULL) {
-		return false;
-	}
 	lua_close(L);
 	return true;
 }
