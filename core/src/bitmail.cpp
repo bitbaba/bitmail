@@ -31,16 +31,6 @@
 
 # include <json/json.h>
 
-
-class ScopedLock
-{
-public:
-        ScopedLock(ILock * );
-        ~ScopedLock();
-private:
-        ILock * m_lock;
-};
-
 ScopedLock::ScopedLock(ILock * lock)
     : m_lock(lock)
 {
@@ -65,19 +55,25 @@ static void BitMailGlobalInit()
     #endif
 }
 
-BitMail::BitMail()
+BitMail::BitMail(ILockCraft * lockCraft)
 : m_profile(NULL)
 , m_mc(NULL)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
-, m_lockCraft(NULL), m_lock(NULL)
+, m_lockCraft(lockCraft), m_lockContacts(NULL), m_lockNet(NULL), m_lockProfile(NULL)
 {
     BitMailGlobalInit();
+
+    if (m_lockCraft){
+        m_lockContacts = m_lockCraft->CreateLock();
+        m_lockNet = m_lockCraft->CreateLock();
+        m_lockProfile = m_lockCraft->CreateLock();
+    }
 
     // Create a profile object
     m_profile = new CX509Cert();
 
     // Create a email object
-    m_mc = new CMailClient(EmailHandler, this);
+    m_mc = new CMailClient(m_lockNet, EmailHandler, this);
 }
 
 BitMail::~BitMail()
@@ -88,16 +84,22 @@ BitMail::~BitMail()
     if (m_mc != NULL){
         delete (m_mc); m_mc = NULL;
     }
-    if (m_lock){
-        m_lockCraft->FreeLock(m_lock); m_lock = NULL;
+    if (m_lockContacts){
+        m_lockCraft->FreeLock(m_lockContacts); m_lockContacts = NULL;
+    }
+    if (m_lockNet){
+        m_lockCraft->FreeLock(m_lockNet); m_lockNet = NULL;
+    }
+    if (m_lockProfile){
+        m_lockCraft->FreeLock(m_lockProfile); m_lockProfile = NULL;
     }
 }
 
 static BitMail * global_Instance_of_Bitmail = NULL;
 
-BitMail * BitMail::getInst(){
+BitMail * BitMail::getInst(ILockCraft * lockCraft){
 	if (global_Instance_of_Bitmail == NULL){
-		global_Instance_of_Bitmail = new BitMail();
+                global_Instance_of_Bitmail = new BitMail(lockCraft);
 	}
     return global_Instance_of_Bitmail;;
 }
@@ -238,15 +240,6 @@ unsigned int BitMail::certBits(const std::string & certpem)
     return CX509Cert(certpem).GetBits();
 }
 
-bool BitMail::SetupLock(ILockCraft * craft)
-{
-    if (m_lockCraft) return false;
-
-    m_lockCraft = craft;
-
-    m_lock = m_lockCraft->CreateLock();
-}
-
 bool BitMail::Genesis(unsigned int bits
                     , const std::string & nick
                     , const std::string & email
@@ -257,10 +250,13 @@ bool BitMail::Genesis(unsigned int bits
                     , const std::string & pass
                     , const std::string & proxy)
 {
-    ScopedLock scope(m_lock);
-    if (!m_profile->Create(bits, nick, email, passphrase)){
-        return false;
-    }
+    do {
+        ScopedLock scope(m_lockProfile);
+        if (!m_profile->Create(bits, nick, email, passphrase)){
+            return false;
+        }
+    }while(0);
+
     if (!m_mc->config(txurl, rxurl, login, pass, proxy)){
         return false;
     }
@@ -269,7 +265,6 @@ bool BitMail::Genesis(unsigned int bits
 
 bool BitMail::Import(const std::string & passphrase, const std::string & json)
 {    
-    ScopedLock scope(m_lock);
     Json::Reader reader;
     Json::Value joRoot;
     if (!reader.parse(json, joRoot)){
@@ -278,8 +273,9 @@ bool BitMail::Import(const std::string & passphrase, const std::string & json)
     if (joRoot.isMember("Profile")){
         Json::Value profile = joRoot["Profile"];
         if (profile.isMember("cert")&& profile.isMember("key")){
-        	m_profile->ImportCert(profile["cert"].asString());
-        	m_profile->ImportPrivKey(profile["key"].asString(), passphrase);
+            ScopedLock scope(m_lockProfile);
+            m_profile->ImportCert(profile["cert"].asString());
+            m_profile->ImportPrivKey(profile["key"].asString(), passphrase);
         }
     }
     if (joRoot.isMember("network")){
@@ -290,14 +286,20 @@ bool BitMail::Import(const std::string & passphrase, const std::string & json)
             && network.isMember("password")
             && network.isMember("proxy"))
         {
+            std::string password;
+            do {
+                ScopedLock scope(m_lockProfile);
+                password = m_profile->Decrypt( network["password"].asString() );
+            }while(0);
             m_mc->config(network["txUrl"].asString()
                             , network["rxUrl"].asString()
                             , network["login"].asString()
-                            , Reveal( network["password"].asString() )
+                            , password
                             , network["proxy"].asString());
         }
     }
     if (joRoot.isMember("contacts")){
+        ScopedLock scope(m_lockContacts);
     	contacts_ = joRoot["contacts"].toStyledString();
     }
     return true;
@@ -305,58 +307,69 @@ bool BitMail::Import(const std::string & passphrase, const std::string & json)
 
 std::string BitMail::Export() const
 {
-    ScopedLock scope(m_lock);
     Json::Value joRoot;
-    Json::Value profile;
-    profile["cert"] = m_profile->ExportCert();
-    profile["key"] = m_profile->ExportPrivKey();
-    joRoot["Profile"] = profile;
+    do {
+        ScopedLock scope(m_lockProfile);
+        Json::Value profile;
+        profile["cert"] = m_profile->ExportCert();
+        profile["key"] = m_profile->ExportPrivKey();
+        joRoot["Profile"] = profile;
+    }while(0);
 
     Json::Value network;
     network["txUrl"] = m_mc->txUrl();
     network["rxUrl"] = m_mc->rxUrl();
     network["login"] = m_mc->login();
-    network["password"]  = Protect( m_mc->password() );
+
+    std::string password;
+    do {
+        ScopedLock scope(m_lockProfile);
+        password = m_profile->Encrypt( m_mc->password() );
+    }while(0);
+
+    network["password"]  = password;
     network["proxy"] = m_mc->proxy();
     joRoot["network"] = network;
 
     Json::Reader reader; Json::Value contacts;
-    if (!reader.parse(contacts_, contacts)){
-        contacts = Json::Value(Json::objectValue);
-    }
-    joRoot["contacts"] = contacts;
+    do {
+        ScopedLock scope(m_lockContacts);
+        if (!reader.parse(contacts_, contacts)){
+            contacts = Json::Value(Json::objectValue);
+        }
+        joRoot["contacts"] = contacts;
+    }while(0);
 
     return joRoot.toStyledString();
 }
 
 std::string BitMail::email() const{
-    ScopedLock scope(m_lock);
+    ScopedLock scope(m_lockProfile);
     return m_profile->GetEmail();
 }
 
 std::string BitMail::cert() const{
-    ScopedLock scope(m_lock);
+    ScopedLock scope(m_lockProfile);
     return m_profile->ExportCert();
 }
 
 std::string BitMail::privKey() const{
-    ScopedLock scope(m_lock);
+    ScopedLock scope(m_lockProfile);
     return m_profile->ExportPrivKey();
 }
 
 std::string BitMail::pkcs12() const{
-    ScopedLock scope(m_lock);
+    ScopedLock scope(m_lockProfile);
     return m_profile->ExportPKCS12();
 }
 
 std::string BitMail::passphrase() const {
-    ScopedLock scope(m_lock);
+    ScopedLock scope(m_lockProfile);
     return m_profile->GetPassphrase();
 }
 
-bool BitMail::UpdatePassphrase(const std::string & passphrase)
-{
-    ScopedLock scope(m_lock);
+bool BitMail::UpdatePassphrase(const std::string & passphrase){
+    ScopedLock scope(m_lockProfile);
     return m_profile->SetPassphrase(passphrase);
 }
 
@@ -366,32 +379,26 @@ bool BitMail::SetupNetwork(const std::string & txurl
                             , const std::string & password
                             , const std::string & proxy)
 {
-    ScopedLock scope(m_lock);
     return m_mc->config(txurl, rxurl, login, password, proxy);
 }
 
 std::string BitMail::txUrl() const{
-    ScopedLock scope(m_lock);
     return m_mc->txUrl();
 }
 
 std::string BitMail::rxUrl() const{
-    ScopedLock scope(m_lock);
     return m_mc->rxUrl();
 }
 
 std::string BitMail::login() const{
-    ScopedLock scope(m_lock);
     return m_mc->login();
 }
 
 std::string BitMail::password() const{
-    ScopedLock scope(m_lock);
     return m_mc->password();
 }
 
 std::string BitMail::proxy() const{
-    ScopedLock scope(m_lock);
     return m_mc->proxy();
 }
 
@@ -400,8 +407,7 @@ std::string BitMail::proxy() const{
 */
 std::vector<std::string> BitMail::contacts() const
 {
-    ScopedLock scope(m_lock);
-
+    ScopedLock scope(m_lockContacts);
     Json::Reader reader; Json::Value contacts;
     if (!reader.parse(contacts_, contacts)){
     	return std::vector<std::string>();
@@ -411,7 +417,7 @@ std::vector<std::string> BitMail::contacts() const
 
 bool BitMail::addContact(const std::string & emails)
 {
-    ScopedLock scope(m_lock);
+    ScopedLock scope(m_lockContacts);
 
     if (emails.empty()) return false;
 
@@ -434,7 +440,7 @@ bool BitMail::addContact(const std::string & emails)
 
 bool BitMail::hasContact(const std::string & emails) const
 {
-    ScopedLock scope(m_lock);
+    ScopedLock scope(m_lockContacts);
 
     Json::Reader reader; Json::Value contacts;
     if (!reader.parse(contacts_, contacts)){
@@ -446,7 +452,7 @@ bool BitMail::hasContact(const std::string & emails) const
 
 bool BitMail::removeContact(const std::string & emails)
 {
-    ScopedLock scope(m_lock);
+    ScopedLock scope(m_lockContacts);
 
     Json::Reader reader; Json::Value contacts;
     if (!reader.parse(contacts_, contacts)){
@@ -467,7 +473,7 @@ bool BitMail::removeContact(const std::string & emails)
 
 std::string BitMail::contattrib(const std::string & emails, const std::string & att_name) const
 {
-    ScopedLock scope(m_lock);
+    ScopedLock scope(m_lockContacts);
 
     if (emails.empty() || att_name.empty()) return "";
 
@@ -491,7 +497,7 @@ std::string BitMail::contattrib(const std::string & emails, const std::string & 
 
 bool BitMail::contattrib(const std::string & emails, const std::string & att_name, const std::string & att_value)
 {
-    ScopedLock scope(m_lock);
+    ScopedLock scope(m_lockContacts);
 
     if (emails.empty() || att_name.empty()) return false;
 
@@ -538,17 +544,6 @@ bool BitMail::Expunge()
     return m_mc->Expunge();
 }
 
-
-std::string BitMail::Protect(const std::string & text) const
-{
-    return m_profile->Encrypt(text);
-}
-
-std::string BitMail::Reveal(const std::string & code) const
-{
-    return m_profile->Decrypt(code);
-}
-
 std::string BitMail::Encrypt(const std::vector<std::string> & emails, const std::string & msg, bool fSignOnly)
 {
     std::string smime;
@@ -559,7 +554,10 @@ std::string BitMail::Encrypt(const std::vector<std::string> & emails, const std:
      * GroupMsg(msg, vector<bob>) != SendMsg(msg, bob);
      * GroupMsg must encrypt msg before send it out.
      */
-    smime = m_profile->Sign(msg);
+    do {
+        ScopedLock scope(m_lockProfile);
+        smime = m_profile->Sign(msg);
+    }while(0);
 
     if (fSignOnly){ return smime; }
 
@@ -582,15 +580,18 @@ bool BitMail::Decrypt(const std::string & smime
         , std::string & msg
         , std::string & certid
         , std::string & cert
-        , std::string & sigtime)
+        , std::string & sigtime
+        , bool * encrypted)
 {
     std::string sMimeBody = smime;
     BitMail * self = this;
     if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){
+        ScopedLock scope(m_lockProfile);
         sMimeBody = self->m_profile->Decrypt(sMimeBody);
         if (sMimeBody.empty()){
             return false;
         }
+        *encrypted = true;
     }
 
     CX509Cert buddyCert;
@@ -632,7 +633,8 @@ bool BitMail::EmailHandler(BMEventHead * h, void * userp)
     BMEventMessage * bmeMsg = (BMEventMessage *)h;
     std::string receips = parseRFC822AddressList(bmeMsg->msg);
     std::string from, nick, msg, certid, cert, sigtime;
-    self->Decrypt(bmeMsg->msg, from, nick, msg, certid, cert, sigtime);
+    bool encrypted = false;
+    self->Decrypt(bmeMsg->msg, from, nick, msg, certid, cert, sigtime, &encrypted);
     if (self->m_onMessageEvent){
         self->m_onMessageEvent(from.c_str()
                                 , receips.c_str()
@@ -640,6 +642,7 @@ bool BitMail::EmailHandler(BMEventHead * h, void * userp)
                                 , certid.c_str()
                                 , cert.c_str()
                                 , sigtime.c_str()
+                                , encrypted
                                 , self->m_onMessageEventParam);
     }
 

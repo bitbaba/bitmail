@@ -40,14 +40,14 @@ public:
 	virtual void FreeLock(ILock * lock) = 0;
 };
 
-typedef int (* MessageEventCB)(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, const char * sigtime, void * p);
+typedef int (* MessageEventCB)(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, const char * sigtime, bool encrypted, void * p);
 
 typedef int (* RTxProgressCB)(RTxState, const char * info, void * userptr);
 
 class BitMail
 {
 private:
-    BitMail();
+    BitMail(ILockCraft * lockCraft = NULL);
 
     ~BitMail();
 
@@ -58,7 +58,7 @@ private:
 
 public:
     // Profile
-    static BitMail * getInst();
+    static BitMail * getInst(ILockCraft * lockCraft = NULL);
 
     static void freeInst();
 
@@ -106,8 +106,6 @@ public:
     static unsigned int certBits(const std::string & certpem);
 
 public:
-    bool SetupLock(ILockCraft * craft);
-
     bool Genesis(unsigned int bits
                 , const std::string & nick
                 , const std::string & email
@@ -169,11 +167,7 @@ public:
     // Security routines
     std::string Encrypt(const std::vector<std::string> & friends, const std::string & msg, bool fSignOnly);
 
-    bool Decrypt(const std::string & smime, std::string & from, std::string & nick, std::string & msg, std::string & certid, std::string & cert, std::string & sigtime);
-
-    std::string Protect(const std::string & text) const;
-
-    std::string Reveal(const std::string & code) const;
+    bool Decrypt(const std::string & smime, std::string & from, std::string & nick, std::string & msg, std::string & certid, std::string & cert, std::string & sigtime, bool * encrypted);
 
 private:
     CX509Cert          * m_profile;
@@ -181,7 +175,9 @@ private:
     MessageEventCB       m_onMessageEvent;
     void               * m_onMessageEventParam;
     ILockCraft         * m_lockCraft;
-    ILock              * m_lock;
+    ILock              * m_lockContacts;
+    ILock              * m_lockNet;
+    ILock              * m_lockProfile;
     std::string          contacts_;//TODO: reenter in mulithread
 };
 

@@ -34,10 +34,11 @@ struct RxCallback_t {
 
 #define DefaultProxy ("soks5://127.0.0.1:1080/")
 
-CMailClient::CMailClient(BMEventCB cb, void * cbp)
+CMailClient::CMailClient(ILock * lock, BMEventCB cb, void * cbp)
     : m_txurl(""), m_rxurl(""), m_login(""), m_password(""), m_proxy("")
     , m_tx(NULL), m_rx(NULL)
     , m_cb(cb), m_cbp(cbp)
+    , m_lock(lock)
 {
 
 }
@@ -60,6 +61,8 @@ bool CMailClient::config(const std::string & txUrl
                         , const std::string & password
                         , const std::string & proxy)
 {
+    ScopedLock scope(m_lock);
+
     m_txurl = txUrl;
     if (!m_txurl.empty() && '/' != m_txurl.at(m_txurl.length() - 1)){
         m_txurl += "/";
@@ -80,26 +83,36 @@ bool CMailClient::config(const std::string & txUrl
 
 std::string CMailClient::txUrl() const
 {
+    ScopedLock scope(m_lock);
+
     return m_txurl;
 }
 
 std::string CMailClient::rxUrl() const
 {
+    ScopedLock scope(m_lock);
+
     return m_rxurl;
 }
 
 std::string CMailClient::login() const
 {
+    ScopedLock scope(m_lock);
+
     return m_login;
 }
 
 std::string CMailClient::password() const
 {
+    ScopedLock scope(m_lock);
+
     return m_password;
 }
 
 std::string CMailClient::proxy() const
 {
+    ScopedLock scope(m_lock);
+
     return m_proxy;
 }
 
@@ -167,10 +180,14 @@ bool CMailClient::Tx( const std::string & from
     txcb.userp = userp;
 
     /* Set url, username and password */
-    curl_easy_setopt(curl, CURLOPT_URL, m_txurl.c_str());
-    curl_easy_setopt(curl, CURLOPT_USERNAME, m_login.c_str());
-    curl_easy_setopt(curl, CURLOPT_PASSWORD, m_password.c_str());
-    curl_easy_setopt(curl, CURLOPT_PROXY, m_proxy.c_str());
+    do {
+        ScopedLock scope(m_lock);
+        curl_easy_setopt(curl, CURLOPT_URL, m_txurl.c_str());
+        curl_easy_setopt(curl, CURLOPT_USERNAME, m_login.c_str());
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, m_password.c_str());
+        curl_easy_setopt(curl, CURLOPT_PROXY, m_proxy.c_str());
+    }while(0);
+
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     curl_easy_setopt(curl, CURLOPT_MAIL_FROM, from.c_str());
@@ -292,7 +309,7 @@ bool CMailClient::GetUnseen(std::vector<MessageNo> & msgnolist)
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
-    chunk.length = 0; /* test with 100k total length*/
+    chunk.length = 0; /* test with 0 byte total length*/
     chunk.cb   = NULL;
     chunk.userp= NULL;
 
@@ -303,12 +320,15 @@ bool CMailClient::GetUnseen(std::vector<MessageNo> & msgnolist)
     CURL *curl = (CURL * )m_rx;
     CURLcode res = CURLE_OK;
 
-    std::string inboxurl = m_rxurl;
-    inboxurl += "INBOX";
-    curl_easy_setopt(curl, CURLOPT_URL, inboxurl.c_str());
-    curl_easy_setopt(curl, CURLOPT_USERNAME, m_login.c_str());
-    curl_easy_setopt(curl, CURLOPT_PASSWORD, m_password.c_str());
-    curl_easy_setopt(curl, CURLOPT_PROXY, m_proxy.c_str());
+    do {
+        ScopedLock scope(m_lock);
+        std::string inboxurl = m_rxurl; inboxurl += "INBOX";
+        curl_easy_setopt(curl, CURLOPT_URL, inboxurl.c_str());
+        curl_easy_setopt(curl, CURLOPT_USERNAME, m_login.c_str());
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, m_password.c_str());
+        curl_easy_setopt(curl, CURLOPT_PROXY, m_proxy.c_str());
+    }while(0);
+
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, OnRxfer);
@@ -394,7 +414,7 @@ bool CMailClient::GetMsg(MessageNo msgno, std::string & smime, RTxProgressCB cb,
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
-    chunk.length = 100000; /* test with 100k total length*/
+    chunk.length = 1; /* test with 1 Byte total length*/
     chunk.cb   = cb;
     chunk.userp= userp;
 
@@ -405,14 +425,15 @@ bool CMailClient::GetMsg(MessageNo msgno, std::string & smime, RTxProgressCB cb,
     CURL *curl = (CURL * )m_rx;
     CURLcode res = CURLE_OK;
 
-    std::stringstream strmmsgurl;
-    strmmsgurl << m_rxurl << "INBOX" << "/;UID=" << msgno;
-    std::string msgurl = strmmsgurl.str();
-    std::cout<<msgurl<<std::endl;
-    curl_easy_setopt(curl, CURLOPT_URL, msgurl.c_str());
-    curl_easy_setopt(curl, CURLOPT_USERNAME, m_login.c_str());
-    curl_easy_setopt(curl, CURLOPT_PASSWORD, m_password.c_str());
-    curl_easy_setopt(curl, CURLOPT_PROXY, m_proxy.c_str());
+    do {
+        ScopedLock scope(m_lock);
+        std::stringstream strmmsgurl; strmmsgurl << m_rxurl << "INBOX" << "/;UID=" << msgno;
+        curl_easy_setopt(curl, CURLOPT_URL, strmmsgurl.str().c_str());
+        curl_easy_setopt(curl, CURLOPT_USERNAME, m_login.c_str());
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, m_password.c_str());
+        curl_easy_setopt(curl, CURLOPT_PROXY, m_proxy.c_str());
+    }while(0);
+
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, OnRxfer);
@@ -458,7 +479,7 @@ bool CMailClient::StoreFlag(MessageNo msgno, const std::string & flag)
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
-    chunk.length = 0; /* test with 100k total length*/
+    chunk.length = 0; /* test with 0 byte total length*/
     chunk.cb   = NULL;
     chunk.userp= NULL;
 
@@ -469,13 +490,15 @@ bool CMailClient::StoreFlag(MessageNo msgno, const std::string & flag)
     CURL *curl = (CURL * )m_rx;
     CURLcode res = CURLE_OK;
 
-    std::string msgurl = m_rxurl;
-    msgurl += "INBOX";
-    std::cout<<msgurl<<std::endl;
-    curl_easy_setopt(curl, CURLOPT_URL, msgurl.c_str());
-    curl_easy_setopt(curl, CURLOPT_USERNAME, m_login.c_str());
-    curl_easy_setopt(curl, CURLOPT_PASSWORD, m_password.c_str());
-    curl_easy_setopt(curl, CURLOPT_PROXY, m_proxy.c_str());
+    do {
+        ScopedLock scope(m_lock);
+        std::string msgurl = m_rxurl; msgurl += "INBOX";
+        curl_easy_setopt(curl, CURLOPT_URL, msgurl.c_str());
+        curl_easy_setopt(curl, CURLOPT_USERNAME, m_login.c_str());
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, m_password.c_str());
+        curl_easy_setopt(curl, CURLOPT_PROXY, m_proxy.c_str());
+    }while(0);
+
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);    
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, OnRxfer);
@@ -522,7 +545,7 @@ bool CMailClient::Expunge()
     chunk.memory = (char *)::malloc(1);  /* will be grown as needed by the realloc above */
     chunk.size = 0;    /* no data at this point */
     chunk.self = this;
-    chunk.length = 0; /* test with 100k total length*/
+    chunk.length = 0; /* test with 0 byte total length*/
     chunk.cb   = NULL;
     chunk.userp= NULL;
 
@@ -533,13 +556,15 @@ bool CMailClient::Expunge()
     CURL *curl = (CURL * )m_rx;
     CURLcode res = CURLE_OK;
 
-    std::string msgurl = m_rxurl;
-    msgurl += "INBOX";
-    std::cout<<msgurl<<std::endl;
-    curl_easy_setopt(curl, CURLOPT_URL, msgurl.c_str());
-    curl_easy_setopt(curl, CURLOPT_USERNAME, m_login.c_str());
-    curl_easy_setopt(curl, CURLOPT_PASSWORD, m_password.c_str());
-    curl_easy_setopt(curl, CURLOPT_PROXY, m_proxy.c_str());
+    do {
+        ScopedLock scope(m_lock);
+        std::string msgurl = m_rxurl; msgurl += "INBOX";
+        curl_easy_setopt(curl, CURLOPT_URL, msgurl.c_str());
+        curl_easy_setopt(curl, CURLOPT_USERNAME, m_login.c_str());
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, m_password.c_str());
+        curl_easy_setopt(curl, CURLOPT_PROXY, m_proxy.c_str());
+    }while(0);
+
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);    
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, OnRxfer);

@@ -6,10 +6,12 @@
 
 #include <bitmailcore/bitmail.h>
 
+class ILock;
+
 class CMailClient
 {
 public:
-    CMailClient( BMEventCB netcb, void * netcbparam);
+    CMailClient(ILock *lock, BMEventCB netcb, void * netcbparam);
     ~CMailClient();
 public:
     bool config( const std::string & txUrl
@@ -65,6 +67,8 @@ private:
     void *      m_rx;
     BMEventCB   m_cb;
     void *      m_cbp;
+
+    ILock *     m_lock;
 };
 
 
