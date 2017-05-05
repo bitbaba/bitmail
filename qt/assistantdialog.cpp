@@ -130,7 +130,8 @@ void AssistantDialog::on_btnDecrypt_clicked()
 {
     std::string smime = input().toStdString();
     std::string sEmail, sNick, sMsg, sCertId, sCert, sSigTime;
-    m_bitmail->Decrypt(smime, sEmail, sNick, sMsg, sCertId, sCert, sSigTime);
+    bool encrypted = false;
+    m_bitmail->Decrypt(smime, sEmail, sNick, sMsg, sCertId, sCert, sSigTime, &encrypted);
     nick(QString::fromStdString(sNick));
     email(QString::fromStdString(sEmail));
     output(QString::fromStdString(sMsg));

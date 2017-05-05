@@ -145,12 +145,10 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    BitMail * bitmail = BitMail::getInst();
+    BitMail * bitmail = BitMail::getInst(new BMLockCraft());
     if (bitmail == NULL){
         return 0;
     }
-
-    BitMail::getInst()->SetupLock(new BMLockCraft());
 
     if (!BMQTApplication::LoadProfile(bitmail, qsEmail, qsPassphrase)){
         BitMail::freeInst();

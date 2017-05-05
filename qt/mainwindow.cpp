@@ -234,7 +234,7 @@ MainWindow::MainWindow(BitMail * bitmail)
 
     // Startup network
     m_rxth = new RxThread(m_bitmail);
-    connect(m_rxth, SIGNAL(gotMessage(QString, QString, QString, QString, QString, QString)), this, SLOT(onNewMessage(QString, QString, QString, QString, QString, QString)));
+    connect(m_rxth, SIGNAL(gotMessage(QString, QString, QString, QString, QString, QString, bool)), this, SLOT(onNewMessage(QString, QString, QString, QString, QString, QString, bool)));
     connect(m_rxth, SIGNAL(done()), this, SLOT(onRxDone()));
     connect(m_rxth, SIGNAL(rxProgress(int, QString)), this, SLOT(onRxProgress(int, QString)));
     m_rxth->start();
@@ -970,7 +970,8 @@ void MainWindow::onNewMessage(const QString & from
                               , const QString & content
                               , const QString & certid
                               , const QString & cert
-                              , const QString & sigtime)
+                              , const QString & sigtime
+                              , bool encrypted)
 {   
     qDebug() << "receips: " << qsTo;
 
@@ -1000,7 +1001,7 @@ void MainWindow::onNewMessage(const QString & from
     }
 
     QString receips = QString::fromStdString(BitMail::serializeReceips(vec_receips));    
-    enqueueMsg(sessionKey, false, BMQTApplication::GetSigTime(sigtime), from, receips, content, certid, cert);
+    enqueueMsg(sessionKey, false, BMQTApplication::GetSigTime(sigtime), from, receips, content, certid, cert, encrypted);
 
     if (!sessionKey.isEmpty() && sessionKey == this->currentSessionKey()){
         populateMessages(sessionKey);
@@ -1020,7 +1021,8 @@ void MainWindow::enqueueMsg(const QString & k
                             , const QString & to
                             , const QString & msg
                             , const QString & certid
-                            , const QString & cert)
+                            , const QString & cert
+                            , bool encrypted)
 {
     QJsonObject obj;
     obj["tx"] = tx;
@@ -1030,6 +1032,8 @@ void MainWindow::enqueueMsg(const QString & k
     obj["msg"] = msg;
     obj["certid"] = certid;
     obj["cert"] = cert;
+    obj["encrypted"] = encrypted;
+    qDebug() << (encrypted ? "Encrypted" : "NoEnvelop");
     QJsonDocument doc;
     doc.setObject(obj);
     m_peermsgQ[k].append(doc.toJson());
@@ -1061,7 +1065,15 @@ void MainWindow::SendTo(const QString & sessionKey, const QString & qsMsg)
 
     emit readyToSend(qsFrom, BMQTApplication::toQStringList(vec_receips), qsMsg);
 
-    enqueueMsg(sessionKey, true, QDateTime::currentDateTime().toString(), qsFrom, QString::fromStdString( BitMail::serializeReceips(vec_receips) ), qsMsg, qsCertId, qsCert);
+    enqueueMsg(sessionKey
+               , true
+               , QDateTime::currentDateTime().toString()
+               , qsFrom
+               , QString::fromStdString( BitMail::serializeReceips(vec_receips) )
+               , qsMsg
+               , qsCertId
+               , qsCert
+               , false/*meaningless if tx*/);
 
     if (!sessionKey.isEmpty() && sessionKey == currentSessionKey()){
         populateMessages(sessionKey);

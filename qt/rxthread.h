@@ -20,7 +20,8 @@ public:
                           , const QString & msg
                           , const QString & certid
                           , const QString & cert
-                          , const QString & sigtime);
+                          , const QString & sigtime
+                          , bool encrypted);
 
     void NotifyProgress(int st, const QString & info);
 
@@ -32,7 +33,8 @@ signals:
                         , const QString & msg
                         , const QString & certid
                         , const QString & cert
-                        , const QString & sigtime);
+                        , const QString & sigtime
+                        , bool encrypted);
     void done();
 
     void rxProgress(int st, const QString & info);

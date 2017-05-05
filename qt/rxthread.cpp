@@ -5,7 +5,7 @@
 #include <QDateTime>
 
 static
-int MessageEventHandler(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, const char * sigtime, void * p);
+int MessageEventHandler(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, const char * sigtime, bool encrypted, void * p);
 
 static
 int RxProgressHandler(RTxState state, const char * info, void * userptr);
@@ -51,9 +51,10 @@ void RxThread::NotifyNewMessage(const QString &from
                                 , const QString & content
                                 , const QString & certid
                                 , const QString & cert
-                                , const QString & sigtime)
+                                , const QString & sigtime
+                                , bool encrypted)
 {
-    emit gotMessage(from, receips, content, certid, cert, sigtime);
+    emit gotMessage(from, receips, content, certid, cert, sigtime, encrypted);
     return ;
 }
 
@@ -62,7 +63,7 @@ void RxThread::onInboxPollEvent()
     m_inboxPoll.release();
 }
 
-int MessageEventHandler(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, const char * sigtime, void * p)
+int MessageEventHandler(const char * from, const char * receips, const char * msg, unsigned int msglen, const char * certid, const char * cert, const char * sigtime, bool encrypted, void * p)
 {
     QString qsFrom = QString::fromStdString(from);
     QString qsReceips = QString::fromStdString(receips);
@@ -72,7 +73,7 @@ int MessageEventHandler(const char * from, const char * receips, const char * ms
     QString qsSigTime = QString::fromStdString(sigtime);
 
     RxThread * self = (RxThread *)p;
-    self->NotifyNewMessage(qsFrom, qsReceips, qsContent, qsCertID, qsCert, qsSigTime);
+    self->NotifyNewMessage(qsFrom, qsReceips, qsContent, qsCertID, qsCert, qsSigTime, encrypted);
     return 0;
 }
 

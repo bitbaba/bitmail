@@ -93,7 +93,7 @@ public slots:
     void onLabelDoubleClicked(ClickableLabel * label);
     void onTextEditDropped(const QVariantList & varlist);
 
-    void onNewMessage(const QString & from, const QString & receips, const QString & msg, const QString & certid, const QString & cert, const QString & sigtime);
+    void onNewMessage(const QString & from, const QString & receips, const QString & msg, const QString & certid, const QString & cert, const QString & sigtime, bool encrypted);
     void onTreeCurrentBuddy(QTreeWidgetItem * current, QTreeWidgetItem * previous);
     void onTreeBuddyDoubleClicked(QTreeWidgetItem * actItem,int col);
     void onMessageDoubleClicked(QListWidgetItem * actItem);
@@ -154,7 +154,7 @@ private:
 
     void shutdownNetwork();
 
-    void enqueueMsg(const QString & k, bool tx, const QString & sigtime, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert);
+    void enqueueMsg(const QString & k, bool tx, const QString & sigtime, const QString & from, const QString & to, const QString & msg, const QString & certid, const QString & cert, bool encrypted);
     QStringList dequeueMsg(const QString &key);
 
     void Send(const QString & msg);
