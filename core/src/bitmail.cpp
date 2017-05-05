@@ -22,6 +22,10 @@
 # include <openssl/rand.h>
 # include <openssl/pkcs7.h>
 
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 # include <string>
 # include <fstream>
 # include <sstream>
@@ -443,6 +447,19 @@ void BitMail::blockNoEnvelop(bool yes) {
 
 void BitMail::blockNoFriend(bool yes) {
     blockNoFriend_ = yes;
+}
+
+/**
+* Contract
+*/
+bool BitMail::exec(const std::string & script)
+{
+	lua_State *L = luaL_newstate();  /* create state */
+	if (L == NULL) {
+		return false;
+	}
+	lua_close(L);
+	return true;
 }
 
 /**

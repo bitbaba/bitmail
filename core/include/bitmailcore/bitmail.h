@@ -150,6 +150,9 @@ public:
     void blockNoSig(bool );
     void blockNoEnvelop(bool );
     void blockNoFriend(bool );
+	
+	// Contract
+	bool exec(const std::string & script);
 
     // Contacts
     std::vector<std::string> contacts() const;
