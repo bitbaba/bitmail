@@ -22,12 +22,12 @@ HEADERS       = mainwindow.h \
                 messagedialog.h \
                 assistantdialog.h \
                 groupdialog.h \
-    procth.h \
-    clickablelabel.h \
-    textedit.h \
-    lock.h \
-    versiondialog.h \
-    version.h
+                procth.h \
+                clickablelabel.h \
+                textedit.h \
+                lock.h \
+                versiondialog.h \
+                version.h
 
 SOURCES       = main.cpp \
                 mainwindow.cpp \
@@ -41,11 +41,11 @@ SOURCES       = main.cpp \
                 messagedialog.cpp \
                 assistantdialog.cpp \
                 groupdialog.cpp \
-    procth.cpp \
-    clickablelabel.cpp \
-    textedit.cpp \
-    lock.cpp \
-    versiondialog.cpp
+                procth.cpp \
+                clickablelabel.cpp \
+                textedit.cpp \
+                lock.cpp \
+                versiondialog.cpp
 #! [0]
 RESOURCES     = bitmail.qrc
 #! [0]
@@ -119,6 +119,15 @@ DEPENDPATH += $$PWD/../out/include
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/qrencode.lib
 else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libqrencode.a
+
+
+win32: LIBS += -L$$PWD/../out/lib/ -llua
+
+INCLUDEPATH += $$PWD/../out/include
+DEPENDPATH += $$PWD/../out/include
+
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/lua.lib
+else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/liblua.a
 
 
 win32: LIBS += -lws2_32 -lgdi32 -liphlpapi
