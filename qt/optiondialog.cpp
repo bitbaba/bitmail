@@ -218,3 +218,19 @@ bool OptionDialog::noFriend() const
 {
     return m_cbNoFriend->isChecked();
 }
+
+void OptionDialog::noSig(bool yes)
+{
+    m_cbNoSig->setChecked(yes);
+}
+
+void OptionDialog::noEnvelop(bool yes)
+{
+    m_cbNoEnvelop->setChecked(yes);
+}
+
+void OptionDialog::noFriend(bool yes)
+{
+    m_cbNoFriend->setChecked(yes);
+}
+

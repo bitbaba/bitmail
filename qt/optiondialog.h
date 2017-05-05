@@ -56,6 +56,12 @@ public:
 
     bool noFriend() const;
 
+    void noSig(bool yes);
+
+    void noEnvelop(bool yes);
+
+    void noFriend(bool yes);
+
 private slots:
     void on_leEmail_textChanged(const QString &arg1);
 

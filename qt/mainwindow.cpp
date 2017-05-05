@@ -716,6 +716,10 @@ void MainWindow::onBtnConfigClicked()
 
     optDialog.socks5(QString::fromStdString(m_bitmail->proxy()));
 
+    optDialog.noSig(BitMail::getInst()->blockNoSig());
+    optDialog.noEnvelop(BitMail::getInst()->blockNoEnvelop());
+    optDialog.noFriend(BitMail::getInst()->blockNoFriend());
+
     if (QDialog::Accepted != optDialog.exec()){
         return ;
     }
@@ -728,6 +732,10 @@ void MainWindow::onBtnConfigClicked()
                             , optDialog.login().toStdString()
                             , optDialog.password().toStdString()
                             , optDialog.socks5().toStdString());
+
+    BitMail::getInst()->blockNoSig(optDialog.noSig());
+    BitMail::getInst()->blockNoEnvelop(optDialog.noEnvelop());
+    BitMail::getInst()->blockNoFriend(optDialog.noFriend());
 }
 
 void MainWindow::onRemoveAct()
@@ -983,6 +991,23 @@ void MainWindow::onNewMessage(const QString & from
         return ;
     }
     // TODO: more block policy check
+    if (!encrypted && BitMail::getInst()->blockNoEnvelop()){
+        return ;
+    }
+    if (certid.isEmpty() && BitMail::getInst()->blockNoSig()){
+        return ;
+    }
+    if (BitMail::getInst()->blockNoFriend()){
+        if (certid.isEmpty()){
+            return ;
+        }
+        if (!encrypted){
+            return ;
+        }
+        if (BitMail::getInst()->contattrib(from.toStdString(), "cert.id") != certid.toStdString()){
+            return ;
+        }
+    }
 
     QString sessionKey = QString::fromStdString(BitMail::serializeReceips(from.toStdString()));
 
