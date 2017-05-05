@@ -975,9 +975,13 @@ void MainWindow::onNewMessage(const QString & from
     qDebug() << "receips: " << qsTo;
 
     std::vector<std::string> vec_receips = BitMail::decodeReceips(qsTo.toStdString());
+    // Comment:
+    // your speech in group will not echo.
+    // but your speech to yourself will echo, for test now.
     if (vec_receips.size() > 1 && from.toStdString() == BitMail::getInst()->email()){
         return ;
     }
+    // TODO: more block policy check
 
     QString sessionKey = QString::fromStdString(BitMail::serializeReceips(from.toStdString()));
 

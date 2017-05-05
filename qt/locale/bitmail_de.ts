@@ -193,8 +193,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../logindialog.ui" line="241"/>
+        <location filename="../logindialog.ui" line="204"/>
         <source>Enter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../logindialog.ui" line="247"/>
+        <source>New...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -509,8 +514,28 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="191"/>
+        <location filename="../optiondialog.ui" line="205"/>
         <source>Socks5:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="275"/>
+        <source>Block:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="284"/>
+        <source>NoSig</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="291"/>
+        <source>NoEnvelop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="298"/>
+        <source>NoFriend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -519,7 +544,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="205"/>
+        <location filename="../optiondialog.ui" line="191"/>
         <source>Password:  </source>
         <translation type="unfinished"></translation>
     </message>
@@ -544,12 +569,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.cpp" line="171"/>
+        <location filename="../optiondialog.cpp" line="179"/>
         <source>Export Certificate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../optiondialog.cpp" line="186"/>
+        <location filename="../optiondialog.cpp" line="194"/>
         <source>Export Private Key</source>
         <translation type="unfinished"></translation>
     </message>

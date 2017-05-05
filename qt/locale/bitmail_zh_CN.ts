@@ -193,9 +193,18 @@
         <translation>私钥密钥:</translation>
     </message>
     <message>
-        <location filename="../logindialog.ui" line="241"/>
+        <location filename="../logindialog.ui" line="204"/>
         <source>Enter</source>
         <translation>确认</translation>
+    </message>
+    <message>
+        <location filename="../logindialog.ui" line="247"/>
+        <source>New...</source>
+        <translation>创建...</translation>
+    </message>
+    <message>
+        <source>New..</source>
+        <translation type="vanished">创建..</translation>
     </message>
 </context>
 <context>
@@ -509,9 +518,29 @@
         <translation>网路 当前使用IMAPS/SMTPS</translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="191"/>
+        <location filename="../optiondialog.ui" line="205"/>
         <source>Socks5:</source>
         <translation>SOCKS5:</translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="275"/>
+        <source>Block:</source>
+        <translation>拦截:</translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="284"/>
+        <source>NoSig</source>
+        <translation>没有签名</translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="291"/>
+        <source>NoEnvelop</source>
+        <translation>没有加密</translation>
+    </message>
+    <message>
+        <location filename="../optiondialog.ui" line="298"/>
+        <source>NoFriend</source>
+        <translation>不是好友</translation>
     </message>
     <message>
         <location filename="../optiondialog.ui" line="198"/>
@@ -519,7 +548,7 @@
         <translation>登录:</translation>
     </message>
     <message>
-        <location filename="../optiondialog.ui" line="205"/>
+        <location filename="../optiondialog.ui" line="191"/>
         <source>Password:  </source>
         <translation>口令:</translation>
     </message>
@@ -544,12 +573,12 @@
         <translation>发送:</translation>
     </message>
     <message>
-        <location filename="../optiondialog.cpp" line="171"/>
+        <location filename="../optiondialog.cpp" line="179"/>
         <source>Export Certificate</source>
         <translation>导出证书</translation>
     </message>
     <message>
-        <location filename="../optiondialog.cpp" line="186"/>
+        <location filename="../optiondialog.cpp" line="194"/>
         <source>Export Private Key</source>
         <translation>导出私钥</translation>
     </message>

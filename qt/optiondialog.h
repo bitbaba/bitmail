@@ -50,6 +50,12 @@ public:
     void socks5(const QString & s);
     QString socks5(void) const;
 
+    bool noSig() const;
+
+    bool noEnvelop() const;
+
+    bool noFriend() const;
+
 private slots:
     void on_leEmail_textChanged(const QString &arg1);
 
@@ -69,6 +75,10 @@ private:
     QLineEdit *m_leSocks5;
     QPushButton *m_btnExCert;
     QPushButton *m_btnExKey;
+
+    QCheckBox *m_cbNoSig;
+    QCheckBox *m_cbNoEnvelop;
+    QCheckBox *m_cbNoFriend;
 private:
     bool       newProfile;
 };

@@ -31,6 +31,14 @@ OptionDialog::OptionDialog(bool fNew, QWidget *parent) :
     m_btnExCert      = findChild<QPushButton*>("btnExportCert");
     m_btnExKey       = findChild<QPushButton*>("btnExportKey" );
 
+    m_cbNoSig        = findChild<QCheckBox*>("cbNoSig"     );
+    m_cbNoEnvelop    = findChild<QCheckBox*>("cbNoEnvelop" );
+    m_cbNoFriend     = findChild<QCheckBox*>("cbNoFriend"  );
+
+    m_cbNoSig->setChecked(true);
+    m_cbNoEnvelop->setChecked(false);
+    m_cbNoFriend->setChecked(false);
+
     m_leEmail->setEnabled(newProfile);
 
     m_leNick->setEnabled(newProfile);
@@ -194,4 +202,19 @@ void OptionDialog::on_btnExportKey_clicked()
     std::string pkcs12 = BitMail::getInst()->pkcs12();
     file.write(pkcs12.data(), pkcs12.length());
     file.close();
+}
+
+bool OptionDialog::noSig()const
+{
+    return m_cbNoSig->isChecked();
+}
+
+bool OptionDialog::noEnvelop()const
+{
+    return m_cbNoEnvelop->isChecked();
+}
+
+bool OptionDialog::noFriend() const
+{
+    return m_cbNoFriend->isChecked();
 }

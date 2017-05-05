@@ -160,7 +160,7 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>260</width>
+          <width>268</width>
           <height>32</height>
          </size>
         </property>
@@ -187,43 +187,6 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QCommandLinkButton" name="cmdCreate">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="baseSize">
-         <size>
-          <width>32</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <family>Segoe UI</family>
-          <underline>true</underline>
-         </font>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
      </layout>
     </item>
    </layout>
@@ -231,7 +194,7 @@
   <widget class="QPushButton" name="btnEnter">
    <property name="geometry">
     <rect>
-     <x>130</x>
+     <x>120</x>
      <y>270</y>
      <width>131</width>
      <height>41</height>
@@ -241,10 +204,51 @@
     <string>Enter</string>
    </property>
   </widget>
+  <widget class="QCommandLinkButton" name="cmdCreate">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>270</y>
+     <width>80</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>80</width>
+     <height>41</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>80</width>
+     <height>41</height>
+    </size>
+   </property>
+   <property name="baseSize">
+    <size>
+     <width>80</width>
+     <height>41</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <family>Segoe UI</family>
+     <underline>true</underline>
+    </font>
+   </property>
+   <property name="text">
+    <string>New...</string>
+   </property>
+  </widget>
  </widget>
  <tabstops>
-  <tabstop>cbEmail</tabstop>
-  <tabstop>cmdCreate</tabstop>
   <tabstop>lePassphrase</tabstop>
  </tabstops>
  <resources/>

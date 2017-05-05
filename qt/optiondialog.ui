@@ -169,7 +169,7 @@
      <x>10</x>
      <y>180</y>
      <width>381</width>
-     <height>171</height>
+     <height>191</height>
     </rect>
    </property>
    <property name="title">
@@ -181,14 +181,14 @@
       <x>20</x>
       <y>30</y>
       <width>351</width>
-      <height>130</height>
+      <height>154</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="4" column="0">
-      <widget class="QLabel" name="lbSocks5">
+     <item row="3" column="0">
+      <widget class="QLabel" name="lbSmtpPassword">
        <property name="text">
-        <string>Socks5:</string>
+        <string>Password:  </string>
        </property>
       </widget>
      </item>
@@ -199,10 +199,10 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="lbSmtpPassword">
+     <item row="4" column="0">
+      <widget class="QLabel" name="lbSocks5">
        <property name="text">
-        <string>Password:  </string>
+        <string>Socks5:</string>
        </property>
       </widget>
      </item>
@@ -268,6 +268,38 @@
         <enum>QLineEdit::Normal</enum>
        </property>
       </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Block:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QCheckBox" name="cbNoSig">
+         <property name="text">
+          <string>NoSig</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbNoEnvelop">
+         <property name="text">
+          <string>NoEnvelop</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbNoFriend">
+         <property name="text">
+          <string>NoFriend</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>

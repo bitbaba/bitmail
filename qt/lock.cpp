@@ -12,16 +12,16 @@ BMLock::~BMLock()
 
 void BMLock::TryLock(unsigned int ms)
 {
-    mtx_.tryLock(ms);
+    //mtx_.tryLock(ms);
 }
 
 void BMLock::Lock(){
-    mtx_.lock();
+    //mtx_.lock();
 }
 
 void BMLock::Unlock()
 {
-    mtx_.unlock();
+    //mtx_.unlock();
 }
 
 
