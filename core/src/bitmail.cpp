@@ -60,6 +60,7 @@ BitMail::BitMail(ILockCraft * lockCraft)
 , m_mc(NULL)
 , m_onMessageEvent(NULL), m_onMessageEventParam(NULL)
 , m_lockCraft(lockCraft), m_lockContacts(NULL), m_lockNet(NULL), m_lockProfile(NULL)
+, blockNoSig_(false), blockNoEnvelop_(false), blockNoFriend_(false)
 {
     BitMailGlobalInit();
 
@@ -298,6 +299,18 @@ bool BitMail::Import(const std::string & passphrase, const std::string & json)
                             , network["proxy"].asString());
         }
     }
+    if (joRoot.isMember("block")){
+        Json::Value block = joRoot["block"];
+        if (block.isMember("noSig")){
+            blockNoSig_ = block["noSig"].asBool();
+        }
+        if (block.isMember("noEnvelop")){
+            blockNoEnvelop_ = block["noEnvelop"].asBool();
+        }
+        if (block.isMember("noFriend")){
+            blockNoFriend_ = block["noFriend"].asBool();
+        }
+    }
     if (joRoot.isMember("contacts")){
         ScopedLock scope(m_lockContacts);
     	contacts_ = joRoot["contacts"].toStyledString();
@@ -330,6 +343,12 @@ std::string BitMail::Export() const
     network["password"]  = password;
     network["proxy"] = m_mc->proxy();
     joRoot["network"] = network;
+
+    Json::Value block;
+    block["noSig"] = blockNoSig_;
+    block["noEnvelop"] = blockNoEnvelop_;
+    block["noFriend"] = blockNoFriend_;
+    joRoot["block"] = block;
 
     Json::Reader reader; Json::Value contacts;
     do {
@@ -400,6 +419,30 @@ std::string BitMail::password() const{
 
 std::string BitMail::proxy() const{
     return m_mc->proxy();
+}
+
+bool BitMail::blockNoSig() const{
+    return blockNoSig_;
+}
+
+bool BitMail::blockNoEnvelop() const{
+    return blockNoEnvelop_;
+}
+
+bool BitMail::blockNoFriend() const{
+    return blockNoFriend_;
+}
+
+void BitMail::blockNoSig(bool yes) {
+    blockNoSig_ = yes;
+}
+
+void BitMail::blockNoEnvelop(bool yes) {
+    blockNoEnvelop_ = yes;
+}
+
+void BitMail::blockNoFriend(bool yes) {
+    blockNoFriend_ = yes;
 }
 
 /**

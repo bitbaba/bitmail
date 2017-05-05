@@ -144,6 +144,13 @@ public:
 
     std::string proxy() const;
 
+    bool blockNoSig() const;
+    bool blockNoEnvelop() const;
+    bool blockNoFriend() const;
+    void blockNoSig(bool );
+    void blockNoEnvelop(bool );
+    void blockNoFriend(bool );
+
     // Contacts
     std::vector<std::string> contacts() const;
 
@@ -179,6 +186,9 @@ private:
     ILock              * m_lockNet;
     ILock              * m_lockProfile;
     std::string          contacts_;//TODO: reenter in mulithread
+    bool                 blockNoSig_;
+    bool                 blockNoEnvelop_;
+    bool                 blockNoFriend_;
 };
 
 
