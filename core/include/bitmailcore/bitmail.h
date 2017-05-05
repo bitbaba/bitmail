@@ -151,8 +151,8 @@ public:
     void blockNoEnvelop(bool );
     void blockNoFriend(bool );
 	
-	// Contract
-	bool exec(const std::string & script);
+    // Contract
+    std::string exec(const std::string & script);
 
     // Contacts
     std::vector<std::string> contacts() const;

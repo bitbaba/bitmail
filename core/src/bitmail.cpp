@@ -452,11 +452,11 @@ void BitMail::blockNoFriend(bool yes) {
 /**
 * Contract
 */
-bool BitMail::exec(const std::string & script)
+std::string BitMail::exec(const std::string & script)
 {
-	lua_State *L = luaL_newstate();  /* create state */
-	lua_close(L);
-	return true;
+    lua_State *L = luaL_newstate();  /* create state */
+    lua_close(L);
+    return true;
 }
 
 /**
