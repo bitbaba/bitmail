@@ -374,9 +374,8 @@ int CX509Cert::MakeCert(const std::string & commonName
      *     decipherOnly            (8) }
      */
     AddExt(x, NID_key_usage, (char *)"digitalSignature"\
-                                  ", nonRepudiation"\
                                   ", dataEncipherment"\
-                                  ", keyAgreement"\
+                                  ", keyEncipherment"\
                                   ", keyCertSign"\
                                   ", cRLSign");
 
