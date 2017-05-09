@@ -870,21 +870,20 @@ void MainWindow::onHtmlAct(bool fChecked)
 void MainWindow::onBtnInviteClicked()
 {
     InviteDialog inviteDialog(this);
-    if (QDialog::Accepted != inviteDialog.exec()){
-        return ;
+    while(true){
+        if (QDialog::Accepted != inviteDialog.exec()){
+            return ;
+        }
+        if (!inviteDialog.GetWhisper().isEmpty()){
+            break;
+        }
+        // loop util whispher is not empty.
     }
     std::vector<std::string> receips = BMQTApplication::toStdStringList(inviteDialog.GetEmail().split(",;:| \t\r\n"));
     QString sessKey = QString::fromStdString(BitMail::serializeReceips(receips));
-    QString qsWhisper = inviteDialog.GetWhisper();
-    QStringList attachments = inviteDialog.attachments();
+    QString qsWhisper = QString::fromStdString(BitMail::md5(inviteDialog.GetWhisper().toStdString()));
     QStringList parts;
     parts.append( BMQTApplication::toMimeTextPlain( qsWhisper ));
-    for(QStringList::const_iterator it = attachments.constBegin(); it != attachments.constEnd(); ++it){
-        QString filePath = *it;
-        if (!filePath.isEmpty() && QFileInfo(filePath).exists()){
-            parts.append( BMQTApplication::toMimeAttachment(*it) );
-        }
-    }
     QString qsMsg = BMQTApplication::toMixed(parts);
 
     SendTo(sessKey, qsMsg);
