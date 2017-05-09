@@ -395,7 +395,7 @@ int CX509Cert::MakeCert(const std::string & commonName
      *     id-kp-OCSPSigning            OBJECT IDENTIFIER ::= { id-kp 9 }
      */
     AddExt(x, NID_ext_key_usage            
-            , (char *)"anyExtendedKeyUsage"
+            , (char *)"emailProtection"
            );
 
     AddExt(x, NID_subject_key_identifier
