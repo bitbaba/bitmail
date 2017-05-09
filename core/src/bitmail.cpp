@@ -456,7 +456,7 @@ std::string BitMail::exec(const std::string & script)
 {
     lua_State *L = luaL_newstate();  /* create state */
     lua_close(L);
-    return true;
+    return "";
 }
 
 /**
