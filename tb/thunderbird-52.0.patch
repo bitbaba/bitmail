@@ -1,0 +1,58 @@
+diff --git a/certverifier/NSSCertDBTrustDomain.cpp b/certverifier/NSSCertDBTrustDomain.cpp
+index 412adb4..afd525e 100644
+--- a/certverifier/NSSCertDBTrustDomain.cpp
++++ b/certverifier/NSSCertDBTrustDomain.cpp
+@@ -256,6 +256,13 @@ NSSCertDBTrustDomain::GetCertTrust(EndEntityOrCA endEntityOrCA,
+       }
+     }
+   }
++  // Harry, incorrect shortcut for email protection by CA certificate.
++  // take care of attack of the man-in-the-middle!
++  // offline trust building is required!
++  if (candidateCert->isRoot && mCertDBTrustType == trustEmail) {
++	  trustLevel = TrustLevel::TrustAnchor;
++	  return Success;
++  }
+ 
+   trustLevel = TrustLevel::InheritsTrust;
+   return Success;
+diff --git a/nss/lib/certhigh/certvfy.c b/nss/lib/certhigh/certvfy.c
+index ccd38e6..b764c9b 100644
+--- a/nss/lib/certhigh/certvfy.c
++++ b/nss/lib/certhigh/certvfy.c
+@@ -885,7 +885,7 @@ cert_VerifyCertChainOld(CERTCertDBHandle *handle, CERTCertificate *cert,
+         if (issuerCert->isRoot) {
+             PORT_SetError(SEC_ERROR_UNTRUSTED_ISSUER);
+             LOG_ERROR(log, issuerCert, count + 1, 0);
+-            goto loser;
++            goto done;
+         }
+         /* The issuer cert will be the subject cert in the next loop.
+          * A cert is self-issued if its subject and issuer are equal and
+diff --git a/pkix/lib/pkixbuild.cpp b/pkix/lib/pkixbuild.cpp
+index fdbd9b5..db940d6 100644
+--- a/pkix/lib/pkixbuild.cpp
++++ b/pkix/lib/pkixbuild.cpp
+@@ -168,7 +168,8 @@ PathBuildingStep::Check(Input potentialIssuerDER,
+                        prev->GetSubjectPublicKeyInfo()) &&
+         InputsAreEqual(potentialIssuer.GetSubject(), prev->GetSubject())) {
+       // XXX: error code
+-      return RecordResult(Result::ERROR_UNKNOWN_ISSUER, keepGoing);
++      //return RecordResult(Result::ERROR_UNKNOWN_ISSUER, keepGoing);
++		return RecordResult(Success, keepGoing);
+     }
+   }
+ 
+diff --git a/pkix/lib/pkixcheck.cpp b/pkix/lib/pkixcheck.cpp
+index be2d283..f3d0425 100644
+--- a/pkix/lib/pkixcheck.cpp
++++ b/pkix/lib/pkixcheck.cpp
+@@ -692,7 +692,7 @@ CheckBasicConstraints(EndEntityOrCA endEntityOrCA,
+       // Note that this check prevents a delegated OCSP response signing
+       // certificate with the CA bit from successfully validating when we check
+       // it from pkixocsp.cpp, which is a good thing.
+-      return Result::ERROR_CA_CERT_USED_AS_END_ENTITY;
++      //return Result::ERROR_CA_CERT_USED_AS_END_ENTITY;
+     }
+ 
+     return Success;
