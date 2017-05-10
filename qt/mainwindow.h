@@ -139,7 +139,7 @@ private:
     void setupTextActions();
     void createToolBars();
     void createStatusBar();
-    QWidget * createMessageWidget(int width, const QVariantList & varlist);
+    QWidget * createMessageWidget(int width, const QString & sigtime, bool Signed, bool SignOk, bool encrypted, const QVariantList & varlist);
 
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);

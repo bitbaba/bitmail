@@ -88,13 +88,8 @@ MainWindow::MainWindow(BitMail * bitmail)
     /** Title */
     do {
         QString qsEmail = QString::fromStdString(m_bitmail->email());
-        QString qsNick = QString::fromStdString(m_bitmail->contattrib(qsEmail.toStdString(), "cert.nick"));
-        QString qsTitle = tr("BitMail");
-        qsTitle += " - ";
-        qsTitle += qsNick;
-        qsTitle += "(";
-        qsTitle += qsEmail;
-        qsTitle += ")";
+        QString qsNick = QString::fromStdString(BitMail::certCN(m_bitmail->contattrib(qsEmail.toStdString(), "cert")));
+        QString qsTitle = QString("%1 - %2(%3)").arg(tr("BitMail")).arg(qsNick).arg(qsEmail);
         setWindowTitle(qsTitle);
     }while(0);
 
@@ -1004,7 +999,8 @@ void MainWindow::onNewMessage(const QString & from
         if (!encrypted){
             return ;
         }
-        if (BitMail::getInst()->contattrib(from.toStdString(), "cert.id") != certid.toStdString()){
+        std::string certpem = BitMail::getInst()->contattrib(from.toStdString(), "cert");
+        if (BitMail::certId(certpem) != certid.toStdString()){
             return ;
         }
     }
@@ -1160,13 +1156,18 @@ void MainWindow::populateMessages(const QString & k)
 
         QString qsMsg = msgObj["msg"].toString();
 
-        QVariantList varlist = BMQTApplication::fromMime(qsMsg);
-        varlist.insert(0, msgObj["sigtime"].toString());
+        QVariantList varlist = BMQTApplication::fromMime(qsMsg);        
 
         msgElt->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-        msgElt->setBackgroundColor(msgObj["tx"].toBool() ? QColor(158,234,106) : Qt::lightGray);
+        msgElt->setBackgroundColor(msgObj["tx"].toBool() ? QColor(158,234,106) : QColor(120,205,248));
         msgElt->setData(Qt::UserRole, msgObj);
-        QWidget * widget = createMessageWidget(msgView->width()>>1, varlist);
+        QWidget * widget = createMessageWidget(msgView->width()>>1
+                                                , msgObj["sigtime"].toString()
+                                                , !msgObj["certid"].toString().isEmpty()
+                                                , msgObj["certid"].toString().toStdString() == BitMail::certId(BitMail::getInst()->contattrib(msgObj["from"].toString().toStdString(), "cert"))
+                                                , msgObj["encrypted"].toBool()
+                                                , varlist);
+
         msgElt->setSizeHint(widget->sizeHint());
         msgView->addItem(msgElt);
         msgView->setItemWidget(msgElt, widget);
@@ -1174,7 +1175,7 @@ void MainWindow::populateMessages(const QString & k)
     }
 }
 
-QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist)
+QWidget * MainWindow::createMessageWidget(int width, const QString & sigtime, bool Signed, bool SignOk, bool encrypted, const QVariantList &varlist)
 {
     // ThanskTo:
     //http://stackoverflow.com/questions/948444/qlistview-qlistwidget-with-custom-items-and-custom-item-widgets
@@ -1183,6 +1184,28 @@ QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist
     QWidget* widget = new QWidget;
     QVBoxLayout* vbox = new QVBoxLayout( widget );
     vbox->setSizeConstraint( QLayout::SetFixedSize );
+
+    {// Preparing title
+        QWidget * title = new QWidget(widget);
+        QHBoxLayout * hbox = new QHBoxLayout(title);
+        hbox->setSizeConstraint(QLayout::SetFixedSize);
+        hbox->setSpacing(1);
+        // 1)
+        hbox->addWidget(new QLabel(sigtime, title));
+        // 2)
+        if (Signed){
+            QLabel * id = new QLabel(title);
+            id->setPixmap(QIcon(BMQTApplication::GetImageResHome() + (SignOk ? "/id.png" : "/grayid.png")).pixmap(QSize(16,16)));
+            hbox->addWidget(id);
+        }
+        // 3)
+        if (encrypted){
+            QLabel * lock = new QLabel(title); lock->setPixmap(QIcon(BMQTApplication::GetImageResHome() + "/lock.png").pixmap(QSize(16,16)));
+            hbox->addWidget(lock);
+        }
+        title->setLayout(hbox);
+        vbox->addWidget(title);
+    }
 
     for (QVariantList::const_iterator it = varlist.constBegin(); it != varlist.constEnd(); ++it){
         QWidget * vElt = NULL;
