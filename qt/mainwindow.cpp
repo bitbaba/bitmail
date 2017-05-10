@@ -1159,13 +1159,12 @@ void MainWindow::populateMessages(const QString & k)
 
         QString qsMsg = msgObj["msg"].toString();
 
-        QVariantList varlist = BMQTApplication::fromMime(qsMsg);
-        varlist.insert(0, msgObj["sigtime"].toString());
+        QVariantList varlist = BMQTApplication::fromMime(qsMsg);        
 
         msgElt->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-        msgElt->setBackgroundColor(msgObj["tx"].toBool() ? QColor(158,234,106) : Qt::lightGray);
+        msgElt->setBackgroundColor(msgObj["tx"].toBool() ? QColor(158,234,106) : QColor(120,205,248));
         msgElt->setData(Qt::UserRole, msgObj);
-        QWidget * widget = createMessageWidget(msgView->width()>>1, varlist);
+        QWidget * widget = createMessageWidget(msgView->width()>>1, msgObj["sigtime"].toString(), varlist);
         msgElt->setSizeHint(widget->sizeHint());
         msgView->addItem(msgElt);
         msgView->setItemWidget(msgElt, widget);
@@ -1173,7 +1172,7 @@ void MainWindow::populateMessages(const QString & k)
     }
 }
 
-QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist)
+QWidget * MainWindow::createMessageWidget(int width, const QString & sigtime, const QVariantList &varlist)
 {
     // ThanskTo:
     //http://stackoverflow.com/questions/948444/qlistview-qlistwidget-with-custom-items-and-custom-item-widgets
@@ -1182,6 +1181,23 @@ QWidget * MainWindow::createMessageWidget(int width, const QVariantList &varlist
     QWidget* widget = new QWidget;
     QVBoxLayout* vbox = new QVBoxLayout( widget );
     vbox->setSizeConstraint( QLayout::SetFixedSize );
+
+    {// Preparing title
+        QWidget * title = new QWidget(widget);
+        QHBoxLayout * hbox = new QHBoxLayout(title);
+        hbox->setSizeConstraint(QLayout::SetFixedSize);
+        hbox->setSpacing(1);
+        // 1)
+        hbox->addWidget(new QLabel(sigtime, title));
+        // 2)
+        QLabel * id = new QLabel(title); id->setPixmap(QIcon(BMQTApplication::GetImageResHome() + "/id.png").pixmap(QSize(16,16)));
+        hbox->addWidget(id);
+        // 3)
+        QLabel * lock = new QLabel(title); lock->setPixmap(QIcon(BMQTApplication::GetImageResHome() + "/lock.png").pixmap(QSize(16,16)));
+        hbox->addWidget(lock);
+        title->setLayout(hbox);
+        vbox->addWidget(title);
+    }
 
     for (QVariantList::const_iterator it = varlist.constBegin(); it != varlist.constEnd(); ++it){
         QWidget * vElt = NULL;
