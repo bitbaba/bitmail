@@ -1172,7 +1172,7 @@ void MainWindow::populateMessages(const QString & k)
     }
 }
 
-QWidget * MainWindow::createMessageWidget(int width, const QString & sigtime, const QVariantList &varlist)
+QWidget * MainWindow::createMessageWidget(int width, const QString & sigtime, bool Signed, bool SignOk, bool encrypted, const QVariantList &varlist)
 {
     // ThanskTo:
     //http://stackoverflow.com/questions/948444/qlistview-qlistwidget-with-custom-items-and-custom-item-widgets
@@ -1190,11 +1190,16 @@ QWidget * MainWindow::createMessageWidget(int width, const QString & sigtime, co
         // 1)
         hbox->addWidget(new QLabel(sigtime, title));
         // 2)
-        QLabel * id = new QLabel(title); id->setPixmap(QIcon(BMQTApplication::GetImageResHome() + "/id.png").pixmap(QSize(16,16)));
-        hbox->addWidget(id);
+        if (Signed){
+            QLabel * id = new QLabel(title);
+            id->setPixmap(QIcon(BMQTApplication::GetImageResHome() + (SignOk ? "/id.png" : "grayid.png")).pixmap(QSize(16,16)));
+            hbox->addWidget(id);
+        }
         // 3)
-        QLabel * lock = new QLabel(title); lock->setPixmap(QIcon(BMQTApplication::GetImageResHome() + "/lock.png").pixmap(QSize(16,16)));
-        hbox->addWidget(lock);
+        if (encrypted){
+            QLabel * lock = new QLabel(title); lock->setPixmap(QIcon(BMQTApplication::GetImageResHome() + "/lock.png").pixmap(QSize(16,16)));
+            hbox->addWidget(lock);
+        }
         title->setLayout(hbox);
         vbox->addWidget(title);
     }
