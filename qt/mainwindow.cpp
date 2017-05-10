@@ -88,13 +88,8 @@ MainWindow::MainWindow(BitMail * bitmail)
     /** Title */
     do {
         QString qsEmail = QString::fromStdString(m_bitmail->email());
-        QString qsNick = QString::fromStdString(m_bitmail->contattrib(qsEmail.toStdString(), "cert.nick"));
-        QString qsTitle = tr("BitMail");
-        qsTitle += " - ";
-        qsTitle += qsNick;
-        qsTitle += "(";
-        qsTitle += qsEmail;
-        qsTitle += ")";
+        QString qsNick = QString::fromStdString(BitMail::certCN(m_bitmail->contattrib(qsEmail.toStdString(), "cert")));
+        QString qsTitle = QString("%1 - %2(%3)").arg(tr("BitMail")).arg(qsNick).arg(qsEmail);
         setWindowTitle(qsTitle);
     }while(0);
 
@@ -1003,7 +998,8 @@ void MainWindow::onNewMessage(const QString & from
         if (!encrypted){
             return ;
         }
-        if (BitMail::getInst()->contattrib(from.toStdString(), "cert.id") != certid.toStdString()){
+        std::string certpem = BitMail::getInst()->contattrib(from.toStdString(), "cert");
+        if (BitMail::certId(certpem) != certid.toStdString()){
             return ;
         }
     }
@@ -1164,7 +1160,13 @@ void MainWindow::populateMessages(const QString & k)
         msgElt->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
         msgElt->setBackgroundColor(msgObj["tx"].toBool() ? QColor(158,234,106) : QColor(120,205,248));
         msgElt->setData(Qt::UserRole, msgObj);
-        QWidget * widget = createMessageWidget(msgView->width()>>1, msgObj["sigtime"].toString(), varlist);
+        QWidget * widget = createMessageWidget(msgView->width()>>1
+                                                , msgObj["sigtime"].toString()
+                                                , !msgObj["certid"].toString().isEmpty()
+                                                , msgObj["certid"].toString().toStdString() == BitMail::certId(BitMail::getInst()->contattrib(msgObj["from"].toString().toStdString(), "cert"))
+                                                , msgObj["encrypted"].toBool()
+                                                , varlist);
+
         msgElt->setSizeHint(widget->sizeHint());
         msgView->addItem(msgElt);
         msgView->setItemWidget(msgElt, widget);
@@ -1192,7 +1194,7 @@ QWidget * MainWindow::createMessageWidget(int width, const QString & sigtime, bo
         // 2)
         if (Signed){
             QLabel * id = new QLabel(title);
-            id->setPixmap(QIcon(BMQTApplication::GetImageResHome() + (SignOk ? "/id.png" : "grayid.png")).pixmap(QSize(16,16)));
+            id->setPixmap(QIcon(BMQTApplication::GetImageResHome() + (SignOk ? "/id.png" : "/grayid.png")).pixmap(QSize(16,16)));
             hbox->addWidget(id);
         }
         // 3)
