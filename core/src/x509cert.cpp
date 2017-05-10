@@ -763,7 +763,7 @@ std::string CX509Cert::Verify(const std::string & msg)
 /**
  * Multiple Encrypting
  */
-std::string CX509Cert::MEncrypt(const std::string & msg, const std::set<std::string> & certs)
+std::string CX509Cert::MEncrypt(const std::string & msg, const std::vector<CX509Cert> & certs)
 {
     BIO * in = BIO_new_mem_buf((void*)msg.c_str(), msg.length());
     if (!in) return "";
@@ -791,8 +791,8 @@ std::string CX509Cert::MEncrypt(const std::string & msg, const std::set<std::str
     if ( !recips )
         goto err;
 
-    for(std::set<std::string>::const_iterator it = certs.begin(); it != certs.end(); ++it){
-        if (!sk_X509_push(recips, PEM2Cert(*it))){
+    for(std::vector<CX509Cert>::const_iterator it = certs.begin(); it != certs.end(); ++it){
+        if (!sk_X509_push(recips, PEM2Cert(it->m_cert))){
             ret = 1;
             break;
         }

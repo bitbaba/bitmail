@@ -128,6 +128,13 @@ std::vector<std::string> BitMail::decodeReceips(const std::string & receips)
     std::string line;
     while (std::getline(iss, line, ';')){
         if (line.empty()) continue;
+        for (std::string::iterator it = line.begin(); it != line.end(); ){
+            if (std::isalnum(*it) || *it == '@' || *it == '.' || *it == '_'){
+                it++;
+            }else{
+                it = line.erase(it);
+            }
+        }
         if (line.find('@') != std::string::npos){
             std::transform(line.begin(), line.end(), line.begin(), ::tolower);
             uniq_set.insert(line);
@@ -161,8 +168,8 @@ std::string BitMail::serializeReceips(const std::vector<std::string> & vec_recei
 
 std::string BitMail::serializeReceips(const std::string & receip)
 {
-	std::vector<std::string> receips; receips.push_back(receip);
-	return serializeReceips(receips);
+    std::vector<std::string> receips; receips.push_back(receip);
+    return serializeReceips(receips);
 }
 
 int BitMail::splitMultiparts(const std::string & in, std::vector<std::string> & out)
@@ -618,10 +625,10 @@ std::string BitMail::Encrypt(const std::vector<std::string> & emails, const std:
 
     if (fSignOnly){ return smime; }
 
-    std::set<std::string> vecTo;
+    std::vector<CX509Cert> vecTo;
     for (std::vector<std::string>::const_iterator it = emails.begin(); it != emails.end();++it){
-        std::string certpem = (contattrib(*it, "cert"));
-        if (!certpem.empty()){ vecTo.insert(certpem); }
+        CX509Cert buddy; buddy.ImportCert(contattrib(*it, "cert"));
+        if (buddy.IsValid()){ vecTo.push_back(buddy); }
     }
 
     if (!vecTo.size()){ return smime; }
