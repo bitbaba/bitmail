@@ -24,6 +24,7 @@ enum RTxState{
     Tx_upload   = 103,
     Tx_updone   = 104,
     Tx_done     = 105,
+    Tx_echo     = 106,
     Tx_error    = 199,
 };
 
