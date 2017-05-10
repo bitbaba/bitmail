@@ -63,75 +63,80 @@ FORMS += \
     groupdialog.ui \
     versiondialog.ui
 
-win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore
+# library: bitmailcore
+unix|win32: LIBS += -L$$PWD/../out/lib/ -lbitmailcore
 
 INCLUDEPATH += $$PWD/../out/include
 DEPENDPATH += $$PWD/../out/include
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/bitmailcore.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libbitmailcore.a
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libbitmailcore.a
 
-win32: LIBS += -L$$PWD/../out/lib/ -lcurl
+# library: curl
+unix|win32: LIBS += -L$$PWD/../out/lib/ -lcurl
 
 INCLUDEPATH += $$PWD/../out/include
 DEPENDPATH += $$PWD/../out/include
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/curl.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libcurl.a
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libcurl.a
 
-win32: LIBS += -L$$PWD/../out/lib/ -lssl
+# library: openssl
+unix|win32: LIBS += -L$$PWD/../out/lib/ -lssl
 
 INCLUDEPATH += $$PWD/../out/include
 DEPENDPATH += $$PWD/../out/include
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/ssl.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libssl.a
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libssl.a
 
-win32: LIBS += -L$$PWD/../out/lib/ -lcrypto
+# library: crypto
+unix|win32: LIBS += -L$$PWD/../out/lib/ -lcrypto
 
 INCLUDEPATH += $$PWD/../out/include
 DEPENDPATH += $$PWD/../out/include
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/crypto.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libcrypto.a
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libcrypto.a
 
-win32: LIBS += -L$$PWD/../out/lib/ -lmicrohttpd
+# library: microhttpd
+unix|win32: LIBS += -L$$PWD/../out/lib/ -lmicrohttpd
 
 INCLUDEPATH += $$PWD/../out/include
 DEPENDPATH += $$PWD/../out/include
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/microhttpd.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libmicrohttpd.a
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libmicrohttpd.a
 
-win32: LIBS += -L$$PWD/../out/lib/ -lminiupnpc
+# library: miniupnpc
+unix|win32: LIBS += -L$$PWD/../out/lib/ -lminiupnpc
 
 INCLUDEPATH += $$PWD/../out/include
 DEPENDPATH += $$PWD/../out/include
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/miniupnpc.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libminiupnpc.a
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libminiupnpc.a
 
-
-win32: LIBS += -L$$PWD/../out/lib/ -lqrencode
+# library: qrencode
+unix|win32: LIBS += -L$$PWD/../out/lib/ -lqrencode
 
 INCLUDEPATH += $$PWD/../out/include
 DEPENDPATH += $$PWD/../out/include
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/qrencode.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libqrencode.a
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libqrencode.a
 
-
-win32: LIBS += -L$$PWD/../out/lib/ -llua
+# library: lua
+unix|win32: LIBS += -L$$PWD/../out/lib/ -llua
 
 INCLUDEPATH += $$PWD/../out/include
 DEPENDPATH += $$PWD/../out/include
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/lua.lib
-else:win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/liblua.a
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/liblua.a
 
 
 win32: LIBS += -lws2_32 -lgdi32 -liphlpapi
 
 DISTFILES += \
     bitmail.rc
-

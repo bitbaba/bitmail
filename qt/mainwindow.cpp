@@ -964,6 +964,7 @@ void MainWindow::onLabelDoubleClicked(ClickableLabel *label)
     }
 #else
     //TODO: browser resource in other platforms.
+    (void)label;
 #endif
 }
 

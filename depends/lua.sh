@@ -16,6 +16,7 @@ DOWNLINK="http://www.lua.org/ftp/lua-5.3.4.tar.gz"
 DOWNOPTS="--no-check-certificate"
 
 if [[ $(uname -s) != "MINGW"* ]]; then
+	sudo apt-get install libreadline-dev
 	PICFLAGS='-fPIC -fpic'
 	PLAT='linux'
 else

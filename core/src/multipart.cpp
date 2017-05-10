@@ -53,6 +53,7 @@
  *
  */
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 # include <openssl/err.h>
 #include <openssl/rand.h>

@@ -22,7 +22,7 @@ fi
 
 if ! [ -f "$TARBALL" ]; then
 	echo "Downloading... $DOWNLINK"
-	wget "$DOWNOPTS" "$DOWNLINK"
+	wget "$DOWNOPTS" "$DOWNLINK" -O $TARBALL
 fi
 
 if [ -f "$TARBALL" ]; then
