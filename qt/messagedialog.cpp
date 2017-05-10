@@ -115,7 +115,7 @@ void MessageDialog::on_btnMakeFriend_clicked()
  */
 void MessageDialog::on_btnJoinGroup_clicked()
 {
-    m_bitmail->addContact(group().toStdString());
+    m_bitmail->addContact(BitMail::serializeReceips(BitMail::decodeReceips(group().toStdString())));
 
     emit groupsChanged();
 }
