@@ -1,10 +1,9 @@
 #!/bin/bash
-if [ x$(uname -s) = x"Darwin" ]; then
-	alias readlink='greadlink'
-fi
 
-DepSrcRoot=$(dirname $(readlink -f $0) )
+#DepSrcRoot=$(dirname $(readlink -f $0) )
+DepSrcRoot=~/workspace/github/bitmail/depends
 OutDir=$DepSrcRoot/../out
+
 
 #==================================================
 cd $DepSrcRoot
@@ -22,6 +21,11 @@ fi
 
 if ! [ -f "$TARBALL" ]; then
 	echo "Downloading... $DOWNLINK"
+	curl -k "$DOWNLINK" -o $TARBALL
+fi
+
+if ! [ -f "$TARBALL" ]; then
+	echo "Downloading... $DOWNLINK"
 	wget "$DOWNOPTS" "$DOWNLINK"
 fi
 
@@ -32,11 +36,11 @@ fi
 
 if [ -d "$DESTDIR" ]; then
 	cd "$DESTDIR"
-	./config ${PICFLAGS} \
+	./Configure ${PICFLAGS} \
 			no-asm \
 			no-zlib \
 			no-shared \
 			no-dso \
-			--prefix="$OutDir" && make && make install && make clean
+			--prefix="$OutDir" darwin64-x86_64-cc && make && make install && make clean
 fi
 

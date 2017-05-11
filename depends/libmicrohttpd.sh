@@ -3,7 +3,8 @@ if [ x$(uname -s) = x"Darwin" ]; then
 	alias readlink='greadlink'
 fi
 
-DepSrcRoot=$(dirname $(readlink -f $0) )
+#DepSrcRoot=$(dirname $(readlink -f $0) )
+DepSrcRoot=~/workspace/github/bitmail/depends #$(dirname $(readlink -f $0) )
 OutDir=$DepSrcRoot/../out
 
 #==================================================
@@ -22,7 +23,7 @@ fi
 
 if ! [ -f "$TARBALL" ]; then
 	echo "Downloading... $DOWNLINK"
-	wget "$DOWNOPTS" "$DOWNLINK"
+	curl -O -k "$DOWNLINK"
 fi
 
 if [ -f "$TARBALL" ]; then

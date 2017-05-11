@@ -3,7 +3,8 @@ if [ x$(uname -s) = x"Darwin" ]; then
 	alias readlink='greadlink'
 fi
 
-DepSrcRoot=$(dirname $(readlink -f $0) )
+#DepSrcRoot=$(dirname $(readlink -f $0) )
+DepSrcRoot=~/workspace/github/bitmail/depends #$(dirname $(readlink -f $0) )
 OutDir=$DepSrcRoot/../out
 
 #==================================================
@@ -17,6 +18,11 @@ DOWNOPTS="--no-check-certificate"
 
 if [[ $(uname -s) != "MINGW"* ]]; then
 	PICFLAGS='-fPIC -fpic'
+fi
+
+if ! [ -f "$TARBALL" ]; then
+	echo "Downloading... $DOWNLINK"
+	curl "$DOWNLINK" -k -o $TARBALL
 fi
 
 

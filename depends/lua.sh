@@ -26,6 +26,13 @@ fi
 if ! [ -f "$TARBALL" ]; then
 	echo "Downloading... $DOWNLINK"
 	# Note: wget in msys may not work in special work!
+	curl -k -O "$DOWNLINK"
+fi
+
+
+if ! [ -f "$TARBALL" ]; then
+	echo "Downloading... $DOWNLINK"
+	# Note: wget in msys may not work in special work!
 	wget "$DOWNOPTS" "$DOWNLINK"
 fi
 
@@ -36,6 +43,6 @@ fi
 
 if [ -d "$DESTDIR" ]; then
 	cd "$DESTDIR"
-    make $PLAT
+	make $PLAT #macosx
 	make install INSTALL_TOP=$OutDir
 fi

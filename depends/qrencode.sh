@@ -3,7 +3,8 @@ if [ x$(uname -s) = x"Darwin" ]; then
 	alias readlink='greadlink'
 fi
 
-DepSrcRoot=$(dirname $(readlink -f $0) )
+#DepSrcRoot=$(dirname $(readlink -f $0) )
+DepSrcRoot=~/workspace/github/bitmail/depends #$(dirname $(readlink -f $0) )
 OutDir=$DepSrcRoot/../out
 
 #==================================================
@@ -22,7 +23,8 @@ fi
 if ! [ -f "$TARBALL" ]; then
 	echo "Downloading... $DOWNLINK"
 	# Note: wget in msys may not work in special work!
-	wget "$DOWNOPTS" "$DOWNLINK"
+	#wget "$DOWNOPTS" "$DOWNLINK"
+	curl -O "$DOWNLINK"
 fi
 
 if [ -f "$TARBALL" ]; then
