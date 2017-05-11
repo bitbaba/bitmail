@@ -3,8 +3,10 @@ if [ x$(uname -s) = x'Darwin' ]; then
 	alias readlink='greadlink'
 fi
 
-BitmailCoreHome="$(dirname $(readlink -f "$0") )"
-BitmailHome="$(dirname $BitmailCoreHome)"
+#BitmailCoreHome="$(dirname $(readlink -f "$0") )"
+BitmailCoreHome=~/workspace/github/bitmail/core #"$(dirname $(readlink -f "$0") )"
+#BitmailHome="$(dirname $BitmailCoreHome)"
+BitmailHome=~/workspace/github/bitmail #"$(dirname $BitmailCoreHome)"
 BitmailOutHome=$BitmailHome/out
 
 cd $BitmailCoreHome
