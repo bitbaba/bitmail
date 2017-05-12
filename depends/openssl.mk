@@ -6,9 +6,9 @@ package_extract_dir=/tmp
 package_download_dir=/tmp
 package_tarball=$(package_download_dir)/$(package)-$(package_version).tar.gz
 package_build_dir=$(package_extract_dir)/$(package)-$(package_version)
-package_output_dir=$${INSTALLROOT:=/d/workspace/github/bitmail/out}
-package_cflags=$${CFLAGS:=-fPIC -fpic}
-package_platform=$${PLATFORM:=mingw} #darwin64-x86_64-cc|linux-x86_64
+package_output_dir=$${INSTALLROOT}
+package_cflags=$${OPENSSL_CFLAGS} # -fPIC -fpic
+package_platform=$${OPENSSL_PLATFORM} # mingw| darwin64-x86_64-cc|linux-x86_64
 
 all: $(package_tarball)
 	tar zxvf $(package_tarball) -C $(package_extract_dir) && \

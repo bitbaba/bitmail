@@ -9,8 +9,8 @@ package_extract_dir=/tmp
 package_download_dir=/tmp
 package_tarball=$(package_download_dir)/$(package)-$(package_version).tar.gz
 package_build_dir=$(package_extract_dir)/$(package)-$(package_version)
-package_output_dir=$${INSTALLROOT:=/d/workspace/github/bitmail/out}
-package_platform=$${PLATFORM:=generic}
+package_output_dir=$${INSTALLROOT}
+package_platform=$${LUA_PLATFORM}
 
 
 all: $(package_tarball)
