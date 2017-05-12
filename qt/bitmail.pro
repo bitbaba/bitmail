@@ -108,15 +108,6 @@ DEPENDPATH += $$PWD/../out/include
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/microhttpd.lib
 else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libmicrohttpd.a
 
-# library: miniupnpc
-unix|win32: LIBS += -L$$PWD/../out/lib/ -lminiupnpc
-
-INCLUDEPATH += $$PWD/../out/include
-DEPENDPATH += $$PWD/../out/include
-
-win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/miniupnpc.lib
-else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/lib/libminiupnpc.a
-
 # library: qrencode
 unix|win32: LIBS += -L$$PWD/../out/lib/ -lqrencode
 
