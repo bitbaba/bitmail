@@ -10,7 +10,7 @@ package_output_dir=$${INSTALLROOT}
 package_cflags=$${OPENSSL_CFLAGS} # -fPIC -fpic
 package_platform=$${OPENSSL_PLATFORM} # mingw| darwin64-x86_64-cc|linux-x86_64
 
-all: $(package_tarball)
+all: download
 	tar zxvf $(package_tarball) -C $(package_extract_dir) && \
 	cd $(package_build_dir) && \
 	./Configure --prefix=$(package_output_dir) $(package_cflags) \
@@ -23,5 +23,7 @@ all: $(package_tarball)
 	make install && \
 	make clean
 
-$(package_tarball):
-	curl -k $(package_download_url) -o $(package_tarball)
+download:
+	if ! [ -f $(package_tarball) ]; then curl -k $(package_download_url) -o $(package_tarball); fi;
+
+.PHONY : all download

@@ -9,7 +9,7 @@ package_build_dir=$(package_extract_dir)/$(package)-$(package_version)
 package_output_dir=$${INSTALLROOT}
 
 
-all: $(package_tarball)
+all: download
 	tar zxvf $(package_tarball) -C $(package_extract_dir) && \
 	cd $(package_build_dir) && \
 	./configure --prefix=$(package_output_dir) \
@@ -23,5 +23,7 @@ all: $(package_tarball)
 	make install && \
 	make distclean
 
-$(package_tarball):
-	curl -k $(package_download_url) -o $(package_tarball)
+download:
+	if ! [ -f $(package_tarball) ]; then curl -k $(package_download_url) -o $(package_tarball); fi;
+
+.PHONY : all download
