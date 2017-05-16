@@ -1,30 +1,38 @@
 #!/bin/bash
-
-QMake=/opt/Qt5.8.0/5.8/gcc_64/bin/qmake
+BitmailRepoRoot=/d/workspace/github/bitmail
+QMake=/c/Qt/Qt5.7.0/5.7/mingw53_32/bin/qmake
+#QMake=/opt/Qt5.8.0/5.8/gcc_64/bin/qmake
 MAKE=make
-QtSpec="linux-g++-64"
+#QtSpec="linux-g++-64" 
+QtSpec="win32-g++" 
+#QtSpec="macx-g++"
 
-BitmailRepoRoot=~/workspace/bitmail
-BITMAIL_QT_ROOT="$BitmailRepoRoot/qt"
-BITMAIL_DEPENDS_ROOT="$BitmailRepoRoot/depends"
-BITMAIL_CORE_ROOT="$BitmailRepoRoot/core"
-BITMAIL_QT_BUILD_ROOT="$BITMAIL_QT_ROOT/build"
+BITMAIL_QT_ROOT=${BitmailRepoRoot}/qt
+BITMAIL_QT_BUILD_ROOT=${BitmailRepoRoot}/out/qt
 
-cd $BITMAIL_DEPENDS_ROOT
-false && sh ./openssl.sh && \
-sh ./curl.sh && \
-sh ./libmicrohttpd.sh && \
-sh ./miniupnpc.sh && \
-sh ./qrencode.sh && \
-sh ./lua.sh
-
-cd $BITMAIL_CORE_ROOT
-sh ./autogen.sh
-
-cd $BITMAIL_QT_ROOT
+cd ${BITMAIL_QT_ROOT} && \
 sh ./vergen.sh 
 
-cd $BITMAIL_QT_BUILD_ROOT
-$QMake -spec $QtSpec ../bitmail.pro
-$MAKE clean && $MAKE 
+mkdir -p ${BITMAIL_QT_BUILD_ROOT} ; \
+cd ${BITMAIL_QT_BUILD_ROOT} && \
+${QMake} -spec $QtSpec ${BITMAIL_QT_ROOT}/bitmail.pro && \
+${MAKE} clean && \
+${MAKE} 
 
+mkdir -p ${BITMAIL_QT_BUILD_ROOT}/ext/audiorecorder ; \
+cd ${BITMAIL_QT_BUILD_ROOT}/ext/audiorecorder  && \
+${QMake} -spec $QtSpec ${BITMAIL_QT_ROOT}/ext/audiorecorder/audiorecorder.pro && \
+${MAKE} clean && \
+${MAKE} 
+
+mkdir -p ${BITMAIL_QT_BUILD_ROOT}/ext/camera ; \
+cd ${BITMAIL_QT_BUILD_ROOT}/ext/camera  && \
+${QMake} -spec $QtSpec ${BITMAIL_QT_ROOT}/ext/camera/camera.pro && \
+${MAKE} clean && \
+${MAKE} 
+
+mkdir -p ${BITMAIL_QT_BUILD_ROOT}/ext/screenshot ; \
+cd ${BITMAIL_QT_BUILD_ROOT}/ext/screenshot  && \
+${QMake} -spec $QtSpec ${BITMAIL_QT_ROOT}/ext/screenshot/screenshot.pro && \
+${MAKE} clean && \
+${MAKE} 
