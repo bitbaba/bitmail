@@ -18,6 +18,7 @@ enum RTxState{
     Rx_msg      = 4,
     Rx_delete   = 5,
     Rx_done     = 9,
+    Rx_eDecrypt = 10,
     Rx_error    = 99,
 
     Tx_start    = 100,
@@ -168,7 +169,7 @@ public:
     bool contattrib(const std::string & emails, const std::string & att_name, const std::string & att_value);
 
     // RTx Routines
-    bool Tx(const std::vector<std::string> & friends, const std::string & msgs, RTxProgressCB cb = NULL, void * userptr = NULL);
+    bool Tx(const std::vector<std::string> & friends, const std::string & msgs, bool signOnly, RTxProgressCB cb = NULL, void * userptr = NULL);
 
     bool Rx(MessageEventCB cb, void * msgcbp, RTxProgressCB rtxcb = NULL, void * rtxcbp = NULL);
 

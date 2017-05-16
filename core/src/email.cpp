@@ -276,7 +276,11 @@ bool CMailClient::Rx(RTxProgressCB cb, void * userp)
             bmeMsg.h.magic = BMMAGIC;
             bmeMsg.h.bmef  = bmefMessage;
             bmeMsg.msg     = smime;
-            m_cb((BMEventHead *)&bmeMsg, m_cbp);
+            if (!m_cb((BMEventHead *)&bmeMsg, m_cbp)){
+                if (cb){
+                    cb(Rx_eDecrypt, "decrypt fail", userp);
+                }
+            }
         }
         
         this->StoreFlag(msgno, "\\Seen");

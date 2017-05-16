@@ -587,10 +587,10 @@ bool BitMail::contattrib(const std::string & emails, const std::string & att_nam
 }
 
 bool BitMail::Tx(const std::vector<std::string> & friends
-        , const std::string & msg
+        , const std::string & msg, bool signOnly
         , RTxProgressCB cb, void * userp)
 {
-    std::string smime = Encrypt(friends, msg, false);
+    std::string smime = Encrypt(friends, msg, signOnly);
     return m_mc->Tx( m_profile->GetEmail(), friends, smime, cb, userp);
 }
 
@@ -702,7 +702,9 @@ bool BitMail::EmailHandler(BMEventHead * h, void * userp)
     std::string receips = parseRFC822AddressList(bmeMsg->msg);
     std::string from, nick, msg, certid, cert, sigtime;
     bool encrypted = false;
-    self->Decrypt(bmeMsg->msg, from, nick, msg, certid, cert, sigtime, &encrypted);
+    if (!self->Decrypt(bmeMsg->msg, from, nick, msg, certid, cert, sigtime, &encrypted)){
+        return false;
+    }
     if (self->m_onMessageEvent){
         self->m_onMessageEvent(from.c_str()
                                 , receips.c_str()
