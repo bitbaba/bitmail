@@ -15,3 +15,5 @@ ${MAKE} -f lua.mk
 ${MAKE} -f microhttpd.mk 
 
 ${MAKE} -f qrencode.mk 
+
+ln -s $INSTALLROOT ${INSTALLROOT%/*}/depends
