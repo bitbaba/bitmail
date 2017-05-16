@@ -1,10 +1,10 @@
 #!/bin/bash
 export INSTALLROOT=${PWD}/../out/ubuntu_x64
-export OPENSSL_CFLAGS=
-export OPENSSL_PLATFORM=mingw
-export LUA_PLATFORM=generic
+export OPENSSL_CFLAGS="-fpic -fPIC"
+export OPENSSL_PLATFORM=linux-x86_64
+export LUA_PLATFORM=linux
 
-MAKE=mingw32-make
+MAKE=make
 
 ${MAKE} -f openssl.mk 
 
