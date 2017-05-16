@@ -626,8 +626,6 @@ std::string BitMail::Encrypt(const std::vector<std::string> & emails, const std:
     if (fSignOnly){ return smime; }
 
     std::set<std::string> vecTo;
-    // always encrypted with certificate of yourself, for message history backup.
-    vecTo.insert(this->cert());
     // append friends' certificates;
     for (std::vector<std::string>::const_iterator it = emails.begin(); it != emails.end();++it){
         std::string certpem = contattrib(*it, "cert");
@@ -637,19 +635,22 @@ std::string BitMail::Encrypt(const std::vector<std::string> & emails, const std:
 
     if (!vecTo.size()){ return smime; }
 
+    // always encrypted with certificate of yourself, for message history backup.
+    vecTo.insert(this->cert());
+
     smime = CX509Cert::MEncrypt(smime, vecTo);
 
     return smime;
 }
 
 bool BitMail::Decrypt(const std::string & smime
-        , std::string & from
-        , std::string & nick
-        , std::string & msg
-        , std::string & certid
-        , std::string & cert
-        , std::string & sigtime
-        , bool * encrypted)
+                    , std::string & from
+                    , std::string & nick
+                    , std::string & msg
+                    , std::string & certid
+                    , std::string & cert
+                    , std::string & sigtime
+                    , bool * encrypted)
 {
     std::string sMimeBody = smime;
     BitMail * self = this;
