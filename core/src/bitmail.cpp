@@ -625,10 +625,14 @@ std::string BitMail::Encrypt(const std::vector<std::string> & emails, const std:
 
     if (fSignOnly){ return smime; }
 
-    std::vector<CX509Cert> vecTo;
+    std::set<std::string> vecTo;
+    // always encrypted with certificate of yourself, for message history backup.
+    vecTo.insert(this->cert());
+    // append friends' certificates;
     for (std::vector<std::string>::const_iterator it = emails.begin(); it != emails.end();++it){
-        CX509Cert buddy; buddy.ImportCert(contattrib(*it, "cert"));
-        if (buddy.IsValid()){ vecTo.push_back(buddy); }
+        std::string certpem = contattrib(*it, "cert");
+        CX509Cert buddy; buddy.ImportCert(certpem);
+        if (buddy.IsValid()){ vecTo.insert(certpem); }
     }
 
     if (!vecTo.size()){ return smime; }

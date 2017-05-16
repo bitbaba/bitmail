@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include <openssl/objects.h>
 #include <openssl/pem.h>
 #include <openssl/conf.h>
@@ -50,7 +51,7 @@ protected:
 public:
     static std::string GetSigningTime(const std::string & sig);
     static int CheckMsgType(const std::string & msg);
-    static std::string MEncrypt(const std::string & msg, const std::vector<CX509Cert> & certs);
+    static std::string MEncrypt(const std::string & msg, const std::set<std::string> & certs);
     static std::string MSign(const std::string & msg, const std::vector<CX509Cert> & signers);
 
 public:
