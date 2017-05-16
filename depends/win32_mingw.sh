@@ -1,5 +1,5 @@
 #!/bin/bash
-export INSTALLROOT=${PWD}/../out/win32_mingw
+export INSTALLROOT=${PWD}/../out/depends
 export OPENSSL_CFLAGS=
 export OPENSSL_PLATFORM=mingw
 export LUA_PLATFORM=generic
