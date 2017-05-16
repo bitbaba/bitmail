@@ -82,6 +82,13 @@
       <item>
        <widget class="QLineEdit" name="leWhisper"/>
       </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>(Optional)</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item row="2" column="1">

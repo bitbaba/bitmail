@@ -87,8 +87,8 @@ MainWindow::MainWindow(BitMail * bitmail)
     setWindowIcon(QIcon(BMQTApplication::GetImageResHome() + "/bitmail.png"));
     /** Title */
     do {
-        QString qsEmail = QString::fromStdString(m_bitmail->email());
-        QString qsNick = QString::fromStdString(BitMail::certCN(m_bitmail->contattrib(qsEmail.toStdString(), "cert")));
+        QString qsEmail = QString::fromStdString(BitMail::getInst()->email());
+        QString qsNick = QString::fromStdString(BitMail::certCN(BitMail::getInst()->cert()));
         QString qsTitle = QString("%1 - %2(%3)").arg(tr("BitMail")).arg(qsNick).arg(qsEmail);
         setWindowTitle(qsTitle);
     }while(0);
@@ -235,7 +235,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     m_rxth->start();
 
     m_txth = new TxThread(m_bitmail);
-    connect(this, SIGNAL(readyToSend(QString,QStringList,QString)), m_txth, SLOT(onSendMessage(QString,QStringList,QString)));
+    connect(this, SIGNAL(readyToSend(QString,QStringList,QString, bool)), m_txth, SLOT(onSendMessage(QString,QStringList,QString, bool)));
     connect(m_txth, SIGNAL(done()), this, SLOT(onTxDone()));
     connect(m_txth, SIGNAL(txProgress(int, QString)), this, SLOT(onTxProgress(int, QString)));
     m_txth->start();
@@ -269,6 +269,9 @@ void MainWindow::onRxProgress(int st, const QString &info)
     }
     if (st == Rx_doneload){
         rxProg->setValue(0);
+    }
+    if (st == Rx_eDecrypt){
+
     }
     rxTip->setText(info);
     return ;
@@ -865,23 +868,17 @@ void MainWindow::onHtmlAct(bool fChecked)
 void MainWindow::onBtnInviteClicked()
 {
     InviteDialog inviteDialog(this);
-    while(true){
-        if (QDialog::Accepted != inviteDialog.exec()){
-            return ;
-        }
-        if (!inviteDialog.GetWhisper().isEmpty()){
-            break;
-        }
-        // loop util whispher is not empty.
+    if (QDialog::Accepted != inviteDialog.exec()){
+        return ;
     }
     std::vector<std::string> receips = BMQTApplication::toStdStringList(inviteDialog.GetEmail().split(",;:| \t\r\n"));
     QString sessKey = QString::fromStdString(BitMail::serializeReceips(receips));
-    QString qsWhisper = QString::fromStdString(BitMail::md5(inviteDialog.GetWhisper().toStdString()));
+    QString qsWhisper = QString::fromStdString((inviteDialog.GetWhisper().toStdString()));
     QStringList parts;
     parts.append( BMQTApplication::toMimeTextPlain( qsWhisper ));
     QString qsMsg = BMQTApplication::toMixed(parts);
 
-    SendTo(sessKey, qsMsg);
+    SendTo(sessKey, qsMsg, true);
 
     if (BitMail::decodeReceips(sessKey.toStdString()).size() > 1){
         if (!hasLeaf(nodeGroups, sessKey)){
@@ -1068,11 +1065,11 @@ QStringList MainWindow::dequeueMsg(const QString &k)
 void MainWindow::Send(const QString & qsMsg)
 {
     QString sessionKey = currentSessionKey();
-    SendTo(sessionKey, qsMsg);
+    SendTo(sessionKey, qsMsg, false);
 }
 
 
-void MainWindow::SendTo(const QString & sessionKey, const QString & qsMsg)
+void MainWindow::SendTo(const QString & sessionKey, const QString & qsMsg, bool signOnly)
 {
     std::vector<std::string> vec_receips = BitMail::decodeReceips(sessionKey.toStdString());
     if (vec_receips.empty()){
@@ -1084,7 +1081,7 @@ void MainWindow::SendTo(const QString & sessionKey, const QString & qsMsg)
     QString qsCertId = QString::fromStdString(BitMail::certId(certpem));
     QString qsCert = QString::fromStdString(certpem);
 
-    emit readyToSend(qsFrom, BMQTApplication::toQStringList(vec_receips), qsMsg);
+    emit readyToSend(qsFrom, BMQTApplication::toQStringList(vec_receips), qsMsg, signOnly);
 
     enqueueMsg(sessionKey
                , true
@@ -1386,7 +1383,7 @@ void MainWindow::onProcThDone(const QString & sessKey, const QString &output)
 {
     if (QFileInfo(output).exists() && QFileInfo(output).size()){
         QString qsMsg = BMQTApplication::toMimeAttachment(output);
-        SendTo(sessKey, qsMsg);
+        SendTo(sessKey, qsMsg, false);
     }
     return ;
 }

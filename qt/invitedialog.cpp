@@ -28,6 +28,5 @@ QString InviteDialog::GetEmail() const
 
 QString InviteDialog::GetWhisper() const
 {
-    // whisper should be used as an offline password, e.g. a symmetic key.
-    return m_leWhisper->text();
+    return m_leWhisper->text().isEmpty() ? tr("Hi") : m_leWhisper->text();
 }

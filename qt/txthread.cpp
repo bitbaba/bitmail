@@ -22,13 +22,15 @@ TxThread::~TxThread()
 
 void TxThread::onSendMessage(const QString & from
                              , const QStringList & to
-                             , const QString & content)
+                             , const QString & content
+                             , bool signOnly)
 {
     (void)from;
     QJsonDocument doc;
     QJsonObject obj;
     obj["to"] = to.join("|");
     obj["msg"] = content;
+    obj["signOnly"] = signOnly;
     doc.setObject(obj);
     if (m_txq.writable(25/*milliseconds*/)){
         m_txq.push(doc.toJson());
@@ -48,11 +50,12 @@ void TxThread::run()
         QJsonObject obj = QJsonDocument::fromJson(m_txq.pop().toUtf8()).object();
         QStringList to = obj["to"].toString().split("|");
         QString msg = obj["msg"].toString();
+        bool signOnly = obj["signOnly"].toBool();
 
         std::vector<std::string> vecTo = BMQTApplication::toStdStringList(to);
 
         if (m_bitmail){
-            m_bitmail->Tx(vecTo, msg.toStdString(), TxProgressHandler, this);
+            m_bitmail->Tx(vecTo, msg.toStdString(), signOnly, TxProgressHandler, this);
         }
 
     }

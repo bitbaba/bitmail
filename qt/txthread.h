@@ -27,7 +27,8 @@ signals:
 public slots:
     void onSendMessage(const QString & from
                        , const QStringList & to
-                       , const QString & content);
+                       , const QString & content
+                       , bool signOnly);
 
 private:
     BitMail * m_bitmail;

@@ -158,7 +158,7 @@ private:
     QStringList dequeueMsg(const QString &key);
 
     void Send(const QString & msg);
-    void SendTo(const QString & sessKey, const QString & msg);
+    void SendTo(const QString & sessKey, const QString & msg, bool signOnly);
 private:
     QComboBox *comboStyle;
     QFontComboBox *comboFont;
@@ -214,7 +214,8 @@ private:
 signals:
     void readyToSend(  const QString & from
                      , const QStringList & to
-                     , const QString & msg);
+                     , const QString & msg
+                     , bool signOnly);
 };
 
 //! [0]
