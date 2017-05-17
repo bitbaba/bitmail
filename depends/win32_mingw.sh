@@ -1,5 +1,5 @@
 #!/bin/bash
-export INSTALLROOT=${PWD}/../out/depends
+export INSTALLROOT=${PWD}/../out/win32_mingw
 export OPENSSL_CFLAGS=
 export OPENSSL_PLATFORM=mingw
 export LUA_PLATFORM=generic
@@ -15,3 +15,5 @@ ${MAKE} -f lua.mk
 ${MAKE} -f microhttpd.mk 
 
 ${MAKE} -f qrencode.mk 
+
+mv $INSTALLROOT ${INSTALLROOT%/*}/depends
