@@ -1,6 +1,8 @@
 #!/bin/bash
 BitmailRepoRoot=/d/workspace/github/bitmail
 QMake=/c/Qt/Qt5.7.0/5.7/mingw53_32/bin/qmake
+QtLUpdate=/c/Qt/Qt5.7.0/5.7/mingw53_32/bin/lupdate
+QtLRelease=/c/Qt/Qt5.7.0/5.7/mingw53_32/bin/lrelease
 #QMake=/opt/Qt5.8.0/5.8/gcc_64/bin/qmake
 MAKE=make
 #QtSpec="linux-g++-64" 
@@ -40,3 +42,5 @@ ${QMake} -spec $QtSpec ${BITMAIL_QT_ROOT}/ext/screenshot/screenshot.pro && \
 ${MAKE} clean && \
 ${MAKE} && \
 cp -f ${BITMAIL_QT_BUILD_ROOT}/ext/screenshot/release/screenshot${EXE} ${BITMAIL_QT_BUILD_ROOT}/release
+
+cd ${BITMAIL_QT_ROOT} && ${QtLUpdate} ./bitmail.pro && ${QtLRelease} ./locale/*.ts
