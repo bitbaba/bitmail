@@ -10,7 +10,9 @@ BitmailQtRoot=${BitmailRepoRoot}/qt
 
 BitmailQtBuildRoot=${BitmailRepoRoot}/out/qt
 
-SandBox=${PWD}/sandbox
+package_name=bitmail-qt-ubuntu-x64
+
+SandBox=${PWD}/${package_name}
 
 mkdir -p ${SandBox}
 
@@ -30,3 +32,5 @@ ${COPY} ${QtLibRoot}/libicudata.so.56   ${SandBox}
 ${COPY} ${BitmailQtRoot}/res   ${SandBox}
 mkdir -p ${SandBox}/locale
 ${COPY} ${BitmailQtRoot}/locale/*.qm   ${SandBox}/locale
+
+tar czf ${package_name}.tar.gz ${package_name}
