@@ -7,6 +7,7 @@ MAKE=make
 QtSpec="win32-g++" 
 #QtSpec="macx-g++"
 
+EXE=.exe
 BITMAIL_QT_ROOT=${BitmailRepoRoot}/qt
 BITMAIL_QT_BUILD_ROOT=${BitmailRepoRoot}/out/qt
 
@@ -23,16 +24,19 @@ mkdir -p ${BITMAIL_QT_BUILD_ROOT}/ext/audiorecorder ; \
 cd ${BITMAIL_QT_BUILD_ROOT}/ext/audiorecorder  && \
 ${QMake} -spec $QtSpec ${BITMAIL_QT_ROOT}/ext/audiorecorder/audiorecorder.pro && \
 ${MAKE} clean && \
-${MAKE} 
+${MAKE} && \
+cp -f ${BITMAIL_QT_BUILD_ROOT}/ext/audiorecorder/release/audiorecorder${EXE} ${BITMAIL_QT_BUILD_ROOT}/release
 
 mkdir -p ${BITMAIL_QT_BUILD_ROOT}/ext/camera ; \
 cd ${BITMAIL_QT_BUILD_ROOT}/ext/camera  && \
 ${QMake} -spec $QtSpec ${BITMAIL_QT_ROOT}/ext/camera/camera.pro && \
 ${MAKE} clean && \
-${MAKE} 
+${MAKE} && \
+cp -f ${BITMAIL_QT_BUILD_ROOT}/ext/camera/release/camera${EXE} ${BITMAIL_QT_BUILD_ROOT}/release
 
 mkdir -p ${BITMAIL_QT_BUILD_ROOT}/ext/screenshot ; \
 cd ${BITMAIL_QT_BUILD_ROOT}/ext/screenshot  && \
 ${QMake} -spec $QtSpec ${BITMAIL_QT_ROOT}/ext/screenshot/screenshot.pro && \
 ${MAKE} clean && \
-${MAKE} 
+${MAKE} && \
+cp -f ${BITMAIL_QT_BUILD_ROOT}/ext/screenshot/release/screenshot${EXE} ${BITMAIL_QT_BUILD_ROOT}/release
