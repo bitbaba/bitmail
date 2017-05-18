@@ -41,6 +41,7 @@
 #define MAINWINDOW_H
 #include <QMainWindow>
 #include <QProcess>
+#include <QSystemTrayIcon>
 #include "msgqueue.h"
 
 QT_BEGIN_NAMESPACE
@@ -125,8 +126,11 @@ private slots:
     void textSize(const QString &p);
     void textStyle(int styleIndex);
     void textColor();
-
+    void iconActivated(QSystemTrayIcon::ActivationReason reason);
     void currentCharFormatChanged(const QTextCharFormat &format);
+    void showTrayMessage(const QString & title, const QString & msg);
+    void trayMessageClicked();
+    void quit();
 
 private:
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
@@ -140,6 +144,7 @@ private:
     void createToolBars();
     void createStatusBar();
     QWidget * createMessageWidget(int width, const QString & sigtime, bool Signed, bool SignOk, bool encrypted, const QVariantList & varlist);
+    void createTrayIcon();
 
     void loadProfile(const QString &fileName, const QString & passphrase);
     bool saveProfile(const QString &fileName);
@@ -199,6 +204,15 @@ private:
     QAction *actionTextUnderline;
     QAction *actionTextItalic;
     QAction *actionTextColor;
+
+    // Tray Icon
+    QAction *minimizeAction;
+    QAction *maximizeAction;
+    QAction *restoreAction;
+    QAction *quitAction;
+
+    QSystemTrayIcon *trayIcon;
+    QMenu *trayIconMenu;
 
 private:
     BitMail *m_bitmail;

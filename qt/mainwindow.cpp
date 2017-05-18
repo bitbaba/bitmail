@@ -220,6 +220,19 @@ MainWindow::MainWindow(BitMail * bitmail)
         statusBar()->addPermanentWidget(txTip);
     }while(0);
 
+    // TrayIcon
+    trayIcon = NULL;
+    if (QSystemTrayIcon::isSystemTrayAvailable()){
+        createTrayIcon();
+        if (trayIcon != NULL){
+            trayIcon->setIcon(QIcon(BMQTApplication::GetImageResHome() + "/bitmail.png"));
+            trayIcon->setToolTip(tr("BitMail"));
+            connect(trayIcon, &QSystemTrayIcon::messageClicked, this, &MainWindow::trayMessageClicked);
+            connect(trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
+            trayIcon->show();
+        }
+    }
+
     // Bind signals
     connect(btree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(onTreeCurrentBuddy(QTreeWidgetItem*,QTreeWidgetItem*)));
     connect(btree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(onTreeBuddyDoubleClicked(QTreeWidgetItem*,int)));
@@ -299,6 +312,17 @@ void MainWindow::onTxDone()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    if (QSystemTrayIcon::isSystemTrayAvailable() && trayIcon != NULL){
+        this->hide(); event->ignore();
+    }else{
+        quit();
+        // should not be reached.
+        event->accept();
+    }
+}
+
+void MainWindow::quit()
+{
     shutdownNetwork();
     /**
     * Model here
@@ -307,7 +331,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
         m_shutdownDialog = new ShutdownDialog(this);
         m_shutdownDialog->exec();
     }
-    event->accept();
+
+    QCoreApplication::quit();
 }
 
 /** Double click a friend node*/
@@ -436,6 +461,20 @@ void MainWindow::createActions()
         htmlAct->setStatusTip(tr("HTML mode"));
         htmlAct->setCheckable(true);
         connect(htmlAct, SIGNAL(triggered(bool)), this, SLOT(onHtmlAct(bool)));
+    }while(0);
+
+    do {
+        minimizeAction = new QAction(tr("Mi&nimize"), this);
+        connect(minimizeAction, &QAction::triggered, this, &QMainWindow::hide);
+
+        maximizeAction = new QAction(tr("Ma&ximize"), this);
+        connect(maximizeAction, &QAction::triggered, this, &QMainWindow::showMaximized);
+
+        restoreAction = new QAction(tr("&Restore"), this);
+        connect(restoreAction, &QAction::triggered, this, &QMainWindow::showNormal);
+
+        quitAction = new QAction(tr("&Quit"), this);
+        connect(quitAction, &QAction::triggered, this, &MainWindow::quit);
     }while(0);
 }
 
@@ -975,6 +1014,8 @@ void MainWindow::onNewMessage(const QString & from
 {   
     qDebug() << "receips: " << qsTo;
 
+    showTrayMessage(from, content);
+
     std::vector<std::string> vec_receips = BitMail::decodeReceips(qsTo.toStdString());
     // Comment:
     // your speech in group will not echo.
@@ -1391,4 +1432,44 @@ void MainWindow::onProcThDone(const QString & sessKey, const QString &output)
 void MainWindow::onTextEditDropped(const QVariantList &varlist)
 {
     Send(BMQTApplication::toMixed(varlist));
+}
+
+void MainWindow::createTrayIcon()
+{
+    trayIconMenu = new QMenu(this);
+    trayIconMenu->addAction(minimizeAction);
+    trayIconMenu->addAction(maximizeAction);
+    trayIconMenu->addAction(restoreAction);
+    trayIconMenu->addSeparator();
+    trayIconMenu->addAction(quitAction);
+
+    trayIcon = new QSystemTrayIcon(this);
+    trayIcon->setContextMenu(trayIconMenu);
+}
+
+void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason) {
+    case QSystemTrayIcon::Trigger:
+    case QSystemTrayIcon::DoubleClick:
+    case QSystemTrayIcon::MiddleClick:
+        if (this->isHidden()) this->show();
+        break;
+    default:
+        ;
+    }
+}
+
+//! [5]
+void MainWindow::showTrayMessage(const QString & title, const QString & msg)
+{
+    trayIcon->showMessage(title, msg, QSystemTrayIcon::Information, 3 * 1000);
+}
+
+//! [6]
+void MainWindow::trayMessageClicked()
+{
+    if (this->isHidden()){
+        this->show();
+    }
 }
