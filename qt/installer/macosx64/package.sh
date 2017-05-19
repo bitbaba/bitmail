@@ -1,4 +1,5 @@
 #!/bin/bash
+# http://www.embed-net.com/thread-121-1-1.html
 
 QtBinRoot=/opt/Qt5.8.0/5.8/gcc_64/bin
 
