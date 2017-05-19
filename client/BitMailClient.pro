@@ -1,4 +1,3 @@
-TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
@@ -7,80 +6,71 @@ SOURCES += src/bitmailclient.cpp
 
 QMAKE_CFLAGS = -Wno-unused-parameter -DCURL_STATICLIB
 
-include(deployment.pri)
+CODECFORTR = utf-8
 
-qtcAddDeployment()
+# library: bitmailcore
+unix|win32: LIBS += -L$$PWD/../out/core/lib/ -lbitmailcore
 
-#libbitmailcore
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../lib/ -lbitmailcore
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../lib/ -lbitmailcored
-else:unix: LIBS += -L$$PWD/../lib/ -lbitmailcore
+INCLUDEPATH += $$PWD/../out/core/include
+DEPENDPATH += $$PWD/../out/core/include
 
-INCLUDEPATH += $$PWD/../include
-DEPENDPATH += $$PWD/../include
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/core/lib/bitmailcore.lib
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/core/lib/libbitmailcore.a
 
-win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../lib/libbitmailcore.a
-else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../lib/libbitmailcored.a
-else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../lib/bitmailcore.lib
-else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../lib/bitmailcored.lib
-else:unix: PRE_TARGETDEPS += $$PWD/../lib/libbitmailcore.a
+# library: curl
+unix|win32: LIBS += -L$$PWD/../out/depends/lib/ -lcurl
 
-### libjsoncpp
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../3rd/jsoncpp-0.10.2-p1/lib/ -ljsoncpp
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../3rd/jsoncpp-0.10.2-p1/lib/ -ljsoncppd
-else:unix: LIBS += -L$$PWD/../3rd/jsoncpp-0.10.2-p1/lib/ -ljsoncpp
+INCLUDEPATH += $$PWD/../out/depends/include
+DEPENDPATH += $$PWD/../out/depends/include
 
-INCLUDEPATH += $$PWD/../3rd/jsoncpp-0.10.2-p1/include
-DEPENDPATH += $$PWD/../3rd/jsoncpp-0.10.2-p1/include
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/curl.lib
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/libcurl.a
 
-win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/jsoncpp-0.10.2-p1/lib/libjsoncpp.a
-else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/jsoncpp-0.10.2-p1/lib/libjsoncppd.a
-else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/jsoncpp-0.10.2-p1/lib/jsoncpp.lib
-else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/jsoncpp-0.10.2-p1/lib/jsoncppd.lib
-else:unix: PRE_TARGETDEPS += $$PWD/../3rd/jsoncpp-0.10.2-p1/lib/libjsoncpp.a
+# library: openssl
+unix|win32: LIBS += -L$$PWD/../out/depends/lib/ -lssl
 
-### libcurl
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../3rd/curl-7.42/lib/ -lcurl
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../3rd/curl-7.42/lib/ -lcurld
-else:unix: LIBS += -L$$PWD/../3rd/curl-7.42/lib/ -lcurl
+INCLUDEPATH += $$PWD/../out/depends/include
+DEPENDPATH += $$PWD/../out/depends/include
 
-INCLUDEPATH += $$PWD/../3rd/curl-7.42/include
-DEPENDPATH += $$PWD/../3rd/curl-7.42/include
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/ssl.lib
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/libssl.a
 
-win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/curl-7.42/lib/libcurl.a
-else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/curl-7.42/lib/libcurld.a
-else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/curl-7.42/lib/curl.lib
-else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/curl-7.42/lib/curld.lib
-else:unix: PRE_TARGETDEPS += $$PWD/../3rd/curl-7.42/lib/libcurl.a
+# library: crypto
+unix|win32: LIBS += -L$$PWD/../out/depends/lib/ -lcrypto
 
-### libssl
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../3rd/openssl-1.0.2a/lib/ -lssl
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../3rd/openssl-1.0.2a/lib/ -lssld
-else:unix: LIBS += -L$$PWD/../3rd/openssl-1.0.2a/lib/ -lssl
+INCLUDEPATH += $$PWD/../out/depends/include
+DEPENDPATH += $$PWD/../out/depends/include
 
-INCLUDEPATH += $$PWD/../3rd/openssl-1.0.2a/include
-DEPENDPATH += $$PWD/../3rd/openssl-1.0.2a/include
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/crypto.lib
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/libcrypto.a
 
-win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/openssl-1.0.2a/lib/libssl.a
-else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/openssl-1.0.2a/lib/libssld.a
-else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/openssl-1.0.2a/lib/ssl.lib
-else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/openssl-1.0.2a/lib/ssld.lib
-else:unix: PRE_TARGETDEPS += $$PWD/../3rd/openssl-1.0.2a/lib/libssl.a
+# library: microhttpd
+unix|win32: LIBS += -L$$PWD/../out/depends/lib/ -lmicrohttpd
 
-### libcrypto
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../3rd/openssl-1.0.2a/lib/ -lcrypto
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../3rd/openssl-1.0.2a/lib/ -lcryptod
-else:unix: LIBS += -L$$PWD/../3rd/openssl-1.0.2a/lib/ -lcrypto
+INCLUDEPATH += $$PWD/../out/depends/include
+DEPENDPATH += $$PWD/../out/depends/include
 
-INCLUDEPATH += $$PWD/../3rd/openssl-1.0.2a/include
-DEPENDPATH += $$PWD/../3rd/openssl-1.0.2a/include
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/microhttpd.lib
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/libmicrohttpd.a
 
-win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/openssl-1.0.2a/lib/libcrypto.a
-else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/openssl-1.0.2a/lib/libcryptod.a
-else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/openssl-1.0.2a/lib/crypto.lib
-else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../3rd/openssl-1.0.2a/lib/cryptod.lib
-else:unix: PRE_TARGETDEPS += $$PWD/../3rd/openssl-1.0.2a/lib/libcrypto.a
+# library: qrencode
+unix|win32: LIBS += -L$$PWD/../out/depends/lib/ -lqrencode
 
-### for win32 system libs
-win32: LIBS += -lgdi32 -lws2_32
+INCLUDEPATH += $$PWD/../out/depends/include
+DEPENDPATH += $$PWD/../out/depends/include
+
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/qrencode.lib
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/libqrencode.a
+
+# library: lua
+unix|win32: LIBS += -L$$PWD/../out/depends/lib/ -llua
+
+INCLUDEPATH += $$PWD/../out/depends/include
+DEPENDPATH += $$PWD/../out/depends/include
+
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/lua.lib
+else:unix|win32-g++: PRE_TARGETDEPS += $$PWD/../out/depends/lib/liblua.a
+
+win32: LIBS += -lws2_32 -lgdi32 -liphlpapi
+
 
