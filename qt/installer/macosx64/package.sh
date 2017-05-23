@@ -22,6 +22,8 @@ BitmailBundle=${SandBox}/bitmail.app/Contents/MacOS
 
 COPY="cp -RfL"
 
+MKDIR="mkdir -p"
+
 ${COPY} ${BitmailQtBuildRoot}/bitmail.app   ${SandBox}
 ${COPY} ${BitmailQtBuildRoot}/audiorecorder.app/Contents/MacOS/audiorecorder ${BitmailBundle}
 ${COPY} ${BitmailQtBuildRoot}/camera.app/Contents/MacOS/camera   ${BitmailBundle}
