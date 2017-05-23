@@ -26,10 +26,19 @@ ${COPY} ${BitmailQtBuildRoot}/bitmail.app   ${SandBox}
 ${COPY} ${BitmailQtBuildRoot}/audiorecorder.app/Contents/MacOS/audiorecorder ${BitmailBundle}
 ${COPY} ${BitmailQtBuildRoot}/camera.app/Contents/MacOS/camera   ${BitmailBundle}
 ${COPY} ${BitmailQtBuildRoot}/screenshot.app/Contents/MacOS/screenshot   ${BitmailBundle}
-${COPY} ${QtLibRoot}/QtWidgets.framework ${BitmailBundle}
-${COPY} ${QtLibRoot}/QtGui.framework     ${BitmailBundle}
-${COPY} ${QtLibRoot}/QtNetwork.framework ${BitmailBundle}
-${COPY} ${QtLibRoot}/QtCore.framework    ${BitmailBundle}
+
+${MKDIR} ${BitmailBundle}/QtWidgets.framework/Versions/5
+${COPY} ${QtLibRoot}/QtWidgets.framework/Versions/5/QtWidgets ${BitmailBundle}/QtWidgets.framework/Versions/5/
+
+${MKDIR} ${BitmailBundle}/QtGui.framework/Versions/5
+${COPY} ${QtLibRoot}/QtGui.framework/Versions/5/QtGui         ${BitmailBundle}/QtGui.framework/Versions/5/
+
+${MKDIR} ${BitmailBundle}/QtNetwork.framework/Versions/5
+${COPY} ${QtLibRoot}/QtNetwork.framework/Versions/5/QtNetwork ${BitmailBundle}/QtNetwork.framework/Versions/5/
+
+${MKDIR} ${BitmailBundle}/QtCore.framework/Versions/5
+${COPY} ${QtLibRoot}/QtCore.framework/Versions/5/QtCore       ${BitmailBundle}/QtCore.framework/Versions/5/
+
 #${COPY} ${QtLibRoot}/icui18n.framework   ${BitmailBundle}
 #${COPY} ${QtLibRoot}/icuuc.framework     ${BitmailBundle}
 #${COPY} ${QtLibRoot}/icudata.framework   ${BitmailBundle}
