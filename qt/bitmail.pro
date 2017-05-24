@@ -1,5 +1,7 @@
 QT += widgets network
 
+ICON = res/image/bitmail.icns
+
 CODECFORTR = utf-8
 TRANSLATIONS = locale/bitmail_en.ts \
 			   locale/bitmail_zh_CN.ts \
