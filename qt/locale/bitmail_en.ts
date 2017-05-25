@@ -196,220 +196,255 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../mainwindow.cpp" line="92"/>
-        <location filename="../mainwindow.cpp" line="229"/>
+        <location filename="../mainwindow.cpp" line="95"/>
+        <location filename="../mainwindow.cpp" line="240"/>
         <source>BitMail</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="114"/>
+        <location filename="../mainwindow.cpp" line="117"/>
         <source>Contact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="118"/>
+        <location filename="../mainwindow.cpp" line="122"/>
         <source>Friends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="126"/>
+        <location filename="../mainwindow.cpp" line="130"/>
         <source>Groups</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="162"/>
+        <location filename="../mainwindow.cpp" line="138"/>
+        <source>Subscribe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="173"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="163"/>
+        <location filename="../mainwindow.cpp" line="174"/>
         <source>Ctrl+Enter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="169"/>
+        <location filename="../mainwindow.cpp" line="180"/>
         <source>QrImage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="170"/>
+        <location filename="../mainwindow.cpp" line="181"/>
         <source>Ctrl+Shift+Enter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="406"/>
+        <location filename="../mainwindow.cpp" line="417"/>
         <source>&amp;Configure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="407"/>
+        <location filename="../mainwindow.cpp" line="418"/>
         <source>Configure current account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="412"/>
+        <location filename="../mainwindow.cpp" line="423"/>
         <source>&amp;Invite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="413"/>
+        <location filename="../mainwindow.cpp" line="424"/>
         <source>Invite by sending your signature</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="418"/>
-        <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="419"/>
-        <source>Help</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="424"/>
-        <source>&amp;File</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="425"/>
-        <source>Send File</source>
+        <location filename="../mainwindow.cpp" line="429"/>
+        <source>&amp;Publish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="430"/>
-        <source>&amp;Audio</source>
+        <source>Publish something fun to your friends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="431"/>
-        <source>Send audio</source>
+        <location filename="../mainwindow.cpp" line="435"/>
+        <source>&amp;Wallet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="436"/>
-        <source>&amp;Emoji</source>
+        <source>Show bitcoin balance in your wallet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="437"/>
-        <source>Send emoji</source>
+        <location filename="../mainwindow.cpp" line="441"/>
+        <source>&amp;Pay</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="442"/>
-        <source>&amp;Snapshot</source>
+        <source>Pay bitcoins to your friends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="443"/>
-        <source>Send snapshot</source>
+        <location filename="../mainwindow.cpp" line="447"/>
+        <source>&amp;Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="448"/>
-        <source>&amp;Photo</source>
+        <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="449"/>
-        <source>Send photo</source>
+        <location filename="../mainwindow.cpp" line="453"/>
+        <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="454"/>
-        <source>&amp;Video</source>
+        <source>Send File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="455"/>
-        <source>Send video</source>
+        <location filename="../mainwindow.cpp" line="459"/>
+        <source>&amp;Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="460"/>
-        <source>&amp;Html</source>
+        <source>Send audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="461"/>
-        <source>HTML mode</source>
+        <location filename="../mainwindow.cpp" line="465"/>
+        <source>&amp;Emoji</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="467"/>
-        <source>Mi&amp;nimize</source>
+        <location filename="../mainwindow.cpp" line="466"/>
+        <source>Send emoji</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="470"/>
-        <source>Ma&amp;ximize</source>
+        <location filename="../mainwindow.cpp" line="471"/>
+        <source>&amp;Snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="473"/>
-        <source>&amp;Restore</source>
+        <location filename="../mainwindow.cpp" line="472"/>
+        <source>Send snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="476"/>
-        <source>&amp;Quit</source>
+        <location filename="../mainwindow.cpp" line="477"/>
+        <source>&amp;Photo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="478"/>
+        <source>Send photo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="483"/>
+        <source>&amp;Video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="484"/>
+        <source>Send video</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="489"/>
+        <source>&amp;Html</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="490"/>
+        <source>HTML mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="496"/>
+        <source>Mi&amp;nimize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="499"/>
+        <source>Ma&amp;ximize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="502"/>
+        <source>&amp;Restore</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="505"/>
+        <source>&amp;Quit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="513"/>
         <source>Format Actions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="491"/>
+        <location filename="../mainwindow.cpp" line="520"/>
         <source>&amp;Bold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="503"/>
+        <location filename="../mainwindow.cpp" line="532"/>
         <source>&amp;Italic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="515"/>
+        <location filename="../mainwindow.cpp" line="544"/>
         <source>&amp;Underline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="528"/>
+        <location filename="../mainwindow.cpp" line="557"/>
         <source>&amp;Color...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="708"/>
+        <location filename="../mainwindow.cpp" line="737"/>
         <source>Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="711"/>
+        <location filename="../mainwindow.cpp" line="740"/>
         <source>Buddies</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="715"/>
+        <location filename="../mainwindow.cpp" line="746"/>
         <source>Chat</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="728"/>
+        <location filename="../mainwindow.cpp" line="760"/>
         <source>Ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="790"/>
-        <location filename="../mainwindow.cpp" line="946"/>
-        <location filename="../mainwindow.cpp" line="964"/>
+        <location filename="../mainwindow.cpp" line="822"/>
+        <location filename="../mainwindow.cpp" line="996"/>
+        <location filename="../mainwindow.cpp" line="1014"/>
         <source>No active network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="811"/>
+        <location filename="../mainwindow.cpp" line="843"/>
         <source>select a emoji to send</source>
         <translation type="unfinished"></translation>
     </message>
@@ -591,6 +626,78 @@
     </message>
 </context>
 <context>
+    <name>PayDialog</name>
+    <message>
+        <location filename="../paydialog.ui" line="44"/>
+        <source>Pay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../paydialog.ui" line="56"/>
+        <source>To ()</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../paydialog.ui" line="74"/>
+        <source>Address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../paydialog.ui" line="81"/>
+        <source>Amount:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../paydialog.ui" line="115"/>
+        <location filename="../paydialog.ui" line="210"/>
+        <source>mBTC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../paydialog.ui" line="124"/>
+        <source>Fee:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../paydialog.ui" line="157"/>
+        <source>+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../paydialog.ui" line="160"/>
+        <source>%%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../paydialog.cpp" line="14"/>
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>RssDialog</name>
+    <message>
+        <location filename="../rssdialog.ui" line="14"/>
+        <source>Publish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../rssdialog.ui" line="45"/>
+        <source>Public</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../rssdialog.ui" line="52"/>
+        <source>Private</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../rssdialog.ui" line="59"/>
+        <source>Group</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ShutdownDialog</name>
     <message>
         <location filename="../shutdowndialog.ui" line="38"/>
@@ -678,6 +785,82 @@
     <message>
         <location filename="../groupdialog.cpp" line="121"/>
         <source>choose a logo</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>walletDialog</name>
+    <message>
+        <location filename="../walletdialog.ui" line="14"/>
+        <source>Wallet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="42"/>
+        <source>Payment Wallet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="57"/>
+        <source>Bank:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="67"/>
+        <source>Account:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="77"/>
+        <source>Token:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="93"/>
+        <location filename="../walletdialog.ui" line="185"/>
+        <source>Query</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="102"/>
+        <location filename="../walletdialog.ui" line="194"/>
+        <source>Balance:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="118"/>
+        <location filename="../walletdialog.ui" line="206"/>
+        <source>(mBTC)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="125"/>
+        <source>Charge...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="144"/>
+        <source>Reserve Wallet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="159"/>
+        <source>Chain:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="169"/>
+        <source>Phrase:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="213"/>
+        <source> Import...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../walletdialog.ui" line="234"/>
+        <source>Details:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
