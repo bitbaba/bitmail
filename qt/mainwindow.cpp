@@ -66,6 +66,9 @@
 #include "invitedialog.h"
 #include "messagedialog.h"
 #include "groupdialog.h"
+#include "rssdialog.h"
+#include "walletdialog.h"
+#include "paydialog.h"
 #include "clickablelabel.h"
 #include "textedit.h"
 #include "versiondialog.h"
@@ -965,17 +968,20 @@ void MainWindow::onBtnInviteClicked()
 
 void MainWindow::onPubAct()
 {
-
+    RssDialog rssDlg(BitMail::getInst(), this);
+    rssDlg.exec();
 }
 
 void MainWindow::onWalletAct()
 {
-
+    walletDialog walletDlg(this);
+    walletDlg.exec();
 }
 
 void MainWindow::onPayAct()
 {
-
+    PayDialog payDlg(this->currentSessionKey(), this);
+    payDlg.exec();
 }
 
 void MainWindow::onHelpAct()
