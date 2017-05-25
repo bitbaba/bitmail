@@ -90,7 +90,10 @@ public slots:
     void onBtnSendQrClicked();
     void onBtnConfigClicked();
     void onBtnInviteClicked();
+    void onPubAct();
+    void onWalletAct();
     void onHelpAct();
+
     void onLabelDoubleClicked(ClickableLabel * label);
     void onTextEditDropped(const QVariantList & varlist);
 
@@ -114,6 +117,7 @@ public slots:
     void onPhotoAct();
     void onVideoAct();
     void onHtmlAct(bool fChecked);
+    void onPayAct();
 
     void populateFriendTree();
     void populateGroupTree();
@@ -173,6 +177,7 @@ private:
     QTreeWidget * btree;
     QTreeWidgetItem * nodeFriends;
     QTreeWidgetItem * nodeGroups;
+    QTreeWidgetItem * nodeSub;
 
     QLabel * sessLabel;
     QListWidget *msgView;
@@ -191,6 +196,8 @@ private:
     QAction *configAct;
     QAction *inviteAct;
     QAction *helpAct;
+    QAction *pubAct;
+    QAction *walletAct;
     QAction *fileAct;
     QAction *audioAct;
     QAction *emojiAct;
@@ -198,6 +205,7 @@ private:
     QAction *photoAct;
     QAction *videoAct;
     QAction *htmlAct;
+    QAction *payAct;
 
     // Text edit options
     QAction *actionTextBold;

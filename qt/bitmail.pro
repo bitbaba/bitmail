@@ -1,5 +1,7 @@
 QT += widgets network
 
+ICON = res/image/bitmail.icns
+
 CODECFORTR = utf-8
 TRANSLATIONS = locale/bitmail_en.ts \
 			   locale/bitmail_zh_CN.ts \
@@ -22,6 +24,9 @@ HEADERS       = mainwindow.h \
                 messagedialog.h \
                 assistantdialog.h \
                 groupdialog.h \
+                rssdialog.h \
+                walletdialog.h \
+                paydialog.h \
                 procth.h \
                 clickablelabel.h \
                 textedit.h \
@@ -41,6 +46,9 @@ SOURCES       = main.cpp \
                 messagedialog.cpp \
                 assistantdialog.cpp \
                 groupdialog.cpp \
+                rssdialog.cpp \
+                walletdialog.cpp \
+                paydialog.cpp \
                 procth.cpp \
                 clickablelabel.cpp \
                 textedit.cpp \
@@ -61,6 +69,9 @@ FORMS += \
     messagedialog.ui \
     assistantdialog.ui \
     groupdialog.ui \
+    rssdialog.ui \
+    walletdialog.ui \
+    paydialog.ui \
     versiondialog.ui
 
 # library: bitmailcore
