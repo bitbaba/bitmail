@@ -113,6 +113,7 @@ MainWindow::MainWindow(BitMail * bitmail)
     QStringList columns;
     columns.append(tr("Contact"));
     btree->setHeaderLabels(columns);
+    btree->setContentsMargins(10, 10, 10, 10);
 
     if (1){
         nodeFriends = new QTreeWidgetItem(btree, QStringList(tr("Friends")));
@@ -127,6 +128,13 @@ MainWindow::MainWindow(BitMail * bitmail)
         nodeGroups->setIcon(0, QIcon(BMQTApplication::GetImageResHome() + "/group.png"));
         btree->addTopLevelItem(nodeGroups);
         populateGroupTree();
+        nodeGroups->setExpanded(true);
+    }
+
+    if (0){
+        nodeSub = new QTreeWidgetItem(btree, QStringList(tr("Subscribe")));
+        nodeSub->setIcon(0, QIcon(BMQTApplication::GetImageResHome() + "/subscribe.png"));
+        btree->addTopLevelItem(nodeSub);
     }
 
     leftLayout->addWidget(btree);
@@ -412,6 +420,24 @@ void MainWindow::createActions()
         inviteAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/invite.png"), tr("&Invite"), this);
         inviteAct->setStatusTip(tr("Invite by sending your signature"));
         connect(inviteAct, SIGNAL(triggered()), this, SLOT(onBtnInviteClicked()));
+    }while(0);
+
+    do {
+        pubAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/publish.png"), tr("&Publish"), this);
+        pubAct->setStatusTip(tr("Publish something fun to your friends"));
+        connect(pubAct, SIGNAL(triggered()), this, SLOT(onPubAct()));
+    }while(0);
+
+    do {
+        walletAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/wallet.png"), tr("&Wallet"), this);
+        walletAct->setStatusTip(tr("Show bitcoin balance in your wallet"));
+        connect(walletAct, SIGNAL(triggered()), this, SLOT(onWalletAct()));
+    }while(0);
+
+    do {
+        payAct = new QAction(QIcon(BMQTApplication::GetImageResHome() + "/bitcoin.png"), tr("&Pay"), this);
+        payAct->setStatusTip(tr("Pay bitcoins to your friends"));
+        connect(payAct, SIGNAL(triggered()), this, SLOT(onPayAct()));
     }while(0);
 
     do {
@@ -710,6 +736,8 @@ void MainWindow::createToolBars()
 
     editToolBar = addToolBar(tr("Buddies"));
     editToolBar->addAction(inviteAct);
+    editToolBar->addAction(pubAct);
+    editToolBar->addAction(walletAct);
     editToolBar->addAction(helpAct);
 
     chatToolbar = addToolBar(tr("Chat"));
@@ -721,6 +749,7 @@ void MainWindow::createToolBars()
     chatToolbar->addAction(photoAct);
     chatToolbar->addAction(videoAct);
     chatToolbar->addAction(htmlAct);
+    chatToolbar->addAction(payAct);
 }
 
 void MainWindow::createStatusBar()
@@ -932,6 +961,21 @@ void MainWindow::onBtnInviteClicked()
     BitMail::getInst()->addContact(sessKey.toStdString());
 
     return ;
+}
+
+void MainWindow::onPubAct()
+{
+
+}
+
+void MainWindow::onWalletAct()
+{
+
+}
+
+void MainWindow::onPayAct()
+{
+
 }
 
 void MainWindow::onHelpAct()
