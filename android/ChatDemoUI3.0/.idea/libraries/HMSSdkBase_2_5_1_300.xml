@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="HMSSdkBase_2.5.1.300">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../easeui/easeui/libs/HMSSdkBase_2.5.1.300.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
