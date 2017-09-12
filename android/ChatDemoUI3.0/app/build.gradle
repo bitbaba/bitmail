@@ -19,6 +19,13 @@ android {
         minSdkVersion 14
         targetSdkVersion 22
         multiDexEnabled true
+        ndk {
+            // `java.lang.UnsatisfiedLinkError: dalvik.system.PathClassLoader'
+            // fixed by following instructions
+            // ref: https://stackoverflow.com/questions/27186726/java-lang-unsatisfiedlinkerror-dalvik-system-pathclassloader
+            // See [Specify ABIs]: https://developer.android.com/studio/projects/add-native-code.html#create-cmake-script
+            abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
+        }
     }
 
     buildTypes {

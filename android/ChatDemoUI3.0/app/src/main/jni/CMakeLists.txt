@@ -17,4 +17,5 @@ add_library( # Specifies the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             ${PROJECT_SOURCE_DIR}/BitMailWrapper.cpp )
+             ${PROJECT_SOURCE_DIR}/BitMailWrapper.c
+             ${PROJECT_SOURCE_DIR}/BitMailWrapper.cpp)
