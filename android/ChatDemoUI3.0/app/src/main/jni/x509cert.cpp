@@ -32,7 +32,8 @@ CX509Cert::CX509Cert(const std::string & certpem)
 
 CX509Cert::CX509Cert(const std::string & certpem, const std::string & privkey, const std::string & passphrase)
 {
-    ImportCert(certpem); ImportPrivKey(privkey, passphrase);
+    ImportCert(certpem);
+    ImportPrivKey(privkey, passphrase);
 }
 
 

@@ -119,8 +119,8 @@ extern "C" {
 
 #if !(defined(VMS) || defined(__VMS)) /* VMS uses logical names instead */
 #if defined(HEADER_CRYPTLIB_H) && !defined(OPENSSLDIR)
-#define ENGINESDIR "/d/workspace/tarballs/openssl-1.0.2h-prebuilt-armv7eabi/lib/engines"
-#define OPENSSLDIR "/d/workspace/tarballs/openssl-1.0.2h-prebuilt-armv7eabi/ssl"
+#define ENGINESDIR "/d/workspace/tarballs/prebuilt/ssl-armeabi-v7a/lib/engines"
+#define OPENSSLDIR "/d/workspace/tarballs/prebuilt/ssl-armeabi-v7a/ssl"
 #endif
 #endif
 

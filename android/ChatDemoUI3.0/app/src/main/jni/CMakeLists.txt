@@ -7,15 +7,15 @@ cmake_minimum_required(VERSION 3.4.1)
 # for openssl
 # ref: https://wiki.openssl.org/images/7/70/Setenv-android.sh
 #
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include/${ANDROID_ABI})
 
 add_library(Crypto STATIC IMPORTED )
 
 add_library(Ssl    STATIC IMPORTED )
 
 set_target_properties(Crypto PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/${ANDROID_ABI}/libcrypto.a)
-set_target_properties(Ssl    PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/${ANDROID_ABI}/libssl.a)
 
+set_target_properties(Ssl    PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/lib/${ANDROID_ABI}/libssl.a)
 
 # Specifies a library name, specifies whether the library is STATIC or
 # SHARED, and provides relative paths to the source code. You can
