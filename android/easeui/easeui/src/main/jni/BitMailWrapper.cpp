@@ -19,5 +19,5 @@ Java_com_hyphenate_easeui_EaseUI_NativeJsonRPC(JNIEnv *env, jclass type, jstring
 
     env->ReleaseStringUTFChars(payload_, payload);
 
-    return env->NewStringUTF("");
+    return env->NewStringUTF("{}");
 }

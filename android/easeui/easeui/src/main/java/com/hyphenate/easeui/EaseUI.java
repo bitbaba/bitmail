@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.util.JsonReader;
 import android.util.Log;
 
 import com.hyphenate.EMMessageListener;
@@ -16,12 +17,49 @@ import com.hyphenate.easeui.model.EaseAtMessageHelper;
 import com.hyphenate.easeui.model.EaseNotifier;
 import com.hyphenate.easeui.domain.EaseAvatarOptions;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 public final class EaseUI {
+    static {
+        System.loadLibrary("BitMailWrapper");
+    }
+
+    public static  native String NativeJsonRPC(String payload);
+
+    private static boolean InitBitMailWrapper(){
+        JSONObject rpc = new JSONObject();
+        try {
+            rpc.put("method", "Init");
+            JSONObject params = new JSONObject();
+            params.put("dummy", "dummyValue");
+            rpc.put("params", params);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String str = NativeJsonRPC(rpc.toString());
+
+        JSONTokener parser = new JSONTokener(str);
+
+        JSONObject ret = null;
+        try {
+            ret = (JSONObject)parser.nextValue();
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return  false;
+        }
+
+        return true;
+    }
+
     private static final String TAG = EaseUI.class.getSimpleName();
 
     /**
@@ -69,7 +107,9 @@ public final class EaseUI {
     }
     
     
-    private EaseUI(){}
+    private EaseUI(){
+        InitBitMailWrapper();
+    }
     
     /**
      * get instance of EaseUI
