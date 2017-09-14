@@ -17,7 +17,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -97,11 +96,6 @@ public class EaseMessageAdapter extends BaseAdapter{
 			// you should not call getAllMessages() in UI thread
 			// otherwise there is problem when refreshing UI and there is new message arrive
 			java.util.List<EMMessage> var = conversation.getAllMessages();
-			for (EMMessage elt : var){
-				if (elt.getBooleanAttribute("is_smime", false)) {
-					Log.d("BitMail", elt.toString());
-				}
-			}
 			messages = var.toArray(new EMMessage[var.size()]);
 			conversation.markAllMessagesAsRead();
 			notifyDataSetChanged();
@@ -229,7 +223,6 @@ public class EaseMessageAdapter extends BaseAdapter{
         }
         switch (message.getType()) {
         case TXT:
-        	// Decrypt and verify message here, including sent & received messages.
             if(message.getBooleanAttribute(EaseConstant.MESSAGE_ATTR_IS_BIG_EXPRESSION, false)){
                 chatRow = new EaseChatRowBigExpression(context, message, position, this);
             }else{

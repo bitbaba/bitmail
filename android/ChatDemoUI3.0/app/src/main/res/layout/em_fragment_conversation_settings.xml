@@ -58,7 +58,7 @@
                     android:layout_height="30dip"
                     android:gravity="bottom|left"
                     android:paddingLeft="10dip"
-                    android:text="@string/mail_log_title"
+                    android:text="mail log"
                     android:textColor="@color/btn_gray_pressed" />
 
                 <TextView
@@ -79,7 +79,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:paddingLeft="10dip"
-                    android:text="@string/mail_log_title"
+                    android:text="mail log"
                     android:textColor="@android:color/black"
                     android:textSize="14sp"
                     android:typeface="serif" />

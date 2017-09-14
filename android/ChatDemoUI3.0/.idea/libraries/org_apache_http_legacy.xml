@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="org.apache.http.legacy">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../easeui/easeui/libs/org.apache.http.legacy.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../emclient-android/hyphenatechatsdk/libs/org.apache.http.legacy.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

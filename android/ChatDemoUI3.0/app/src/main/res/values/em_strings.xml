@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     
-    <string name="app_name">BitMail</string>
+    <string name="app_name">Hyphenate Demo</string>
     <string name="app_slogon">IM as a service</string>
     <string name="text_ack_msg">Read</string>
     <string name="text_delivered_msg">Delivered</string>
@@ -132,10 +132,10 @@
     <string name="Group_of_Lord">The group owner</string>
     <string name="Introduction">Brief</string>
     <string name="To_join_the_chat">Join the group</string>
-    <string name="login">Sign In</string>
+    <string name="login">Login</string>
     <string name="user_name">User name</string>
     <string name="password">Password</string>
-    <string name="register">Sign Up</string>
+    <string name="register">Register</string>
     <string name="confirmpassword">Confirm password</string>
     <string name="downwaiting">Downloading the file, please wait a moment</string>
     <string name="mute">Mute</string>

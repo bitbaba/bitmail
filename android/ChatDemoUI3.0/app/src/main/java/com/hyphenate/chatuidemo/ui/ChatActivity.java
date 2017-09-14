@@ -9,7 +9,7 @@ import com.hyphenate.easeui.ui.EaseChatFragment;
 import com.hyphenate.util.EasyUtils;
 
 /**
- * chat activity，MyEaseChatFragment was used {@link #MyEaseChatFragment}
+ * chat activity，EaseChatFragment was used {@link #EaseChatFragment}
  *
  */
 public class ChatActivity extends BaseActivity{
@@ -25,7 +25,7 @@ public class ChatActivity extends BaseActivity{
         //get user id or group id
         toChatUsername = getIntent().getExtras().getString("userId");
         //use EaseChatFratFragment
-        chatFragment = new MyEaseChatFragment() ;
+        chatFragment = new ChatFragment();
         //pass parameters to chat fragment
         chatFragment.setArguments(getIntent().getExtras());
         getSupportFragmentManager().beginTransaction().add(R.id.container, chatFragment).commit();

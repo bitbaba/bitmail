@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="MiPush_SDK_Client_2_2_19">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../easeui/easeui/libs/MiPush_SDK_Client_2_2_19.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../emclient-android/hyphenatechatsdk/libs/MiPush_SDK_Client_2_2_19.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

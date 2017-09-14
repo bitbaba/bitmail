@@ -702,7 +702,6 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
             sendAtMessage(content);
         }else{
             EMMessage message = EMMessage.createTxtSendMessage(content, toChatUsername);
-            message.setAttribute("is_smime", true);
             sendMessage(message);
         }
     }
