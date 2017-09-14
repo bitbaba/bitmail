@@ -33,7 +33,6 @@ import com.hyphenate.easeui.utils.EaseUserUtils;
 // ============== fabric end
 
 public class DemoApplication extends Application {
-
 	public static Context applicationContext;
 	private static DemoApplication instance;
 	// login user name

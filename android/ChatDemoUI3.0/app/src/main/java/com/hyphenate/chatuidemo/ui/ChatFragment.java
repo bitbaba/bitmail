@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,6 +32,7 @@ import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMTextMessageBody;
+import com.hyphenate.chat.adapter.message.EMATextMessageBody;
 import com.hyphenate.chatuidemo.Constant;
 import com.hyphenate.chatuidemo.DemoHelper;
 import com.hyphenate.chatuidemo.R;
@@ -42,6 +44,8 @@ import com.hyphenate.easeui.EaseConstant;
 import com.hyphenate.easeui.ui.EaseChatFragment;
 import com.hyphenate.easeui.ui.EaseChatFragment.EaseChatFragmentHelper;
 import com.hyphenate.easeui.widget.chatrow.EaseChatRow;
+import com.hyphenate.easeui.widget.chatrow.EaseChatRowBigExpression;
+import com.hyphenate.easeui.widget.chatrow.EaseChatRowText;
 import com.hyphenate.easeui.widget.chatrow.EaseCustomChatRowProvider;
 import com.hyphenate.easeui.widget.emojicon.EaseEmojiconMenu;
 import com.hyphenate.exceptions.HyphenateException;
@@ -317,6 +321,11 @@ public class ChatFragment extends EaseChatFragment implements EaseChatFragmentHe
     }
 
     @Override
+    protected void sendMessage(EMMessage message) {
+        super.sendMessage(message);
+    }
+
+    @Override
     public void onMessageBubbleLongClick(EMMessage message) {
     	// no message forward when in chat room
         startActivityForResult((new Intent(getActivity(), ContextMenuActivity.class)).putExtra("message",message)
@@ -424,6 +433,7 @@ public class ChatFragment extends EaseChatFragment implements EaseChatFragmentHe
         public int getCustomChatRowTypeCount() {
             //here the number is the message type in EMMessage::Type
         	//which is used to count the number of different chat row
+            // see bellow
             return 11;
         }
 
@@ -432,24 +442,30 @@ public class ChatFragment extends EaseChatFragment implements EaseChatFragmentHe
             if(message.getType() == EMMessage.Type.TXT){
                 //voice call
                 if (message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VOICE_CALL, false)){
+                    // (1)MESSAGE_TYPE_RECV_VOICE_CALL & (2)MESSAGE_TYPE_SENT_VOICE_CALL
                     return message.direct() == EMMessage.Direct.RECEIVE ? MESSAGE_TYPE_RECV_VOICE_CALL : MESSAGE_TYPE_SENT_VOICE_CALL;
                 }else if (message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VIDEO_CALL, false)){
                     //video call
+                    // (3)MESSAGE_TYPE_RECV_VIDEO_CALL & (4)MESSAGE_TYPE_SENT_VIDEO_CALL
                     return message.direct() == EMMessage.Direct.RECEIVE ? MESSAGE_TYPE_RECV_VIDEO_CALL : MESSAGE_TYPE_SENT_VIDEO_CALL;
                 }
                  //messagee recall
                 else if(message.getBooleanAttribute(Constant.MESSAGE_TYPE_RECALL, false)){
+                    // (5) MESSAGE_TYPE_RECALL
                     return MESSAGE_TYPE_RECALL;
                 }
                 //red packet code : 红包消息、红包回执消息以及转账消息的chatrow type
                 else if (RedPacketUtil.isRandomRedPacket(message)) {
                     //小额随机红包
+                    // (6) MESSAGE_TYPE_RECV_RANDOM & (7) MESSAGE_TYPE_SEND_RANDOM
                     return message.direct() == EMMessage.Direct.RECEIVE ? MESSAGE_TYPE_RECV_RANDOM : MESSAGE_TYPE_SEND_RANDOM;
                 } else if (message.getBooleanAttribute(RPConstant.MESSAGE_ATTR_IS_RED_PACKET_MESSAGE, false)) {
                     //发送红包消息
+                    // (8) MESSAGE_TYPE_RECV_RED_PACKET & (9) MESSAGE_TYPE_SEND_RED_PACKET
                     return message.direct() == EMMessage.Direct.RECEIVE ? MESSAGE_TYPE_RECV_RED_PACKET : MESSAGE_TYPE_SEND_RED_PACKET;
                 } else if (message.getBooleanAttribute(RPConstant.MESSAGE_ATTR_IS_RED_PACKET_ACK_MESSAGE, false)) {
                     //领取红包消息
+                    // (10) MESSAGE_TYPE_RECV_RED_PACKET_ACK & (11) MESSAGE_TYPE_SEND_RED_PACKET_ACK
                     return message.direct() == EMMessage.Direct.RECEIVE ? MESSAGE_TYPE_RECV_RED_PACKET_ACK : MESSAGE_TYPE_SEND_RED_PACKET_ACK;
                 }
                 //end of red packet code
@@ -459,10 +475,10 @@ public class ChatFragment extends EaseChatFragment implements EaseChatFragmentHe
 
         @Override
         public EaseChatRow getCustomChatRow(EMMessage message, int position, BaseAdapter adapter) {
-            if(message.getType() == EMMessage.Type.TXT){
+             if(message.getType() == EMMessage.Type.TXT){
                 // voice call or video call
                 if (message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VOICE_CALL, false) ||
-                    message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VIDEO_CALL, false)){
+                     message.getBooleanAttribute(Constant.MESSAGE_ATTR_IS_VIDEO_CALL, false)){
                     return new ChatRowVoiceCall(getActivity(), message, position, adapter);
                 }
                 //recall message
@@ -476,8 +492,12 @@ public class ChatFragment extends EaseChatFragment implements EaseChatFragmentHe
                     return new ChatRowRedPacket(getActivity(), message, position, adapter);
                 } else if (message.getBooleanAttribute(RPConstant.MESSAGE_ATTR_IS_RED_PACKET_ACK_MESSAGE, false)) {//红包回执消息
                     return new ChatRowRedPacketAck(getActivity(), message, position, adapter);
+                }//end of red packet code
+                else if (message.getBooleanAttribute("is_smime", false)){
+                    EMTextMessageBody txt = (EMTextMessageBody)message.getBody();
+                    Log.d("BitMail", "getCustomChatRow" + txt.toString());
+
                 }
-                //end of red packet code
             }
             return null;
         }

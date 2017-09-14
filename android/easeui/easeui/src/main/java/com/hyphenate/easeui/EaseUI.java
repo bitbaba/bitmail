@@ -22,6 +22,14 @@ import java.util.List;
 import java.util.Map;
 
 public final class EaseUI {
+
+    static {
+        System.loadLibrary("BitMailWrapper");
+    }
+
+    public static native String NativeJsonRPC(String payload);
+
+
     private static final String TAG = EaseUI.class.getSimpleName();
 
     /**

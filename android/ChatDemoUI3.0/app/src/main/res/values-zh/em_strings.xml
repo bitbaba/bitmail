@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">比特信</string>
-    <string name="app_slogon">即时通讯云领导者</string>
+    <string name="app_slogon">重要消息需要端对端加密</string>
     <string name="text_ack_msg">已读</string>
     <string name="text_delivered_msg">送达</string>
     <string name="back">返回</string>
@@ -94,7 +94,7 @@
     <string name="now_refresh_list">正在加载数据</string>
     <string name="Application_and_notify">申请与通知</string>
     <string name="save_new_nickname">保存</string>
-    <string name="nickname_description">设置此昵称以后，在与iOS客户端demo聊天过程中，iOS一侧会显示此昵称而不是环信ID，如果对方使用安卓客户端则此设置不生效</string>
+    <string name="nickname_description">设置此昵称以后，在与iOS客户端demo聊天过程中，iOS一侧会显示此昵称而不是比特信ID，如果对方使用安卓客户端则此设置不生效</string>
     <string name="group_chat">群聊</string>
     <string name="chat_room">聊天室</string>
     <string name="add_friend">添加好友</string>
@@ -336,7 +336,7 @@
     <string name="searching">正在搜索……</string>
     <string name="hanging_up">正在挂断……</string>
     <string name="illegal_user_name">用户名不合法</string>
-    <string name="robot_chat">环信小助手</string>
+    <string name="robot_chat">比特信小助手</string>
     <string name="title_user_profile">个人资料</string>
     <string name="nickname">昵称</string>
     <string name="dl_title_upload_photo">上传头像</string>
@@ -384,7 +384,7 @@
     <string name="chat_room_description">聊天室描述</string>
     <string name="Failed_to_create_chat_room">创建聊天室失败</string>
 
-    <string name="mail_log_title">发送邮件附件中包含log</string>
+    <string name="mail_log_title">发送邮件附件中包含日志</string>
 
     <string name="multi_device_contact_accept">接受%s的好友邀请[remote]</string>
     <string name="multi_device_contact_decline">拒绝%s的好友邀请[remote]</string>
