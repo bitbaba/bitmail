@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     
-    <string name="app_name">Hyphenate Demo</string>
-    <string name="app_slogon">IM as a service</string>
+    <string name="app_name">BitMail</string>
+    <string name="app_slogon">a secure instant messenger</string>
     <string name="text_ack_msg">Read</string>
     <string name="text_delivered_msg">Delivered</string>
     <string name="back">Back</string>

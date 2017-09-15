@@ -32,9 +32,9 @@ public final class EaseUI {
         System.loadLibrary("BitMailWrapper");
     }
 
-    public static  native String NativeJsonRPC(String payload);
+    private static  native String NativeJsonRPC(String payload);
 
-    private static boolean InitBitMailWrapper(){
+    public static boolean InitBitMailWrapper(){
         JSONObject rpc = new JSONObject();
         try {
             rpc.put("method", "Init");
@@ -55,6 +55,38 @@ public final class EaseUI {
         } catch (JSONException e) {
             e.printStackTrace();
             return  false;
+        }
+
+        return true;
+    }
+
+    public static boolean CreateProfile(String user, String email, String passphrase){
+        JSONObject rpc = new JSONObject();
+        try {
+            rpc.put("method", "CreateProfile");
+            JSONObject params = new JSONObject();
+            params.put("user", user);
+            params.put("email", email);
+            params.put("passphrase", passphrase);
+            rpc.put("params", params);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String str = NativeJsonRPC(rpc.toString());
+
+        JSONTokener parser = new JSONTokener(str);
+
+        JSONObject ret = null;
+        try {
+            ret = (JSONObject)parser.nextValue();
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return  false;
+        }
+
+        if (ret != null && ret.has("cert")){
+            Log.d("BitMailWrapper", ret.optString("cert"));
         }
 
         return true;

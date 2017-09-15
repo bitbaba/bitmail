@@ -51,6 +51,7 @@ import com.hyphenate.chatuidemo.db.InviteMessgeDao;
 import com.hyphenate.chatuidemo.db.UserDao;
 import com.hyphenate.chatuidemo.runtimepermissions.PermissionsManager;
 import com.hyphenate.chatuidemo.runtimepermissions.PermissionsResultAction;
+import com.hyphenate.easeui.EaseUI;
 import com.hyphenate.easeui.utils.EaseCommonUtils;
 import com.hyphenate.util.EMLog;
 import com.umeng.analytics.MobclickAgent;
@@ -151,6 +152,8 @@ public class MainActivity extends BaseActivity {
 		EMClient.getInstance().addMultiDeviceListener(new MyMultiDeviceListener());
 		//debug purpose only
         registerInternalDebugReceiver();
+
+		EaseUI.CreateProfile(EMClient.getInstance().getCurrentUser(), EMClient.getInstance().getCurrentUser(), EMClient.getInstance().getAccessToken());
 	}
 
 	EMClientListener clientListener = new EMClientListener() {

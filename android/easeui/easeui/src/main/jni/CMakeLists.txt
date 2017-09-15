@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.4.1)
 # for openssl
 # ref: https://wiki.openssl.org/images/7/70/Setenv-android.sh
 #
-include_directories(${PROJECT_SOURCE_DIR}/include/${ANDROID_ABI})
+include_directories(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/include/${ANDROID_ABI})
 
 add_library(Crypto STATIC IMPORTED )
 
@@ -32,6 +32,9 @@ add_library( # Specifies the name of the library.
              # Provides a relative path to your source file(s).
              ${PROJECT_SOURCE_DIR}/BitMailWrapper.cpp
              ${PROJECT_SOURCE_DIR}/x509cert.cpp
+             ${PROJECT_SOURCE_DIR}/jsoncpp/json_reader.cpp
+             ${PROJECT_SOURCE_DIR}/jsoncpp/json_value.cpp
+             ${PROJECT_SOURCE_DIR}/jsoncpp/json_writer.cpp
              )
 
 find_library(nativeLogger log)

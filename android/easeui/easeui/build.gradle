@@ -28,7 +28,7 @@ android {
                 arguments "-DANDROID_CPP_FEATURES=rtti exceptions",
                           "-DANDROID_STL=gnustl_static"
                 // https://stackoverflow.com/questions/36667374/how-to-enable-c11-for-android-studio
-                cppFlags "-std=c++11 -std=gnu++11"
+                cppFlags "-DNO_LOCALE_SUPPORT -std=c++11 -std=gnu++11"
             }
         }
     }
