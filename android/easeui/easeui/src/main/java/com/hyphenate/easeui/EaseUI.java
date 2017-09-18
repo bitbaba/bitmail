@@ -92,6 +92,80 @@ public final class EaseUI {
         return true;
     }
 
+    public static String EncryptMessage(String to, String msg){
+        JSONObject rpc = new JSONObject();
+        try {
+            rpc.put("method", "EncryptMessage");
+            JSONObject params = new JSONObject();
+            params.put("to", to);
+            params.put("msg", msg);
+            rpc.put("params", params);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return "";
+        }
+
+        String str = NativeJsonRPC(rpc.toString());
+
+        JSONTokener parser = new JSONTokener(str);
+
+        JSONObject ret = null;
+        try {
+            ret = (JSONObject)parser.nextValue();
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return  "";
+        }
+
+        if (ret != null && ret.has("smime")){
+            Log.d("BitMailWrapper", ret.optString("smime"));
+            return ret.optString("smime");
+        }
+
+        return "";
+    }
+
+
+    public static String DecryptMessage(String smime){
+        JSONObject rpc = new JSONObject();
+        try {
+            rpc.put("method", "DecryptMessage");
+            JSONObject params = new JSONObject();
+            params.put("smime", smime);
+            rpc.put("params", params);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return "";
+        }
+
+        String str = NativeJsonRPC(rpc.toString());
+
+        JSONTokener parser = new JSONTokener(str);
+
+        JSONObject ret = null;
+        try {
+            ret = (JSONObject)parser.nextValue();
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return  "";
+        }
+
+        if (ret != null
+                && ret.has("msg")
+                && ret.has("from")
+                && ret.has("nick")
+                && ret.has("cert")
+                && ret.has("certid")
+                && ret.has("sigtime")
+                && ret.has("encrypted")
+                ){
+            Log.d("BitMailWrapper", ret.optString("msg"));
+            return ret.optString("msg");
+        }
+
+        return "";
+    }
+
     private static final String TAG = EaseUI.class.getSimpleName();
 
     /**

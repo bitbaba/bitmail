@@ -155,6 +155,10 @@ std::string Encrypt(const std::string & friendName, const std::string & msg)
 
 Json::Value EncryptMessage(const Json::Value & params){
     Json::Value ret = Json::objectValue;
+    std::string to = params["to"].asString();
+    std::string msg = params["msg"].asString();
+    std::string smime = Encrypt(to, msg);
+    ret["smime"] = smime;
     return ret;
 }
 
@@ -204,5 +208,17 @@ bool Decrypt(const std::string & smime
 Json::Value DecryptMessage(const Json::Value & params)
 {
     Json::Value ret = Json::objectValue;
+    std::string smime = params["smime"].asString();
+    bool encrypted = false;
+    std::string from, nick, msg, certid, cert, sigtime;
+    if (Decrypt(smime, from, nick, msg, certid, cert, sigtime, &encrypted)){
+        ret["from"] = from;
+        ret["nick"] = nick;
+        ret["msg"] = msg;
+        ret["certid"] = certid;
+        ret["cert"] = cert;
+        ret["sigtime"] = sigtime;
+        ret["encrypted"] = encrypted;
+    }
     return ret;
 }
