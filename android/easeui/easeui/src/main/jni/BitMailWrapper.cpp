@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <cstdint>
+#include <fstream>
 #include <android/log.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,15 +19,10 @@
 
 // global variables
 static CX509Cert * gs_profile = NULL;
-static std::map<std::string, std::string> * gs_friends = NULL;
+static std::string * gs_contacts = NULL;
 static pthread_mutex_t * gs_lock = NULL;
 
-// forward declarations
-static void InitOpenSSL();
-static Json::Value InitBitMailWrapper(const Json::Value & params);
-static Json::Value CreateProfile(const Json::Value & params);
-static Json::Value EncryptMessage(const Json::Value & params);
-static Json::Value DecryptMessage(const Json::Value & params);
+
 
 class ScopedLock{
 public:
@@ -37,6 +33,133 @@ public:
         if (gs_lock != NULL) pthread_mutex_unlock(gs_lock);
     }
 };
+
+/**
+* Contacts APIs
+*/
+std::vector<std::string> contacts()
+{
+    ScopedLock scope;
+    Json::Reader reader; Json::Value contacts;
+    if (!reader.parse(*gs_contacts, contacts)){
+        return std::vector<std::string>();
+    }
+    return contacts.getMemberNames();
+}
+
+bool addContact(const std::string & emails)
+{
+    ScopedLock scope;
+
+    if (emails.empty()) return false;
+
+    Json::Reader reader; Json::Value contacts;
+    if (!reader.parse(*gs_contacts, contacts)){
+        contacts = Json::objectValue;
+    }
+
+    if (contacts.isMember(emails)){
+        return true;
+    }
+
+    Json::Value contact;
+    reader.parse("{}", contact);
+    contacts[emails] = contact;
+
+    *gs_contacts = contacts.toStyledString();
+    return true;
+}
+
+bool hasContact(const std::string & emails)
+{
+    ScopedLock scope;
+    Json::Reader reader; Json::Value contacts;
+    if (!reader.parse(*gs_contacts, contacts)){
+        contacts = Json::objectValue;
+    }
+
+    return contacts.isMember(emails);
+}
+
+bool removeContact(const std::string & emails)
+{
+    ScopedLock scope;
+
+    Json::Reader reader; Json::Value contacts;
+    if (!reader.parse(*gs_contacts, contacts)){
+        contacts = Json::objectValue;
+    }
+
+    if (!contacts.isMember(emails)){
+        return true;
+    }
+
+    if (!contacts.removeMember(emails)){
+        return false;
+    }
+
+    *gs_contacts = contacts.toStyledString();
+    return true;
+}
+
+std::string contattrib(const std::string & emails, const std::string & att_name)
+{
+    ScopedLock scope;
+
+    if (emails.empty() || att_name.empty()) return "";
+
+    Json::Reader reader; Json::Value contacts;
+    if (!reader.parse(*gs_contacts, contacts)){
+        contacts = Json::objectValue;
+    }
+
+    Json::Value contact;
+    if (!contacts.isMember(emails)){
+        return "";
+    }
+
+    contact = contacts[emails];
+
+    if (contact.isMember(att_name))
+        return contact[att_name].asString();
+    else
+        return "";
+}
+
+bool contattrib(const std::string & emails, const std::string & att_name, const std::string & att_value)
+{
+    ScopedLock scope;
+
+    if (emails.empty() || att_name.empty()) return false;
+
+    Json::Reader reader; Json::Value contacts;
+    if (!reader.parse(*gs_contacts, contacts)){
+        contacts = Json::objectValue;
+    }
+
+    Json::Value contact;
+    if (contacts.isMember(emails)){
+        // fetch a copy
+        contact = contacts[emails];
+    }else{
+        // construct a fresh object
+        reader.parse("{}", contact);
+    }
+
+    contact[att_name] = att_value;
+    contacts[emails] = contact;
+
+    *gs_contacts = contacts.toStyledString();
+    return true;
+}
+
+// forward declarations
+static void InitOpenSSL();
+static Json::Value InitBitMailWrapper(const Json::Value & params);
+static Json::Value CreateProfile(const Json::Value & params);
+static Json::Value EncryptMessage(const Json::Value & params);
+static Json::Value DecryptMessage(const Json::Value & params);
+
 
 // Marshall API
 JNIEXPORT jstring JNICALL
@@ -73,6 +196,70 @@ void InitOpenSSL(){
     OpenSSL_add_all_digests();
 }
 
+void WriteFile(const std::string & path, const std::string & content){
+    std::ofstream fout;
+    fout.open(path);
+    fout << content;
+    fout.close();
+}
+
+std::string ReadFile(const std::string & path){
+    std::ifstream fin;
+    fin.open(path);
+    std::string line, ret;
+    while(fin >> line){
+        ret += line;
+    }
+    fin.close();
+    return ret;
+}
+
+bool Import(const std::string & passphrase, const std::string & json)
+{
+    Json::Reader reader;
+    Json::Value joRoot;
+    if (!reader.parse(json, joRoot)){
+        return false;
+    }
+    if (joRoot.isMember("Profile")){
+        Json::Value profile = joRoot["Profile"];
+        if (profile.isMember("cert")&& profile.isMember("key")){
+            ScopedLock scope;
+            gs_profile->ImportCert(profile["cert"].asString());
+            gs_profile->ImportPrivKey(profile["key"].asString(), passphrase);
+        }
+    }
+
+    if (joRoot.isMember("contacts")){
+        ScopedLock scope;
+        *gs_contacts = joRoot["contacts"].toStyledString();
+    }
+    return true;
+}
+
+std::string Export()
+{
+    Json::Value joRoot;
+    do {
+        ScopedLock scope;
+        Json::Value profile;
+        profile["cert"] = gs_profile->ExportCert();
+        profile["key"] = gs_profile->ExportPrivKey();
+        joRoot["Profile"] = profile;
+    }while(0);
+
+    Json::Reader reader; Json::Value contacts;
+    do {
+        ScopedLock scope;
+        if (!reader.parse(*gs_contacts, contacts)){
+            contacts = Json::Value(Json::objectValue);
+        }
+        joRoot["contacts"] = contacts;
+    }while(0);
+
+    return joRoot.toStyledString();
+}
+
 Json::Value InitBitMailWrapper(const Json::Value & params){
     (void)params;
     Json::Value ret = Json::objectValue;
@@ -89,8 +276,8 @@ Json::Value InitBitMailWrapper(const Json::Value & params){
         gs_profile = new CX509Cert();
     }
 
-    if (gs_friends == NULL){
-        gs_friends = new std::map<std::string, std::string>();
+    if (gs_contacts == NULL){
+        gs_contacts = new std::string();
     }
     /**
     CX509Cert xcert;
@@ -106,15 +293,32 @@ Json::Value CreateProfile(const Json::Value & params){
     if (gs_profile != NULL
             && params.isMember("user")
             && params.isMember("email")
-            && params.isMember("passphrase")){
-        std::string cn = params["user"].asString();
-        std::string email = params["email"].asString();
-        std::string passphrase = params["passphrase"].asString();
-        gs_profile->Create(1024, cn, email, passphrase);
+            && params.isMember("passphrase"))
+    {
+
+        std::string user = params["user"].asString();
+        std::string email = params["user"].asString();
+        std::string passphrase = params["user"].asString();
+
+        gs_profile->Create(1024, user, email, passphrase);
         ret["cert"] = gs_profile->ExportCert();
+
+        /**
+        if (!user.empty()){
+            std::string profile = ReadFile(std::string("/bitmail-") + user);
+            if (!profile.empty()){
+                Import(user, profile);
+            }else{
+                gs_profile->Create(1024, user, email, passphrase);
+                std::string profile = Export();
+                WriteFile(std::string("/bitmail-") + user, profile);
+            }
+            ret["cert"] = gs_profile->ExportCert();
+        }*/
     }
     return ret;
 }
+
 
 std::string Encrypt(const std::string & friendName, const std::string & msg)
 {
@@ -132,15 +336,17 @@ std::string Encrypt(const std::string & friendName, const std::string & msg)
         smime = gs_profile->Sign(msg);
     }while(0);
 
-    if (gs_friends->find(friendName) == gs_friends->end()){
+    if (!hasContact(friendName)){
+        return smime;
+    }
+
+    std::string cert = contattrib(friendName, "cert");
+    if (cert.empty()) {
         return smime;
     }
 
     std::set<std::string> certs;
-    do {
-        ScopedLock socpe;
-        certs.insert(gs_friends->find(friendName)->second);
-    }while(0);
+    certs.insert(cert);
 
     // always encrypted a copy for yourself
     do {
@@ -171,38 +377,37 @@ bool Decrypt(const std::string & smime
         , std::string & sigtime
         , bool * encrypted)
 {
-    std::string sMimeBody = smime;
-    if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_enveloped){
+    msg = smime;
+    __android_log_print(ANDROID_LOG_INFO, "BitMailWrapper", "SMIME: %s", smime.c_str());
+
+    if (CX509Cert::CheckMsgType(smime) == NID_pkcs7_enveloped){
+        *encrypted = true;
+
         ScopedLock scope;
-        sMimeBody = gs_profile->Decrypt(sMimeBody);
-        if (sMimeBody.empty()){
+        msg = gs_profile->Decrypt(smime);
+        if (msg.empty()){
             return false;
         }
-        *encrypted = true;
     }
 
-    if (CX509Cert::CheckMsgType(sMimeBody) == NID_pkcs7_signed)
+    if (CX509Cert::CheckMsgType(msg) == NID_pkcs7_signed)
     {
         /** signature time**/
-        sigtime = CX509Cert::GetSigningTime(sMimeBody);
+        sigtime = CX509Cert::GetSigningTime(msg);
         /** signer certificate**/
         CX509Cert buddyCert;
-        buddyCert.ImportCertFromSig(sMimeBody);
+        buddyCert.ImportCertFromSig(msg);
         if (buddyCert.IsValid())
         {
-            sMimeBody = buddyCert.Verify(sMimeBody);
-            if (!sMimeBody.empty()){
-                from = buddyCert.GetEmail();
-                nick = buddyCert.GetCommonName();
-                msg = sMimeBody;
-                certid = buddyCert.GetID();
-                cert = buddyCert.ExportCert();
-                return true;
-            }
+            msg = buddyCert.Verify(msg);
+            from = buddyCert.GetEmail();
+            nick = buddyCert.GetCommonName();
+            certid = buddyCert.GetID();
+            cert = buddyCert.ExportCert();
+            contattrib(from, "cert", cert);
         }
     }
-
-    return false;
+    return true;
 }
 
 Json::Value DecryptMessage(const Json::Value & params)

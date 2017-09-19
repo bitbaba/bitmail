@@ -60,14 +60,14 @@ public final class EaseUI {
         return true;
     }
 
-    public static boolean CreateProfile(String user, String email, String passphrase){
+    public static boolean CreateProfile(String user){
         JSONObject rpc = new JSONObject();
         try {
             rpc.put("method", "CreateProfile");
             JSONObject params = new JSONObject();
             params.put("user", user);
-            params.put("email", email);
-            params.put("passphrase", passphrase);
+            params.put("email", user);
+            params.put("passphrase", user);
             rpc.put("params", params);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -160,10 +160,13 @@ public final class EaseUI {
                 && ret.has("encrypted")
                 ){
             Log.d("BitMailWrapper", ret.optString("msg"));
-            return ret.optString("msg");
+            return ret.optString("msg")
+                    + "\n"
+                    + (ret.optBoolean("encrypted") ? "[加密]":"")
+                    + "[签名ID:" + ret.optString("certid").substring(0,8) + "..." + "]";
         }
 
-        return "";
+        return "<!--Failed to Decrypted or Verified-->";
     }
 
     private static final String TAG = EaseUI.class.getSimpleName();

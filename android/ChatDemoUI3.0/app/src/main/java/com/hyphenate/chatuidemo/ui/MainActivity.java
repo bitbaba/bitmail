@@ -153,7 +153,7 @@ public class MainActivity extends BaseActivity {
 		//debug purpose only
         registerInternalDebugReceiver();
 
-		EaseUI.CreateProfile(EMClient.getInstance().getCurrentUser(), EMClient.getInstance().getCurrentUser(), EMClient.getInstance().getAccessToken());
+		EaseUI.CreateProfile(EMClient.getInstance().getCurrentUser());
 	}
 
 	EMClientListener clientListener = new EMClientListener() {

@@ -25,7 +25,10 @@ import android.widget.ListView;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMTextMessageBody;
+import com.hyphenate.chat.adapter.message.EMAMessage;
 import com.hyphenate.easeui.EaseConstant;
+import com.hyphenate.easeui.EaseUI;
 import com.hyphenate.easeui.model.styles.EaseMessageListItemStyle;
 import com.hyphenate.easeui.utils.EaseCommonUtils;
 import com.hyphenate.easeui.widget.EaseChatMessageList.MessageListItemClickListener;
@@ -97,6 +100,15 @@ public class EaseMessageAdapter extends BaseAdapter{
 			// otherwise there is problem when refreshing UI and there is new message arrive
 			java.util.List<EMMessage> var = conversation.getAllMessages();
 			messages = var.toArray(new EMMessage[var.size()]);
+			for(EMMessage elt : messages){
+				if (elt.getType() == EMMessage.Type.TXT){
+					EMTextMessageBody txtbody = (EMTextMessageBody)elt.getBody();
+					if (txtbody.getMessage().startsWith("MIME-Version:")){
+						String txt = EaseUI.DecryptMessage( txtbody.getMessage() );
+						elt.addBody(new EMTextMessageBody(txt));
+					}
+				}
+			}
 			conversation.markAllMessagesAsRead();
 			notifyDataSetChanged();
 		}
