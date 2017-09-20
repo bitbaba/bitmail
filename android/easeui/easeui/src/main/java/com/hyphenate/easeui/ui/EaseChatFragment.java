@@ -701,9 +701,12 @@ public class EaseChatFragment extends EaseBaseFragment implements EMMessageListe
         if(EaseAtMessageHelper.get().containsAtUsername(content)){
             sendAtMessage(content);
         }else{
-            String smime = EaseUI.EncryptMessage(toChatUsername, content);
+
+            String smime = content;
+            if (chatType == EaseConstant.CHATTYPE_SINGLE){
+                smime = EaseUI.EncryptMessage(toChatUsername, content);
+            }
             EMMessage message = EMMessage.createTxtSendMessage(smime, toChatUsername);
-            message.setAttribute("is_smime", true);
             sendMessage(message);
         }
     }
