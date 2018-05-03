@@ -1,0 +1,20 @@
+cat <<__heredoc >mailcert.v3.ext
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer
+basicConstraints=CA:true
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement, keyCertSign, cRLSign
+extendedKeyUsage=anyExtendedKeyUsage 
+nsCertType = emailCA, email, sslCA
+subjectAltName=email:xxx@aol.com
+issuerAltName=email:xxx@aol.com
+__heredoc
+
+openssl genrsa -out cakey.pem -aes256 4096
+
+openssl req -new -key mailkey.pem -subj "/CN=bitmail.bitbaba.com" -out mailcsr.pem
+
+openssl x509 -req -in mailcsr.pem -extfile mailcert.v3.ext -signkey mailkey.pem -days 3650 -CAcreateserial -out mailcert.crt
+openssl x509 -req -in user.pem -extfile user.ext -CA ca.crt -CAkey cakey.pem -days 3650 -out user.crt
+
+openssl pkcs12 -export -aes256 -in mailcert.crt -inkey mailkey.pem -certfile mailcert.crt -out mail.p12
+
