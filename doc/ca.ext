@@ -1,0 +1,5 @@
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer
+basicConstraints=CA:true
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyCertSign
+nsCertType = emailCA
