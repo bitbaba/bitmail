@@ -5,8 +5,8 @@ basicConstraints=CA:true
 keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement, keyCertSign, cRLSign
 extendedKeyUsage=anyExtendedKeyUsage 
 nsCertType = emailCA, email, sslCA
-subjectAltName=email:xxx@aol.com
-issuerAltName=email:xxx@aol.com
+subjectAltName=email:xxx@aol.com,DNS:bitmail.bitbaba.com,URI:https://bitmail.bitbaba.com/
+issuerAltName=email:xxx@aol.com,DNS:bitmail.bitbaba.com,URI:https://bitmail.bitbaba.com/
 __heredoc
 
 openssl genrsa -out cakey.pem -aes256 4096
