@@ -1,7 +1,0 @@
-subjectKeyIdentifier=hash
-authorityKeyIdentifier=keyid:always,issuer
-basicConstraints=CA:false
-keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyCertSign
-extendedKeyUsage = emailProtection
-nsCertType = email
-subjectAltName=email:example@mail.com
