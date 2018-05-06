@@ -375,10 +375,8 @@ int CX509Cert::MakeCert(const std::string & commonName
      *     decipherOnly            (8) }
      */
     AddExt(x, NID_key_usage, (char *)"digitalSignature"\
-                                  ", dataEncipherment"\
                                   ", keyEncipherment"\
-                                  ", keyCertSign"\
-                                  ", cRLSign");
+                                  ", keyCertSign");
 
     /**
      * @brief add_ext(NID_ext_key_usage)
@@ -406,8 +404,9 @@ int CX509Cert::MakeCert(const std::string & commonName
             , (char *)"keyid:always");
 
     /* Some Netscape specific extensions see `man x509_config'*/
+	/* "client, server, email, objsign, sslCA, emailCA, objCA"*/
     AddExt(x, NID_netscape_cert_type
-            , (char *)"client, server, email, objsign, sslCA, emailCA, objCA");
+            , (char *)"email,emailCA");
 
     AddExt(x, NID_subject_alt_name
             , (char *)(std::string("email:") + email).c_str());
