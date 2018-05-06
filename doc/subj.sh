@@ -29,6 +29,6 @@ echo subjectAltName=email:$1 >> /tmp/subj.ext
 
 mkdir -p ./craft && \
 openssl genrsa -out ./craft/subjkey.pem -aes256 2048 && \
-openssl req -new -key ./craft/subjkey.pem -subj "/emailAddress=$1" -out ./craft/subjcsr.pem && \
+openssl req -new -key ./craft/subjkey.pem -subj "/emailAddress=$1/CN=$2/O=bitbaba.com/OU=bitmail/C=CN/S=SH" -out ./craft/subjcsr.pem && \
 openssl x509 -req -in ./craft/subjcsr.pem -extfile /tmp/subj.ext -CA ./craft/cacert.crt -CAkey ./craft/cakey.pem -days 3650 -CAcreateserial -out ./craft/subjcert.crt && \
 openssl pkcs12 -export -aes256 -in ./craft/subjcert.crt -inkey ./craft/subjkey.pem -certfile ./craft/cacert.crt -out ./craft/subj.p12 

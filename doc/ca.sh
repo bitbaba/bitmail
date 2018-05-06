@@ -12,6 +12,6 @@ _heredoc
 
 mkdir -p ./craft && \
 openssl genrsa -out ./craft/cakey.pem -aes256 2048 && \
-openssl req -new -key ./craft/cakey.pem  -subj "/CN=bitmail.bitbaba.com" -out ./craft/cacsr.pem && \
+openssl req -new -key ./craft/cakey.pem  -subj "/CN=Bitmail Root CA/C=CN/O=bitbaba.com/OU=bitmail.bitbaba.com/S=SH" -out ./craft/cacsr.pem && \
 openssl x509 -req -in ./craft/cacsr.pem -extfile /tmp/caroot.ext -signkey ./craft/cakey.pem -days 3650 -CAcreateserial -out ./craft/cacert.crt && \
 openssl pkcs12 -export -aes256 -in ./craft/cacert.crt -inkey ./craft/cakey.pem -out ./craft/ca.p12
