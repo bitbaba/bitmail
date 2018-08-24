@@ -71,3 +71,5 @@ open \`qt/bitmail.pro' to build
 ## Welcome to contribute
 - Anyone with Qt, web, mobile, or secure network programming knowledge is welcome.
                            
+## TODO: ecdsa certificates 
+- openssl req -new -x509 -nodes -newkey ec:<(openssl ecparam -name secp384r1) -keyout cert.key -out cert.crt -days 3650
