@@ -73,3 +73,4 @@ open \`qt/bitmail.pro' to build
                            
 ## TODO: ecdsa certificates 
 - openssl req -new -x509 -nodes -newkey ec:<(openssl ecparam -name secp384r1) -keyout cert.key -out cert.crt -days 3650
+- ref: https://www.guyrutenberg.com/2013/12/28/creating-self-signed-ecdsa-ssl-certificate-using-openssl/
